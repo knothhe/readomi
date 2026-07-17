@@ -1,5 +1,13 @@
 # Vibe Reading
 
+> 本分支新增了 `pnpm release:chrome` 打包脚本。脚本会读取 `package.json`
+> 中的版本号，构建 Chrome 扩展 ZIP，在需要时创建对应的 GitHub Release 并上传，
+> 之后可直接从 Release 页面下载。
+
+> **Fork 声明：** 本仓库 fork 自
+> [Xuanwo/vibe-reading](https://github.com/Xuanwo/vibe-reading)，原始项目内容均来自该
+> 上游仓库。本 fork 仅新增了上述 Release 打包脚本。
+
 Vibe Reading 是一个用于网页阅读、翻译和语言学习的浏览器扩展。配置保存在本地，AI 或翻译能力由用户自行配置的服务商和 API Key 提供。
 
 本扩展不依赖项目自建后端。需要网络服务的功能，例如 AI 翻译，会直接使用用户配置的服务商端点。

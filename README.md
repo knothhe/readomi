@@ -1,5 +1,15 @@
 # Vibe Reading
 
+> This fork includes `pnpm release:chrome`, which builds a Chrome extension ZIP
+> using the version in `package.json`, creates the matching GitHub Release when
+> needed, and uploads the ZIP so it can be downloaded directly from the Release
+> page.
+
+> **Fork notice:** This repository is forked from
+> [Xuanwo/vibe-reading](https://github.com/Xuanwo/vibe-reading), and its original
+> project content comes from that upstream repository. The only change made in
+> this fork is the Release packaging script described above.
+
 Vibe Reading is a browser extension for reading and translating web pages with
 local configuration and user-provided AI or translation providers.
 
