@@ -6,6 +6,9 @@
 window.JIANDAO_CANVAS = {
   title: "Jiandao Design",
   boards: [
+    { file: "Page-Grid-Contents-Original.html", title: "页面 · 网格布局 · 原文", x: 0, y: 16100, w: 880, h: 680 },
+    { file: "Page-Grid-Contents-Bilingual.html", title: "页面 · 网格布局 · 双语对照", x: 960, y: 16100, w: 880, h: 680 },
+    { file: "Page-Grid-Contents-Only.html", title: "页面 · 网格布局 · 仅译文", x: 1920, y: 16100, w: 880, h: 680 },
     { file: "Settings-Sidebar-Service.html", title: "设置 · 翻译服务", x: 0, y: 10400, w: 1120, h: 860 },
     { file: "Settings-Models-Loading.html", title: "设置 · 翻译服务 · 获取中", x: 1200, y: 10400, w: 1120, h: 860 },
     { file: "Settings-Models-List.html", title: "设置 · 翻译服务 · 选择模型", x: 2400, y: 10400, w: 1120, h: 860 },
