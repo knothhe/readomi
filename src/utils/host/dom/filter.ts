@@ -44,10 +44,9 @@ function isInlineDisplay(display: string): boolean {
     return false
   }
 
-  if (normalizedDisplay === "contents") {
-    return true
-  }
-
+  // display: contents has no box of its own. Keep it as a traversal boundary:
+  // its children may occupy different grid columns or flex items, and merging
+  // them would insert a translation into their parent's layout as a new item.
   if (normalizedDisplay.startsWith("inline")) {
     return true
   }

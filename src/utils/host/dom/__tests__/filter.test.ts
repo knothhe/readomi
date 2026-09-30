@@ -77,6 +77,15 @@ describe("isDontWalkIntoButTranslateAsChildElement", () => {
 })
 
 describe("inline/block display detection", () => {
+  it("treats display contents as a boundary instead of merging its layout children", () => {
+    const element = document.createElement("p")
+    element.textContent = "Date: Tue, 29 Sept 2026"
+    element.style.display = "contents"
+
+    expect(isShallowInlineHTMLElement(element)).toBe(false)
+    expect(isShallowBlockHTMLElement(element)).toBe(true)
+  })
+
   it("should treat ruby as inline", () => {
     const ruby = document.createElement("ruby")
     ruby.textContent = "大阪"

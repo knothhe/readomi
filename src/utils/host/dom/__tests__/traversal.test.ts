@@ -1,7 +1,28 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
-import { extractTextContent } from "../traversal"
+import { BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE } from "@/utils/constants/dom-labels"
+import { extractTextContent, walkAndLabelElement } from "../traversal"
+
+describe("walkAndLabelElement", () => {
+  it("keeps display contents rows from combining separate grid cells into one paragraph", () => {
+    const grid = document.createElement("div")
+    grid.style.display = "grid"
+    // Grid items are blockified by the browser; jsdom needs explicit display.
+    grid.innerHTML = `<p style="display:contents"><span style="display:block">From:</span><span style="display:block">Reading Team</span></p>
+      <p style="display:contents"><span style="display:block">To:</span><span style="display:block">You</span></p>`
+
+    walkAndLabelElement(grid, "grid-test", DEFAULT_CONFIG)
+
+    expect(grid.hasAttribute(PARAGRAPH_ATTRIBUTE)).toBe(false)
+    for (const row of grid.children) {
+      expect(row.hasAttribute(BLOCK_ATTRIBUTE)).toBe(true)
+      expect(row.hasAttribute(PARAGRAPH_ATTRIBUTE)).toBe(false)
+      for (const cell of row.children)
+        expect(cell.hasAttribute(PARAGRAPH_ATTRIBUTE)).toBe(true)
+    }
+  })
+})
 
 describe("extractTextContent", () => {
   describe("text node whitespace normalization", () => {

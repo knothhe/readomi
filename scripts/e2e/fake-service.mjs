@@ -35,6 +35,22 @@ export async function startFakeService() {
   let heldAnswers
   const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost")
+    if (request.method === "GET" && url.pathname === "/grid-contents") {
+      // Earendil's email metadata uses these layout rules: p boxes disappear
+      // and their key/value children occupy separate grid columns.
+      response.setHeader("Content-Type", "text/html; charset=utf-8")
+      response.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Reading and Experience</title><style>
+body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
+.email-meta{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:1ch;align-items:baseline;margin-bottom:24px}
+.email-meta p{display:contents}.key,.value{min-width:0;line-height:1.5}.value{overflow-wrap:anywhere}
+</style></head><body><article><h1>Reading and Experience</h1><div class="email-meta">
+<p><span class="key">Date:</span><time class="value" datetime="2026-09-29">Tue, 29 Sept 2026</time></p>
+<p><span class="key">From:</span><span class="value">Reading Team &lt;<a href="mailto:hello@example.com">hello@example.com</a>&gt;</span></p>
+<p><span class="key">To:</span><span class="value">You</span></p>
+<p><span class="key">Subject:</span><span class="value">Reading and Experience</span></p>
+</div><div class="prose"><p>Reading keeps changing the way we understand the world. A <a href="https://example.com/">linked note</a> can lead us to a new idea.</p><h2>Keep reading</h2></div></article></body></html>`)
+      return
+    }
     if (request.method === "GET" && url.pathname === "/article") {
       response.setHeader("Content-Type", "text/html; charset=utf-8")
       response.end(article(url.searchParams.get("description")))
