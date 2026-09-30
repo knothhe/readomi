@@ -6,6 +6,11 @@
 window.JIANDAO_CANVAS = {
   title: "Jiandao Design",
   boards: [
+    { file: "Translation-Features-Off.html", title: "设置 · 局部与视频翻译关闭", x: 0, y: 9300, w: 720, h: 720 },
+    { file: "Video-Translation-Only.html", title: "视频 · 仅译文", x: 800, y: 9300, w: 720, h: 720 },
+    { file: "Config-Imported.html", title: "配置 · 导入成功", x: 1600, y: 9300, w: 720, h: 720 },
+    { file: "Service-Form-Checking.html", title: "翻译服务 · 检查中", x: 2400, y: 9300, w: 720, h: 720 },
+
     { file: "Service-Form.html", title: "翻译服务 · 手动配置", x: 0, y: 6900, w: 720, h: 720 },
     { file: "Service-Form-Failed.html", title: "翻译服务 · 手动配置失败", x: 800, y: 6900, w: 720, h: 720 },
     { file: "Config-Backup.html", title: "配置 · 导入导出", x: 1600, y: 6900, w: 720, h: 720 },
