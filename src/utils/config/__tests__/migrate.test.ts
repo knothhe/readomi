@@ -26,6 +26,10 @@ function withoutVersion(config: object): Record<string, unknown> {
 }
 
 describe("migrateStoredConfig", () => {
+  it("upgrades version 2 while preserving services, features and the page shortcut", () => {
+    const old = { ...DEFAULT_CONFIG, version: 2, features: { hoverTranslation: true, videoSubtitles: true, subtitleMode: "translationOnly" } }
+    expect(migrateStoredConfig(old)).toEqual({ ok: true, config: { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, ...old.features } } })
+  })
   it("keeps a config at the current version", () => {
     expect(migrateStoredConfig(DEFAULT_CONFIG)).toEqual({ ok: true, config: DEFAULT_CONFIG })
   })

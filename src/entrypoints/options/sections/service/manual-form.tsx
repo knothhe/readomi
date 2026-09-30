@@ -1,14 +1,16 @@
 import type { SetupDocument } from "@/utils/setup-document"
 import { useAtomValue, useSetAtom, useStore } from "jotai"
-import { useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { DEFAULT_REQUEST_API, PROVIDER_TYPES, REQUEST_APIS } from "@/types/config/provider"
 import { configAtom, writeConfigAtom } from "@/utils/atoms/config"
 import { clearConfigResetNotice } from "@/utils/config/storage"
 import { logger } from "@/utils/logger"
+import { fetchProviderModels } from "@/utils/providers/models"
+import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection, withConnectionCheck } from "@/utils/providers/test-connection"
-import { applySetupDocument, exportSetupDocument, setupDocumentSchema } from "@/utils/setup-document"
+import { applySetupDocument, exportSetupDocument, findMatchingProvider, setupDocumentSchema } from "@/utils/setup-document"
 
 export function ManualServiceForm({ onDone }: { onDone: () => void }) {
   const config = useAtomValue(configAtom)
@@ -21,6 +23,38 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
   const [key, setKey] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [modelResult, setModelResult] = useState<{ signature: string, models: string[], state: "idle" | "loading" | "list" | "empty" | "failed" }>({ signature: "", models: [], state: "idle" })
+  const requestRef = useRef<AbortController | null>(null)
+  // A stored key belongs to its endpoint; never carry it to a new address.
+  const matching = findMatchingProvider(config.providersConfig, draft)
+  const effectiveKey = key.trim() || matching?.apiKey?.trim()
+  const baseURL = resolveBaseURL({ provider: draft.type, baseURL: draft.baseURL })
+  const canFetch = !!effectiveKey && !!baseURL
+  const signature = JSON.stringify([draft.type, draft.api, draft.baseURL, matching?.headers, effectiveKey])
+  const models = modelResult.signature === signature ? modelResult.models : []
+  const modelState = modelResult.signature === signature ? modelResult.state : "idle"
+  useEffect(() => {
+    return () => requestRef.current?.abort()
+  }, [signature])
+
+  const fetchModels = async () => {
+    requestRef.current?.abort()
+    const controller = new AbortController()
+    requestRef.current = controller
+    setModelResult({ signature, models: [], state: "loading" })
+    try {
+      const latest = findMatchingProvider(store.get(configAtom).providersConfig, draft)
+      const result = await fetchProviderModels({ provider: draft.type, api: draft.api, baseURL: draft.baseURL, apiKey: key.trim() || latest?.apiKey, headers: latest?.headers }, controller.signal)
+      if (!controller.signal.aborted && requestRef.current === controller) {
+        setModelResult({ signature, models: result, state: result.length ? "list" : "empty" })
+      }
+    }
+    catch {
+      if (!controller.signal.aborted && requestRef.current === controller)
+        setModelResult({ signature, models: [], state: "failed" })
+    }
+  }
+  const modelId = useId()
   const fieldClass = "w-full rounded-lg border border-input bg-card px-3 py-2 text-[13px]"
 
   const save = async () => {
@@ -78,10 +112,25 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
           <input className={fieldClass} type="password" autoComplete="off" value={key} onChange={e => setKey(e.target.value)} />
         </label>
         <p className="text-xs text-muted-foreground">{i18n.t("manualService.keyHint")}</p>
-        <label>
-          {i18n.t("manualService.model")}
-          <input className={fieldClass} required value={draft.model} onChange={e => setDraft({ ...draft, model: e.target.value })} />
-        </label>
+        <div>
+          <label htmlFor={modelId}>{i18n.t("manualService.model")}</label>
+          <div className="flex gap-2">
+            <input id={modelId} className={`${fieldClass} min-w-0 flex-1`} required value={draft.model} onChange={e => setDraft({ ...draft, model: e.target.value })} />
+            <Button type="button" variant="outline" disabled={!canFetch || modelState === "loading"} onClick={() => void fetchModels()}>{i18n.t(modelState === "loading" ? "modelDiscovery.loading" : "modelDiscovery.fetch")}</Button>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground" role="status">
+          {i18n.t(!canFetch ? "modelDiscovery.noKey" : modelState === "failed" ? "modelDiscovery.failed" : modelState === "empty" ? "modelDiscovery.empty" : "modelDiscovery.hint")}
+        </p>
+        {modelState === "list" && (
+          <label>
+            {i18n.t("modelDiscovery.select")}
+            <select className={fieldClass} value={models.includes(draft.model) ? draft.model : ""} onChange={e => e.target.value && setDraft({ ...draft, model: e.target.value })}>
+              <option value="" disabled>{i18n.t("modelDiscovery.select")}</option>
+              {models.map(model => <option key={model} value={model}>{model}</option>)}
+            </select>
+          </label>
+        )}
         <label>
           {i18n.t("manualService.api")}
           <select className={fieldClass} value={draft.api ?? DEFAULT_REQUEST_API[draft.type]} onChange={e => setDraft({ ...draft, api: e.target.value as typeof draft.api })}>

@@ -18,6 +18,7 @@ export type ConfigMigration = (config: Record<string, unknown>) => Record<string
  */
 export const CONFIG_MIGRATIONS: Readonly<Record<number, ConfigMigration>> = {
   2: config => ({ ...config, features: { hoverTranslation: false, videoSubtitles: false, subtitleMode: "bilingual", ...(isRecord(config.features) ? config.features : {}) } }),
+  3: config => ({ ...config, features: { hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", ...(isRecord(config.features) ? config.features : {}) } }),
 }
 
 /**

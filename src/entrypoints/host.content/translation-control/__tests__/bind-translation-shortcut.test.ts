@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import type { PageTranslationManager } from "../page-translation"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { bindTranslationShortcutKey } from "../bind-translation-shortcut"
 
 const { mockGetLocalConfig } = vi.hoisted(() => ({
@@ -9,6 +10,7 @@ const { mockGetLocalConfig } = vi.hoisted(() => ({
 
 vi.mock("@/utils/config/storage", () => ({
   getLocalConfig: mockGetLocalConfig,
+  watchLocalConfig: vi.fn(() => vi.fn()),
 }))
 
 function createManager(isActive = false): PageTranslationManager {
@@ -25,16 +27,23 @@ function press(target: EventTarget, init: KeyboardEventInit) {
   return event
 }
 
+const cleanups: (() => void)[] = []
+async function bind(manager: PageTranslationManager) {
+  const cleanup = await bindTranslationShortcutKey(manager)
+  cleanups.push(cleanup)
+  return cleanup
+}
 describe("bindTranslationShortcutKey", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetLocalConfig.mockResolvedValue({ translate: { page: { shortcut: "Alt+E" } } })
+    mockGetLocalConfig.mockResolvedValue(DEFAULT_CONFIG)
     document.body.innerHTML = ""
   })
+  afterEach(() => cleanups.splice(0).forEach(fn => fn()))
 
   it("starts translation on the shortcut and swallows the key press", async () => {
     const manager = createManager(false)
-    const cleanup = await bindTranslationShortcutKey(manager)
+    const cleanup = await bind(manager)
 
     const event = press(document.body, { key: "e", altKey: true })
 
@@ -48,7 +57,7 @@ describe("bindTranslationShortcutKey", () => {
 
   it("stops translation when it is active", async () => {
     const manager = createManager(true)
-    await bindTranslationShortcutKey(manager)
+    await bind(manager)
 
     press(document.body, { key: "E", altKey: true })
 
@@ -58,7 +67,7 @@ describe("bindTranslationShortcutKey", () => {
 
   it("ignores other keys, extra modifiers and presses inside inputs", async () => {
     const manager = createManager(false)
-    await bindTranslationShortcutKey(manager)
+    await bind(manager)
     const input = document.createElement("input")
     document.body.append(input)
 
@@ -70,9 +79,9 @@ describe("bindTranslationShortcutKey", () => {
   })
 
   it("does nothing when the shortcut is empty", async () => {
-    mockGetLocalConfig.mockResolvedValue({ translate: { page: { shortcut: "" } } })
+    mockGetLocalConfig.mockResolvedValue({ ...DEFAULT_CONFIG, translate: { ...DEFAULT_CONFIG.translate, page: { shortcut: "" } } })
     const manager = createManager(false)
-    const cleanup = await bindTranslationShortcutKey(manager)
+    const cleanup = await bind(manager)
 
     press(document.body, { key: "e", altKey: true })
 

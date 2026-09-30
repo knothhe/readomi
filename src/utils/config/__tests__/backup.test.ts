@@ -5,6 +5,11 @@ import { exportConfigBackup, parseConfigBackup } from "../backup"
 const configured = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "sk-backup", headers: { Authorization: "secret" }, connectionCheck: { ok: true, checkedAt: 1 } })) }
 
 describe("local configuration backups", () => {
+  it("round trips new shortcuts and rejects two actions sharing a key combination", () => {
+    const next = { ...configured, features: { ...configured.features, hoverHotkey: "shift" as const, modeShortcut: "Alt+M", subtitlesShortcut: "Alt+V" } }
+    expect(parseConfigBackup(exportConfigBackup(next)).features).toEqual(next.features)
+    expect(() => parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...next, features: { ...next.features, modeShortcut: configured.translate.page.shortcut } } }))).toThrow("different key combinations")
+  })
   it("round trips secrets, features and prompts while clearing old connection checks", () => {
     const backup = parseConfigBackup(exportConfigBackup(configured))
     expect(backup.providersConfig[0].apiKey).toBe("sk-backup")
@@ -18,7 +23,7 @@ describe("local configuration backups", () => {
     const result = parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...old, version: 1 } }))
     expect(result.providersConfig[0].apiKey).toBe("sk-backup")
     expect(result.features).toEqual(DEFAULT_CONFIG.features)
-    expect(result.version).toBe(2)
+    expect(result.version).toBe(DEFAULT_CONFIG.version)
   })
   it("rejects foreign, malformed and future configurations", () => {
     expect(() => parseConfigBackup("{")).toThrow()

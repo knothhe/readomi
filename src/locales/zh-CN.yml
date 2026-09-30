@@ -363,10 +363,33 @@ configBackup:
 features:
   title: 局部与视频翻译
   hover: 悬停翻译
-  hoverDescription: 鼠标停在段落上，按住 Alt 500 毫秒翻译；再次触发可恢复原文。
+  hoverDescription: 鼠标停在段落上，按快捷键页设置的触发方式翻译；再次触发恢复原文。
   video: 视频字幕翻译
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   mode: 字幕显示方式
 subtitleTranslation:
   pending: 字幕翻译中…
   failed: 字幕翻译失败，下次播放此句时重试。
+
+settingsNavigation:
+  label: 设置分区
+modelDiscovery:
+  fetch: 获取模型
+  loading: 获取中…
+  hint: 从当前服务获取模型列表，也可以手动填写模型 ID。
+  select: 选择模型
+  empty: 服务没有返回可用模型，请手动填写模型 ID。
+  failed: 获取失败，可以重试或手动填写模型 ID。
+  noKey: 请先填写 API Key 和 API 地址；已配置的服务可沿用原密钥。
+translationShortcuts:
+  mode: 切换双语 / 仅译文
+  subtitles: 切换视频字幕
+  hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕开关只影响当前页面，需要先启用视频字幕翻译。
+  hover: 悬停翻译触发方式
+  hoverHint: 鼠标停在段落上，按住触发键或鼠标左键 500 毫秒；再次触发恢复原文。输入框中不触发，拖动鼠标会取消长按。
+  alt: Option / Alt
+  control: Control
+  shift: Shift
+  backtick: 反引号 (`)
+  clickAndHold: 鼠标左键长按
+  conflict: 此快捷键已用于其他操作，请录制不同的组合键。

@@ -3,6 +3,7 @@ import { i18n } from "#imports"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
+import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 
 /** Text-track support follows Read Frog's local subtitle adapter. No hosted services. */
 export function readActiveCueText(track: TextTrack): string {
@@ -155,15 +156,18 @@ export function bootstrapVideoSubtitles() {
   const players = new Map<HTMLVideoElement, Player>()
   let timer: ReturnType<typeof setInterval> | undefined
   let disposed = false
+  let current: Config | null = null
+  let suspended = false
   const reset = () => {
     clearInterval(timer)
     timer = undefined
     players.forEach(player => player.dispose())
     players.clear()
   }
-  const unsubscribe = subscribeLocalConfig((config) => {
+  const reconcile = () => {
     reset()
-    if (disposed || !config?.features.videoSubtitles)
+    const config = current
+    if (disposed || suspended || !config?.features.videoSubtitles)
       return
     const tick = () => {
       for (const [video, player] of players) {
@@ -180,9 +184,25 @@ export function bootstrapVideoSubtitles() {
     }
     tick()
     timer = setInterval(tick, 250)
+  }
+  const unsubscribe = subscribeLocalConfig((config) => {
+    current = config
+    if (!config?.features.videoSubtitles)
+      suspended = false
+    reconcile()
   })
+  const keydown = (event: KeyboardEvent) => {
+    if (!current?.features.videoSubtitles || event.defaultPrevented || event.repeat || isEditableTarget(event.target) || !eventMatchesHotkey(event, current.features.subtitlesShortcut))
+      return
+    event.preventDefault()
+    event.stopPropagation()
+    suspended = !suspended
+    reconcile()
+  }
+  document.addEventListener("keydown", keydown, true)
   return () => {
     disposed = true
+    document.removeEventListener("keydown", keydown, true)
     unsubscribe()
     reset()
   }

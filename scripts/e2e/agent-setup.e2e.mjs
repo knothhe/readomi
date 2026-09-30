@@ -116,6 +116,7 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   assert.deepEqual(stored[0].body, { reasoning_effort: "none" })
 
   // The prompt is its own setting in the quality section.
+  await page.locator("nav a[href=\"#quality\"]").click()
   const quality = page.locator("#quality")
   await quality.getByRole("button", { name: "Edit", exact: true }).click()
   await quality.getByLabel("Prompt template").fill("Translate tersely: {{input}}")
@@ -124,6 +125,7 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   config = await storedConfig(context)
   assert.equal(config.translate.customPromptsConfig.patterns[0]?.prompt, "Translate tersely: {{input}}")
 
+  await page.locator("nav a[href=\"#service\"]").click()
   await section.getByRole("button", { name: "Test connection", exact: true }).click()
   await section.getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
   const confirmation = service.completions().at(-1)

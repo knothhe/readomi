@@ -11,6 +11,13 @@ vi.mock("#imports", () => ({
 }))
 
 describe("shortcut key recorder", () => {
+  it("keeps the previous shortcut when the consumer rejects a conflicting combination", async () => {
+    render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={() => false} />)
+    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder")
+    fireEvent.focus(input)
+    fireEvent.keyDown(document, { key: "m", altKey: true })
+    await waitFor(() => expect(input).toHaveValue("Alt+E"))
+  })
   it("records modifier shortcuts as portable strings", async () => {
     const onChange = vi.fn()
 

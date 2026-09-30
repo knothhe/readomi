@@ -8,7 +8,7 @@ const CLEAR_KEYS = new Set(["Backspace", "Delete"])
 
 export function ShortcutKeyRecorder(
   { shortcutKey: initialShortcutKey, onChange, className, id }:
-  { shortcutKey: string, onChange?: (shortcutKey: string) => void, className?: string, id?: string },
+  { shortcutKey: string, onChange?: (shortcutKey: string) => void | boolean, className?: string, id?: string },
 ) {
   const [inRecording, setInRecording] = useState(false)
   const [draftShortcut, setDraftShortcut] = useState("")
@@ -21,9 +21,9 @@ export function ShortcutKeyRecorder(
     setInRecording(false)
 
     if (nextShortcut !== null) {
-      setDraftShortcut(nextShortcut)
-      setOptimisticShortcut(nextShortcut)
-      onChange?.(nextShortcut)
+      const accepted = onChange?.(nextShortcut) !== false
+      setDraftShortcut(accepted ? nextShortcut : "")
+      setOptimisticShortcut(accepted ? nextShortcut : null)
     }
     else {
       setDraftShortcut("")

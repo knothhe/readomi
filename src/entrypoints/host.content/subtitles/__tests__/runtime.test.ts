@@ -34,6 +34,27 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("toggles subtitles for this page, restores native captions and ignores typing", () => {
+    const configured = { ...config, features: { ...config.features, subtitlesShortcut: "Alt+V" } }
+    update(configured)
+    const press = (target: EventTarget = document) => target.dispatchEvent(new KeyboardEvent("keydown", { key: "v", altKey: true, bubbles: true, cancelable: true }))
+    const input = document.createElement("input")
+    document.body.append(input)
+    press(input)
+    expect(track.mode).toBe("hidden")
+    press()
+    expect(track.mode).toBe("showing")
+    expect(document.querySelector("[data-reading-subtitles]")).toBeNull()
+    expect(configured.features.videoSubtitles).toBe(true)
+    update(configured)
+    expect(document.querySelector("[data-reading-subtitles]")).toBeNull()
+    press()
+    expect(track.mode).toBe("hidden")
+    expect(document.querySelector("[data-reading-subtitles]")).not.toBeNull()
+    cleanup()
+    press()
+    expect(track.mode).toBe("showing")
+  })
   it("cleans VTT markup without executing HTML", () => {
     expect(readActiveCueText({ activeCues: [{ text: "<v Bob>Hello &amp; &lt;world&gt;</v>" }] } as unknown as TextTrack)).toBe("Hello & <world>")
   })

@@ -2,8 +2,9 @@ import { z } from "zod"
 
 import { langCodeISO6393Schema, langLevel } from "@/definitions"
 import { FEATURE_PROVIDER_DEFS } from "@/utils/constants/feature-providers"
+import { normalizePageTranslationShortcut } from "@/utils/page-translation-shortcut"
 import { providersConfigSchema } from "./provider"
-import { translateConfigSchema } from "./translate"
+import { pageTranslationShortcutSchema, translateConfigSchema } from "./translate"
 
 // Language schema
 const languageSchema = z.object({
@@ -18,7 +19,7 @@ const languageSchema = z.object({
  * (utils/config/migrate.ts); a stored config with no path to this version
  * is cleared.
  */
-export const CONFIG_VERSION = 2
+export const CONFIG_VERSION = 3
 
 // Complete config schema
 export const configSchema = z.object({
@@ -32,10 +33,21 @@ export const configSchema = z.object({
   translate: translateConfigSchema,
   features: z.object({
     hoverTranslation: z.boolean().default(false),
+    hoverHotkey: z.enum(["alt", "control", "shift", "backtick", "clickAndHold"]).default("alt"),
+    modeShortcut: pageTranslationShortcutSchema.default(""),
+    subtitlesShortcut: pageTranslationShortcutSchema.default(""),
     videoSubtitles: z.boolean().default(false),
     subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
   }).prefault({}),
 }).superRefine((data, ctx) => {
+  const shortcuts = [data.translate.page.shortcut, data.features.modeShortcut, data.features.subtitlesShortcut].filter(s => s.trim())
+  for (const platform of ["mac", "windows"] as const) {
+    const normalized = shortcuts.map(s => normalizePageTranslationShortcut(s, platform))
+    if (new Set(normalized).size !== normalized.length) {
+      ctx.addIssue({ code: "custom", message: "Translation shortcuts must use different key combinations.", path: ["features"] })
+      break
+    }
+  }
   const providerIdsSet = new Set(data.providersConfig.map(p => p.id))
 
   for (const def of Object.values(FEATURE_PROVIDER_DEFS)) {

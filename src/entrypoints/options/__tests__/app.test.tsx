@@ -11,8 +11,11 @@ import { clearClipboard } from "@/utils/clipboard"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { DEFAULT_TRANSLATE_PROMPT } from "@/utils/constants/prompt"
 import { highlightedPrefixes, isWordPrefixHighlightRegistered, stubHighlightRegistry } from "@/utils/host/__tests__/highlight-registry-fake"
+import { fetchProviderModels } from "@/utils/providers/models"
 import { checkConnection } from "@/utils/providers/test-connection"
 import App from "../app"
+
+vi.mock("@/utils/providers/models", () => ({ fetchProviderModels: vi.fn() }))
 
 vi.mock("@/utils/message", () => ({
   onMessage: vi.fn(() => vi.fn()),
@@ -42,7 +45,8 @@ const configured: Config = {
   })),
 }
 
-async function renderSettings(config: Config = DEFAULT_CONFIG) {
+async function renderSettings(config: Config = DEFAULT_CONFIG, section = "service") {
+  window.history.replaceState(null, "", `#${section}`)
   // The page writes through storage, so storage starts where the atom starts, as it does when the page loads.
   await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
   const store = createStore()
@@ -78,13 +82,40 @@ describe("settings page", () => {
 
     expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "quality", "shortcut", "features", "backup"])
     expect(screen.queryByText(/options\.advanced|options\.appearance/)).toBeNull()
+    expect(screen.getByRole("link", { name: "options.service.title" })).toHaveAttribute("aria-current", "page")
+    expect(screen.queryByRole("heading", { name: "options.reading.title" })).toBeNull()
+    fireEvent.click(screen.getByRole("link", { name: "options.shortcut.title" }))
     // The shortcut is named after the action it runs.
     expect(screen.getByLabelText("options.shortcut.togglePage")).toBeInTheDocument()
   })
 
+  it("stores hover and additional shortcuts, rejects conflicts and supports clearing", async () => {
+    const { store } = await renderSettings(configured, "shortcut")
+    fireEvent.change(screen.getByLabelText("translationShortcuts.hover"), { target: { value: "clickAndHold" } })
+    await waitFor(() => expect(store.get(configAtom).features.hoverHotkey).toBe("clickAndHold"))
+    const input = screen.getByLabelText("translationShortcuts.mode")
+    fireEvent.focus(input)
+    fireEvent.keyDown(document, { key: "e", altKey: true })
+    expect(screen.getByRole("alert")).toHaveTextContent("translationShortcuts.conflict")
+    expect(store.get(configAtom).features.modeShortcut).toBe("")
+    expect(input).toHaveValue("")
+    await act(async () => {
+      await Promise.resolve()
+    })
+    fireEvent.focus(input)
+    fireEvent.keyDown(document, { key: "m", altKey: true })
+    await waitFor(() => expect(store.get(configAtom).features.modeShortcut).toBe("Alt+M"))
+    await act(async () => {
+      await Promise.resolve()
+    })
+    fireEvent.focus(input)
+    fireEvent.keyDown(document, { key: "Delete" })
+    await waitFor(() => expect(store.get(configAtom).features.modeShortcut).toBe(""))
+  })
+
   it("previews each reading group above its settings and follows each change", async () => {
     stubHighlightRegistry()
-    const { store } = await renderSettings(configured)
+    const { store } = await renderSettings(configured, "reading")
     const translationPreview = screen.getByText(/^Reading and experience train your model of the world\.$/).parentElement!
     const englishPreview = screen.getByText(/Even if you forget what you read/)
 
@@ -216,7 +247,7 @@ describe("settings page", () => {
   })
 
   it("edits the prompt in place and stores the built-in text as no custom prompt", async () => {
-    const { store } = await renderSettings(configured)
+    const { store } = await renderSettings(configured, "quality")
     fireEvent.click(screen.getByRole("button", { name: "options.quality.prompt.edit" }))
 
     const template = screen.getByLabelText("options.quality.prompt.template") as HTMLTextAreaElement
@@ -246,10 +277,72 @@ describe("manual service configuration", () => {
   beforeEach(() => {
     fakeBrowser.reset()
     vi.mocked(checkConnection).mockResolvedValue({ ok: true, checkedAt: 1_000 })
+    vi.mocked(fetchProviderModels).mockResolvedValue(["model-a", "model-b"])
   })
   afterEach(() => {
     cleanup()
     vi.clearAllMocks()
+  })
+  it("keeps an unsaved form when switching sections and follows hash navigation", async () => {
+    await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "draft-model" } })
+    fireEvent.click(screen.getByRole("link", { name: "options.reading.title" }))
+    expect(screen.queryByRole("button", { name: "manualService.save" })).toBeNull()
+    fireEvent.click(screen.getByRole("link", { name: "options.service.title" }))
+    expect(screen.getByLabelText("manualService.model")).toHaveValue("draft-model")
+    act(() => {
+      window.history.replaceState(null, "", "#shortcut")
+      window.dispatchEvent(new PopStateEvent("popstate"))
+    })
+    expect(screen.getByRole("link", { name: "options.shortcut.title" })).toHaveAttribute("aria-current", "page")
+  })
+  it("fetches only on click, allows selecting and manually overriding a model without saving", async () => {
+    const { store } = await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    expect(fetchProviderModels).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
+    const select = await screen.findByLabelText("modelDiscovery.select")
+    expect(fetchProviderModels).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "sk-abcdefghijkl", provider: "openai" }), expect.any(AbortSignal))
+    fireEvent.change(select, { target: { value: "model-b" } })
+    expect(screen.getByLabelText("manualService.model")).toHaveValue("model-b")
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "manual-model" } })
+    expect(store.get(configAtom)).toEqual(configured)
+  })
+  it("never reuses a stored key at a different endpoint", async () => {
+    await renderSettings({ ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, headers: { Authorization: "stored-auth" } })) })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.change(screen.getByLabelText("manualService.url"), { target: { value: "https://other.example/v1" } })
+    expect(screen.getByRole("button", { name: "modelDiscovery.fetch" })).toBeDisabled()
+    fireEvent.change(screen.getByLabelText("manualService.key"), { target: { value: "new-key" } })
+    fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
+    await screen.findByLabelText("modelDiscovery.select")
+    expect(fetchProviderModels).toHaveBeenCalledWith(expect.objectContaining({ baseURL: "https://other.example/v1", apiKey: "new-key", headers: undefined }), expect.any(AbortSignal))
+  })
+  it("aborts and ignores a stale response when the address changes", async () => {
+    let resolve!: (models: string[]) => void
+    vi.mocked(fetchProviderModels).mockReturnValue(new Promise(r => resolve = r))
+    await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
+    expect(screen.getByRole("button", { name: "modelDiscovery.loading" })).toBeDisabled()
+    fireEvent.change(screen.getByLabelText("manualService.url"), { target: { value: "https://changed.example/v1" } })
+    expect(vi.mocked(fetchProviderModels).mock.calls[0][1]?.aborted).toBe(true)
+    await act(async () => resolve(["stale-model"]))
+    expect(screen.queryByLabelText("modelDiscovery.select")).toBeNull()
+    expect(screen.getByLabelText("manualService.model")).toHaveValue("gpt-6-luna")
+  })
+  it.each(["empty", "failed"])("keeps manual entry available when discovery is %s", async (state) => {
+    if (state === "empty")
+      vi.mocked(fetchProviderModels).mockResolvedValue([])
+    else
+      vi.mocked(fetchProviderModels).mockRejectedValue(new Error("no endpoint"))
+    await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
+    await screen.findByText(`modelDiscovery.${state}`)
+    expect(screen.getByLabelText("manualService.model")).toHaveValue("gpt-6-luna")
+    expect(screen.getByRole("button", { name: "manualService.save" })).toBeEnabled()
   })
   it("edits the model through a form while retaining the stored key", async () => {
     const { store } = await renderSettings(configured)
@@ -279,7 +372,7 @@ describe("configuration file import", () => {
   it("previews before replacing all settings and clears obsolete provider fields", async () => {
     fakeBrowser.reset()
     const previous = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, temperature: 0.9 })) }
-    const { store } = await renderSettings(previous)
+    const { store } = await renderSettings(previous, "backup")
     const next = { ...configured, features: { ...configured.features, hoverTranslation: true } }
     const file = new File(["backup"], "reading-config.json", { type: "application/json" })
     Object.defineProperty(file, "text", { value: async () => JSON.stringify({ format: "reading-config", config: next }) })
@@ -293,7 +386,7 @@ describe("configuration file import", () => {
   })
   it("rejects an invalid file without changing any stored settings", async () => {
     fakeBrowser.reset()
-    const { store } = await renderSettings(configured)
+    const { store } = await renderSettings(configured, "backup")
     const file = new File(["invalid"], "foreign.json")
     Object.defineProperty(file, "text", { value: async () => "{}" })
     fireEvent.change(screen.getByLabelText("configBackup.import"), { target: { files: [file] } })

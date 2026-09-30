@@ -45,6 +45,11 @@ export async function startFakeService() {
       body += chunk
     requests.push({ method: request.method, url: request.url, authorization: request.headers.authorization, body })
     await heldAnswers
+    if (request.method === "GET" && request.url === "/v1/models") {
+      response.setHeader("Content-Type", "application/json")
+      response.end(JSON.stringify({ data: [{ id: "fake-model" }, { id: "second-model" }] }))
+      return
+    }
     if (request.method === "POST" && request.url === "/v1/chat/completions") {
       const json = JSON.parse(body)
       if (json.model === "rejected-model") {

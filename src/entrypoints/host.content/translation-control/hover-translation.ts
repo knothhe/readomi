@@ -17,14 +17,18 @@ export function bindHoverTranslation(target: Document = document) {
   let session = 0
   let held = false
   let busy = false
+  let mouseStart: { x: number, y: number } | null = null
   const controller = new AbortController()
   const cancel = () => {
     session++
     held = false
+    mouseStart = null
     clearTimeout(timer)
     timer = undefined
   }
   const move = (event: MouseEvent) => {
+    if (mouseStart && Math.hypot(event.clientX - mouseStart.x, event.clientY - mouseStart.y) > 6)
+      cancel()
     const candidate = event.composedPath()[0]
     hovered = candidate instanceof Element ? candidate : null
   }
@@ -49,29 +53,48 @@ export function bindHoverTranslation(target: Document = document) {
       busy = false
     }
   }
-  const keydown = (event: KeyboardEvent) => {
-    if (event.key !== "Alt" || event.ctrlKey || event.metaKey || event.shiftKey) {
-      cancel()
-      return
-    }
-    if (event.repeat || held || busy || event.defaultPrevented || isEditableTarget(event.target))
-      return
-    const element = hovered ?? target.querySelector(`:hover:not(.${CONTENT_WRAPPER_CLASS})`)
-    if (!element)
+  const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null) => {
+    if (!element || held || busy)
       return
     held = true
     const token = ++session
     timer = setTimeout(() => {
       void getLocalConfig().then((config) => {
-        if (config?.features.hoverTranslation && token === session && !controller.signal.aborted && element.isConnected)
+        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !controller.signal.aborted && element.isConnected)
           return translate(element, config)
       }).catch(error => logger.error("Hover configuration failed", error))
     }, 500)
+  }
+  const keydown = (event: KeyboardEvent) => {
+    if (event.repeat)
+      return
+    const hotkey = ({ "Alt": "alt", "Control": "control", "Shift": "shift", "`": "backtick" } as const)[event.key as "Alt" | "Control" | "Shift" | "`"]
+    if (!hotkey || event.metaKey || (event.ctrlKey && hotkey !== "control") || (event.altKey && hotkey !== "alt") || (event.shiftKey && hotkey !== "shift")) {
+      cancel()
+      return
+    }
+    if (event.defaultPrevented || isEditableTarget(event.target))
+      return
+    start(hotkey, hovered ?? target.querySelector(`:hover:not(.${CONTENT_WRAPPER_CLASS})`))
+  }
+  const mousedown = (event: MouseEvent) => {
+    cancel()
+    if (event.button !== 0 || event.defaultPrevented || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey || isEditableTarget(event.target))
+      return
+    const element = event.composedPath()[0]
+    if (!(element instanceof Element) || element.closest("button,a,[role='button']"))
+      return
+    mouseStart = { x: event.clientX, y: event.clientY }
+    start("clickAndHold", element)
   }
   target.addEventListener("mouseover", move, true)
   target.addEventListener("mousemove", move, true)
   target.addEventListener("keydown", keydown, true)
   target.addEventListener("keyup", cancel, true)
+  target.addEventListener("mousedown", mousedown, true)
+  target.addEventListener("mouseup", cancel, true)
+  target.addEventListener("dragstart", cancel, true)
+  target.addEventListener("contextmenu", cancel, true)
   target.addEventListener("visibilitychange", cancel)
   target.defaultView?.addEventListener("blur", cancel)
   return () => {
@@ -81,6 +104,10 @@ export function bindHoverTranslation(target: Document = document) {
     target.removeEventListener("mousemove", move, true)
     target.removeEventListener("keydown", keydown, true)
     target.removeEventListener("keyup", cancel, true)
+    target.removeEventListener("mousedown", mousedown, true)
+    target.removeEventListener("mouseup", cancel, true)
+    target.removeEventListener("dragstart", cancel, true)
+    target.removeEventListener("contextmenu", cancel, true)
     target.removeEventListener("visibilitychange", cancel)
     target.defaultView?.removeEventListener("blur", cancel)
   }

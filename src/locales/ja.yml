@@ -363,10 +363,33 @@ configBackup:
 features:
   title: Paragraph and video translation
   hover: Hover translation
-  hoverDescription: Hover over a paragraph and hold Alt for 500 ms to translate. Trigger again to restore the original.
+  hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
 subtitleTranslation:
   pending: Translating subtitles…
   failed: Translation failed. This cue will be retried when played again.
+
+settingsNavigation:
+  label: Settings sections
+modelDiscovery:
+  fetch: Fetch models
+  loading: Fetching…
+  hint: Fetch models from this service, or enter a model ID manually.
+  select: Select a model
+  empty: The service returned no usable models. Enter a model ID manually.
+  failed: Could not fetch models. Retry or enter a model ID manually.
+  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+translationShortcuts:
+  mode: Switch bilingual / translation only
+  subtitles: Toggle video subtitles
+  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hover: Hover translation trigger
+  hoverHint: Hover over a paragraph and hold the trigger key or left mouse button for 500 ms. Trigger again to restore the original. Text fields are excluded; dragging cancels a mouse hold.
+  alt: Option / Alt
+  control: Control
+  shift: Shift
+  backtick: Backtick (`)
+  clickAndHold: Hold left mouse button
+  conflict: This shortcut is used by another action. Record a different combination.

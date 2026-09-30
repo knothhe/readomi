@@ -115,7 +115,7 @@ function buildBody(api: RequestApi, provider: ProviderConfig, request: TextReque
   }
 }
 
-function buildHeaders(api: RequestApi, provider: ProviderConfig): Record<string, string> {
+export function buildHeaders(api: RequestApi, provider: Pick<ProviderConfig, "apiKey" | "headers">): Record<string, string> {
   const headers = new Headers({ "Content-Type": "application/json" })
   if (provider.apiKey) {
     switch (api) {
