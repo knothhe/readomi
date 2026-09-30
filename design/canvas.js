@@ -6,6 +6,17 @@
 window.JIANDAO_CANVAS = {
   title: "Jiandao Design",
   boards: [
+    { file: "Service-Form.html", title: "翻译服务 · 手动配置", x: 0, y: 6900, w: 720, h: 720 },
+    { file: "Service-Form-Failed.html", title: "翻译服务 · 手动配置失败", x: 800, y: 6900, w: 720, h: 720 },
+    { file: "Config-Backup.html", title: "配置 · 导入导出", x: 1600, y: 6900, w: 720, h: 720 },
+    { file: "Config-Import-Preview.html", title: "配置 · 导入预览", x: 2400, y: 6900, w: 720, h: 720 },
+    { file: "Config-Import-Failed.html", title: "配置 · 导入失败", x: 0, y: 7700, w: 720, h: 720 },
+    { file: "Translation-Features.html", title: "设置 · 悬停与视频字幕", x: 800, y: 7700, w: 720, h: 720 },
+    { file: "Page-Hover.html", title: "页面 · 悬停段落翻译", x: 1600, y: 7700, w: 720, h: 720 },
+    { file: "Video-Subtitles.html", title: "视频 · 双语字幕", x: 2400, y: 7700, w: 720, h: 720 },
+    { file: "Video-Pending.html", title: "视频 · 翻译中", x: 0, y: 8500, w: 720, h: 720 },
+    { file: "Video-Failed.html", title: "视频 · 翻译失败", x: 800, y: 8500, w: 720, h: 720 },
+
     { file: "Popup-Setup-Agent.html", title: "弹窗 · 未配置（引导去设置页）", x: 0, y: 0, w: 320, h: 300 },
     { file: "Main.html", title: "弹窗 · 就绪", x: 400, y: 0, w: 320, h: 300 },
     { file: "Popup-Translating.html", title: "弹窗 · 翻译中", x: 800, y: 0, w: 320, h: 300 },
@@ -17,7 +28,7 @@ window.JIANDAO_CANVAS = {
     { file: "Palette.html", title: "配色 · 浅色 / 深色", x: 2160, y: 780, w: 1040, h: 640 },
     { file: "Page-Emphasis.html", title: "页面内 · 英文词首加粗（未翻译）：每个英文单词的前一半加粗，标题不变", x: 3280, y: 780, w: 880, h: 600 },
     { file: "Page-Emphasis-Translated.html", title: "页面内 · 英文词首加粗（双语对照）：原文按同一规则加粗，中文译文和标题不变", x: 4240, y: 780, w: 880, h: 680 },
-    { file: "Settings.html", title: "设置 · 单页（翻译服务、阅读、译文质量、快捷键；无高级、无外观）", x: 0, y: 1760, w: 1120, h: 1160 },
+    { file: "Settings.html", title: "设置 · 单页（翻译服务、阅读、译文质量、快捷键；含局部与视频翻译、配置备份）", x: 0, y: 1760, w: 1120, h: 1160 },
     { file: "Adaptive.html", title: "去掉高级和外观：各项改由什么自动决定", x: 1200, y: 1760, w: 1040, h: 840 },
     { file: "Settings-Emphasis.html", title: "阅读 · 英文词首加粗已打开：两段预览里的英文都加粗，中文不变", x: 2320, y: 1760, w: 720, h: 560 },
     { file: "Settings-Translation-Only.html", title: "阅读 · 仅译文：预览只剩译文；译文样式只作用于双语对照，所以隐藏", x: 3120, y: 1760, w: 720, h: 440 },
@@ -35,7 +46,7 @@ window.JIANDAO_CANVAS = {
   notes: [
     { text: "页面内、图标和配色：藏青是原文和操作，朱红只标译文", x: 0, y: 520, maxW: 3200 },
     { text: "弹窗：一句话式的顺序，从哪种语言 → 译成什么 → 怎么显示 → 翻译", x: 0, y: -260, maxW: 1520 },
-    { text: "设置：一页到底，按使用频率排序，没有需要用户调的参数", x: 0, y: 1500, maxW: 2240 },
+    { text: "设置：一页到底，按使用频率排序，支持手动配置和 agent 配置，可备份和恢复", x: 0, y: 1500, maxW: 2240 },
     { text: "翻译服务：平时只显示预览，需要时原地出现编辑框；配置只含服务本身", x: 0, y: 3760, maxW: 2480 },
     { text: "翻译服务一节的各个状态", x: 0, y: 4800, maxW: 5520 },
     { text: "译文质量：提示词平时只显示名称，需要时原地展开", x: 0, y: 5640, maxW: 1520 },
