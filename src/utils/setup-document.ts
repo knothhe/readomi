@@ -9,7 +9,7 @@ import { getUniqueName } from "@/utils/name"
 import { getRequestHost, resolveBaseURL, resolveRequestApi } from "@/utils/providers/request"
 
 /**
- * The setup document is the only way a translation service gets configured.
+ * The setup document is shared by agent setup and manual service configuration.
  * An agent writes it, the reader pastes it into the settings page, Jiandao
  * previews and applies it. It describes the service and nothing else:
  * languages, display and the prompt are separate settings. It describes

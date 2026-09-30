@@ -17,6 +17,7 @@ import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
 import { applySetupDocument, describeSetupDocument, describesThinkingOff, exportSetupDocument, maskApiKey, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
 import { cn } from "@/utils/styles/utils"
 import { SettingsSection } from "../../components/settings-section"
+import { ManualServiceForm } from "./manual-form"
 
 const COPIED_FEEDBACK_MS = 2000
 const MONO = "font-mono text-xs text-muted-foreground"
@@ -33,15 +34,28 @@ export function ServiceSection() {
   const config = useAtomValue(configAtom)
   const active = config.providersConfig.find(p => p.id === config.translate.providerId)
   const configured = !!active?.apiKey?.trim()
+  const [manual, setManual] = useState(false)
   const [editing, setEditing] = useState(false)
   const configReset = useConfigReset()
 
   return (
     <SettingsSection id="service" title={i18n.t("options.service.title")}>
       <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-card px-[18px] py-4">
-        {configured && active && !editing
-          ? <ServicePreview provider={active} onEdit={() => setEditing(true)} />
-          : <ServiceEditor current={configured ? active : undefined} afterReset={configReset} onDone={() => setEditing(false)} />}
+        <div className="flex gap-2">
+          <Button variant="outline" aria-pressed={manual} onClick={() => setManual(true)}>{i18n.t("manualService.manual")}</Button>
+          <Button variant="outline" aria-pressed={!manual} onClick={() => setManual(false)}>{i18n.t("manualService.agent")}</Button>
+        </div>
+        {manual
+          ? (
+              <ManualServiceForm onDone={() => {
+                setManual(false)
+                setEditing(false)
+              }}
+              />
+            )
+          : configured && active && !editing
+            ? <ServicePreview provider={active} onEdit={() => setEditing(true)} />
+            : <ServiceEditor current={configured ? active : undefined} afterReset={configReset} onDone={() => setEditing(false)} />}
       </div>
     </SettingsSection>
   )

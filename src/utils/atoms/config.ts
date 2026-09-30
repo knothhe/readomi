@@ -116,6 +116,12 @@ export const writeConfigAtom = atom(
     }),
 )
 
+/** A validated backup replaces all fields, including optional provider settings. */
+export const replaceConfigAtom = atom(null, (get, set, candidate: Config) => {
+  const next = configSchema.parse(candidate)
+  return queueConfigWrite(get, set, next, async () => ({ next }))
+})
+
 /** Replaces the stored config with the default config, whatever is stored now. */
 export const resetConfigAtom = atom(
   null,

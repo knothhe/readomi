@@ -9,12 +9,16 @@ import { onMessage, sendMessage } from "@/utils/message"
 import { areSamePageTranslationOrigin } from "@/utils/url"
 import { setupUrlChangeListener } from "./listen"
 import { mountHostToast } from "./mount-host-toast"
+import { bootstrapVideoSubtitles } from "./subtitles/runtime"
 import { bindTranslationShortcutKey } from "./translation-control/bind-translation-shortcut"
 import { watchConfigChanges } from "./translation-control/handle-config-change"
+import { bindHoverTranslation } from "./translation-control/hover-translation"
 import { PageTranslationManager } from "./translation-control/page-translation"
 
 export async function bootstrapHostContent(ctx: ContentScriptContext) {
   ensurePresetStyles(document)
+  const cleanupHoverTranslation = bindHoverTranslation()
+  const cleanupVideoSubtitles = bootstrapVideoSubtitles()
 
   const cleanupUrlListener = setupUrlChangeListener()
 
@@ -102,6 +106,8 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
     : () => {}
 
   ctx.onInvalidated(() => {
+    cleanupHoverTranslation()
+    cleanupVideoSubtitles()
     removeHostToast()
     cleanupUrlListener()
     cleanupTranslationShortcut()

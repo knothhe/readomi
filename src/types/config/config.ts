@@ -18,7 +18,7 @@ const languageSchema = z.object({
  * (utils/config/migrate.ts); a stored config with no path to this version
  * is cleared.
  */
-export const CONFIG_VERSION = 1
+export const CONFIG_VERSION = 2
 
 // Complete config schema
 export const configSchema = z.object({
@@ -30,6 +30,11 @@ export const configSchema = z.object({
     wordPrefixEmphasis: z.boolean().default(false),
   }).prefault({}),
   translate: translateConfigSchema,
+  features: z.object({
+    hoverTranslation: z.boolean().default(false),
+    videoSubtitles: z.boolean().default(false),
+    subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
+  }).prefault({}),
 }).superRefine((data, ctx) => {
   const providerIdsSet = new Set(data.providersConfig.map(p => p.id))
 

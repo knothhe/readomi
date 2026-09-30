@@ -1,10 +1,10 @@
 # Setting up Jiandao with an agent
 
 This guide is written for a coding agent (Claude Code, Codex, or similar)
-acting on behalf of a person who uses Jiandao. Jiandao has no settings form
-for the translation service. The service is configured by a small JSON
-document that you produce, verify against the real API, and place on the
-person's clipboard. The person pastes it into the settings page, checks a
+acting on behalf of a person who uses this extension. The settings page
+also supports manual service configuration and local configuration backups.
+This optional agent flow uses a small JSON document that you produce,
+verify against the real API, and place on the person's clipboard. The person pastes it into the settings page, checks a
 preview and applies it.
 
 Jiandao runs entirely in the browser. It has no server and no account. Page

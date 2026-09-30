@@ -73,10 +73,10 @@ describe("settings page", () => {
     vi.unstubAllGlobals()
   })
 
-  it("has four sections in usage order and no advanced or appearance settings", async () => {
+  it("has configuration and translation feature sections and no advanced or appearance settings", async () => {
     const { container } = await renderSettings(configured)
 
-    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "quality", "shortcut"])
+    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "quality", "shortcut", "features", "backup"])
     expect(screen.queryByText(/options\.advanced|options\.appearance/)).toBeNull()
     // The shortcut is named after the action it runs.
     expect(screen.getByLabelText("options.shortcut.togglePage")).toBeInTheDocument()
@@ -239,5 +239,66 @@ describe("settings page", () => {
       fireEvent.click(screen.getByRole("button", { name: "options.quality.prompt.apply" }))
     })
     expect(store.get(configAtom).translate.customPromptsConfig).toEqual({ promptId: null, patterns: [] })
+  })
+})
+
+describe("manual service configuration", () => {
+  beforeEach(() => {
+    fakeBrowser.reset()
+    vi.mocked(checkConnection).mockResolvedValue({ ok: true, checkedAt: 1_000 })
+  })
+  afterEach(() => {
+    cleanup()
+    vi.clearAllMocks()
+  })
+  it("edits the model through a form while retaining the stored key", async () => {
+    const { store } = await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    expect(screen.getByLabelText("manualService.key")).toHaveValue("")
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "my-local-model" } })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
+    await waitFor(() => expect(store.get(configAtom).providersConfig.find(p => p.id === store.get(configAtom).translate.providerId)?.model).toBe("my-local-model"))
+    expect(store.get(configAtom).providersConfig[0].apiKey).toBe("sk-abcdefghijkl")
+  })
+  it("does not replace the working service when a manual connection check fails", async () => {
+    vi.mocked(checkConnection).mockResolvedValue({ ok: false, checkedAt: 1_000, error: "HTTP 401" })
+    const { store } = await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "bad-model" } })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("HTTP 401"))
+    expect(store.get(configAtom).providersConfig).toEqual(configured.providersConfig)
+  })
+})
+
+describe("configuration file import", () => {
+  afterEach(() => {
+    cleanup()
+    vi.clearAllMocks()
+  })
+  it("previews before replacing all settings and clears obsolete provider fields", async () => {
+    fakeBrowser.reset()
+    const previous = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, temperature: 0.9 })) }
+    const { store } = await renderSettings(previous)
+    const next = { ...configured, features: { ...configured.features, hoverTranslation: true } }
+    const file = new File(["backup"], "reading-config.json", { type: "application/json" })
+    Object.defineProperty(file, "text", { value: async () => JSON.stringify({ format: "reading-config", config: next }) })
+    fireEvent.change(screen.getByLabelText("configBackup.import"), { target: { files: [file] } })
+    await screen.findByRole("button", { name: "configBackup.apply" })
+    expect(store.get(configAtom).features.hoverTranslation).toBe(false)
+    fireEvent.click(screen.getByRole("button", { name: "configBackup.apply" }))
+    await screen.findByRole("status")
+    expect(store.get(configAtom).features.hoverTranslation).toBe(true)
+    expect(store.get(configAtom).providersConfig[0].temperature).toBeUndefined()
+  })
+  it("rejects an invalid file without changing any stored settings", async () => {
+    fakeBrowser.reset()
+    const { store } = await renderSettings(configured)
+    const file = new File(["invalid"], "foreign.json")
+    Object.defineProperty(file, "text", { value: async () => "{}" })
+    fireEvent.change(screen.getByLabelText("configBackup.import"), { target: { files: [file] } })
+    await screen.findByRole("alert")
+    expect(store.get(configAtom)).toEqual(configured)
+    expect(screen.queryByRole("button", { name: "configBackup.apply" })).toBeNull()
   })
 })

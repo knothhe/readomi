@@ -20,6 +20,7 @@ export const DEFAULT_CONFIG: Config = {
   reading: {
     wordPrefixEmphasis: false,
   },
+  features: { hoverTranslation: false, videoSubtitles: false, subtitleMode: "bilingual" },
   translate: {
     providerId: "openai-default",
     mode: "bilingual",

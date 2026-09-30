@@ -107,3 +107,11 @@ pnpm build
 ## License
 
 Jiandao is a modified version of Read Frog. Thanks to the Read Frog authors and contributors for the original work. Jiandao is distributed under the GNU General Public License version 3, the same license as upstream. See [LICENSE](./LICENSE).
+
+## Local features in this fork
+
+The existing visual style is retained. Translation services can be configured with a form or with the optional agent JSON flow. Configuration backups are local JSON files, include API keys, and replace all settings after validation and confirmation. Read Frog’s interaction and text-track adapter informed the local hover and subtitle implementation.
+
+Enable hover translation in Settings, then hover over a paragraph and hold Alt (Option on macOS) for 500 ms. Trigger again to restore the original. Video translation supports enabled YouTube captions and HTML5 subtitle tracks, using the configured AI API; current-cue translation has API latency. Both features are off by default.
+
+There are no accounts, login, cloud synchronization, hosted translation, speech transcription, video summaries or subtitle downloads. Settings and caches stay in browser-local storage. Read Frog configuration files are not accepted as this fork’s backups. The project name and icons remain inherited until a new brand is specified.

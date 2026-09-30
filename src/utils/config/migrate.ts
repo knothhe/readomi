@@ -16,7 +16,9 @@ export type ConfigMigration = (config: Record<string, unknown>) => Record<string
  * are kept for every version a released build wrote, so an install that
  * skipped several releases still reaches the current shape.
  */
-export const CONFIG_MIGRATIONS: Readonly<Record<number, ConfigMigration>> = {}
+export const CONFIG_MIGRATIONS: Readonly<Record<number, ConfigMigration>> = {
+  2: config => ({ ...config, features: { hoverTranslation: false, videoSubtitles: false, subtitleMode: "bilingual", ...(isRecord(config.features) ? config.features : {}) } }),
+}
 
 /**
  * Jiandao 1.1.0 stored configs without `version`; their shape is version 1.

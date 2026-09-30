@@ -337,3 +337,36 @@ languages:
   wls: 월리스어
   rar: 라로통가어
   hif: 피지 힌디어
+
+manualService:
+  manual: Manual setup
+  agent: Agent setup
+  type: Service type
+  name: Name
+  url: API URL
+  key: API Key
+  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  model: Model
+  api: Request format
+  save: Test and save
+configBackup:
+  title: Configuration backup
+  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  export: Export configuration
+  import: Import configuration
+  preview: "Ready to import: $1"
+  service: "Translation service: $1 · $2"
+  apply: Replace all settings
+  cancel: Cancel
+  saved: Configuration imported.
+  failed: Import failed. Current settings have not changed.
+features:
+  title: Paragraph and video translation
+  hover: Hover translation
+  hoverDescription: Hover over a paragraph and hold Alt for 500 ms to translate. Trigger again to restore the original.
+  video: Video subtitle translation
+  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  mode: Subtitle display mode
+subtitleTranslation:
+  pending: Translating subtitles…
+  failed: Translation failed. This cue will be retried when played again.

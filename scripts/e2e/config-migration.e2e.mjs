@@ -109,7 +109,7 @@ it("user updates from a build whose config cannot be migrated: Given the 1.0 con
 
   const stored = await worker.evaluate(() => chrome.storage.local.get(null))
   assert.deepEqual(Object.keys(stored).sort(), ["config", "config$"], "nothing but the new config is left")
-  assert.equal(stored.config.version, 1)
+  assert.equal(stored.config.version, 2)
   assert.equal(stored.config.providersConfig.some(provider => provider.apiKey), false, "the old key is gone")
   assert.equal(typeof stored.config$.resetAt, "number", "the reset is recorded")
 
@@ -133,14 +133,14 @@ it("user updates from 1.1.0: Given its config without a version, When the extens
   const current = await launchBrowser()
   context = current.context
   await configureService(current.page, current.extensionId, setupDocumentFor(service.origin))
-  const { version: _, ...unversioned } = await storedConfig(context)
+  const { version: _, features: _features, ...unversioned } = await storedConfig(context)
   await context.close()
   context = undefined
 
   const { worker } = await updateFrom({ config: unversioned, config$: { schemaVersion: 3, lastModifiedAt: 1 } })
 
   const config = await storedConfig(context)
-  assert.deepEqual(config, { ...unversioned, version: 1 })
+  assert.deepEqual(config, { ...unversioned, version: 2, features: { hoverTranslation: false, videoSubtitles: false, subtitleMode: "bilingual" } })
   const meta = await worker.evaluate(async () => (await chrome.storage.local.get("config$")).config$)
   assert.equal(meta.resetAt, undefined, "no reset is recorded")
 })

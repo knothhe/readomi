@@ -1,4 +1,6 @@
 import { useEffect } from "react"
+import { BackupSection } from "./sections/backup"
+import { FeaturesSection } from "./sections/features"
 import { SettingsHeader } from "./sections/header"
 import { QualitySection } from "./sections/quality"
 import { ReadingSection } from "./sections/reading"
@@ -28,6 +30,8 @@ export default function App() {
       <ReadingSection />
       <QualitySection />
       <ShortcutSection />
+      <FeaturesSection />
+      <BackupSection />
     </main>
   )
 }

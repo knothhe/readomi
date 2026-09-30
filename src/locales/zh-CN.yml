@@ -337,3 +337,36 @@ languages:
   wls: 瓦利斯语
   rar: 拉罗汤加语
   hif: 斐济印地语
+
+manualService:
+  manual: 手动配置
+  agent: agent 配置
+  type: 服务类型
+  name: 名称
+  url: API 地址
+  key: API Key
+  keyHint: 本地无鉴权服务可填写 local；修改时留空沿用原密钥。
+  model: 模型
+  api: 请求格式
+  save: 测试并保存
+configBackup:
+  title: 配置备份
+  description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
+  export: 导出配置
+  import: 导入配置
+  preview: 待导入：$1
+  service: 翻译服务：$1 · $2
+  apply: 替换全部设置
+  cancel: 取消
+  saved: 配置已导入。
+  failed: 导入失败，当前设置未更改。
+features:
+  title: 局部与视频翻译
+  hover: 悬停翻译
+  hoverDescription: 鼠标停在段落上，按住 Alt 500 毫秒翻译；再次触发可恢复原文。
+  video: 视频字幕翻译
+  videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
+  mode: 字幕显示方式
+subtitleTranslation:
+  pending: 字幕翻译中…
+  failed: 字幕翻译失败，下次播放此句时重试。
