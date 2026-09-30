@@ -1,34 +1,38 @@
 import type { ContentScriptContext } from "#imports"
-import type { Config } from "@/types/config/config"
-import { DEFAULT_CONFIG } from "@/utils/constants/config"
+import { subscribeLocalConfig } from "@/utils/config/storage"
+import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translate"
 import { detectPageLanguageLightweight } from "@/utils/content/page-language"
 import { ensurePresetStyles } from "@/utils/host/translate/ui/style-injector"
+import { createWordPrefixEmphasisController } from "@/utils/host/word-prefix-emphasis"
 import { logger } from "@/utils/logger"
 import { onMessage, sendMessage } from "@/utils/message"
 import { areSamePageTranslationOrigin } from "@/utils/url"
 import { setupUrlChangeListener } from "./listen"
 import { mountHostToast } from "./mount-host-toast"
 import { bindTranslationShortcutKey } from "./translation-control/bind-translation-shortcut"
-import { registerNodeTranslationTriggers } from "./translation-control/node-translation"
+import { watchConfigChanges } from "./translation-control/handle-config-change"
 import { PageTranslationManager } from "./translation-control/page-translation"
 
-export async function bootstrapHostContent(ctx: ContentScriptContext, initialConfig: Config | null) {
+export async function bootstrapHostContent(ctx: ContentScriptContext) {
   ensurePresetStyles(document)
 
   const cleanupUrlListener = setupUrlChangeListener()
 
   const removeHostToast = window === window.top ? mountHostToast() : () => {}
 
-  const teardownNodeTranslation = registerNodeTranslationTriggers()
-
-  const preloadConfig = initialConfig?.translate.page.preload ?? DEFAULT_CONFIG.translate.page.preload
   const manager = new PageTranslationManager({
     root: null,
-    rootMargin: `${preloadConfig.margin}px`,
-    threshold: preloadConfig.threshold,
+    rootMargin: `${PRELOAD_MARGIN_PX}px`,
+    threshold: PRELOAD_THRESHOLD,
   })
 
-  const cleanupPageTranslationTriggers = manager.registerPageTranslationTriggers()
+  // Translate the page again when the popup or the options page changes the translation mode.
+  // A change before this point needs no action: page translation starts later and reads the current config.
+  const unwatchConfig = watchConfigChanges(manager)
+
+  // Turn the word-prefix emphasis on and off when the reader changes the setting.
+  const wordPrefixEmphasis = createWordPrefixEmphasisController(document)
+  const unsubscribeWordPrefixEmphasis = subscribeLocalConfig(config => wordPrefixEmphasis.setEnabled(config?.reading.wordPrefixEmphasis === true))
 
   const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager)
 
@@ -100,9 +104,10 @@ export async function bootstrapHostContent(ctx: ContentScriptContext, initialCon
   ctx.onInvalidated(() => {
     removeHostToast()
     cleanupUrlListener()
-    teardownNodeTranslation()
-    cleanupPageTranslationTriggers()
     cleanupTranslationShortcut()
+    unwatchConfig()
+    unsubscribeWordPrefixEmphasis()
+    wordPrefixEmphasis.setEnabled(false)
     cleanupTranslationStateListener()
     cleanupFrameTranslationStateListener()
     cleanupDetectedLanguageRefreshListener()

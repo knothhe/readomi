@@ -1,8 +1,6 @@
 import type { Config } from "@/types/config/config"
-import { isLLMProviderConfig } from "@/types/config/provider"
 import { getLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
-import { resolveProviderConfig } from "@/utils/constants/feature-providers"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { hasNoWalkAncestor, isDontWalkIntoAndDontTranslateAsChildElement, isDontWalkIntoButTranslateAsChildElement, isHTMLElement } from "@/utils/host/dom/filter"
 import { deepQueryTopLevelSelector } from "@/utils/host/dom/find"
@@ -10,6 +8,7 @@ import { walkAndLabelElement } from "@/utils/host/dom/traversal"
 import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
 import { translateTextForPageTitle } from "@/utils/host/translate/translate-variants"
+import { resetTranslationProgress } from "@/utils/host/translate/ui/translation-progress"
 import { getOrCreateWebPageContext } from "@/utils/host/translate/webpage-context"
 import { logger } from "@/utils/logger"
 import { sendMessage } from "@/utils/message"
@@ -41,16 +40,9 @@ interface IPageTranslationManager {
    * the tab-level page translation session.
    */
   restart: () => Promise<void>
-
-  /**
-   * Registers page translation triggers
-   */
-  registerPageTranslationTriggers: () => () => void
 }
 
 export class PageTranslationManager implements IPageTranslationManager {
-  private static readonly MAX_DURATION = 500
-  private static readonly MOVE_THRESHOLD = 30 * 30
   private static readonly DEFAULT_INTERSECTION_OPTIONS: SimpleIntersectionOptions = {
     root: null,
     rootMargin: "600px",
@@ -61,6 +53,8 @@ export class PageTranslationManager implements IPageTranslationManager {
   private intersectionObserver: IntersectionObserver | null = null
   private mutationObservers: MutationObserver[] = []
   private walkId: string | null = null
+  /** Aborts when the walk ends, so that its pending translations no longer change the page. */
+  private walkController: AbortController | null = null
   private intersectionOptions: IntersectionObserverInit
   private walkBlockedElementsCache = new WeakSet<HTMLElement>()
   private titleObserver: MutationObserver | null = null
@@ -105,22 +99,23 @@ export class PageTranslationManager implements IPageTranslationManager {
       return
     }
 
-    const providerConfig = resolveProviderConfig(config, "translate")
-
     await sendMessage("setAndNotifyPageTranslationStateChangedByManager", {
       enabled: true,
       url: window.location.href,
     })
 
     this.isPageTranslating = true
+    resetTranslationProgress()
     await this.primeDocumentTitleContext(
-      config.translate.enableAIContentAware && isLLMProviderConfig(providerConfig),
+      config.translate.enableAIContentAware,
     )
     this.startDocumentTitleTracking()
 
     // Listen to existing elements when they enter the viewport
     const walkId = getRandomUUID()
     this.walkId = walkId
+    const walkController = new AbortController()
+    this.walkController = walkController
     this.intersectionObserver = new IntersectionObserver(async (entries, observer) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -131,7 +126,7 @@ export class PageTranslationManager implements IPageTranslationManager {
                 logger.error("Global config is not initialized")
                 return
               }
-              void translateWalkedElement(entry.target, walkId, currentConfig)
+              void translateWalkedElement(entry.target, walkId, currentConfig, false, walkController.signal)
             }
           }
           observer.unobserve(entry.target)
@@ -140,7 +135,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     }, this.intersectionOptions)
 
     // Initialize walkability state for existing elements
-    this.addWalkBlockedElements(document.body, config)
+    this.addWalkBlockedElements(document.body)
     await this.observeTopLevelParagraphs(document.body, config)
 
     // Start observing mutations from document.body and all shadow roots
@@ -176,8 +171,11 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     this.isPageTranslating = false
     this.walkId = null
+    this.walkController?.abort()
+    this.walkController = null
     this.walkBlockedElementsCache = new WeakSet()
     this.stopDocumentTitleTracking()
+    resetTranslationProgress()
 
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect()
@@ -187,64 +185,6 @@ export class PageTranslationManager implements IPageTranslationManager {
     this.mutationObservers = []
 
     void removeAllTranslatedWrapperNodes()
-  }
-
-  registerPageTranslationTriggers(): () => void {
-    let startTime = 0
-    let startTouches: TouchList | null = null
-
-    const reset = () => {
-      startTime = 0
-      startTouches = null
-    }
-
-    const onStart = (e: TouchEvent) => {
-      if (e.touches.length === 4) {
-        startTime = performance.now()
-        startTouches = e.touches
-      }
-      else {
-        reset()
-      }
-    }
-
-    const onMove = (e: TouchEvent) => {
-      if (!startTouches)
-        return
-      if (e.touches.length !== 4)
-        return reset()
-
-      for (let i = 0; i < 4; i++) {
-        const dx = e.touches[i].clientX - startTouches[i].clientX
-        const dy = e.touches[i].clientY - startTouches[i].clientY
-        if (dx * dx + dy * dy > PageTranslationManager.MOVE_THRESHOLD)
-          return reset()
-      }
-    }
-
-    const onEnd = () => {
-      if (!startTouches)
-        return
-      if (performance.now() - startTime < PageTranslationManager.MAX_DURATION) {
-        this.isPageTranslating
-          ? this.stop()
-          : void this.start()
-      }
-      reset()
-    }
-
-    document.addEventListener("touchstart", onStart, { passive: true })
-    document.addEventListener("touchmove", onMove, { passive: true })
-    document.addEventListener("touchend", onEnd, { passive: true })
-    document.addEventListener("touchcancel", reset, { passive: true })
-
-    // Teardown: remove all touch listeners
-    return () => {
-      document.removeEventListener("touchstart", onStart)
-      document.removeEventListener("touchmove", onMove)
-      document.removeEventListener("touchend", onEnd)
-      document.removeEventListener("touchcancel", reset)
-    }
   }
 
   private shouldManageDocumentTitle(): boolean {
@@ -382,19 +322,19 @@ export class PageTranslationManager implements IPageTranslationManager {
     }
 
     // Skip if container has an ancestor that should not be walked into
-    if (hasNoWalkAncestor(container, config))
+    if (hasNoWalkAncestor(container))
       return
 
     walkAndLabelElement(container, this.walkId, config)
     // if container itself has paragraph and the id
-    if (container.hasAttribute("data-vibe-reading-paragraph") && container.getAttribute("data-vibe-reading-walked") === this.walkId) {
+    if (container.hasAttribute("data-jiandao-paragraph") && container.getAttribute("data-jiandao-walked") === this.walkId) {
       observer.observe(container)
       return
     }
 
     const paragraphs = this.collectParagraphElementsDeep(container, this.walkId)
     const topLevelParagraphs = paragraphs.filter((el) => {
-      const ancestor = el.parentElement?.closest("[data-vibe-reading-paragraph]")
+      const ancestor = el.parentElement?.closest("[data-jiandao-paragraph]")
       // keep it if either:
       //  • no paragraph ancestor at all, or
       //  • the ancestor is *not* inside container
@@ -410,7 +350,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     const result: HTMLElement[] = []
 
     const collectFromContainer = (root: HTMLElement | Document | ShadowRoot) => {
-      const elements = root.querySelectorAll<HTMLElement>(`[data-vibe-reading-paragraph][data-vibe-reading-walked="${CSS.escape(walkId)}"]`)
+      const elements = root.querySelectorAll<HTMLElement>(`[data-jiandao-paragraph][data-jiandao-walked="${CSS.escape(walkId)}"]`)
       result.push(...[...elements])
     }
 
@@ -441,18 +381,18 @@ export class PageTranslationManager implements IPageTranslationManager {
    * Track the same blocked states that the traversal skips, so hidden accordion
    * panels can be re-walked when the site reveals an existing subtree.
    */
-  private isWalkBlockedElement(element: HTMLElement, config: Config): boolean {
+  private isWalkBlockedElement(element: HTMLElement): boolean {
     return isDontWalkIntoButTranslateAsChildElement(element)
-      || isDontWalkIntoAndDontTranslateAsChildElement(element, config)
+      || isDontWalkIntoAndDontTranslateAsChildElement(element)
   }
 
   /**
    * Handle attribute changes and only trigger observation
    * when element transitions from blocked to walkable.
    */
-  private didChangeToWalkable(element: HTMLElement, config: Config): boolean {
+  private didChangeToWalkable(element: HTMLElement): boolean {
     const wasWalkBlocked = this.walkBlockedElementsCache.has(element)
-    const isWalkBlockedNow = this.isWalkBlockedElement(element, config)
+    const isWalkBlockedNow = this.isWalkBlockedElement(element)
 
     // Update cache with current state
     if (isWalkBlockedNow) {
@@ -468,8 +408,8 @@ export class PageTranslationManager implements IPageTranslationManager {
   /**
    * Initialize walkability state for an element and its descendants
    */
-  private addWalkBlockedElements(element: HTMLElement, config: Config): void {
-    const walkBlockedElements = deepQueryTopLevelSelector(element, el => this.isWalkBlockedElement(el, config))
+  private addWalkBlockedElements(element: HTMLElement): void {
+    const walkBlockedElements = deepQueryTopLevelSelector(element, el => this.isWalkBlockedElement(el))
     walkBlockedElements.forEach(el => this.walkBlockedElementsCache.add(el))
   }
 
@@ -503,7 +443,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       if (rec.type === "childList") {
         rec.addedNodes.forEach((node) => {
           if (isHTMLElement(node)) {
-            this.addWalkBlockedElements(node, config)
+            this.addWalkBlockedElements(node)
             void this.observeTopLevelParagraphs(node, config)
             this.observeIsolatedDescendantsMutations(node)
           }
@@ -511,7 +451,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       }
       else if (this.isWalkabilityAttributeMutation(rec)) {
         const el = rec.target
-        if (isHTMLElement(el) && this.didChangeToWalkable(el, config)) {
+        if (isHTMLElement(el) && this.didChangeToWalkable(el)) {
           void this.observeTopLevelParagraphs(el, config)
         }
       }

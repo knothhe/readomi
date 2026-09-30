@@ -1,6 +1,10 @@
 import { defineConfig } from "wxt"
 
-const chromeExtensionKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw2KhiXO2vySZtPu5pNSbyKhYavh8Be7gXmCZt8aJf6tQ/L3JK0qzL+3JSc/o20td3Jw+B2Dcw+EI93NAZr24xKnTNXQiJpuIuHb8xLXD0Ra/HrTVi4TJIhPdESogoG4uL6CD/F3TxfZJ2trX4Bt9cdAw1RGGeU+xU0g+YFfEka4ZUCpFAmTEw9H3/DU+nCp8yGaJWyiVgCTcFe38GZKEPt0iMJkTw956wz/iiafLx0pNG/RaztG9cAPoQOD2+SMFaeQ+b/G4OG17TYhzb09AhNBl6zSJ3jTKHSwuedCFwCce8Q/EchJfQZv71mjAE97bzwvkDYPCLj31Z5FE8HntMwIDAQAB"
+// Public key of the Chrome Web Store item (ID bjfjdmmojplcohcbmkoogopanjbojmok).
+// It pins the extension ID so unpacked builds share storage with the store
+// install, and store updates must carry the same key. Edge Add-ons assigns its
+// own ID, so Edge builds never carry it.
+const chromeExtensionKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArGLEeLSKiXq0HLH6nW+zdCRA4CriidImKKHBs2FkXeB2iJJ16JcRd8qWvStt1YMCdDPtiXzfYdlDGv61HXA+0+ebGt0tF6bRP+YTrD5y8t9rhhhU4i8G1lpiP3tso1yWWDhX2W4Ng8K/B32EsT0iE30HqFO8MM0K0RggjBnc0n+brfW/5l69w5J3uRo8rjVQAuAJOH7anNqa9h3hPM1TNFj3wR7zTOMC6BfASEJtOD8ypDQQRZPuo/0+Tzcm7l4KokErO4ZW48J+/pBIL08j+BPRnVG3g4yO5J/Fv/6rQANtliMd5bxYqDK6WgJWqGneUU36E7NU8FozFO8peE7bIQIDAQAB"
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -12,10 +16,7 @@ export default defineConfig({
     name: "__MSG_extName__",
     description: "__MSG_extDescription__",
     default_locale: "en",
-    // Keep extension storage stable for unpacked Chrome/Edge installs across builds.
-    ...((browser === "chrome" || browser === "edge") && {
-      key: chromeExtensionKey,
-    }),
+    ...(browser === "chrome" && { key: chromeExtensionKey }),
     permissions: [
       "storage",
       "tabs",
@@ -43,8 +44,18 @@ export default defineConfig({
       },
       browser_specific_settings: {
         gecko: {
-          id: "{bd311a81-4530-4fcc-9178-74006155461b}",
-          strict_min_version: "112.0",
+          id: "jiandao@xuanwo.io",
+          // Firefox 140 is the first release that shows data_collection_permissions
+          // in the install prompt; older releases would need an in-extension consent UI.
+          strict_min_version: "140.0",
+          // Page text is sent to the model provider the user configures.
+          data_collection_permissions: {
+            required: ["websiteContent"],
+          },
+        },
+        // Firefox for Android shows data_collection_permissions from 142 on.
+        gecko_android: {
+          strict_min_version: "142.0",
         },
       },
     }),

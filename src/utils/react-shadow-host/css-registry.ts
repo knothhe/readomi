@@ -1,10 +1,10 @@
-import { Sha256Hex } from "../hash"
+import { stringHash } from "../hash"
 
 export class CSSRegistry {
   private registry = new Map<string, { node: HTMLStyleElement, count: number }>()
 
   private static hash(content: string): string {
-    return Sha256Hex(content)
+    return stringHash(content)
   }
 
   inject(css: string): string {
@@ -18,7 +18,7 @@ export class CSSRegistry {
 
     const style = document.createElement("style")
     style.textContent = css
-    style.setAttribute("data-vibe-reading-react-shadow-css-key", key)
+    style.setAttribute("data-jiandao-react-shadow-css-key", key)
     document.head.appendChild(style)
     this.registry.set(key, { node: style, count: 1 })
 

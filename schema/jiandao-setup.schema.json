@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Xuanwo/jiandao/blob/main/schema/jiandao-setup.schema.json",
+  "title": "Jiandao setup document",
+  "description": "Jiandao's translation service. Written by an agent, pasted by the reader into the translation service section of Jiandao's settings page. See docs/agent-setup.md.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "openai",
+        "anthropic",
+        "gemini",
+        "deepseek",
+        "openai-compatible"
+      ],
+      "description": "Which service. \"openai\", \"anthropic\", \"gemini\" and \"deepseek\" are the official APIs. \"openai-compatible\" is any other endpoint that speaks the OpenAI chat completions API, such as Ollama, LM Studio, OpenRouter or a gateway; it needs baseURL."
+    },
+    "api": {
+      "description": "Wire format. Defaults per type: openai → openai-responses, anthropic → anthropic, gemini → gemini, deepseek and openai-compatible → openai-chat. Set \"openai-responses\" for a compatible service that only speaks the Responses API, such as xAI.",
+      "type": "string",
+      "enum": [
+        "openai-chat",
+        "openai-responses",
+        "anthropic",
+        "gemini"
+      ]
+    },
+    "name": {
+      "description": "Display name. Defaults to the service type's name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "apiKey": {
+      "description": "The API key. Required for a new service. Endpoints without authentication still need a non-empty value, e.g. \"local\". When updating an existing service, the masked value from an export (such as \"sk-…a9f2\") keeps the stored key.",
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Model ID exactly as the service expects it, e.g. \"gpt-6-luna\", \"claude-haiku-4-5\", \"gemini-3.5-flash-lite\", \"deepseek-flash\", \"qwen3:8b\"."
+    },
+    "baseURL": {
+      "description": "Endpoint base URL up to and including the version path, e.g. \"http://localhost:11434/v1\". Required for openai-compatible. Omit for an official API.",
+      "type": "string",
+      "format": "uri"
+    },
+    "headers": {
+      "description": "Extra HTTP headers sent with every request.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "body": {
+      "description": "JSON merged into every request body, exactly as the API documents it. Use it to turn thinking off: { \"reasoning\": { \"effort\": \"none\" } } for OpenAI, { \"thinking\": { \"type\": \"disabled\" } } for Anthropic and DeepSeek, { \"generationConfig\": { \"thinkingConfig\": { \"thinkingLevel\": \"minimal\" } } } for Gemini, { \"reasoning_effort\": \"none\" } for openai-compatible services that accept it.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/__schema0"
+      }
+    },
+    "temperature": {
+      "description": "Sampling temperature. Omit to use the service default; Anthropic's current models reject values other than 1.",
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "type",
+    "model"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/__schema0"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/__schema0"
+          }
+        }
+      ]
+    }
+  }
+}

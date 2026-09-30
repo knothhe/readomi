@@ -1,8 +1,8 @@
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
-import { isTranslateProvider } from "@/types/config/provider"
-import { mergeWithArrayOverwrite } from "../atoms/config"
+import { isProviderType } from "@/types/config/provider"
 import { getProviderConfigById } from "../config/helpers"
+import { deepMerge } from "../object"
 
 export const FEATURE_KEYS = [
   "translate",
@@ -18,7 +18,7 @@ export interface FeatureProviderDef {
 
 export const FEATURE_PROVIDER_DEFS = {
   translate: {
-    isProvider: isTranslateProvider,
+    isProvider: isProviderType,
     getProviderId: (c: Config) => c.translate.providerId,
     configPath: ["translate", "providerId"],
   },
@@ -79,7 +79,7 @@ export function buildFeatureProviderPatch(
     }
     current[def.configPath[def.configPath.length - 1]] = newId
 
-    patch = mergeWithArrayOverwrite(patch, fragment)
+    patch = deepMerge(patch, fragment)
   }
 
   return patch as Partial<Config>

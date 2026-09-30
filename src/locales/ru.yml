@@ -1,35 +1,39 @@
-name: Vibe Reading
-extName: Vibe Reading - Переводи и учись
-extDescription: Vibe Reading — расширение браузера с открытым исходным кодом, которое поможет вам глубоко изучать языки на любом веб-сайте.
-dataTypes:
-  string: Текст
-  number: Число
+name: Jiandao
+extName: Jiandao
+extDescription: Переводит веб-страницу, которую вы читаете, и больше ничего не делает.
 languageCombobox:
-  searchLanguages: Search languages...
-  noLanguagesFound: No languages found
+  searchLanguages: Поиск языков…
+  noLanguagesFound: Языки не найдены
 popup:
-  theme: Тема
-  autoLang: Авто
-  sourceLang: Исходный
-  targetLang: Целевой
-  translate: Перевести
+  auto: авто
+  autoDetected: Определён автоматически
+  sourceLanguage: Исходный язык
+  targetLanguage: Целевой язык
+  translateInto: Перевести на
+  displayMode: Отображение
+  bilingual: Двуязычный
+  translationOnly: Только перевод
+  translate: Перевести страницу
   showOriginal: Показать оригинал
-  options: Настройки
-  hover: Наведение
-  translateParagraph: для перевода абзаца
-  translationModeToggle:
-    tooltip:
-      bilingual:
-        current: "Текущий режим: двуязычный"
-        action: Нажмите, чтобы переключиться на только перевод
-      translationOnly:
-        current: "Текущий режим: только перевод"
-        action: Нажмите, чтобы переключиться на двуязычный
-  aiSmartContext: Умный контекст ИИ
-  aiSmartContextDescription: Использует контекст веб-страницы для улучшения качества перевода. Требуется LLM-провайдер перевода.
+  translating: Переводится
+  translated: Переведено
+  paragraphCount: "Абзацев: $1"
+  failedCount: "Ошибок: $1"
+  notTranslatable: Эту страницу нельзя перевести.
+  settings: Настройки
+  wordPrefixEmphasis: Жирное начало английских слов
+  provider:
+    none: Сервиса пока нет
+    missingKey: нет ключа
+  setup:
+    title: Сервис перевода ещё не настроен
+    description: Вставьте на странице настроек конфигурацию от вашего агента — и можно переводить.
+    openSettings: Настроить
+    resetTitle: Настройте сервис перевода заново
+    resetDescription: Jiandao изменил формат конфигурации, и старую конфигурацию нельзя было перенести, поэтому она удалена. Вставьте на странице настроек конфигурацию от вашего агента — и можно снова переводить.
 errorRecovery:
   title: Что-то пошло не так
-  description: Recovery mode is active. Refresh the page or reset settings and try again.
+  description: Включён режим восстановления. Обновите страницу или сбросьте настройки и попробуйте снова.
   recoveryTitle: Варианты восстановления
   refreshPage: Обновить страницу
   resetAction: Сбросить к настройкам по умолчанию
@@ -42,298 +46,117 @@ errorRecovery:
     confirm: Сбросить
     cancel: Отмена
 options:
-  commandPalette:
-    placeholder: Поиск настроек...
-    noResults: Настройки не найдены
-  sidebar:
-    settings: Настройки
-  setAPIKeyWarning:
-    please: Пожалуйста, установите API-ключ на странице
-    page: настроек
-  apiProviders:
-    title: API-провайдеры
-    description: Настройте API-провайдеров для функций перевода и анализа слов. У нас более 20 встроенных провайдеров и поддержка любых OpenAI-совместимых API.
-    addProvider: Добавить провайдера
-    badges:
-      featureCount: $1 функций
-    dialog:
-      title: Добавить нового провайдера
-      groups:
-        builtInProviders:
-          title: Встроенные LLM-провайдеры
-          description: Встроенные провайдеры больших языковых моделей, не требуют заполнения большинства настроек, таких как Base URL
-        openaiCompatibleProviders:
-          title: OpenAI-совместимые провайдеры
-          description: Если вы не нашли нужного ИИ-провайдера, выберите Custom Provider для настройки любого OpenAI-совместимого провайдера, например Zhipu AI
-        pureTranslationProviders:
-          title: Чистые провайдеры перевода
-          description: Провайдеры, ориентированные на функции перевода без возможностей больших языковых моделей
-    form:
-      fields:
-        name: Название
-        description: Описание
-        apiKey: API-ключ
-        baseURL: Base URL
-        optional: Необязательно
-      duplicate: Дублировать
-      delete: Удалить
-      deleteDialog:
-        title: Удалить провайдера?
-        description: Это действие нельзя отменить. Функции, использующие этого провайдера, будут автоматически переназначены другому доступному провайдеру.
-        confirm: Удалить
-        cancel: Отмена
-      atLeastOneLLMProvider: Требуется как минимум один LLM-провайдер перевода.
-      duplicateProviderName: 'Дублирующееся имя провайдера "$1"'
-      defaultProvider:
-        translate: Установить как провайдер перевода по умолчанию
-      models:
-        translate:
-          title: Модель перевода
-          customTitle: Пользовательская модель перевода
-          placeholder: Выберите модель
-        fetchModels: Получить доступные модели
-        fetchError: Не удалось получить модели
-        clickToRetry: Нажмите для повтора
-        noModels: Нет доступных моделей
-        selectModel: Выбрать модель
-        apiKeyRequired: Сначала добавьте API ключ
-        searchModels: Поиск моделей...
-        noModelsFound: Модели не найдены
-      featureProviders: Поставщики функций
-      advancedOptions: Расширенные настройки
-      providerSettingLabels:
-        region: Регион
-      temperature: Температура
-      temperatureHint: Контролирует случайность ответов. Низкие значения (0) более детерминированы, высокие — более креативны. Диапазон зависит от провайдера. Оставьте пустым для использования значения по умолчанию.
-      headers: Заголовки
-      headersHint: Пользовательские HTTP-заголовки для создания клиента AI-провайдера. Оставьте пустым для значений провайдера по умолчанию; используйте {}, чтобы отключить их.
-      providerOptions: Параметры провайдера
-      providerOptionsHint: Специфические параметры провайдера для нестандартных функций API, таких как режим размышления/рассуждения. Подробнее см. документацию Vercel AI SDK или официальную документацию вашего провайдера.
-      providerOptionsDocsLink: Документация провайдера
-      providerOptionsRecommendationTrigger: Показать рекомендуемые параметры провайдера
-      providerOptionsRecommendationTitle: Обнаружены рекомендуемые параметры провайдера
-      providerOptionsRecommendationDescription: Проверьте рекомендованную конфигурацию и примените её вручную.
-      providerOptionsRecommendationApply: Применить
-      providerOptionsRecommendationApplied: Применено
-      invalidJson: Неверный формат JSON
-    providers:
-      description:
-        openai: Предоставляет модели, такие как GPT-4o
-        deepseek: Рекомендуется для использования в Китае
-        openaiCompatible: Сторонние и OpenAI API-совместимые
-    apiKey:
-      showAPIKey: Показать API-ключ
-    howToConfigure: Как настроить?
-    testConnection:
-      button: Проверить соединение
-      testing: Тестирование...
-  general:
-    title: Общие
-    appearance:
-      title: Внешний вид
-      theme: Тема
-      system: Системная
-      light: Светлая
-      dark: Тёмная
-    featureProviders:
-      title: Провайдеры функций
-      description: Выберите провайдера для каждой функции
-      features:
-        translate: Перевод страницы
-    translationConfig:
-      model:
-        title: Модель
-        enterCustomModel: Введите название пользовательской модели
-    clearCache:
-      title: Очистить кэш
-      description: Очистить весь кэш перевода в вашем браузере
-      clearing: Очистка...
-      dialog:
-        title: Очистить кэш
-        trigger: Очистить кэш
-        confirm: Подтвердить
-        cancel: Отмена
-        description: Эта операция очистит весь кэш перевода. Это действие нельзя отменить.
-  translation:
-    title: Перевод
-    requestQueueConfig:
-      title: Скорость перевода
-      firstOnDescription: Настройте скорость обработки запросов перевода с помощью
-      lastOnDescription: алгоритма
-      capacity:
-        title: Максимальное количество пакетных запросов
-        description: Допустимое временное количество пакетных запросов определяет максимальное количество запросов, которые могут обрабатываться одновременно в течение короткого периода
-      rate:
-        title: Среднее количество запросов в секунду
-        description: Среднее количество запросов в секунду, но позволяет настроить максимальное количество пакетов для временной отправки избыточных запросов
-    batchQueueConfig:
-      title: Пакетный перевод
-      description: Настройте лимиты символов и максимальное количество абзацев для пакетного перевода (действует только для LLM-перевода)
-      maxCharactersPerBatch:
-        title: Максимум символов
-        description: Максимальное количество символов, разрешённое на один пакетный запрос, для контроля объёма содержимого каждого перевода
-      maxItemsPerBatch:
-        title: Максимум абзацев
-        description: Максимальное количество абзацев для каждого пакетного перевода для контроля объёма содержимого каждого перевода
-    personalizedPrompts:
-      title: Персонализированные промпты
-      description: Настройка различных типов промптов позволяет вам самостоятельно изменять тип промпта во время перевода. Промпт — это текст, который пользователь отправляет LLM.
-      addPrompt: Добавить промпт
-      default: По умолчанию
-      importSuccess: Импорт успешен
-      import: Импорт
-      export: Экспорт
-      current: используется
-      editPrompt:
-        title: Редактировать промпт
-        name: Название
-        systemPrompt: Системный промпт
-        prompt: Промпт
-        promptCellInput:
-          input: Текстовое содержимое для перевода
-          targetLanguage: Целевой язык
-          webTitle: Заголовок веб-страницы
-          webDescription: Описание веб-страницы из метаданных
-          webContent: Содержимое веб-страницы (обрезается до первых 2000 символов)
-          webSummary: Резюме веб-страницы (требуется умный контекст ИИ)
-        save: Сохранить изменения
-        close: Отмена
-      deletePrompt:
-        title: Удалить промпт
-        description: Подтвердить удаление промпта
-        confirm: Подтвердить
-        cancel: Отмена
-      exportPrompt:
-        exportSelected: Экспортировать выбранные
-        cancel: Отмена
-    translationStyle:
-      title: Стиль отображения перевода
-      description: Установите любой стиль для отличия результатов перевода от оригинального текста
-      useCustomStyle: Использовать пользовательский CSS-стиль
-      useCustomStyleDescription: Поддерживает любой CSS, включая шрифты, анимации и стили для конкретных языков
-      presetStyle: Предустановленный стиль
-      cssEditor: CSS-редактор
-      preview: Предпросмотр
-      stylePreviewLanguage: Язык
-      stylePreviewDirection: Направление
-      stylePreviewTranslatedText: Переведённый текст
-      style:
+  title: Настройки
+  service:
+    title: Сервис перевода
+    empty:
+      title: Сервис перевода ещё не настроен
+      description: Передайте инструкции своему агенту. Он проверит конфигурацию сервиса с вашим ключом и положит её в буфер обмена; вставьте её ниже.
+    reset:
+      title: Настройте сервис перевода заново
+      description: Jiandao изменил формат конфигурации, и старую конфигурацию нельзя было перенести, поэтому она удалена. Передайте инструкции своему агенту. Он проверит конфигурацию сервиса с вашим ключом и положит её в буфер обмена; вставьте её ниже.
+    copyInstructions: Скопировать инструкции для агента
+    copied: Скопировано
+    edit: Изменить
+    test: Проверить соединение
+    testing: Проверка…
+    status:
+      ok: Подключено
+      failed: Ошибка соединения
+      unchecked: Не проверено
+    checkedAt: проверено $1
+    sendsTo: Текст страницы отправляется на $1
+    key: Ключ $1
+    newKey: новый ключ
+    keptKey: сохранённый ключ
+    keyMissing: В конфигурации нет API-ключа
+    thinkingOff: рассуждение выключено
+    label:
+      current: Сейчас
+      after: После
+      connection: Связь
+    unchanged: "Совпадает с текущим сервисом. Текст выделен: вставьте, чтобы заменить его целиком, или измените одно поле."
+    failedNotSaved: Ошибка, ничего не сохранено
+    editorLabel: Конфигурация сервиса перевода
+    placeholder: '{ "type": "deepseek", "apiKey": "…", "model": "…" }'
+    cancel: Отмена
+    apply: Применить
+    applying: Проверка…
+  reading:
+    title: Чтение
+    whileTranslating: При переводе
+    allPages: Все страницы
+    mode:
+      title: Отображение
+      bilingual: Двуязычный
+      translationOnly: Только перевод
+    wordPrefixEmphasis:
+      title: Жирное начало английских слов
+      description: Выделяет жирным первую половину каждого английского слова.
+    style:
+      title: Стиль перевода
+      custom: Свой CSS
+      presets:
+        line: Тонкая линия
         default: Нет
-        blur: Эффект размытия
-        blockquote: Цитата
-        weakened: Ослабленный
-        dashedLine: Пунктирная линия
-        border: Граница
-        textColor: Цвет текста
-        background: Фон
-      customCSS:
-        editor:
-          placeholder: |
-            /* Пример: Пользовательский стиль с цветом и фоном */
-            [data-vibe-reading-custom-translation-style='custom'] {
-              color: #414535;
-              background-color: light-dark(#F2E3BC, #C19875);
-              padding: 2px 4px;
-              border-radius: 4px;
-            }
-          saveButton: Сохранить
-          savedButton: Сохранено
-          validation:
-            validating: Проверка...
-            valid: CSS корректен
-            syntaxError: CSS содержит синтаксические ошибки
-            tooLong: CSS слишком длинный
-            saved: Все изменения сохранены
-    translationMode:
-      title: Режим перевода
-      description: "Выберите способ отображения переведённого текста: двуязычный или только перевод."
-      mode:
-        bilingual: Двуязычный
-        translationOnly: Только перевод
-    translateRange:
-      title: Диапазон перевода
-      description: Выберите, переводить только основное содержимое или всё содержимое на странице.
-      range:
-        main: Основное содержимое
-        all: Всё содержимое
-    pageTranslationShortcut:
-      title: Горячая клавиша перевода страницы
-      description: Настройте горячую клавишу для перевода всей веб-страницы
-    preloadConfig:
-      title: Диапазон предварительного перевода
-      description: Управляйте количеством контента ниже области просмотра, который будет предварительно переведён для экономии затрат на API
-      margin:
-        title: Расстояние предзагрузки (в пикселях)
-        description: Насколько ниже области просмотра начинать перевод контента. Меньшие значения экономят затраты на API, но могут вызвать задержки при прокрутке.
-      threshold:
-        title: Порог видимости
-        description: Процент видимости элемента, необходимый для запуска перевода (0-1). Более высокие значения откладывают перевод до тех пор, пока больше элемента не станет видимым.
-    smallParagraphFilter:
-      title: Фильтр коротких текстов
-      description: Пропускать перевод текстовых узлов с меньшим количеством символов или слов, чем порог (0 = отключено)
-      minCharacters:
-        title: Минимальное количество символов
-        description: Текстовые узлы с меньшим количеством символов не будут переведены. Количество символов включает пробелы.
-      minWords:
-        title: Минимальное количество слов
-        description: Текстовые узлы с меньшим количеством слов не будут переведены. Используется Intl.Segmenter для точного подсчёта слов на всех языках.
-      error: Значение должно быть от $1 до $2
-    nodeTranslationHotkey:
-      title: Горячая клавиша перевода при наведении или долгом нажатии
-      description: Настройте клавишу-модификатор для перевода при наведении или используйте долгое нажатие для перевода абзацев
-      enable: Включить
-    llmProviderConfigured: LLM-провайдер выбран для $1
-    llmProviderNotConfigured: LLM-провайдер не выбран для $1
-    aiContentAware:
-      title: Умный контекстный перевод ИИ
-      description: Улучшайте качество перевода, предоставляя ИИ контекст веб-страницы
-      enable: Включить умный контекстный перевод ИИ
-      enableDescription: ИИ использует резюме веб-страницы для повышения точности перевода. Требуется LLM-провайдер. Добавляет задержку при начале перевода страницы и увеличивает затраты на API.
-  config:
-    title: Конфигурация
-    about:
-      title: О приложении
-      description: Vibe Reading появился в апреле 2025 года
-      mission: Vibe Reading стремится расширить равный доступ к качественному образованию в эпоху ИИ, делая обучение, максимально похожее на занятия с настоящим преподавателем, доступным по цене в языках, медицине и других знанияемких областях.
-    resetConfig:
-      title: Сбросить конфигурацию
-      description: Сбросить все настройки до значений по умолчанию
-      dialog:
-        title: Сбросить конфигурацию
-        trigger: Сбросить конфигурацию
-        confirm: Подтвердить
-        cancel: Отмена
-        description: Эта операция очистит все ваши пользовательские конфигурации и сбросит их до значений по умолчанию. Пожалуйста, подтвердите.
-translateService:
-  title: Сервис перевода
-  description: Только для перевода веб-страницы
-  normalTranslator: Обычный переводчик
-  aiTranslator: ИИ-переводчик
-  selectServices: Выберите сервисы
-  translationProviders: Сервисы перевода
-  configureAPI: Настроить API
-translatePrompt:
-  title: Стиль ИИ-перевода
-  description: Выберите промпт для использования во время перевода. Добавляйте или изменяйте пользовательские промпты на странице настроек.
-noAPIKeyConfig:
-  warning: Если вы хотите использовать ИИ-модели, сначала установите API-ключ на странице настроек
-  warningWithLink:
-    youMust: Вы должны
-    setTheAPIKey: установить API-ключ
-    firstOnThe: сначала на странице
-    optionsPage: настроек
-    page: ""
+        weakened: Приглушённый
+        textColor: Цветной
+        dashedLine: Пунктирное подчёркивание
+        background: Выделение
+        blockquote: Полоса цитаты
+        border: Рамка
+        blur: Показ при наведении
+      cssPlaceholder: |
+        /* Пример: цвет и выделение перевода */
+        [data-jiandao-custom-translation-style='custom'] {
+          color: #414535;
+          background-color: light-dark(#F2E3BC, #C19875);
+          padding: 2px 4px;
+          border-radius: 4px;
+        }
+      css:
+        save: Сохранить
+        saved: Сохранено
+        validating: Проверка…
+        valid: CSS корректен
+        syntaxError: CSS содержит синтаксические ошибки
+        tooLong: CSS слишком длинный
+        allSaved: Все изменения сохранены
+  quality:
+    title: Качество перевода
+    context:
+      title: Учитывать контекст страницы
+    prompt:
+      title: Промпт
+      default: По умолчанию
+      custom: Свой
+      edit: Изменить
+      system: Системный промпт
+      template: Шаблон промпта
+      tokens: "Шаблон должен содержать {{input}}. Доступно: {{targetLanguage}} {{webTitle}} {{webDescription}} {{webContent}} {{webSummary}}"
+      missingInput: В шаблоне нет {{input}}.
+      restore: Вернуть по умолчанию
+      cancel: Отмена
+      apply: Применить
+  shortcut:
+    title: Горячая клавиша
+    togglePage: Перевести страницу / Показать оригинал
 translation:
   sameLanguage: Исходный и целевой языки должны различаться
-  autoModeSameLanguage: Обнаруженный язык '$1' совпадает с целевым языком
+  noApiKey: Сначала добавьте API-ключ. Нажмите на значок Jiandao на панели инструментов, чтобы настроить его.
+  failed: Не удалось перевести
+  retry: Повторить
+  unknownError: Что-то пошло не так
+agentInstructions:
+  noConfiguration: (пока нет)
+  text: |
+    Я перевожу веб-страницы с помощью расширения браузера Jiandao (简道翻译). Пожалуйста, настрой для меня его сервис перевода.
+    Сначала прочитай руководство: $1
+    Следуй ему: спроси, какой сервис я хочу использовать и где мой API-ключ. Проверь с моим ключом по шаблону запроса из руководства, пока запрос не пройдёт. Запиши JSON с конфигурацией сервиса в мой буфер обмена. Затем скажи мне вставить его в разделе «Сервис перевода» на странице настроек Jiandao и применить.
+    Моя текущая конфигурация, ключ скрыт:
+    $2
 shortcutKeySelector:
-  placeholder: Пожалуйста, введите горячую клавишу
-hotkey:
-  control: Ctrl
-  alt: Option
-  shift: Shift
-  backtick: Обратный апостроф
-  clickAndHold: Нажмите и удерживайте
+  placeholder: Нажмите сочетание клавиш
 languages:
   eng: Английский
   cmn: Упрощённый китайский

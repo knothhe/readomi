@@ -1,39 +1,33 @@
-import type { ComponentType } from "react"
-import { lazy, Suspense } from "react"
-import { Route, Routes } from "react-router"
-import { ROUTE_DEFS } from "./app-sidebar/nav-items"
-import { GeneralPage } from "./pages/general"
+import { useEffect } from "react"
+import { SettingsHeader } from "./sections/header"
+import { QualitySection } from "./sections/quality"
+import { ReadingSection } from "./sections/reading"
+import { ServiceSection } from "./sections/service"
+import { ShortcutSection } from "./sections/shortcut"
 
-type RoutePath = (typeof ROUTE_DEFS)[number]["path"]
-
-const ApiProvidersPage = lazy(() => import("./pages/api-providers").then(module => ({ default: module.ApiProvidersPage })))
-const TranslationPage = lazy(() => import("./pages/translation").then(module => ({ default: module.TranslationPage })))
-const ConfigPage = lazy(() => import("./pages/config").then(module => ({ default: module.ConfigPage })))
-
-const ROUTE_COMPONENTS: Record<RoutePath, ComponentType> = {
-  "/": GeneralPage,
-  "/api-providers": ApiProvidersPage,
-  "/translation": TranslationPage,
-  "/config": ConfigPage,
+function useScrollToHashSection() {
+  useEffect(() => {
+    const sectionId = window.location.hash.slice(1)
+    if (sectionId)
+      document.getElementById(sectionId)?.scrollIntoView({ block: "start" })
+  }, [])
 }
 
-function RouteLoadingFallback() {
-  return (
-    <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-      Loading settings...
-    </div>
-  )
-}
-
+/**
+ * One page, ordered by how often a setting is touched: the service you
+ * translate with, how pages read, what the model is told, and the shortcut.
+ * Everything else adapts on its own; see design/Adaptive.html.
+ */
 export default function App() {
+  useScrollToHashSection()
+
   return (
-    <Suspense fallback={<RouteLoadingFallback />}>
-      <Routes>
-        {ROUTE_DEFS.map(({ path }) => {
-          const Component = ROUTE_COMPONENTS[path]
-          return <Route key={path} path={path} element={<Component />} />
-        })}
-      </Routes>
-    </Suspense>
+    <main className="mx-auto flex w-full max-w-[640px] flex-col gap-10 px-6 pt-12 pb-16 text-[13px]">
+      <SettingsHeader />
+      <ServiceSection />
+      <ReadingSection />
+      <QualitySection />
+      <ShortcutSection />
+    </main>
   )
 }

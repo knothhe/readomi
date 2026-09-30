@@ -1,18 +1,17 @@
 import type { Config } from "@/types/config/config"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { isAPIProviderConfig } from "@/types/config/provider"
-import { CONFIG_SCHEMA_VERSION, DEFAULT_CONFIG } from "@/utils/constants/config"
+import { DEFAULT_CONFIG } from "@/utils/constants/config"
 
 const getItemMock = vi.fn()
-const getMetaMock = vi.fn()
+const clearMock = vi.fn()
 const setItemMock = vi.fn()
 const setMetaMock = vi.fn()
-const loggerWarnMock = vi.fn()
+const loggerErrorMock = vi.fn()
 
 vi.mock("#imports", () => ({
   storage: {
     getItem: getItemMock,
-    getMeta: getMetaMock,
+    clear: clearMock,
     setItem: setItemMock,
     setMeta: setMetaMock,
   },
@@ -21,7 +20,7 @@ vi.mock("#imports", () => ({
 vi.mock("wxt/utils/storage", () => ({
   storage: {
     getItem: getItemMock,
-    getMeta: getMetaMock,
+    clear: clearMock,
     setItem: setItemMock,
     setMeta: setMetaMock,
   },
@@ -29,17 +28,13 @@ vi.mock("wxt/utils/storage", () => ({
 
 vi.mock("@/utils/logger", () => ({
   logger: {
-    warn: loggerWarnMock,
+    error: loggerErrorMock,
   },
 }))
 
 function buildStableConfig(): Config {
   const config = structuredClone(DEFAULT_CONFIG)
   config.providersConfig = config.providersConfig.map((providerConfig) => {
-    if (!isAPIProviderConfig(providerConfig)) {
-      return providerConfig
-    }
-
     const apiKeyEnvName = `WXT_${providerConfig.provider.toUpperCase()}_API_KEY`
     const envApiKey = import.meta.env[apiKeyEnvName] as string | undefined
     if (!envApiKey) {
@@ -60,81 +55,71 @@ describe("initializeConfig", () => {
     vi.clearAllMocks()
     setItemMock.mockResolvedValue(undefined)
     setMetaMock.mockResolvedValue(undefined)
+    clearMock.mockResolvedValue(undefined)
   })
 
-  it("does not write when config and meta are already up to date", async () => {
-    const config = buildStableConfig()
-    getItemMock.mockResolvedValueOnce(config)
-    getMetaMock.mockResolvedValueOnce({
-      schemaVersion: CONFIG_SCHEMA_VERSION,
-      lastModifiedAt: 123,
-    })
+  it("does not write when the config is already at the current version", async () => {
+    getItemMock.mockResolvedValueOnce(buildStableConfig())
 
     const { initializeConfig } = await import("../init")
     await initializeConfig()
 
     expect(setItemMock).not.toHaveBeenCalled()
     expect(setMetaMock).not.toHaveBeenCalled()
+    expect(clearMock).not.toHaveBeenCalled()
   })
 
-  it("writes config and meta when config is missing", async () => {
+  it("writes the default config when none is stored", async () => {
     getItemMock.mockResolvedValueOnce(null)
-    getMetaMock.mockResolvedValueOnce(null)
 
     const { initializeConfig } = await import("../init")
     await initializeConfig()
 
     expect(setItemMock).toHaveBeenCalledTimes(1)
-    expect(setItemMock).toHaveBeenCalledWith("local:config", expect.any(Object))
-    expect(setMetaMock).toHaveBeenCalledTimes(1)
-    expect(setMetaMock).toHaveBeenCalledWith("local:config", expect.objectContaining({
-      schemaVersion: CONFIG_SCHEMA_VERSION,
-      lastModifiedAt: expect.any(Number),
-    }))
+    expect(setItemMock).toHaveBeenCalledWith("local:config", buildStableConfig())
+    expect(setMetaMock).not.toHaveBeenCalled()
+    expect(clearMock).not.toHaveBeenCalled()
   })
 
-  it("persists canonical config when stored config contains unsupported roots", async () => {
+  it("stamps the version on a config 1.1.0 stored and drops unknown roots", async () => {
+    const { version: _, ...unversioned } = buildStableConfig()
+    getItemMock.mockResolvedValueOnce({ ...unversioned, tts: { defaultVoice: "en-US-GuyNeural" } })
+
+    const { initializeConfig } = await import("../init")
+    await initializeConfig()
+
+    expect(setItemMock).toHaveBeenCalledTimes(1)
+    expect(setItemMock).toHaveBeenCalledWith("local:config", buildStableConfig())
+    expect(clearMock).not.toHaveBeenCalled()
+  })
+
+  it("clears local storage and records the reset when the config cannot be migrated", async () => {
+    getItemMock.mockResolvedValueOnce({ ...buildStableConfig(), version: 99 })
+
+    const { initializeConfig } = await import("../init")
+    await initializeConfig()
+
+    expect(clearMock).toHaveBeenCalledWith("local")
+    expect(setItemMock).toHaveBeenCalledWith("local:config", buildStableConfig())
+    expect(setMetaMock).toHaveBeenCalledWith("local:config", { resetAt: expect.any(Number) })
+    expect(clearMock.mock.invocationCallOrder[0]).toBeLessThan(setItemMock.mock.invocationCallOrder[0])
+    expect(loggerErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("logs which field failed when it clears a config, without the API key", async () => {
     const config = buildStableConfig()
-    const staleConfig = {
+    getItemMock.mockResolvedValueOnce({
       ...config,
-      tts: { defaultVoice: "en-US-GuyNeural" },
-      videoSubtitles: { enabled: true },
-      selectionToolbar: { enabled: true },
-    } as Config & Record<string, unknown>
-
-    getItemMock.mockResolvedValueOnce(staleConfig)
-    getMetaMock.mockResolvedValueOnce({
-      schemaVersion: 79,
-      lastModifiedAt: 888,
+      providersConfig: config.providersConfig.map(provider => ({ ...provider, apiKey: "sk-secret", temperature: -1 })),
     })
 
     const { initializeConfig } = await import("../init")
     await initializeConfig()
 
-    expect(setItemMock).toHaveBeenCalledTimes(1)
-    expect(setItemMock).toHaveBeenCalledWith("local:config", config)
-    expect(setMetaMock).toHaveBeenCalledTimes(1)
-    expect(setMetaMock).toHaveBeenCalledWith("local:config", {
-      schemaVersion: CONFIG_SCHEMA_VERSION,
-      lastModifiedAt: 888,
-    })
-  })
-
-  it("only updates meta when config is unchanged but lastModifiedAt is missing", async () => {
-    const config = buildStableConfig()
-    getItemMock.mockResolvedValueOnce(config)
-    getMetaMock.mockResolvedValueOnce({
-      schemaVersion: CONFIG_SCHEMA_VERSION,
-    })
-
-    const { initializeConfig } = await import("../init")
-    await initializeConfig()
-
-    expect(setItemMock).not.toHaveBeenCalled()
-    expect(setMetaMock).toHaveBeenCalledTimes(1)
-    expect(setMetaMock).toHaveBeenCalledWith("local:config", expect.objectContaining({
-      schemaVersion: CONFIG_SCHEMA_VERSION,
-      lastModifiedAt: expect.any(Number),
-    }))
+    expect(clearMock).toHaveBeenCalledWith("local")
+    expect(loggerErrorMock).toHaveBeenCalledTimes(1)
+    const [message] = loggerErrorMock.mock.calls[0]
+    expect(message).toContain("providersConfig.0.temperature")
+    expect(message).not.toContain("sk-secret")
   })
 })

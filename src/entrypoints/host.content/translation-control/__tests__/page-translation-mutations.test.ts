@@ -169,7 +169,7 @@ function walkAndLabelVisibleParagraphs(element: HTMLElement, walkId: string) {
     }
   }
 
-  element.setAttribute("data-vibe-reading-walked", walkId)
+  element.setAttribute("data-jiandao-walked", walkId)
 
   for (const child of element.children) {
     if (child instanceof HTMLElement) {
@@ -178,7 +178,7 @@ function walkAndLabelVisibleParagraphs(element: HTMLElement, walkId: string) {
   }
 
   if (element.tagName === "P" && element.textContent?.trim()) {
-    element.setAttribute("data-vibe-reading-paragraph", "")
+    element.setAttribute("data-jiandao-paragraph", "")
   }
 
   return {
@@ -240,7 +240,7 @@ describe("pageTranslationManager mutation re-walk", () => {
     await observer.triggerIntersect(panel)
     await flushDomUpdates()
 
-    expect(mockTranslateWalkedElement).toHaveBeenCalledWith(panel, "walk-id", DEFAULT_CONFIG)
+    expect(mockTranslateWalkedElement).toHaveBeenCalledWith(panel, "walk-id", DEFAULT_CONFIG, false, expect.any(AbortSignal))
 
     manager.stop()
   })
@@ -270,7 +270,7 @@ describe("pageTranslationManager mutation re-walk", () => {
     await observer.triggerIntersect(panel)
     await flushDomUpdates()
 
-    expect(mockTranslateWalkedElement).toHaveBeenCalledWith(panel, "walk-id", DEFAULT_CONFIG)
+    expect(mockTranslateWalkedElement).toHaveBeenCalledWith(panel, "walk-id", DEFAULT_CONFIG, false, expect.any(AbortSignal))
 
     manager.stop()
   })
@@ -300,7 +300,7 @@ describe("pageTranslationManager mutation re-walk", () => {
     await observer.triggerIntersect(panel)
     await flushDomUpdates()
 
-    expect(mockTranslateWalkedElement).toHaveBeenCalledWith(panel, "walk-id", DEFAULT_CONFIG)
+    expect(mockTranslateWalkedElement).toHaveBeenCalledWith(panel, "walk-id", DEFAULT_CONFIG, false, expect.any(AbortSignal))
 
     manager.stop()
   })

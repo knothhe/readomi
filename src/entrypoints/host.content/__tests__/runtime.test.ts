@@ -12,7 +12,6 @@ const {
   mockEnsurePresetStyles,
   mockMountHostToast,
   mockOnMessage,
-  mockRegisterNodeTranslationTriggers,
   mockSendMessage,
   mockSetupUrlChangeListener,
 } = vi.hoisted(() => ({
@@ -22,14 +21,12 @@ const {
     start: ReturnType<typeof vi.fn>
     stop: ReturnType<typeof vi.fn>
     restart: ReturnType<typeof vi.fn>
-    registerPageTranslationTriggers: ReturnType<typeof vi.fn>
   }>,
   mockBindTranslationShortcutKey: vi.fn(),
   mockDetectPageLanguageLightweight: vi.fn(),
   mockEnsurePresetStyles: vi.fn(),
   mockMountHostToast: vi.fn(),
   mockOnMessage: vi.fn(),
-  mockRegisterNodeTranslationTriggers: vi.fn(),
   mockSendMessage: vi.fn(),
   mockSetupUrlChangeListener: vi.fn(),
 }))
@@ -67,10 +64,6 @@ vi.mock("../translation-control/bind-translation-shortcut", () => ({
   bindTranslationShortcutKey: mockBindTranslationShortcutKey,
 }))
 
-vi.mock("../translation-control/node-translation", () => ({
-  registerNodeTranslationTriggers: mockRegisterNodeTranslationTriggers,
-}))
-
 vi.mock("../translation-control/page-translation", () => ({
   PageTranslationManager: class {
     isActive = false
@@ -85,8 +78,6 @@ vi.mock("../translation-control/page-translation", () => ({
     restart = vi.fn(async () => {
       this.isActive = true
     })
-
-    registerPageTranslationTriggers = vi.fn(() => vi.fn())
 
     constructor() {
       managerInstances.push(this)
@@ -125,7 +116,6 @@ describe("bootstrapHostContent URL changes", () => {
 
     mockSetupUrlChangeListener.mockReturnValue(vi.fn())
     mockMountHostToast.mockReturnValue(vi.fn())
-    mockRegisterNodeTranslationTriggers.mockReturnValue(vi.fn())
     mockBindTranslationShortcutKey.mockResolvedValue(vi.fn())
     mockOnMessage.mockImplementation((name: string, handler: (msg?: any) => any) => {
       messageHandlers.set(name, handler)
@@ -149,7 +139,7 @@ describe("bootstrapHostContent URL changes", () => {
     })
 
     const { ctx, invalidate } = createContentScriptContext()
-    await bootstrapHostContent(ctx, null)
+    await bootstrapHostContent(ctx)
     const manager = managerInstances[0]
 
     window.dispatchEvent(new CustomEvent("extension:URLChange", {
@@ -173,7 +163,7 @@ describe("bootstrapHostContent URL changes", () => {
 
   it("keeps inactive page translation inactive and only asks auto-translation on SPA navigation", async () => {
     const { ctx, invalidate } = createContentScriptContext()
-    await bootstrapHostContent(ctx, null)
+    await bootstrapHostContent(ctx)
     const manager = managerInstances[0]
 
     window.dispatchEvent(new CustomEvent("extension:URLChange", {
@@ -197,7 +187,7 @@ describe("bootstrapHostContent URL changes", () => {
 
   it("refreshes and reports detected language when background requests active-tab refresh", async () => {
     const { ctx, invalidate } = createContentScriptContext()
-    await bootstrapHostContent(ctx, null)
+    await bootstrapHostContent(ctx)
     await flushAsyncWork()
 
     mockSendMessage.mockClear()

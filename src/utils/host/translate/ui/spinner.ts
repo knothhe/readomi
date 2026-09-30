@@ -1,4 +1,3 @@
-import type { APICallError } from "ai"
 import * as React from "react"
 import textSmallCSS from "@/assets/styles/text-small.css?inline"
 import themeCSS from "@/assets/styles/theme.css?inline"
@@ -8,6 +7,7 @@ import { TRANSLATION_ERROR_CONTAINER_CLASS } from "../../../constants/dom-labels
 import { getContainingShadowRoot, getOwnerDocument } from "../../dom/node"
 import { translateTextForPage } from "../translate-variants"
 import { ensurePresetStyles } from "./style-injector"
+import { trackTranslationFinished, trackTranslationStarted } from "./translation-progress"
 
 /**
  * Create a lightweight spinner element without React/Shadow DOM overhead
@@ -16,7 +16,7 @@ import { ensurePresetStyles } from "./style-injector"
  */
 export function createLightweightSpinner(ownerDoc: Document): HTMLElement {
   const spinner = ownerDoc.createElement("span")
-  spinner.className = "vibe-reading-spinner"
+  spinner.className = "jiandao-spinner"
   // Inline styles keep the spinner resilient against host page CSS overrides.
   // Use a thin muted arc with transparent sides so bulk page translation does
   // not paint a dense field of high-contrast rings across the screen.
@@ -33,7 +33,7 @@ export function createLightweightSpinner(ownerDoc: Document): HTMLElement {
     padding: 0 !important;
     vertical-align: middle !important;
     border: 1.5px solid transparent !important;
-    border-top: 1.5px solid var(--vibe-reading-muted-foreground) !important;
+    border-top: 1.5px solid var(--jiandao-muted-foreground) !important;
     border-radius: 50% !important;
     box-sizing: content-box !important;
     flex-shrink: 0 !important;
@@ -63,7 +63,7 @@ export function createLightweightSpinner(ownerDoc: Document): HTMLElement {
     // For reduced motion or when Web Animations API isn't available,
     // keep a static muted segment so the loading state stays visible
     // without requiring animation.
-    spinner.style.borderTopColor = "var(--vibe-reading-muted-foreground)"
+    spinner.style.borderTopColor = "var(--jiandao-muted-foreground)"
   }
 
   return spinner
@@ -75,6 +75,7 @@ export function createSpinnerInside(translatedWrapperNode: HTMLElement): HTMLEle
   ensurePresetStyles(root)
   const spinner = createLightweightSpinner(ownerDoc)
   translatedWrapperNode.appendChild(spinner)
+  trackTranslationStarted()
   return spinner
 }
 
@@ -85,14 +86,16 @@ export async function getTranslatedTextAndRemoveSpinner(
   translatedWrapperNode: HTMLElement,
 ): Promise<string | undefined> {
   let translatedText: string | undefined
+  let succeeded = false
 
   try {
     translatedText = await translateTextForPage(textContent)
+    succeeded = true
   }
   catch (error) {
     const errorComponent = React.createElement(TranslationError, {
       nodes,
-      error: error as APICallError,
+      error: error instanceof Error ? error : new Error(String(error)),
     })
 
     const container = createReactShadowHost(
@@ -112,6 +115,7 @@ export async function getTranslatedTextAndRemoveSpinner(
   }
   finally {
     spinner.remove()
+    trackTranslationFinished(succeeded)
   }
 
   return translatedText

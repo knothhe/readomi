@@ -2,15 +2,14 @@ import type { LangCodeISO6393, LangLevel } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { WebPagePromptContext } from "@/types/content"
-import { toast } from "sonner"
 import { i18n } from "#imports"
+import { toast } from "@/components/toast"
 import { LANG_CODE_TO_EN_NAME } from "@/definitions"
-import { isAPIProviderConfig, isLLMProviderConfig } from "@/types/config/provider"
 import { getProviderConfigById } from "@/utils/config/helpers"
 
 import { logger } from "@/utils/logger"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
-import { Sha256Hex } from "../../hash"
+import { sha256Hex } from "../../hash"
 import { sendMessage } from "../../message"
 import { prepareTranslationText } from "./text-preparation"
 
@@ -38,7 +37,6 @@ async function buildWebPageHashComponents(
   text: string,
   providerConfig: ProviderConfig,
   partialLangConfig: { sourceCode: LangCodeISO6393 | "auto", targetCode: LangCodeISO6393 },
-  enableAIContentAware: boolean,
   webPageContext?: WebPagePromptContext,
 ): Promise<string[]> {
   const preparedText = prepareTranslationText(text)
@@ -50,33 +48,13 @@ async function buildWebPageHashComponents(
     partialLangConfig.targetCode,
   ]
 
-  if (!isLLMProviderConfig(providerConfig)) {
-    return hashComponents
-  }
-
   const targetLangName = LANG_CODE_TO_EN_NAME[partialLangConfig.targetCode]
   const { systemPrompt, prompt } = await getTranslatePrompt(targetLangName, preparedText, {
     isBatch: true,
     context: normalizedWebPageContext,
   })
+  // The rendered prompts contain all webpage context that the model receives.
   hashComponents.push(systemPrompt, prompt)
-  hashComponents.push(enableAIContentAware ? "enableAIContentAware=true" : "enableAIContentAware=false")
-
-  if (enableAIContentAware && normalizedWebPageContext) {
-    if (normalizedWebPageContext.webTitle) {
-      hashComponents.push(`webTitle:${normalizedWebPageContext.webTitle}`)
-    }
-    if (normalizedWebPageContext.webDescription) {
-      hashComponents.push(`webDescription:${normalizedWebPageContext.webDescription}`)
-    }
-    if (normalizedWebPageContext.webContent) {
-      // Use a substring hash to avoid huge hash inputs while still differentiating contexts.
-      hashComponents.push(`webContent:${normalizedWebPageContext.webContent.slice(0, 1000)}`)
-    }
-    if (normalizedWebPageContext.webSummary) {
-      hashComponents.push(`webSummary:${normalizedWebPageContext.webSummary}`)
-    }
-  }
 
   return hashComponents
 }
@@ -85,7 +63,6 @@ export interface TranslateTextOptions {
   text: string
   langConfig: { sourceCode: LangCodeISO6393 | "auto", targetCode: LangCodeISO6393, level: LangLevel }
   providerConfig: ProviderConfig
-  enableAIContentAware?: boolean
   extraHashTags?: string[]
   webPageContext?: WebPagePromptContext
 }
@@ -99,7 +76,6 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     text,
     langConfig,
     providerConfig,
-    enableAIContentAware = false,
     extraHashTags = [],
     webPageContext,
   } = options
@@ -115,7 +91,6 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     preparedText,
     providerConfig,
     { sourceCode: langConfig.sourceCode, targetCode: langConfig.targetCode },
-    enableAIContentAware,
     normalizedWebPageContext,
   )
 
@@ -127,7 +102,7 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     langConfig,
     providerConfig,
     scheduleAt: Date.now(),
-    hash: Sha256Hex(...hashComponents),
+    hash: await sha256Hex(...hashComponents),
     webTitle: normalizedWebPageContext?.webTitle,
     webDescription: normalizedWebPageContext?.webDescription,
     webContent: normalizedWebPageContext?.webContent,
@@ -151,8 +126,8 @@ export function validateTranslationConfigAndToast(
   }
 
   // check if the API key is configured
-  if (isAPIProviderConfig(providerConfig) && !providerConfig.apiKey?.trim()) {
-    toast.error(i18n.t("noAPIKeyConfig.warning"))
+  if (!providerConfig.apiKey?.trim()) {
+    toast.error(i18n.t("translation.noApiKey"))
     logger.info("validateTranslationConfig: returning false (no API key)")
     return false
   }
