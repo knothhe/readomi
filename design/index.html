@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jiandao Design</title>
+<title>Readomi Design</title>
 <style>
 :root {
   --ground: #eceef2;
-  --ink: #151a2d;
-  --muted: #626978;
-  --line: #d5d9e1;
-  --accent: #2b45b8;
+  --ink: #302b29;
+  --muted: #716862;
+  --line: #d9cdc4;
+  --accent: #b6533e;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --ground: #0f1116;
-    --ink: #eceef4;
-    --muted: #9097a6;
-    --line: #2a2e3a;
-    --accent: #9fb0ff;
+    --ink: #eae3dc;
+    --muted: #a69b93;
+    --line: #40352e;
+    --accent: #e9ab91;
   }
 }
 * { box-sizing: border-box; }
@@ -111,13 +111,13 @@ header p { margin: 0; flex: 1; min-width: 200px; color: var(--muted); }
  * The sizer takes the scaled size so the viewport scrolls over exactly the
  * visible canvas at any zoom.
  */
-const layout = window.JIANDAO_CANVAS
+const layout = window.READOMI_CANVAS
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 3
 const STEP = 1.25
 const PADDING = 48
 const LABEL_SPACE = 48
-const STORAGE_KEY = "jiandao-design-zoom"
+const STORAGE_KEY = "readomi-design-zoom"
 
 document.title = layout.title
 document.getElementById("title").textContent = layout.title
