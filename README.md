@@ -6,7 +6,7 @@ Readomi 是一个本地优先的浏览器阅读助手，以翻译为主要功能
 
 ## 项目来源
 
-Fork 链：**[Read Frog（陪读蛙）](https://github.com/mengxi-ream/read-frog) → [Jiandao（简道翻译）](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/reading)**。
+Fork 链：**[Read Frog（陪读蛙）](https://github.com/mengxi-ream/read-frog) → [Jiandao（简道翻译）](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/readomi)**。
 
 Readomi 直接 fork 自简道翻译；简道翻译 fork 自陪读蛙。感谢两个上游项目的作者与贡献者。Readomi 此后由本仓库独立维护和迭代，产品方向、发布和问题反馈由本项目负责，与上游团队没有隶属或官方合作关系。
 
@@ -22,11 +22,11 @@ Readomi 直接 fork 自简道翻译；简道翻译 fork 自陪读蛙。感谢两
 
 ## 安装与使用
 
-从本仓库 [Releases](https://github.com/knothhe/reading/releases) 下载可用的 Chrome 构建并解压，在 `chrome://extensions` 开启开发者模式，选择“加载已解压的扩展程序”。Edge 使用 `edge://extensions`。也可以从源码构建：
+从本仓库 [Releases](https://github.com/knothhe/readomi/releases) 下载可用的 Chrome 构建并解压，在 `chrome://extensions` 开启开发者模式，选择“加载已解压的扩展程序”。Edge 使用 `edge://extensions`。也可以从源码构建：
 
 ```bash
-git clone https://github.com/knothhe/reading.git
-cd reading
+git clone https://github.com/knothhe/readomi.git
+cd readomi
 pnpm install
 pnpm build           # Chrome
 pnpm build:edge      # Edge
@@ -50,4 +50,4 @@ pnpm build
 
 界面设计以 `design/` 为准，可直接打开 [design/index.html](./design/index.html)。浏览器测试用 `pnpm test:e2e`；首次运行先执行 `pnpm exec playwright-core install --no-shell chromium`。
 
-问题与建议请提交到 [Readomi Issues](https://github.com/knothhe/reading/issues)。本项目继承上游的 GNU GPL v3 许可，见 [LICENSE](./LICENSE)。
+问题与建议请提交到 [Readomi Issues](https://github.com/knothhe/readomi/issues)。本项目继承上游的 GNU GPL v3 许可，见 [LICENSE](./LICENSE)。

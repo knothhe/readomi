@@ -78,7 +78,7 @@ async function openArticle() {
   const page = await context.newPage()
   await page.goto(`${pagesOrigin}/`)
   // The content script adds its preset styles and starts to watch the settings in one synchronous step.
-  await page.waitForFunction(() => document.adoptedStyleSheets.length > 0 || document.querySelector("#jiandao-preset-styles"))
+  await page.waitForFunction(() => document.adoptedStyleSheets.length > 0 || document.querySelector("#readomi-preset-styles"))
   return page
 }
 

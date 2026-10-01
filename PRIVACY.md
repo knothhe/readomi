@@ -37,8 +37,8 @@ This data is not synced across devices. Removing the extension deletes it.
 ## Changes
 
 Changes to this policy are recorded in this file's history at
-<https://github.com/knothhe/reading/commits/main/PRIVACY.md>.
+<https://github.com/knothhe/readomi/commits/main/PRIVACY.md>.
 
 ## Contact
 
-Report questions or problems at <https://github.com/knothhe/reading/issues>.
+Report questions or problems at <https://github.com/knothhe/readomi/issues>.

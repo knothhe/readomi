@@ -37,7 +37,7 @@ async function translateArticle(path = "/article") {
   const article = await context.newPage()
   await article.goto(`${service.origin}${path}`)
   await pressTranslateShortcut(article)
-  const blocks = article.locator(".jiandao-translated-block-content")
+  const blocks = article.locator(".readomi-translated-block-content")
   await blocks.nth(4).waitFor({ timeout: 20_000 })
   return { article, translations: await blocks.allTextContents() }
 }
@@ -92,12 +92,12 @@ it("user changes the display mode while the page is translating: Given a slow se
     await article.bringToFront()
     await article.locator("body").click()
     await article.keyboard.press("Alt+E")
-    await article.locator(".jiandao-spinner").first().waitFor({ timeout: 10_000 })
+    await article.locator(".readomi-spinner").first().waitFor({ timeout: 10_000 })
 
     await popup.getByRole("button", { name: "Translation only", exact: true }).click()
     await popup.getByRole("button", { name: "Translation only", pressed: true }).waitFor()
     // The page translation restarts: each paragraph waits again for its translation in the new mode.
-    await article.locator(".jiandao-translated-content-wrapper[data-jiandao-translation-mode=\"translationOnly\"]").first().waitFor({ timeout: 10_000 })
+    await article.locator(".readomi-translated-content-wrapper[data-readomi-translation-mode=\"translationOnly\"]").first().waitFor({ timeout: 10_000 })
   }
   finally {
     releaseAnswers()

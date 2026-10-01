@@ -25,9 +25,10 @@ describe("extension messaging", () => {
     off()
   })
 
-  it("ignores messages that are not Jiandao's and types without a handler", async () => {
+  it("ignores messages that are not Readomi's and types without a handler", async () => {
     const off = onMessage("refreshDetectedPageLanguage", () => {})
     await expect(fakeBrowser.runtime.sendMessage({ someone: "else" })).resolves.toBeUndefined()
+    await expect(fakeBrowser.runtime.sendMessage({ kind: "jiandao-message", type: "refreshDetectedPageLanguage" })).resolves.toBeUndefined()
     await expect(sendMessage("getDetectedCode")).rejects.toThrow(/No handler answered/)
     off()
   })

@@ -63,7 +63,7 @@ const plainly10Config = {
  * an update. Returns the launched browser once the config is initialized.
  */
 async function updateFrom(items) {
-  const dir = await mkdtemp(join(tmpdir(), "jiandao-update-"))
+  const dir = await mkdtemp(join(tmpdir(), "readomi-update-"))
   cleanup.push(() => rm(dir, { recursive: true, force: true }))
   const oldBuild = join(dir, "old-build")
   const userDataDir = join(dir, "profile")
@@ -109,7 +109,7 @@ it("user updates from a build whose config cannot be migrated: Given the 1.0 con
 
   const stored = await worker.evaluate(() => chrome.storage.local.get(null))
   assert.deepEqual(Object.keys(stored).sort(), ["config", "config$"], "nothing but the new config is left")
-  assert.equal(stored.config.version, 4)
+  assert.equal(stored.config.version, 5)
   assert.equal(stored.config.providersConfig.some(provider => provider.apiKey), false, "the old key is gone")
   assert.equal(typeof stored.config$.resetAt, "number", "the reset is recorded")
 
@@ -140,7 +140,7 @@ it("user updates from 1.1.0: Given its config without a version, When the extens
   const { worker } = await updateFrom({ config: unversioned, config$: { schemaVersion: 3, lastModifiedAt: 1 } })
 
   const config = await storedConfig(context)
-  assert.deepEqual(config, { ...unversioned, version: 4, features: { hoverTranslation: false, hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", videoSubtitles: false, subtitleMode: "bilingual" } })
+  assert.deepEqual(config, { ...unversioned, version: 5, features: { hoverTranslation: false, hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", videoSubtitles: false, subtitleMode: "bilingual" } })
   const meta = await worker.evaluate(async () => (await chrome.storage.local.get("config$")).config$)
   assert.equal(meta.resetAt, undefined, "no reset is recorded")
 })

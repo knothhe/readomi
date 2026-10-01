@@ -119,7 +119,7 @@ options:
         blur: Mostrar al pasar el cursor
       cssPlaceholder: |
         /* Ejemplo: colorear y resaltar la traducción */
-        [data-jiandao-custom-translation-style='custom'] {
+        [data-readomi-custom-translation-style='custom'] {
           color: #414535;
           background-color: light-dark(#F2E3BC, #C19875);
           padding: 2px 4px;

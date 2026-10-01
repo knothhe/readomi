@@ -1,20 +1,20 @@
 /* Colors injected into host pages. The selected Readomi color marks translations; see design/Palette.html. */
 :root {
-  --jiandao-primary: #b6533e;
-  --jiandao-brand: #b6533e;
-  --jiandao-brand-strong: #b6533e;
-  --jiandao-foreground: #ffffff;
-  --jiandao-muted: #f1f3f6;
-  --jiandao-muted-foreground: #626978;
+  --readomi-primary: #b6533e;
+  --readomi-brand: #b6533e;
+  --readomi-brand-strong: #b6533e;
+  --readomi-foreground: #ffffff;
+  --readomi-muted: #f1f3f6;
+  --readomi-muted-foreground: #626978;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --jiandao-primary: #eceef4;
-    --jiandao-brand: #e9ab91;
-    --jiandao-brand-strong: #e9ab91;
-    --jiandao-foreground: #13151c;
-    --jiandao-muted: #20232e;
-    --jiandao-muted-foreground: #9097a6;
+    --readomi-primary: #eceef4;
+    --readomi-brand: #e9ab91;
+    --readomi-brand-strong: #e9ab91;
+    --readomi-foreground: #13151c;
+    --readomi-muted: #20232e;
+    --readomi-muted-foreground: #9097a6;
   }
 }

@@ -6,6 +6,7 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Settings-Custom-CSS.html", title: "设置 · 阅读 · 自定义 CSS", x: 2400, y: 13250, w: 1120, h: 900 },
     { file: "Settings-Appearance-terra-Mobile.html", title: "设置 · 外观 · 窄屏", x: 1200, y: 18900, w: 390, h: 1040 },
     { file: "Settings-Appearance-Failed.html", title: "设置 · 外观 · 保存失败", x: 0, y: 18900, w: 1120, h: 860 },
     { file: "Agent-Setup-Document.html", title: "Readomi · agent 配置说明", x: 2400, y: 17950, w: 1120, h: 860 },

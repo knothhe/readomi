@@ -35,7 +35,7 @@ export function bindHoverTranslation(target: Document = document) {
   const translate = async (element: Element, config: Config) => {
     const block = findNearestAncestorBlockNodeFor(element)
     if (!isHTMLElement(block) || block === target.body || block === target.documentElement || hasNoWalkAncestor(block)
-      || block.closest("input,textarea,[contenteditable]:not([contenteditable='false']),video,[data-reading-subtitles]") || !block.textContent?.trim()) {
+      || block.closest("input,textarea,[contenteditable]:not([contenteditable='false']),video,[data-readomi-subtitles]") || !block.textContent?.trim()) {
       return
     }
     if (!validateTranslationConfigAndToast(config))

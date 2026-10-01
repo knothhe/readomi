@@ -64,7 +64,7 @@ function releaseHighlight(registry: HighlightRegistry) {
 
 /**
  * Registers the word prefixes under root in the highlight that the page styles
- * paint with ::highlight(jiandao-word-prefix), and keeps them up to date. The
+ * paint with ::highlight(readomi-word-prefix), and keeps them up to date. The
  * DOM does not change, so page scripts, page CSS, copied text and translation
  * see the original page. Returns the function that removes the prefixes.
  */

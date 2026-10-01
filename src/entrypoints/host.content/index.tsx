@@ -3,7 +3,7 @@ import { defineContentScript } from "#imports"
 
 declare global {
   interface Window {
-    __READ_FROG_HOST_INJECTED__?: boolean
+    __READOMI_HOST_INJECTED__?: boolean
   }
 }
 
@@ -12,9 +12,9 @@ export default defineContentScript({
   cssInjectionMode: "manual",
   async main(ctx) {
     // Prevent double injection (manifest-based + programmatic injection)
-    if (window.__READ_FROG_HOST_INJECTED__)
+    if (window.__READOMI_HOST_INJECTED__)
       return
-    window.__READ_FROG_HOST_INJECTED__ = true
+    window.__READOMI_HOST_INJECTED__ = true
 
     const { bootstrapHostContent } = await import("./runtime")
     await bootstrapHostContent(ctx)

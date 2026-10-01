@@ -23,7 +23,7 @@ interface Player {
 
 function mountPlayer(video: HTMLVideoElement, config: Config): Player {
   const host = document.createElement("div")
-  host.dataset.readingSubtitles = ""
+  host.dataset.readomiSubtitles = ""
   host.className = "notranslate"
   host.setAttribute("translate", "no")
   const shadow = host.attachShadow({ mode: "closed" })
@@ -42,8 +42,8 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
   // Hide only this player's original captions. Restoration removes this style.
   const playerId = getRandomUUID()
   if (youtubePlayer) {
-    youtubePlayer.setAttribute("data-reading-caption-player", playerId)
-    nativeStyle.textContent = `[data-reading-caption-player="${playerId}"] .ytp-caption-window-container{visibility:hidden!important}`
+    youtubePlayer.setAttribute("data-readomi-caption-player", playerId)
+    nativeStyle.textContent = `[data-readomi-caption-player="${playerId}"] .ytp-caption-window-container{visibility:hidden!important}`
     youtubePlayer.append(nativeStyle)
   }
   const modes = new Map<TextTrack, TextTrackMode>()
@@ -146,8 +146,8 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
       restoreTracks()
       host.remove()
       nativeStyle.remove()
-      if (youtubePlayer?.getAttribute("data-reading-caption-player") === playerId)
-        youtubePlayer.removeAttribute("data-reading-caption-player")
+      if (youtubePlayer?.getAttribute("data-readomi-caption-player") === playerId)
+        youtubePlayer.removeAttribute("data-readomi-caption-player")
     },
   }
 }

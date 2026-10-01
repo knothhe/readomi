@@ -25,7 +25,7 @@ it("page translation preserves display contents grid columns in bilingual, trans
           key: row.querySelector(".key").getBoundingClientRect().toJSON(),
           value: row.querySelector(".value").getBoundingClientRect().toJSON(),
         })),
-        wrappers: [...meta.querySelectorAll(".jiandao-translated-content-wrapper")].map(wrapper => wrapper.parentElement.className),
+        wrappers: [...meta.querySelectorAll(".readomi-translated-content-wrapper")].map(wrapper => wrapper.parentElement.className),
       }
     })
     const assertColumns = async () => {
@@ -52,7 +52,7 @@ it("page translation preserves display contents grid columns in bilingual, trans
     await assertColumns()
 
     await pressTranslateShortcut(article)
-    await article.waitForFunction(() => !document.querySelector(".jiandao-translated-content-wrapper"))
+    await article.waitForFunction(() => !document.querySelector(".readomi-translated-content-wrapper"))
     assert.equal(await article.locator("article").textContent(), original)
     assert.equal(await article.locator(".email-meta a[href=\"mailto:hello@example.com\"]").count(), 1)
     assert.equal(await article.locator(".prose a[href=\"https://example.com/\"]").count(), 1)

@@ -130,7 +130,7 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
     cleanupFrameTranslationStateListener()
     cleanupDetectedLanguageRefreshListener()
     window.removeEventListener("extension:URLChange", handleExtensionUrlChange)
-    window.__READ_FROG_HOST_INJECTED__ = false
+    window.__READOMI_HOST_INJECTED__ = false
   })
 
   // Only the top frame should detect and set language to avoid race conditions from iframes

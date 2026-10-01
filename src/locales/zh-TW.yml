@@ -119,7 +119,7 @@ options:
         blur: 游標停留時顯示
       cssPlaceholder: |
         /* 範例：為譯文著色並加上底色 */
-        [data-jiandao-custom-translation-style='custom'] {
+        [data-readomi-custom-translation-style='custom'] {
           color: #414535;
           background-color: light-dark(#F2E3BC, #C19875);
           padding: 2px 4px;

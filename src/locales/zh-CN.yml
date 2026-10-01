@@ -119,7 +119,7 @@ options:
         blur: 悬停显示
       cssPlaceholder: |
         /* 示例：给译文着色并加底色 */
-        [data-jiandao-custom-translation-style='custom'] {
+        [data-readomi-custom-translation-style='custom'] {
           color: #414535;
           background-color: light-dark(#F2E3BC, #C19875);
           padding: 2px 4px;

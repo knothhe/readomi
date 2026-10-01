@@ -55,10 +55,10 @@ it("switches all four themes across settings, popup, translated pages and toolba
     }
   })
   await pressTranslateShortcut(article)
-  await article.locator(".jiandao-translated-block-content").first().waitFor({ timeout: 15_000 })
+  await article.locator(".readomi-translated-block-content").first().waitFor({ timeout: 15_000 })
   const tabId = await worker.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, article.url())
   await expectIcon(worker, "terra", tabId, true)
-  await article.waitForFunction(() => document.querySelectorAll(".jiandao-translated-block-content").length === 5)
+  await article.waitForFunction(() => document.querySelectorAll(".readomi-translated-block-content").length === 5)
   const requests = service.completions().length
   const popup = await context.newPage()
   await popup.goto(`chrome-extension://${extensionId}/popup.html`)
@@ -74,7 +74,7 @@ it("switches all four themes across settings, popup, translated pages and toolba
     await page.getByRole("radio", { name: label, exact: true }).click()
     await page.waitForFunction(color => document.documentElement.dataset.readomiTheme === color, color)
     await popup.waitForFunction(color => document.documentElement.dataset.readomiTheme === color, color)
-    await article.waitForFunction(primary => getComputedStyle(document.documentElement).getPropertyValue("--jiandao-brand").trim().toUpperCase() === primary, primary)
+    await article.waitForFunction(primary => getComputedStyle(document.documentElement).getPropertyValue("--readomi-brand").trim().toUpperCase() === primary, primary)
     assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--rf-primary").trim()), primary)
     const icons = await page.locator("aside img").evaluateAll(images => images.map(img => ({ src: img.src, loaded: img.complete && img.naturalWidth > 0 })))
     assert.equal(icons[0].loaded, true)

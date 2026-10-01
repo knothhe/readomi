@@ -121,7 +121,7 @@ export function ensurePresetStyles(root: StyleRoot): void {
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, getPresetStyleSheet(root)]
   }
   else {
-    injectStyleElement(root, "jiandao-preset-styles", getPresetCSS(root))
+    injectStyleElement(root, "readomi-preset-styles", getPresetCSS(root))
   }
 }
 
@@ -151,7 +151,7 @@ export async function ensureCustomCSS(root: StyleRoot, cssText: string): Promise
     await sheet.replace(cssText)
   }
   else {
-    injectStyleElement(root, "jiandao-custom-styles", cssText)
+    injectStyleElement(root, "readomi-custom-styles", cssText)
   }
 
   if (root instanceof Document) {

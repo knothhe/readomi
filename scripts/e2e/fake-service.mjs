@@ -22,7 +22,7 @@ export const OTHER_REQUEST_PREFIXES = { languageDetection: "You are a language d
  * to translate at `/article` (`?description=` adds a meta description).
  * `POST /v1/chat/completions` splits the last user message at the standalone
  * `%%` lines and answers each part with "【译】" and the first 24 characters
- * of the part's last line, keeping the batch separators Jiandao uses, so a
+ * of the part's last line, keeping the batch separators Readomi uses, so a
  * translated page is easy to recognize. The model "rejected-model" gets a
  * 400 answer, like a service that does not know the model.
  * Every request is recorded in `requests` for assertions; `messages()` and
@@ -117,7 +117,7 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
   }
 }
 
-/** A setup document that points Jiandao at the fake service. It describes the service only. */
+/** A setup document that points Readomi at the fake service. It describes the service only. */
 export function setupDocumentFor(origin, overrides = {}) {
   return {
     type: "openai-compatible",

@@ -5,6 +5,21 @@ import { exportConfigBackup, parseConfigBackup } from "../backup"
 const configured = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "sk-backup", headers: { Authorization: "secret" }, connectionCheck: { ok: true, checkedAt: 1 } })) }
 
 describe("local configuration backups", () => {
+  it.each(["readomi-config", "reading-config"])("migrates custom CSS in %s backups", (format) => {
+    const config = {
+      ...configured,
+      version: 4,
+      translate: {
+        ...configured.translate,
+        translationNodeStyle: { preset: "line", isCustom: true, customCSS: "[data-jiandao-custom-translation-style='custom'] { color: var(--jiandao-brand); }" },
+      },
+    }
+    const imported = parseConfigBackup(JSON.stringify({ format, config }))
+    expect(imported.translate.translationNodeStyle.customCSS).toBe("[data-readomi-custom-translation-style='custom'] { color: var(--readomi-brand); }")
+    expect(imported.providersConfig[0].apiKey).toBe("sk-backup")
+    expect(imported.version).toBe(DEFAULT_CONFIG.version)
+  })
+
   it("exports Readomi themes and accepts earlier backups from this fork", () => {
     const config = { ...configured, appearance: { colorTheme: "plum" as const } }
     const text = exportConfigBackup(config)

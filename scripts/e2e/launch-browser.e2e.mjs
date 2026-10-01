@@ -30,7 +30,7 @@ afterEach(async () => {
  * handles, so it ends only when no browser stays open.
  */
 async function launchIn(files) {
-  folder = await mkdtemp(join(tmpdir(), "jiandao-launch-"))
+  folder = await mkdtemp(join(tmpdir(), "readomi-launch-"))
   const output = join(folder, ".output/chrome-mv3")
   await mkdir(output, { recursive: true })
   for (const [name, text] of Object.entries(files))

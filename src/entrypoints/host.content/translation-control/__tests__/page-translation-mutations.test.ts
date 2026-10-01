@@ -169,7 +169,7 @@ function walkAndLabelVisibleParagraphs(element: HTMLElement, walkId: string) {
     }
   }
 
-  element.setAttribute("data-jiandao-walked", walkId)
+  element.setAttribute("data-readomi-walked", walkId)
 
   for (const child of element.children) {
     if (child instanceof HTMLElement) {
@@ -178,7 +178,7 @@ function walkAndLabelVisibleParagraphs(element: HTMLElement, walkId: string) {
   }
 
   if (element.tagName === "P" && element.textContent?.trim()) {
-    element.setAttribute("data-jiandao-paragraph", "")
+    element.setAttribute("data-readomi-paragraph", "")
   }
 
   return {

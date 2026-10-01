@@ -119,7 +119,7 @@ options:
         blur: 마우스를 올리면 표시
       cssPlaceholder: |
         /* 예: 번역에 색을 입히고 강조하기 */
-        [data-jiandao-custom-translation-style='custom'] {
+        [data-readomi-custom-translation-style='custom'] {
           color: #414535;
           background-color: light-dark(#F2E3BC, #C19875);
           padding: 2px 4px;

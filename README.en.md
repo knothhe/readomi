@@ -6,7 +6,7 @@ Readomi is a local-first reading companion focused on translation. Translations 
 
 ## Origins
 
-Fork chain: **[Read Frog](https://github.com/mengxi-ream/read-frog) → [Jiandao](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/reading)**.
+Fork chain: **[Read Frog](https://github.com/mengxi-ream/read-frog) → [Jiandao](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/readomi)**.
 
 Readomi directly forks Jiandao, which forks Read Frog. Thanks to the authors and contributors of both upstream projects. Readomi is independently maintained and developed in this repository, with its own product direction, releases and support. It is not affiliated with or officially partnered with either upstream team.
 
@@ -22,11 +22,11 @@ Video translation uses enabled YouTube captions or HTML5 subtitle tracks; it doe
 
 ## Install and use
 
-Download an available Chrome build from this repository's [Releases](https://github.com/knothhe/reading/releases), unzip it, enable Developer mode in `chrome://extensions`, and select "Load unpacked". Edge uses `edge://extensions`. Or build from source:
+Download an available Chrome build from this repository's [Releases](https://github.com/knothhe/readomi/releases), unzip it, enable Developer mode in `chrome://extensions`, and select "Load unpacked". Edge uses `edge://extensions`. Or build from source:
 
 ```bash
-git clone https://github.com/knothhe/reading.git
-cd reading
+git clone https://github.com/knothhe/readomi.git
+cd readomi
 pnpm install
 pnpm build           # Chrome
 pnpm build:edge      # Edge
@@ -50,4 +50,4 @@ pnpm build
 
 `design/` is the UI source of truth; open [design/index.html](./design/index.html) directly. Run browser tests with `pnpm test:e2e`; first install Chromium with `pnpm exec playwright-core install --no-shell chromium`.
 
-Send questions and suggestions to [Readomi Issues](https://github.com/knothhe/reading/issues). Readomi inherits upstream's GNU GPL v3 license; see [LICENSE](./LICENSE).
+Send questions and suggestions to [Readomi Issues](https://github.com/knothhe/readomi/issues). Readomi inherits upstream's GNU GPL v3 license; see [LICENSE](./LICENSE).

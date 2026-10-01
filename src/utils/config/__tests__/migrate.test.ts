@@ -26,6 +26,47 @@ function withoutVersion(config: object): Record<string, unknown> {
 }
 
 describe("migrateStoredConfig", () => {
+  it("migrates saved upstream CSS without changing credentials, prompts or preferences", () => {
+    const customCSS = ".jiandao-translated-block-content[data-jiandao-custom-translation-style='custom'] { color: var(--jiandao-brand); }"
+    const stored = {
+      ...DEFAULT_CONFIG,
+      version: 4,
+      providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "kept-key" })),
+      translate: {
+        ...DEFAULT_CONFIG.translate,
+        translationNodeStyle: { preset: "line", isCustom: false, customCSS },
+      },
+    }
+    const result = migrateStoredConfig(stored)
+    expect(result).toEqual({
+      ok: true,
+      config: {
+        ...stored,
+        version: CONFIG_VERSION,
+        translate: {
+          ...stored.translate,
+          translationNodeStyle: {
+            ...stored.translate.translationNodeStyle,
+            customCSS: ".readomi-translated-block-content[data-readomi-custom-translation-style='custom'] { color: var(--readomi-brand); }",
+          },
+        },
+      },
+    })
+    expect(stored.translate.translationNodeStyle.customCSS).toBe(customCSS)
+  })
+
+  it("preserves CSS unrelated to the upstream namespace when upgrading version 4", () => {
+    const stored = {
+      ...DEFAULT_CONFIG,
+      version: 4,
+      translate: {
+        ...DEFAULT_CONFIG.translate,
+        translationNodeStyle: { preset: "line", isCustom: true, customCSS: "[lang='zh'] { font-size: 16px; }" },
+      },
+    }
+    expect(migrateStoredConfig(stored)).toEqual({ ok: true, config: { ...stored, version: CONFIG_VERSION } })
+  })
+
   it("adds the default theme to version 3 without losing credentials or reading preferences", () => {
     const { appearance: _, ...old } = DEFAULT_CONFIG
     const stored = { ...old, version: 3, reading: { wordPrefixEmphasis: true }, providersConfig: old.providersConfig.map(p => ({ ...p, apiKey: "kept-key" })) }

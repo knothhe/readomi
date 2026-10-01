@@ -70,7 +70,7 @@ export function Toasts() {
         <div
           key={item.id}
           role={item.kind === "error" ? "alert" : "status"}
-          className="pointer-events-auto flex items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-sm text-foreground shadow-md animate-[jiandao-fade-in_150ms_ease-out]"
+          className="pointer-events-auto flex items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-sm text-foreground shadow-md animate-[readomi-fade-in_150ms_ease-out]"
         >
           <BrandIcon className="mt-px size-5 shrink-0" />
           <div className="min-w-0 flex-1">

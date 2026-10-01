@@ -48,7 +48,7 @@ export interface Message<T extends MessageType> {
 type Handler<T extends MessageType> = (message: Message<T>) => ResponseOf<T> | Promise<ResponseOf<T>>
 
 /** Every message is one of these; anything else on the channel is someone else's. */
-const ENVELOPE = "jiandao-message"
+const ENVELOPE = "readomi-message"
 
 interface Envelope {
   kind: typeof ENVELOPE

@@ -78,11 +78,11 @@ it("updates hover and page shortcuts live, switches display mode and toggles cap
   await article.keyboard.down("Control")
   await article.waitForTimeout(650)
   await article.keyboard.up("Control")
-  await article.locator(".jiandao-translated-block-content").waitFor({ timeout: 15_000 })
-  assert.equal(await article.locator(".jiandao-translated-block-content").count(), 1)
+  await article.locator(".readomi-translated-block-content").waitFor({ timeout: 15_000 })
+  assert.equal(await article.locator(".readomi-translated-block-content").count(), 1)
   await article.locator("body").click()
   await article.keyboard.press("Alt+P")
-  await article.waitForFunction(() => document.querySelectorAll(".jiandao-translated-block-content").length === 5)
+  await article.waitForFunction(() => document.querySelectorAll(".readomi-translated-block-content").length === 5)
   await article.keyboard.press("Alt+M")
   await article.waitForFunction(() => [...document.querySelectorAll("h1, p")].every(el => el.textContent.trim().startsWith("【译】")))
   await article.keyboard.press("Alt+M")
@@ -93,14 +93,14 @@ it("updates hover and page shortcuts live, switches display mode and toggles cap
     player.innerHTML = "<video style=\"width:640px;height:360px\"></video><div class=\"ytp-caption-window-container\"><span class=\"ytp-caption-segment\">Reading matters.</span></div>"
     document.body.prepend(player)
   })
-  await article.locator("[data-reading-subtitles]").waitFor()
+  await article.locator("[data-readomi-subtitles]").waitFor()
   await article.keyboard.press("Alt+V")
-  await article.locator("[data-reading-subtitles]").waitFor({ state: "detached" })
+  await article.locator("[data-readomi-subtitles]").waitFor({ state: "detached" })
   assert.notEqual(await article.locator(".ytp-caption-window-container").evaluate(el => getComputedStyle(el).visibility), "hidden")
   assert.equal((await storedConfig(context)).features.videoSubtitles, true)
   await article.keyboard.press("Alt+V")
-  await article.locator("[data-reading-subtitles]").waitFor()
-  await page.screenshot({ path: "/tmp/reading-shortcut-settings.png", fullPage: true })
+  await article.locator("[data-readomi-subtitles]").waitFor()
+  await page.screenshot({ path: "/tmp/readomi-shortcut-settings.png", fullPage: true })
 })
 
 it("manual setup and local backup restore work without an account", async () => {
@@ -133,7 +133,7 @@ it("manual setup and local backup restore work without an account", async () => 
   assert.equal(restored.translate.providerId, saved.translate.providerId)
   await page.locator("nav a[href=\"#service\"]").click()
   await page.getByRole("button", { name: "Manual setup", exact: true }).click()
-  await page.screenshot({ path: "/tmp/reading-manual-settings.png", fullPage: true })
+  await page.screenshot({ path: "/tmp/readomi-manual-settings.png", fullPage: true })
 })
 
 it("hover translates and restores one paragraph without enabling whole-page translation", async () => {
@@ -149,14 +149,14 @@ it("hover translates and restores one paragraph without enabling whole-page tran
   await article.keyboard.down("Alt")
   await article.waitForTimeout(650)
   await article.keyboard.up("Alt")
-  await article.locator(".jiandao-translated-block-content").waitFor({ timeout: 15_000 })
-  assert.equal(await article.locator(".jiandao-translated-block-content").count(), 1)
-  assert.equal(await article.locator("h1 .jiandao-translated-block-content").count(), 0)
+  await article.locator(".readomi-translated-block-content").waitFor({ timeout: 15_000 })
+  assert.equal(await article.locator(".readomi-translated-block-content").count(), 1)
+  assert.equal(await article.locator("h1 .readomi-translated-block-content").count(), 0)
   await paragraph.hover()
   await article.keyboard.down("Alt")
   await article.waitForTimeout(650)
   await article.keyboard.up("Alt")
-  await article.locator(".jiandao-translated-block-content").waitFor({ state: "detached" })
+  await article.locator(".readomi-translated-block-content").waitFor({ state: "detached" })
 })
 
 it("caption DOM translates locally and closing the feature restores the player", async () => {
@@ -172,7 +172,7 @@ it("caption DOM translates locally and closing the feature restores the player",
     player.innerHTML = "<video style=\"width:640px;height:360px\"></video><div class=\"ytp-caption-window-container\"><span class=\"ytp-caption-segment\">Reading matters.</span></div>"
     document.body.prepend(player)
   })
-  await article.locator("[data-reading-subtitles]").waitFor()
+  await article.locator("[data-readomi-subtitles]").waitFor()
   await article.waitForFunction(() => getComputedStyle(document.querySelector(".ytp-caption-window-container")).visibility === "hidden")
   const limit = Date.now() + 15_000
   while (!service.completions().some(r => r.body.includes("Reading matters."))) {
@@ -180,6 +180,6 @@ it("caption DOM translates locally and closing the feature restores the player",
     await article.waitForTimeout(100)
   }
   await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
-  await article.locator("[data-reading-subtitles]").waitFor({ state: "detached" })
+  await article.locator("[data-readomi-subtitles]").waitFor({ state: "detached" })
   assert.notEqual(await article.locator(".ytp-caption-window-container").evaluate(el => getComputedStyle(el).visibility), "hidden")
 })

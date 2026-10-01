@@ -20,7 +20,7 @@ const languageSchema = z.object({
  * (utils/config/migrate.ts); a stored config with no path to this version
  * is cleared.
  */
-export const CONFIG_VERSION = 4
+export const CONFIG_VERSION = 5
 
 // Complete config schema
 export const configSchema = z.object({

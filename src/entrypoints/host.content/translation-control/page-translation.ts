@@ -327,14 +327,14 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     walkAndLabelElement(container, this.walkId, config)
     // if container itself has paragraph and the id
-    if (container.hasAttribute("data-jiandao-paragraph") && container.getAttribute("data-jiandao-walked") === this.walkId) {
+    if (container.hasAttribute("data-readomi-paragraph") && container.getAttribute("data-readomi-walked") === this.walkId) {
       observer.observe(container)
       return
     }
 
     const paragraphs = this.collectParagraphElementsDeep(container, this.walkId)
     const topLevelParagraphs = paragraphs.filter((el) => {
-      const ancestor = el.parentElement?.closest("[data-jiandao-paragraph]")
+      const ancestor = el.parentElement?.closest("[data-readomi-paragraph]")
       // keep it if either:
       //  • no paragraph ancestor at all, or
       //  • the ancestor is *not* inside container
@@ -350,7 +350,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     const result: HTMLElement[] = []
 
     const collectFromContainer = (root: HTMLElement | Document | ShadowRoot) => {
-      const elements = root.querySelectorAll<HTMLElement>(`[data-jiandao-paragraph][data-jiandao-walked="${CSS.escape(walkId)}"]`)
+      const elements = root.querySelectorAll<HTMLElement>(`[data-readomi-paragraph][data-readomi-walked="${CSS.escape(walkId)}"]`)
       result.push(...[...elements])
     }
 

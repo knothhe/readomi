@@ -119,7 +119,7 @@ options:
         blur: ホバーで表示
       cssPlaceholder: |
         /* 例：翻訳に色とハイライトを付ける */
-        [data-jiandao-custom-translation-style='custom'] {
+        [data-readomi-custom-translation-style='custom'] {
           color: #414535;
           background-color: light-dark(#F2E3BC, #C19875);
           padding: 2px 4px;

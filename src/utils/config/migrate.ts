@@ -20,6 +20,16 @@ export const CONFIG_MIGRATIONS: Readonly<Record<number, ConfigMigration>> = {
   2: config => ({ ...config, features: { hoverTranslation: false, videoSubtitles: false, subtitleMode: "bilingual", ...(isRecord(config.features) ? config.features : {}) } }),
   3: config => ({ ...config, features: { hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", ...(isRecord(config.features) ? config.features : {}) } }),
   4: config => ({ ...config, appearance: { colorTheme: "terra", ...(isRecord(config.appearance) ? config.appearance : {}) } }),
+  5: (config) => {
+    if (!isRecord(config.translate) || !isRecord(config.translate.translationNodeStyle))
+      return config
+    const style = config.translate.translationNodeStyle
+    // Saved CSS and imported backups used the upstream DOM and theme namespace.
+    const customCSS = typeof style.customCSS === "string"
+      ? style.customCSS.replaceAll("jiandao-", "readomi-")
+      : style.customCSS
+    return { ...config, translate: { ...config.translate, translationNodeStyle: { ...style, customCSS } } }
+  },
 }
 
 /**

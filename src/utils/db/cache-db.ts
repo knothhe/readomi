@@ -16,6 +16,7 @@ export interface ArticleSummaryCacheRecord {
   createdAt: Date
 }
 
+// Keep the legacy name so installed builds retain their cached translations.
 const DB_NAME = "JiandaoDB"
 const DB_VERSION = 50
 const STORES = ["translationCache", "articleSummaryCache"] as const

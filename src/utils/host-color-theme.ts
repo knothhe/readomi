@@ -13,7 +13,7 @@ function apply(root: StyleRoot) {
   const primary = getSystemTheme() === "dark" ? palette.dark : palette.primary
   // Keep the established CSS variables so users' custom translation CSS still works.
   for (const token of ["primary", "brand", "brand-strong"])
-    target.style.setProperty(`--jiandao-${token}`, primary)
+    target.style.setProperty(`--readomi-${token}`, primary)
 }
 
 /** A shadow root created later receives the current choice as soon as styles are injected. */

@@ -5,7 +5,7 @@ import { configWithMode, nextAnimationFrame, setUpHostContentTests, storeConfig 
 const hostContent = setUpHostContentTests()
 
 function shownMode() {
-  return document.querySelector("#passage [data-jiandao-translation-mode]")?.getAttribute("data-jiandao-translation-mode")
+  return document.querySelector("#passage [data-readomi-translation-mode]")?.getAttribute("data-readomi-translation-mode")
 }
 
 const PASSAGE = "Reading and experience train your model of the world."
@@ -64,6 +64,6 @@ it.each([
   await vi.waitFor(() => expect(document.querySelector("#passage")?.textContent).toBe(shownText))
   await nextAnimationFrame()
   expect(document.querySelector("#passage")?.textContent).toBe(shownText)
-  expect(document.querySelectorAll("#passage [data-jiandao-translation-mode]")).toHaveLength(1)
+  expect(document.querySelectorAll("#passage [data-readomi-translation-mode]")).toHaveLength(1)
   expect(shownMode()).toBe(to)
 })

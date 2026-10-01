@@ -12,7 +12,7 @@ the "Translation service" section of Readomi's settings page and applies it.
 Languages, display and the prompt are the user's own settings in Readomi.
 
 Read the guide for the document format, the recipes and the verification
-templates: https://github.com/knothhe/reading/blob/main/docs/agent-setup.md
+templates: https://github.com/knothhe/readomi/blob/main/docs/agent-setup.md
 
 ## Steps
 
