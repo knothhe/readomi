@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { Config } from "@/types/config/config"
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fakeBrowser } from "wxt/testing/fake-browser"
@@ -77,11 +77,11 @@ describe("settings page", () => {
     vi.unstubAllGlobals()
   })
 
-  it("has configuration and translation feature sections and no advanced or appearance settings", async () => {
+  it("has translation settings and a separate appearance section", async () => {
     const { container } = await renderSettings(configured)
 
-    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "quality", "shortcut", "features", "backup"])
-    expect(screen.queryByText(/options\.advanced|options\.appearance/)).toBeNull()
+    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "quality", "shortcut", "features", "appearance", "backup"])
+    expect(screen.queryByText(/options\.advanced/)).toBeNull()
     expect(screen.getByRole("link", { name: "options.service.title" })).toHaveAttribute("aria-current", "page")
     expect(screen.queryByRole("heading", { name: "options.reading.title" })).toBeNull()
     fireEvent.click(screen.getByRole("link", { name: "options.shortcut.title" }))
@@ -113,10 +113,26 @@ describe("settings page", () => {
     await waitFor(() => expect(store.get(configAtom).features.modeShortcut).toBe(""))
   })
 
+  it("changes theme with mouse and keyboard, persists it, and keeps the configured service", async () => {
+    const { store } = await renderSettings(configured, "appearance")
+    const terra = screen.getByRole("radio", { name: "options.appearance.colors.terra" })
+    const plum = screen.getByRole("radio", { name: "options.appearance.colors.plum" })
+    expect(terra).toHaveAttribute("aria-checked", "true")
+    fireEvent.click(plum)
+    await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.appearance.colorTheme).toBe("plum"))
+    expect(plum).toHaveAttribute("aria-checked", "true")
+    expect(document.documentElement.dataset.readomiTheme).toBe("plum")
+    expect(document.documentElement.style.getPropertyValue("--rf-primary")).toBe("#79546D")
+    fireEvent.keyDown(plum, { key: "ArrowRight" })
+    await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.appearance.colorTheme).toBe("amber"))
+    expect(screen.getByRole("radio", { name: "options.appearance.colors.amber" })).toHaveFocus()
+    expect(store.get(configAtom).providersConfig).toEqual(configured.providersConfig)
+  })
+
   it("previews each reading group above its settings and follows each change", async () => {
     stubHighlightRegistry()
     const { store } = await renderSettings(configured, "reading")
-    const translationPreview = screen.getByText(/^Reading and experience train your model of the world\.$/).parentElement!
+    const translationPreview = within(document.getElementById("reading")!).getByText(/^Reading and experience train your model of the world\.$/).parentElement!
     const englishPreview = screen.getByText(/Even if you forget what you read/)
 
     // Translation only shows the translation alone, and the translation style, which applies to bilingual display only, goes away.

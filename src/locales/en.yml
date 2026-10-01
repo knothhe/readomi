@@ -1,6 +1,6 @@
-name: Jiandao
-extName: Jiandao Translate
-extDescription: Translates the web page you are reading, and does nothing else.
+name: Readomi
+extName: Readomi
+extDescription: A reading companion with web, paragraph and subtitle translation.
 languageCombobox:
   searchLanguages: Search languages…
   noLanguagesFound: No languages found
@@ -30,7 +30,7 @@ popup:
     description: Paste the configuration your agent generates on the settings page, and you can translate.
     openSettings: Set up in settings
     resetTitle: Set up your translation service again
-    resetDescription: Jiandao changed its configuration format and cleared the old one, which could not be carried over. Paste the configuration your agent generates on the settings page to translate again.
+    resetDescription: Readomi changed its configuration format and cleared the old one, which could not be carried over. Paste the configuration your agent generates on the settings page to translate again.
 errorRecovery:
   title: Something went wrong
   description: Recovery mode is active. Refresh the page or reset settings and try again.
@@ -54,7 +54,7 @@ options:
       description: Hand the instructions to your agent. It verifies the service configuration with your key and puts it on the clipboard; paste it below.
     reset:
       title: Set up your translation service again
-      description: Jiandao changed its configuration format and cleared the old one, which could not be carried over. Hand the instructions to your agent. It verifies the service configuration with your key and puts it on the clipboard; paste it below.
+      description: Readomi changed its configuration format and cleared the old one, which could not be carried over. Hand the instructions to your agent. It verifies the service configuration with your key and puts it on the clipboard; paste it below.
     copyInstructions: Copy instructions for your agent
     copied: Copied
     edit: Edit
@@ -82,6 +82,17 @@ options:
     cancel: Cancel
     apply: Apply
     applying: Checking…
+  appearance:
+    title: Appearance
+    colorTheme: Theme color
+    description: Applies to the interface, translation markers and toolbar icon. Light and dark appearance follows your system.
+    default: Default
+    saveFailed: Theme color was not saved. Please try again.
+    colors:
+      terra: Terra
+      plum: Plum
+      amber: Amber
+      teal: Teal
   reading:
     title: Reading
     whileTranslating: While translating
@@ -143,16 +154,16 @@ options:
     togglePage: Translate this page / Show original
 translation:
   sameLanguage: Source and target languages must be different
-  noApiKey: Add an API key first. Click the Jiandao icon in the toolbar to set it up.
+  noApiKey: Add an API key first. Click the Readomi icon in the toolbar to set it up.
   failed: Translation failed
   retry: Retry
   unknownError: Something went wrong
 agentInstructions:
   noConfiguration: (none yet)
   text: |
-    I use the browser extension Jiandao (简道翻译) to translate web pages. Please set up its translation service for me.
+    I use the browser extension Readomi to translate web pages. Please set up its translation service for me.
     Read the guide first: $1
-    Follow it: ask me which service I want and where my API key is. Verify with my key using the request template in the guide until a request succeeds. Write the service configuration JSON to my clipboard. Then tell me to paste it under "Translation service" on the Jiandao settings page and apply it.
+    Follow it: ask me which service I want and where my API key is. Verify with my key using the request template in the guide until a request succeeds. Write the service configuration JSON to my clipboard. Then tell me to paste it under "Translation service" on the Readomi settings page and apply it.
     My current configuration, with the key masked:
     $2
 shortcutKeySelector:

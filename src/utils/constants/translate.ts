@@ -1,6 +1,6 @@
 /*
  * Request pacing adapts to each service instead of being a setting (see
- * utils/request/pace.ts). A service Jiandao has not used yet starts at
+ * utils/request/pace.ts). A service Readomi has not used yet starts at
  * INITIAL_REQUEST_RATE; after that it starts from the pace it has learned.
  */
 export const INITIAL_REQUEST_RATE = 4

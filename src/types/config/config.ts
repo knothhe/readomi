@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { langCodeISO6393Schema, langLevel } from "@/definitions"
+import { COLOR_THEMES, DEFAULT_COLOR_THEME } from "@/utils/color-theme"
 import { FEATURE_PROVIDER_DEFS } from "@/utils/constants/feature-providers"
 import { normalizePageTranslationShortcut } from "@/utils/page-translation-shortcut"
 import { providersConfigSchema } from "./provider"
@@ -19,12 +20,13 @@ const languageSchema = z.object({
  * (utils/config/migrate.ts); a stored config with no path to this version
  * is cleared.
  */
-export const CONFIG_VERSION = 3
+export const CONFIG_VERSION = 4
 
 // Complete config schema
 export const configSchema = z.object({
   version: z.literal(CONFIG_VERSION),
   language: languageSchema,
+  appearance: z.object({ colorTheme: z.enum(COLOR_THEMES).default(DEFAULT_COLOR_THEME) }).prefault({}),
   providersConfig: providersConfigSchema,
   // A stored config without this section gets the default of each field.
   reading: z.object({

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { i18n } from "#imports"
+import { AppearanceSection } from "./sections/appearance"
 import { BackupSection } from "./sections/backup"
 import { FeaturesSection } from "./sections/features"
 import { SettingsHeader } from "./sections/header"
@@ -14,6 +15,7 @@ const SECTIONS = [
   { id: "quality", title: "options.quality.title", Component: QualitySection },
   { id: "shortcut", title: "options.shortcut.title", Component: ShortcutSection },
   { id: "features", title: "features.title", Component: FeaturesSection },
+  { id: "appearance", title: "options.appearance.title", Component: AppearanceSection },
   { id: "backup", title: "configBackup.title", Component: BackupSection },
 ] as const
 

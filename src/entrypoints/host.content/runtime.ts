@@ -1,7 +1,9 @@
 import type { ContentScriptContext } from "#imports"
+import type { ColorTheme } from "@/utils/color-theme"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translate"
 import { detectPageLanguageLightweight } from "@/utils/content/page-language"
+import { setHostColorTheme } from "@/utils/host-color-theme"
 import { ensurePresetStyles } from "@/utils/host/translate/ui/style-injector"
 import { createWordPrefixEmphasisController } from "@/utils/host/word-prefix-emphasis"
 import { logger } from "@/utils/logger"
@@ -17,6 +19,14 @@ import { PageTranslationManager } from "./translation-control/page-translation"
 
 export async function bootstrapHostContent(ctx: ContentScriptContext) {
   ensurePresetStyles(document)
+  let colorTheme: ColorTheme = "terra"
+  const unsubscribeColorTheme = subscribeLocalConfig((config) => {
+    colorTheme = config?.appearance.colorTheme ?? "terra"
+    setHostColorTheme(colorTheme)
+  })
+  const appearanceQuery = window.matchMedia?.("(prefers-color-scheme: dark)")
+  const updateAppearance = () => setHostColorTheme(colorTheme)
+  appearanceQuery?.addEventListener("change", updateAppearance)
   const cleanupHoverTranslation = bindHoverTranslation()
   const cleanupVideoSubtitles = bootstrapVideoSubtitles()
 
@@ -106,6 +116,8 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
     : () => {}
 
   ctx.onInvalidated(() => {
+    unsubscribeColorTheme()
+    appearanceQuery?.removeEventListener("change", updateAppearance)
     cleanupHoverTranslation()
     cleanupVideoSubtitles()
     removeHostToast()

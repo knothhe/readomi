@@ -17,6 +17,7 @@ export const DEFAULT_CONFIG: Config = {
     level: "intermediate",
   },
   providersConfig: DEFAULT_PROVIDER_CONFIG_LIST,
+  appearance: { colorTheme: "terra" },
   reading: {
     wordPrefixEmphasis: false,
   },

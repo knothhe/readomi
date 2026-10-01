@@ -1,6 +1,6 @@
-name: Jiandao
-extName: Jiandao
-extDescription: 読んでいるウェブページを翻訳します。それ以外のことはしません。
+name: Readomi
+extName: Readomi
+extDescription: ページ、段落、字幕の翻訳でウェブの読書をサポートします。
 languageCombobox:
   searchLanguages: 言語を検索…
   noLanguagesFound: 言語が見つかりません
@@ -30,7 +30,7 @@ popup:
     description: エージェントが生成した設定を設定ページに貼り付けると、翻訳できます。
     openSettings: 設定を開く
     resetTitle: 翻訳サービスを設定し直してください
-    resetDescription: Jiandao の設定形式が変わり、以前の設定は引き継げないため消去しました。エージェントが生成した設定を設定ページに貼り付けると、また翻訳できます。
+    resetDescription: Readomi の設定形式が変わり、以前の設定は引き継げないため消去しました。エージェントが生成した設定を設定ページに貼り付けると、また翻訳できます。
 errorRecovery:
   title: 問題が発生しました
   description: 復旧モードになっています。ページを再読み込みするか、設定をリセットしてからもう一度お試しください。
@@ -54,7 +54,7 @@ options:
       description: 説明をエージェントに渡してください。エージェントがあなたのキーで翻訳サービスの設定を確認し、クリップボードに入れます。下に貼り付けてください。
     reset:
       title: 翻訳サービスを設定し直してください
-      description: Jiandao の設定形式が変わり、以前の設定は引き継げないため消去しました。説明をエージェントに渡してください。エージェントがあなたのキーで翻訳サービスの設定を確認し、クリップボードに入れます。下に貼り付けてください。
+      description: Readomi の設定形式が変わり、以前の設定は引き継げないため消去しました。説明をエージェントに渡してください。エージェントがあなたのキーで翻訳サービスの設定を確認し、クリップボードに入れます。下に貼り付けてください。
     copyInstructions: エージェント向けの説明をコピー
     copied: コピーしました
     edit: 編集
@@ -82,6 +82,17 @@ options:
     cancel: キャンセル
     apply: 適用
     applying: 確認中…
+  appearance:
+    title: 外観
+    colorTheme: テーマカラー
+    description: 画面、訳文の目印、ツールバーのアイコンに反映されます。明暗はシステムに従います。
+    default: 既定
+    saveFailed: テーマカラーを保存できませんでした。再試行してください。
+    colors:
+      terra: テラコッタ
+      plum: プラム
+      amber: アンバー
+      teal: ティール
   reading:
     title: 閲覧
     whileTranslating: 翻訳時
@@ -143,16 +154,16 @@ options:
     togglePage: このページを翻訳 / 原文を表示
 translation:
   sameLanguage: ソース言語とターゲット言語は異なる必要があります
-  noApiKey: まず API キーを追加してください。ツールバーの Jiandao アイコンをクリックすると設定できます。
+  noApiKey: まず API キーを追加してください。ツールバーの Readomi アイコンをクリックすると設定できます。
   failed: 翻訳に失敗しました
   retry: 再試行
   unknownError: 問題が発生しました
 agentInstructions:
   noConfiguration: （まだありません）
   text: |
-    ブラウザー拡張機能 Jiandao（简道翻译）でウェブページを翻訳しています。翻訳サービスを設定してください。
+    ブラウザー拡張機能 Readomiでウェブページを翻訳しています。翻訳サービスを設定してください。
     まずガイドを読んでください：$1
-    ガイドに従ってください：使いたいサービスと API キーの場所を私に聞いてください。ガイドのリクエストテンプレートを使い、私のキーでリクエストが成功するまで確認してください。翻訳サービスの設定 JSON を私のクリップボードに書き込んでください。最後に、Jiandao の設定ページの「翻訳サービス」に貼り付けて適用するよう伝えてください。
+    ガイドに従ってください：使いたいサービスと API キーの場所を私に聞いてください。ガイドのリクエストテンプレートを使い、私のキーでリクエストが成功するまで確認してください。翻訳サービスの設定 JSON を私のクリップボードに書き込んでください。最後に、Readomi の設定ページの「翻訳サービス」に貼り付けて適用するよう伝えてください。
     現在の設定（キーはマスク済み）：
     $2
 shortcutKeySelector:

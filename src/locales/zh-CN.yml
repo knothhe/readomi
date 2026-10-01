@@ -1,6 +1,6 @@
-name: 简道翻译
-extName: 简道翻译
-extDescription: 翻译你正在读的网页，别的什么都不做。
+name: Readomi
+extName: Readomi
+extDescription: 帮助你读懂网页，支持页面、段落与字幕翻译。
 languageCombobox:
   searchLanguages: 搜索语言…
   noLanguagesFound: 没有找到语言
@@ -30,7 +30,7 @@ popup:
     description: 在设置页贴入 agent 生成的配置，就能翻译。
     openSettings: 去设置里配置
     resetTitle: 需要重新配置翻译服务
-    resetDescription: 简道更新了配置格式，旧配置无法沿用，已清除。在设置页贴入 agent 生成的配置，就能继续翻译。
+    resetDescription: Readomi更新了配置格式，旧配置无法沿用，已清除。在设置页贴入 agent 生成的配置，就能继续翻译。
 errorRecovery:
   title: 应用发生异常
   description: 已进入恢复模式。刷新页面或重置设置后再试。
@@ -54,7 +54,7 @@ options:
       description: 把说明交给你的 agent。它用你的密钥验证好翻译服务的配置，放进剪贴板，你贴到下面。
     reset:
       title: 需要重新配置翻译服务
-      description: 简道更新了配置格式，旧配置无法沿用，已清除。把说明交给你的 agent，它用你的密钥验证好翻译服务的配置，放进剪贴板，你贴到下面。
+      description: Readomi更新了配置格式，旧配置无法沿用，已清除。把说明交给你的 agent，它用你的密钥验证好翻译服务的配置，放进剪贴板，你贴到下面。
     copyInstructions: 复制给 agent 的说明
     copied: 已复制
     edit: 修改
@@ -82,6 +82,17 @@ options:
     cancel: 取消
     apply: 应用
     applying: 检查中…
+  appearance:
+    title: 外观
+    colorTheme: 主题色
+    description: 同时应用到界面、译文标记和工具栏图标。明暗外观跟随系统。
+    default: 默认
+    saveFailed: 主题色没有保存，请重试。
+    colors:
+      terra: 陶红
+      plum: 暖紫
+      amber: 琥珀
+      teal: 墨青
   reading:
     title: 阅读
     whileTranslating: 翻译时
@@ -143,16 +154,16 @@ options:
     togglePage: 翻译此页 / 显示原文
 translation:
   sameLanguage: 源语言和目标语言必须不同
-  noApiKey: 还没有填写 API Key。点击工具栏里的简道翻译图标即可设置。
+  noApiKey: 还没有填写 API Key。点击工具栏里的Readomi图标即可设置。
   failed: 翻译失败
   retry: 重试
   unknownError: 出了点问题
 agentInstructions:
   noConfiguration: （尚未配置）
   text: |
-    我在用浏览器扩展简道翻译（Jiandao）来翻译网页，请帮我配置它的翻译服务。
+    我在用浏览器扩展Readomi来翻译网页，请帮我配置它的翻译服务。
     先阅读说明：$1
-    按说明操作：问清我要用哪家服务、API Key 在哪里；用我的 Key 按说明里的请求模板验证，直到请求成功；把翻译服务的配置 JSON 写入我的剪贴板；最后告诉我在简道翻译设置页的“翻译服务”里粘贴并应用。
+    按说明操作：问清我要用哪家服务、API Key 在哪里；用我的 Key 按说明里的请求模板验证，直到请求成功；把翻译服务的配置 JSON 写入我的剪贴板；最后告诉我在Readomi设置页的“翻译服务”里粘贴并应用。
     我当前的配置（密钥已脱敏）：
     $2
 shortcutKeySelector:

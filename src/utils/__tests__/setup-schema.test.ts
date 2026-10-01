@@ -5,16 +5,16 @@ import { describe, expect, it } from "vitest"
 import { z } from "zod"
 import { setupDocumentSchema } from "../setup-document"
 
-const SCHEMA_PATH = resolve(__dirname, "../../../schema/jiandao-setup.schema.json")
+const SCHEMA_PATH = resolve(__dirname, "../../../schema/readomi-setup.schema.json")
 
 /** The JSON Schema agents read. `pnpm schema:setup` rewrites the committed file from the zod schema. */
 export function buildSetupJsonSchema(): Record<string, unknown> {
   const schema = z.toJSONSchema(setupDocumentSchema, { target: "draft-7" }) as Record<string, unknown>
   return {
     $schema: "http://json-schema.org/draft-07/schema#",
-    $id: "https://github.com/Xuanwo/jiandao/blob/main/schema/jiandao-setup.schema.json",
-    title: "Jiandao setup document",
-    description: "Jiandao's translation service. Written by an agent, pasted by the reader into the translation service section of Jiandao's settings page. See docs/agent-setup.md.",
+    $id: "https://github.com/knothhe/reading/blob/main/schema/readomi-setup.schema.json",
+    title: "Readomi setup document",
+    description: "Readomi's translation service. Written by an agent, pasted by the reader into the translation service section of Readomi's settings page. See docs/agent-setup.md.",
     ...schema,
   }
 }

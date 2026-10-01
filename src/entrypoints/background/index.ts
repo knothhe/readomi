@@ -3,6 +3,7 @@ import { browser, defineBackground } from "#imports"
 import { logger } from "@/utils/logger"
 import { onMessage } from "@/utils/message"
 import { openOptionsPage } from "@/utils/navigation"
+import { setupActionIcons } from "./action-icon"
 import { ensureInitializedConfig } from "./config"
 import { setUpDatabaseCleanup } from "./db-cleanup"
 import { setupIframeInjection } from "./iframe-injection"
@@ -30,6 +31,7 @@ export default defineBackground({
     })
 
     translationMessage()
+    setupActionIcons()
     setupTranslationProgress()
 
     setUpWebPageTranslationQueue()

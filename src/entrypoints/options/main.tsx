@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider"
 import { RecoveryBoundary } from "@/components/recovery/recovery-boundary"
 import { Toasts } from "@/components/toast"
 import { configAtom } from "@/utils/atoms/config"
+import { applyColorTheme } from "@/utils/color-theme"
 import { getLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { renderPersistentReactRoot } from "@/utils/react-root"
@@ -36,6 +37,7 @@ async function initApp() {
   const config = (await getLocalConfig()) ?? DEFAULT_CONFIG
 
   applyTheme(document.documentElement, getSystemTheme())
+  applyColorTheme(document.documentElement, config.appearance.colorTheme, getSystemTheme())
 
   renderPersistentReactRoot(root, (
     <React.StrictMode>

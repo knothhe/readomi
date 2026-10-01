@@ -10,7 +10,7 @@ import { getRequestHost, resolveBaseURL, resolveRequestApi } from "@/utils/provi
 
 /**
  * The setup document is shared by agent setup and manual service configuration.
- * An agent writes it, the reader pastes it into the settings page, Jiandao
+ * An agent writes it, the reader pastes it into the settings page, Readomi
  * previews and applies it. It describes the service and nothing else:
  * languages, display and the prompt are separate settings. It describes
  * intent, not storage, so the internal Config may change shape.

@@ -17,7 +17,7 @@
   display: block !important;
 }
 
-/* A failed paragraph keeps its place with a dashed neutral line, never the vermilion that marks a translation. */
+/* A failed paragraph keeps its place with a dashed neutral line, never the theme color that marks a translation. */
 .jiandao-translation-error-container {
   display: inline-block;
   margin: 8px 0;

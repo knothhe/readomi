@@ -1,5 +1,9 @@
 import type { Theme } from "@/utils/theme"
+import { useAtomValue } from "jotai"
 import { useLayoutEffect, useSyncExternalStore } from "react"
+import { configFieldsAtomMap } from "@/utils/atoms/config"
+import { applyColorTheme } from "@/utils/color-theme"
+import { setHostColorTheme } from "@/utils/host-color-theme"
 import { applyTheme, getSystemTheme } from "@/utils/theme"
 
 const DARK_QUERY = "(prefers-color-scheme: dark)"
@@ -20,11 +24,15 @@ export function ThemeProvider({
   children: React.ReactNode
   container?: HTMLElement
 }) {
+  const { colorTheme } = useAtomValue(configFieldsAtomMap.appearance)
   const theme: Theme = useSyncExternalStore(subscribeToSystemTheme, getSystemTheme)
 
   useLayoutEffect(() => {
-    applyTheme(container ?? document.documentElement, theme)
-  }, [theme, container])
+    const target = container ?? document.documentElement
+    applyTheme(target, theme)
+    applyColorTheme(target, colorTheme, theme)
+    setHostColorTheme(colorTheme)
+  }, [theme, container, colorTheme])
 
   return children
 }

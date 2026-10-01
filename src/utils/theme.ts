@@ -1,6 +1,6 @@
 export type Theme = "light" | "dark"
 
-/** Jiandao's own pages always follow the system appearance; there is no preference to store. */
+/** Readomi's own pages always follow the system appearance; there is no preference to store. */
 export function getSystemTheme(): Theme {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light"
 }

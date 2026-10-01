@@ -1,117 +1,53 @@
-<p align="center"><img src=".github/assets/logo.png" alt="Jiandao icon" width="128"></p>
+<p align="center"><img src=".github/assets/logo.png" alt="Readomi icon" width="128"></p>
+<h1 align="center">Readomi</h1>
+<p align="center">Make text easier to read · <a href="./README.md">简体中文</a></p>
 
-<h1 align="center">Jiandao</h1>
+Readomi is a local-first reading companion focused on translation. Translations appear in the page you are reading, in bilingual or translation-only mode, so you can keep reading in place.
 
-<p align="center">简道翻译 · <a href="./README.md">中文</a></p>
+## Origins
 
-> **Fork notice:** This repository is forked from
-> [Xuanwo/jiandao](https://github.com/Xuanwo/jiandao) and retains the upstream
-> project content. This fork adds `pnpm release:chrome`, which reads the version
-> from `package.json`, builds the Chrome extension ZIP, creates the matching
-> GitHub Release when needed, and uploads the ZIP for download from the Release
-> page.
+Fork chain: **[Read Frog](https://github.com/mengxi-ream/read-frog) → [Jiandao](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/reading)**.
 
-Jiandao is a browser extension that does one thing: it translates the web page you are reading into your language.
+Readomi directly forks Jiandao, which forks Read Frog. Thanks to the authors and contributors of both upstream projects. Readomi is independently maintained and developed in this repository, with its own product direction, releases and support. It is not affiliated with or officially partnered with either upstream team.
 
-Click "Translate this page" and a translation appears under each paragraph, set apart from the original by a thin line on its left. Nothing else is added to the page: no floating buttons, no selection bubbles, no sidebar. Click again and the page is back to how it was.
+## Features
 
-![A passage of Thoreau's Walden in English, each paragraph followed by Jiandao's Chinese translation with a thin vermilion line on its left](.github/assets/translation.png)
+- **Built around reading:** page translation prioritizes visible paragraphs and preserves layout. Optional paragraph hover translation, existing video subtitle translation and bold English word starts.
+- **Your choice of model:** OpenAI, Anthropic, Gemini, DeepSeek, compatible APIs and local models. Requests go directly from your browser to your configured service.
+- **Flexible setup:** configure manually or use a coding agent to verify a service. Model discovery, configurable shortcuts, custom prompts and local configuration backups.
+- **A distinct identity:** Terra is the default theme. Choose Plum, Amber or Teal in Settings → Appearance; interface accents, translation markers and the toolbar icon change together. Light and dark appearance follows your system.
+- **Local first:** no account, cloud sync or hosted translation service. Settings, keys and caches stay in the browser. See the [privacy policy](./PRIVACY.md).
 
-The translation comes from a model you choose, such as OpenAI, Anthropic, Gemini, DeepSeek, or a model running on your own computer. Page text goes from your browser straight to that service. There is no Jiandao server in between.
+Video translation uses enabled YouTube captions or HTML5 subtitle tracks; it does not transcribe videos without captions. Hover and subtitle translation are off by default.
 
-## Before You Start
+## Install and use
 
-You need two things:
-
-- **A model service.** An API key for OpenAI, Anthropic, Gemini, DeepSeek or any OpenAI-compatible service, or a local model such as Ollama or LM Studio running on your computer. Online services bill you for what you use.
-- **A coding agent that can run commands**, such as Claude Code or Codex. Jiandao has no form for service addresses and keys. The agent does the first setup for you, as described below.
-
-## Install
-
-**Chrome and Edge**: install from the [Chrome Web Store](https://chromewebstore.google.com/detail/bjfjdmmojplcohcbmkoogopanjbojmok). Edge can install extensions from the Chrome Web Store directly.
-
-**Firefox**: Jiandao is not on Firefox Add-ons yet, so build it from source. You need [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/):
+Download an available Chrome build from this repository's [Releases](https://github.com/knothhe/reading/releases), unzip it, enable Developer mode in `chrome://extensions`, and select "Load unpacked". Edge uses `edge://extensions`. Or build from source:
 
 ```bash
-git clone https://github.com/Xuanwo/jiandao.git
-cd jiandao
+git clone https://github.com/knothhe/reading.git
+cd reading
 pnpm install
-pnpm build:firefox
+pnpm build           # Chrome
+pnpm build:edge      # Edge
+pnpm build:firefox   # Firefox
 ```
 
-Then open `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on", and choose `.output/firefox-mv3/manifest.json`. Firefox removes temporary add-ons when it restarts.
+Load the corresponding directory under `.output/` in Chrome or Edge. In Firefox, temporarily load its `manifest.json` at `about:debugging#/runtime/this-firefox`.
 
-To try unreleased code in Chrome, build it the same way: run `pnpm build`, open `chrome://extensions`, turn on "Developer mode", click "Load unpacked", and choose the `.output/chrome-mv3` directory.
+In Settings → Translation service, enter and test your service manually, or copy the instructions for an agent and paste its verified configuration. See the [setup guide](./docs/agent-setup.md) and optional [readomi-setup skill](./skills/readomi-setup/SKILL.md). Click "Translate this page" or press `Alt+E` (`Option+E` on Mac); repeat to restore the original.
 
-## First Setup
+Readomi has its own extension identity and can coexist with upstream installations. To migrate from an earlier build, export your configuration first and import it into Readomi. Earlier `reading-config` backups from this fork remain supported.
 
-1. Click the Jiandao icon in the browser toolbar. The popup says there is no translation service yet; click "Set up in settings".
-2. In the "Translation service" section, click "Copy instructions for your agent" and paste them into your coding agent.
-3. The agent asks which service you want and where your API key is. It sends a real translation request with your key, and once that works it puts the service configuration on your clipboard.
-4. Back on the settings page, paste the configuration into the "Translation service" box and click "Apply". Jiandao tests the connection first and saves only if it works.
-
-To change the service or the model later, click "Edit" in "Translation service": change a field in place, or click "Copy instructions for your agent", tell the agent what you want, and paste the new configuration back.
-
-Setup goes through an agent because service addresses, model names and parameters change often and are easy to get wrong by hand. The agent checks each one against the guide and makes a real request with your key, so the configuration you receive has already worked once. The full guide for agents is [docs/agent-setup.md](./docs/agent-setup.md). If your agent supports skills, you can install [skills/jiandao-setup](./skills/jiandao-setup/SKILL.md) instead.
-
-## Everyday Use
-
-Open a page, click the toolbar icon, check the source and target languages, and click "Translate this page". The source language is detected automatically by default.
-
-- **Shortcut**: `Alt+E` by default (`Option+E` on a Mac). Press it once to translate and again to show the original. It does nothing while the cursor is in a text field. You can change it in settings.
-- **Display mode**: "Bilingual" puts the translation under the original; "Translation only" replaces the original.
-- **Translates as you read**: Jiandao translates the paragraphs you can see first and the rest as you scroll, so long articles don't wait for the whole page.
-- **Pages it can't translate**: the browser's own pages (such as those starting with `chrome://`) and extension store pages don't allow extensions to change them. The popup says so.
-
-## Settings
-
-Open settings from the popup. The options you are most likely to use:
-
-- **Translation service**: the service in use, where page text goes, and the result of the last connection check. "Test connection" checks again.
-- **Translation style**: Hairline, None, Muted, Tinted or Highlight. You can also write your own CSS.
-- **Use page context**: the model reads a summary of the page before translating paragraphs. Terms and references come out more accurate, at the cost of one extra request per page.
-- **Prompt**: "Edit" opens the system prompt and the template in place; you can restore the default at any time.
-
-Request rate, batch size and translation range are not settings: Jiandao adjusts them to how the service actually responds, and translates only the main content when a page marks it up.
-
-## Privacy
-
-Jiandao has no server, no account, and collects no usage data. Settings and cached translations stay in your browser, are not synced across devices, and are deleted when you remove the extension. Page text is sent only when you translate a page, and only to the service you configured. See the [privacy policy](./PRIVACY.md).
-
-## FAQ
-
-**How much does translation cost?**
-Jiandao is free. The service you choose bills you for what you use. Translated paragraphs are cached locally, so opening the same page again sends no new requests. A local model costs nothing.
-
-**Can I use it without a coding agent?**
-Yes, but you write the configuration yourself. It is a piece of JSON described in [docs/agent-setup.md](./docs/agent-setup.md) and the [JSON Schema](./schema/jiandao-setup.schema.json). Paste it into the popup when it's ready.
-
-**Why no selection translation, video subtitles or text to speech?**
-Jiandao is a fork of [Read Frog](https://github.com/mengxi-ream/read-frog) that deliberately removed everything besides reading a page: video subtitles, input box translation, floating toolbars, text to speech, custom AI actions, hosted accounts, config sync and statistics. If you need those, Read Frog and similar tools do them well.
-
-**Where do I report problems?**
-In this repository's [issues](https://github.com/Xuanwo/jiandao/issues), not in the Read Frog project.
-
-## Development
+## Development and feedback
 
 ```bash
-pnpm install
-pnpm dev         # development mode; opens Chrome with the extension loaded
-pnpm test        # unit tests
+pnpm dev
+pnpm test
 pnpm type-check
 pnpm build
 ```
 
-`pnpm test:e2e` builds the extension and opens it in headless Chromium through [Playwright](https://playwright.dev/), a development dependency. Before the first run, run `pnpm exec playwright-core install --no-shell chromium` to download Chromium. On Linux, add `--with-deps` to also install the system libraries. When a test fails, its report shows the browser logs, the open pages and the stored config. Set `E2E_ARTIFACTS` to a directory to also save a screenshot of each page. CI runs the same tests.
+`design/` is the UI source of truth; open [design/index.html](./design/index.html) directly. Run browser tests with `pnpm test:e2e`; first install Chromium with `pnpm exec playwright-core install --no-shell chromium`.
 
-## License
-
-Jiandao is a modified version of Read Frog. Thanks to the Read Frog authors and contributors for the original work. Jiandao is distributed under the GNU General Public License version 3, the same license as upstream. See [LICENSE](./LICENSE).
-
-## Local features in this fork
-
-The existing visual style is retained. Translation services can be configured with a form or with the optional agent JSON flow. Configuration backups are local JSON files, include API keys, and replace all settings after validation and confirmation. Read Frog’s interaction and text-track adapter informed the local hover and subtitle implementation.
-
-Enable hover translation in Settings, then hover over a paragraph and hold Alt (Option on macOS) for 500 ms. Trigger again to restore the original. Video translation supports enabled YouTube captions and HTML5 subtitle tracks, using the configured AI API; current-cue translation has API latency. Both features are off by default.
-
-There are no accounts, login, cloud synchronization, hosted translation, speech transcription, video summaries or subtitle downloads. Settings and caches stay in browser-local storage. Read Frog configuration files are not accepted as this fork’s backups. The project name and icons remain inherited until a new brand is specified.
+Send questions and suggestions to [Readomi Issues](https://github.com/knothhe/reading/issues). Readomi inherits upstream's GNU GPL v3 license; see [LICENSE](./LICENSE).

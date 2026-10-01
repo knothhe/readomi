@@ -4,7 +4,7 @@ import type { ProviderConfig } from "@/types/config/provider"
 import { storage } from "#imports"
 import { logger } from "@/utils/logger"
 
-/** What Jiandao has learned about one service: its request pace and the batch size it handles. */
+/** What Readomi has learned about one service: its request pace and the batch size it handles. */
 export interface ServiceLimits {
   pace?: PaceState
   batch?: BatchLimits

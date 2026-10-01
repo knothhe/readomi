@@ -120,7 +120,7 @@ it("manual setup and local backup restore work without an account", async () => 
   await page.getByRole("button", { name: "Export configuration", exact: true }).click()
   const download = await downloadPromise
   const backup = JSON.parse(await readFile(await download.path(), "utf8"))
-  assert.equal(backup.format, "reading-config")
+  assert.equal(backup.format, "readomi-config")
   assert.equal(backup.config.providersConfig.find(p => p.id === backup.config.translate.providerId).apiKey, doc.apiKey)
   backup.config.features.hoverTranslation = true
   await page.getByLabel("Import configuration", { exact: true }).setInputFiles({ name: "reading-config.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(backup)) })

@@ -31,7 +31,7 @@ function createLogger(level: Level) {
   if (!isDev && level !== "error") {
     return noop
   }
-  const prefix = "[jiandao]"
+  const prefix = "[readomi]"
   // Node 环境 → 用 ANSI；否则用浏览器 %c
   const useAnsi = typeof window === "undefined"
 

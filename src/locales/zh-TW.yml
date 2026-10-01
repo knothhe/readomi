@@ -1,6 +1,6 @@
-name: 簡道翻譯
-extName: 簡道翻譯
-extDescription: 翻譯你正在讀的網頁，其他什麼都不做。
+name: Readomi
+extName: Readomi
+extDescription: 幫助你讀懂網頁，支援頁面、段落與字幕翻譯。
 languageCombobox:
   searchLanguages: 搜尋語言…
   noLanguagesFound: 找不到語言
@@ -30,7 +30,7 @@ popup:
     description: 在設定頁貼上 agent 產生的設定，就能翻譯。
     openSettings: 前往設定
     resetTitle: 需要重新設定翻譯服務
-    resetDescription: 簡道更新了設定格式，舊設定無法沿用，已清除。在設定頁貼上 agent 產生的設定，就能繼續翻譯。
+    resetDescription: Readomi更新了設定格式，舊設定無法沿用，已清除。在設定頁貼上 agent 產生的設定，就能繼續翻譯。
 errorRecovery:
   title: 應用程式發生異常
   description: 已進入復原模式。請重新整理頁面或重設設定後再試一次。
@@ -54,7 +54,7 @@ options:
       description: 把說明交給你的 agent。它會用你的金鑰驗證翻譯服務的設定，放進剪貼簿，你貼到下面。
     reset:
       title: 需要重新設定翻譯服務
-      description: 簡道更新了設定格式，舊設定無法沿用，已清除。把說明交給你的 agent，它會用你的金鑰驗證翻譯服務的設定，放進剪貼簿，你貼到下面。
+      description: Readomi更新了設定格式，舊設定無法沿用，已清除。把說明交給你的 agent，它會用你的金鑰驗證翻譯服務的設定，放進剪貼簿，你貼到下面。
     copyInstructions: 複製給 agent 的說明
     copied: 已複製
     edit: 修改
@@ -82,6 +82,17 @@ options:
     cancel: 取消
     apply: 套用
     applying: 檢查中…
+  appearance:
+    title: 外觀
+    colorTheme: 主題色
+    description: 同時套用到介面、譯文標記和工具列圖示。明暗外觀跟隨系統。
+    default: 預設
+    saveFailed: 主題色未儲存，請重試。
+    colors:
+      terra: 陶紅
+      plum: 暖紫
+      amber: 琥珀
+      teal: 墨青
   reading:
     title: 閱讀
     whileTranslating: 翻譯時
@@ -143,16 +154,16 @@ options:
     togglePage: 翻譯此頁 / 顯示原文
 translation:
   sameLanguage: 來源語言和目標語言必須不同
-  noApiKey: 尚未填入 API 金鑰。請點一下工具列上的簡道翻譯圖示進行設定。
+  noApiKey: 尚未填入 API 金鑰。請點一下工具列上的Readomi圖示進行設定。
   failed: 翻譯失敗
   retry: 重試
   unknownError: 發生錯誤
 agentInstructions:
   noConfiguration: （尚未設定）
   text: |
-    我在用瀏覽器擴充功能簡道翻譯（Jiandao）翻譯網頁，請幫我設定它的翻譯服務。
+    我在用瀏覽器擴充功能Readomi翻譯網頁，請幫我設定它的翻譯服務。
     先閱讀說明：$1
-    照說明操作：問清楚我要用哪家服務、API 金鑰在哪裡；用我的金鑰依說明裡的請求範本驗證，直到請求成功；把翻譯服務的設定 JSON 寫入我的剪貼簿；最後告訴我在簡道翻譯設定頁的「翻譯服務」裡貼上並套用。
+    照說明操作：問清楚我要用哪家服務、API 金鑰在哪裡；用我的金鑰依說明裡的請求範本驗證，直到請求成功；把翻譯服務的設定 JSON 寫入我的剪貼簿；最後告訴我在Readomi設定頁的「翻譯服務」裡貼上並套用。
     我目前的設定（金鑰已遮蔽）：
     $2
 shortcutKeySelector:

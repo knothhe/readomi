@@ -1,8 +1,8 @@
-/* Colors injected into host pages. Vermilion marks translations; see design/Palette.html. */
+/* Colors injected into host pages. The selected Readomi color marks translations; see design/Palette.html. */
 :root {
-  --jiandao-primary: #1b2455;
-  --jiandao-brand: #f24a2c;
-  --jiandao-brand-strong: #c2331a;
+  --jiandao-primary: #b6533e;
+  --jiandao-brand: #b6533e;
+  --jiandao-brand-strong: #b6533e;
   --jiandao-foreground: #ffffff;
   --jiandao-muted: #f1f3f6;
   --jiandao-muted-foreground: #626978;
@@ -11,8 +11,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --jiandao-primary: #eceef4;
-    --jiandao-brand: #ff6e52;
-    --jiandao-brand-strong: #ff8a73;
+    --jiandao-brand: #e9ab91;
+    --jiandao-brand-strong: #e9ab91;
     --jiandao-foreground: #13151c;
     --jiandao-muted: #20232e;
     --jiandao-muted-foreground: #9097a6;

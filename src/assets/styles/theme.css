@@ -70,61 +70,57 @@
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Segoe UI",
     system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --rf-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  /*
-   * The logo's palette (design/Palette.html): cool neutrals, a deep ink
-   * navy for filled controls, the logo navy for links and focus, and
-   * vermilion only for what marks a translation.
-   */
-  --rf-background: #f7f8fa;
-  --rf-foreground: #151a2d;
+  /* Readomi uses warm neutrals; ThemeProvider applies the selected brand color. See design/Palette.html. */
+  --rf-background: #faf8f5;
+  --rf-foreground: #302b29;
   --rf-card: #ffffff;
-  --rf-card-foreground: #151a2d;
+  --rf-card-foreground: #302b29;
   --rf-popover: #ffffff;
-  --rf-popover-foreground: #151a2d;
-  --rf-primary: #1b2455;
-  --rf-primary-foreground: #ffffff;
-  --rf-brand: #f24a2c;
-  --rf-brand-foreground: #ffffff;
-  --rf-secondary: #eef0f4;
-  --rf-secondary-foreground: #626978;
-  --rf-muted: #f1f3f6;
-  --rf-muted-foreground: #626978;
-  --rf-accent: #eef0f4;
-  --rf-accent-foreground: #151a2d;
+  --rf-popover-foreground: #302b29;
+  --rf-primary: #b6533e;
+  --rf-primary-foreground: #fff8ec;
+  --rf-brand: #b6533e;
+  --rf-brand-foreground: #fff8ec;
+  --rf-secondary: #f1ebe6;
+  --rf-secondary-foreground: #716862;
+  --rf-muted: #f5f0eb;
+  --rf-muted-foreground: #716862;
+  --rf-accent: #f1ebe6;
+  --rf-accent-foreground: #302b29;
   --rf-destructive: #b42318;
   --rf-success: #3f8f5a;
   --rf-attention: #c7863c;
-  --rf-border: #e3e6ec;
-  --rf-input: #d5d9e1;
-  --rf-ring: #2b45b8;
-  --rf-link: #2b45b8;
+  --rf-border: #e8e0db;
+  --rf-input: #d9cdc4;
+  --rf-ring: #b6533e;
+  --rf-link: #b6533e;
   --rf-radius: 0.625rem;
 }
 
 .dark {
-  --rf-background: #13151c;
-  --rf-foreground: #eceef4;
-  --rf-card: #1b1e27;
-  --rf-card-foreground: #eceef4;
-  --rf-popover: #1b1e27;
-  --rf-popover-foreground: #eceef4;
-  --rf-primary: #eceef4;
-  --rf-primary-foreground: #13151c;
-  --rf-brand: #ff6e52;
-  --rf-brand-foreground: #13151c;
-  --rf-secondary: #262a36;
-  --rf-secondary-foreground: #9097a6;
-  --rf-muted: #20232e;
-  --rf-muted-foreground: #9097a6;
-  --rf-accent: #262a36;
-  --rf-accent-foreground: #eceef4;
+  --rf-background: #1c1917;
+  --rf-foreground: #eae3dc;
+  --rf-card: #26211e;
+  --rf-card-foreground: #eae3dc;
+  --rf-popover: #26211e;
+  --rf-popover-foreground: #eae3dc;
+  --rf-primary: #e9ab91;
+  --rf-primary-foreground: #1c1917;
+  --rf-brand: #e9ab91;
+  --rf-brand-foreground: #1c1917;
+  --rf-secondary: #342c27;
+  --rf-secondary-foreground: #a69b93;
+  --rf-muted: #2e2723;
+  --rf-muted-foreground: #a69b93;
+  --rf-accent: #342c27;
+  --rf-accent-foreground: #eae3dc;
   --rf-destructive: #f97066;
   --rf-success: #5db57a;
   --rf-attention: #d9a05c;
-  --rf-border: #2a2e3a;
-  --rf-input: #333846;
-  --rf-ring: #9fb0ff;
-  --rf-link: #9fb0ff;
+  --rf-border: #40352e;
+  --rf-input: #4a3c32;
+  --rf-ring: #e9ab91;
+  --rf-link: #e9ab91;
 }
 
 @layer base {

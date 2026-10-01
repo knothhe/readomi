@@ -2,7 +2,7 @@ import type { Config } from "@/types/config/config"
 import { configSchema } from "@/types/config/config"
 import { migrateStoredConfig } from "./migrate"
 
-const FORMAT = "reading-config"
+const FORMAT = "readomi-config"
 export const MAX_BACKUP_SIZE = 1024 * 1024
 
 export function exportConfigBackup(config: Config): string {
@@ -13,7 +13,7 @@ export function parseConfigBackup(text: string): Config {
   if (text.length > MAX_BACKUP_SIZE)
     throw new Error("Configuration file exceeds 1 MB")
   const document = JSON.parse(text)
-  if (!document || document.format !== FORMAT)
+  if (!document || ![FORMAT, "reading-config"].includes(document.format))
     throw new Error("Unsupported configuration file")
   const result = migrateStoredConfig(document.config)
   if (!result.ok)

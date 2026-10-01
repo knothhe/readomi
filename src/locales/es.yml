@@ -1,6 +1,6 @@
-name: Jiandao
-extName: Jiandao
-extDescription: Traduce la página web que estás leyendo y nada más.
+name: Readomi
+extName: Readomi
+extDescription: Un compañero de lectura con traducción de páginas, párrafos y subtítulos.
 languageCombobox:
   searchLanguages: Buscar idiomas…
   noLanguagesFound: No se encontraron idiomas
@@ -30,7 +30,7 @@ popup:
     description: Pega en la página de ajustes la configuración que genera tu agente y podrás traducir.
     openSettings: Configurar en ajustes
     resetTitle: Vuelve a configurar el servicio de traducción
-    resetDescription: Jiandao cambió el formato de su configuración y la anterior no se pudo conservar, así que se borró. Pega en la página de ajustes la configuración que genera tu agente para volver a traducir.
+    resetDescription: Readomi cambió el formato de su configuración y la anterior no se pudo conservar, así que se borró. Pega en la página de ajustes la configuración que genera tu agente para volver a traducir.
 errorRecovery:
   title: Algo salió mal
   description: El modo de recuperación está activo. Actualiza la página o restablece la configuración y vuelve a intentarlo.
@@ -54,7 +54,7 @@ options:
       description: Pasa las instrucciones a tu agente. Verificará la configuración del servicio con tu clave y la dejará en el portapapeles; pégala abajo.
     reset:
       title: Vuelve a configurar el servicio de traducción
-      description: Jiandao cambió el formato de su configuración y la anterior no se pudo conservar, así que se borró. Pasa las instrucciones a tu agente. Verificará la configuración del servicio con tu clave y la dejará en el portapapeles; pégala abajo.
+      description: Readomi cambió el formato de su configuración y la anterior no se pudo conservar, así que se borró. Pasa las instrucciones a tu agente. Verificará la configuración del servicio con tu clave y la dejará en el portapapeles; pégala abajo.
     copyInstructions: Copiar instrucciones para tu agente
     copied: Copiado
     edit: Editar
@@ -82,6 +82,17 @@ options:
     cancel: Cancelar
     apply: Aplicar
     applying: Comprobando…
+  appearance:
+    title: Apariencia
+    colorTheme: Color del tema
+    description: Se aplica a la interfaz, las marcas de traducción y el icono de la barra. El modo claro u oscuro sigue al sistema.
+    default: Predeterminado
+    saveFailed: No se guardó el color. Inténtalo de nuevo.
+    colors:
+      terra: Terracota
+      plum: Ciruela
+      amber: Ámbar
+      teal: Verde azulado
   reading:
     title: Lectura
     whileTranslating: Al traducir
@@ -143,16 +154,16 @@ options:
     togglePage: Traducir esta página / Mostrar original
 translation:
   sameLanguage: Los idiomas de origen y destino deben ser diferentes
-  noApiKey: Primero añade una clave API. Haz clic en el icono de Jiandao en la barra de herramientas para configurarla.
+  noApiKey: Primero añade una clave API. Haz clic en el icono de Readomi en la barra de herramientas para configurarla.
   failed: Error de traducción
   retry: Reintentar
   unknownError: Algo salió mal
 agentInstructions:
   noConfiguration: (aún ninguna)
   text: |
-    Uso la extensión de navegador Jiandao (简道翻译) para traducir páginas web. Configura su servicio de traducción, por favor.
+    Uso la extensión de navegador Readomi para traducir páginas web. Configura su servicio de traducción, por favor.
     Lee primero la guía: $1
-    Síguela: pregúntame qué servicio quiero y dónde está mi clave de API. Verifica con mi clave usando la plantilla de solicitud de la guía hasta que una solicitud funcione. Escribe el JSON de configuración del servicio en mi portapapeles. Después dime que lo pegue en "Servicio de traducción" de la página de ajustes de Jiandao y lo aplique.
+    Síguela: pregúntame qué servicio quiero y dónde está mi clave de API. Verifica con mi clave usando la plantilla de solicitud de la guía hasta que una solicitud funcione. Escribe el JSON de configuración del servicio en mi portapapeles. Después dime que lo pegue en "Servicio de traducción" de la página de ajustes de Readomi y lo aplique.
     Mi configuración actual, con la clave oculta:
     $2
 shortcutKeySelector:

@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from "react"
-import { browser } from "#imports"
-import jiandaoIcon from "@/assets/icons/jiandao.png?url&no-inline"
+import { BrandIcon } from "@/components/brand-icon"
 import { APP_NAME } from "@/utils/constants/app"
 import { NOTRANSLATE_CLASS } from "@/utils/constants/dom-labels"
 
@@ -56,8 +55,6 @@ function useToasts() {
   return useSyncExternalStore(subscribe, () => items, () => items)
 }
 
-const iconUrl = new URL(jiandaoIcon, browser.runtime.getURL("/")).href
-
 export function Toasts() {
   const current = useToasts()
   if (current.length === 0)
@@ -75,7 +72,7 @@ export function Toasts() {
           role={item.kind === "error" ? "alert" : "status"}
           className="pointer-events-auto flex items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-sm text-foreground shadow-md animate-[jiandao-fade-in_150ms_ease-out]"
         >
-          <img src={iconUrl} alt="" className="mt-px size-5 shrink-0" />
+          <BrandIcon className="mt-px size-5 shrink-0" />
           <div className="min-w-0 flex-1">
             <div className={item.kind === "error" ? "font-medium text-destructive" : "font-medium"}>{item.message}</div>
             {item.description && <div className="mt-0.5 text-xs text-muted-foreground">{item.description}</div>}

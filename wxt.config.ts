@@ -1,10 +1,8 @@
 import { defineConfig } from "wxt"
 
-// Public key of the Chrome Web Store item (ID bjfjdmmojplcohcbmkoogopanjbojmok).
-// It pins the extension ID so unpacked builds share storage with the store
-// install, and store updates must carry the same key. Edge Add-ons assigns its
-// own ID, so Edge builds never carry it.
-const chromeExtensionKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArGLEeLSKiXq0HLH6nW+zdCRA4CriidImKKHBs2FkXeB2iJJ16JcRd8qWvStt1YMCdDPtiXzfYdlDGv61HXA+0+ebGt0tF6bRP+YTrD5y8t9rhhhU4i8G1lpiP3tso1yWWDhX2W4Ng8K/B32EsT0iE30HqFO8MM0K0RggjBnc0n+brfW/5l69w5J3uRo8rjVQAuAJOH7anNqa9h3hPM1TNFj3wR7zTOMC6BfASEJtOD8ypDQQRZPuo/0+Tzcm7l4KokErO4ZW48J+/pBIL08j+BPRnVG3g4yO5J/Fv/6rQANtliMd5bxYqDK6WgJWqGneUU36E7NU8FozFO8peE7bIQIDAQAB"
+// Readomi's own public key pins its extension ID across local builds.
+// Independent of Jiandao's Chrome Web Store identity; no private key is distributed.
+const chromeExtensionKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuecehF+RGQfryNv+tY6yUnKklZY9J68UFm5pRK8zeBqGtM26NoAl7u0nSdOAVEF+HA6+2apSteEzXa5+8z5o6mBnr+I28YzBPJYeVxWm1g+ioyIXMIpUWXLJZ7HA3QQ54qmYs9Aly4oxkEWQ6CQ7dVI16W22z70AKp3toGejFHg3dUcNkd92E2eTCbS3MQBiBsuXs0VZlKJ/hHA8i1FTgR2JDujdmMi6VjdI0QbSuwM3T0AsylwS+aygiW3Jix+pRtw4zhuJXlmcJa3K1yy5x0uHSqBqCk0cOtg7ClyBr3gySJuAAkJ0DUBvM9/YKWrA1m7TcrCBT6rZUoxfINwQYQIDAQAB"
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -31,7 +29,7 @@ export default defineConfig({
     // moz-extension:// URLs on regular pages. Firefox enforces this more strictly.
     web_accessible_resources: [
       {
-        resources: ["assets/*.png", "assets/*.svg", "assets/*.webp"],
+        resources: ["assets/*.png", "assets/*.svg", "assets/*.webp", "icon/*/*.png"],
         matches: ["*://*/*", "file:///*"],
       },
     ],
@@ -44,7 +42,7 @@ export default defineConfig({
       },
       browser_specific_settings: {
         gecko: {
-          id: "jiandao@xuanwo.io",
+          id: "readomi@knothhe",
           // Firefox 140 is the first release that shows data_collection_permissions
           // in the install prompt; older releases would need an in-extension consent UI.
           strict_min_version: "140.0",

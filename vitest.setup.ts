@@ -78,7 +78,7 @@ vi.mock("wxt/testing/fake-browser", async () => {
         ...actual.fakeBrowser.runtime,
         getManifest: () => ({
           manifest_version: 3,
-          name: "Jiandao",
+          name: "Readomi",
           version: "1.0.0",
           description: "Test manifest",
         }),

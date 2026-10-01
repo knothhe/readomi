@@ -1,18 +1,18 @@
 ---
-name: jiandao-setup
-description: Configure the Jiandao (简道翻译) browser extension's translation service for the user. Use when the user asks to set up, change, or fix Jiandao's translation service, model or API key, or pastes a Jiandao configuration or a Jiandao error message.
+name: readomi-setup
+description: Configure the Readomi browser extension's translation service for the user. Use when the user asks to set up, change, or fix Readomi's translation service, model or API key, or pastes a Readomi configuration or a Readomi error message.
 ---
 
-# Jiandao setup
+# Readomi setup
 
-Jiandao has no settings form for its translation service. You produce a JSON
+Readomi supports manual configuration in settings. In this optional agent flow, you produce a JSON
 document that describes the service only, verify it against the real API with
 the user's key, and put it on the user's clipboard. The user pastes it into
-the "Translation service" section of Jiandao's settings page and applies it.
-Languages, display and the prompt are the user's own settings in Jiandao.
+the "Translation service" section of Readomi's settings page and applies it.
+Languages, display and the prompt are the user's own settings in Readomi.
 
 Read the guide for the document format, the recipes and the verification
-templates: https://github.com/Xuanwo/jiandao/blob/main/docs/agent-setup.md
+templates: https://github.com/knothhe/reading/blob/main/docs/agent-setup.md
 
 ## Steps
 
@@ -23,14 +23,14 @@ templates: https://github.com/Xuanwo/jiandao/blob/main/docs/agent-setup.md
 2. Load the key into a shell variable from a file or environment variable.
    Never print it, never include it in a message.
 3. Verify with the guide's `curl` template for that service, using the model
-   and the `body` fields you will configure. Jiandao sends the same request.
+   and the `body` fields you will configure. Readomi sends the same request.
    Adjust until a request succeeds.
 4. Build the document with `jq --arg k "$KEY"` and pipe it to the clipboard
    (`pbcopy`, `wl-copy`, `xclip -selection clipboard`, or `clip`). A masked
    key from an export (`sk-…a9f2`) is returned unchanged.
-5. Tell the user to open Jiandao's settings page, paste into the
+5. Tell the user to open Readomi's settings page, paste into the
    "Translation service" section (click "Edit" first if a service is already
-   set up), and click "Apply". Jiandao previews the change, confirms the
+   set up), and click "Apply". Readomi previews the change, confirms the
    connection, saves only if it works, and clears the clipboard.
 
 ## Defaults

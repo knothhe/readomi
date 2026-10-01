@@ -1,6 +1,6 @@
-name: Jiandao
-extName: Jiandao
-extDescription: Dịch trang web bạn đang đọc, và không làm gì khác.
+name: Readomi
+extName: Readomi
+extDescription: Trợ lý đọc với khả năng dịch trang, đoạn văn và phụ đề.
 languageCombobox:
   searchLanguages: Tìm ngôn ngữ…
   noLanguagesFound: Không tìm thấy ngôn ngữ
@@ -30,7 +30,7 @@ popup:
     description: Dán cấu hình do agent của bạn tạo vào trang cài đặt là có thể dịch.
     openSettings: Thiết lập trong cài đặt
     resetTitle: Hãy thiết lập lại dịch vụ dịch
-    resetDescription: Jiandao đã đổi định dạng cấu hình, cấu hình cũ không dùng tiếp được nên đã bị xóa. Dán cấu hình do agent của bạn tạo vào trang cài đặt để dịch tiếp.
+    resetDescription: Readomi đã đổi định dạng cấu hình, cấu hình cũ không dùng tiếp được nên đã bị xóa. Dán cấu hình do agent của bạn tạo vào trang cài đặt để dịch tiếp.
 errorRecovery:
   title: Đã xảy ra sự cố
   description: Chế độ khôi phục đang bật. Hãy tải lại trang hoặc đặt lại cài đặt rồi thử lại.
@@ -54,7 +54,7 @@ options:
       description: Đưa hướng dẫn cho agent của bạn. Agent sẽ dùng khóa của bạn để kiểm tra cấu hình dịch vụ rồi đặt vào bộ nhớ tạm; hãy dán vào bên dưới.
     reset:
       title: Hãy thiết lập lại dịch vụ dịch
-      description: Jiandao đã đổi định dạng cấu hình, cấu hình cũ không dùng tiếp được nên đã bị xóa. Đưa hướng dẫn cho agent của bạn. Agent sẽ dùng khóa của bạn để kiểm tra cấu hình dịch vụ rồi đặt vào bộ nhớ tạm; hãy dán vào bên dưới.
+      description: Readomi đã đổi định dạng cấu hình, cấu hình cũ không dùng tiếp được nên đã bị xóa. Đưa hướng dẫn cho agent của bạn. Agent sẽ dùng khóa của bạn để kiểm tra cấu hình dịch vụ rồi đặt vào bộ nhớ tạm; hãy dán vào bên dưới.
     copyInstructions: Sao chép hướng dẫn cho agent
     copied: Đã sao chép
     edit: Sửa
@@ -82,6 +82,17 @@ options:
     cancel: Hủy
     apply: Áp dụng
     applying: Đang kiểm tra…
+  appearance:
+    title: Giao diện
+    colorTheme: Màu chủ đề
+    description: Áp dụng cho giao diện, dấu bản dịch và biểu tượng thanh công cụ. Chế độ sáng và tối theo hệ thống.
+    default: Mặc định
+    saveFailed: Chưa lưu được màu chủ đề. Vui lòng thử lại.
+    colors:
+      terra: Đỏ đất
+      plum: Tím mận
+      amber: Hổ phách
+      teal: Xanh cổ vịt
   reading:
     title: Đọc
     whileTranslating: Khi dịch
@@ -143,16 +154,16 @@ options:
     togglePage: Dịch trang này / Hiển thị bản gốc
 translation:
   sameLanguage: Ngôn ngữ nguồn và đích phải khác nhau
-  noApiKey: Hãy thêm API Key trước. Nhấp vào biểu tượng Jiandao trên thanh công cụ để cài đặt.
+  noApiKey: Hãy thêm API Key trước. Nhấp vào biểu tượng Readomi trên thanh công cụ để cài đặt.
   failed: Dịch thất bại
   retry: Thử lại
   unknownError: Đã xảy ra sự cố
 agentInstructions:
   noConfiguration: (chưa có)
   text: |
-    Tôi dùng tiện ích trình duyệt Jiandao (简道翻译) để dịch trang web. Hãy thiết lập dịch vụ dịch cho tôi.
+    Tôi dùng tiện ích trình duyệt Readomi để dịch trang web. Hãy thiết lập dịch vụ dịch cho tôi.
     Đọc hướng dẫn trước: $1
-    Làm theo hướng dẫn: hỏi tôi muốn dùng dịch vụ nào và khóa API của tôi ở đâu. Dùng khóa của tôi và mẫu yêu cầu trong hướng dẫn để kiểm tra cho đến khi yêu cầu thành công. Ghi JSON cấu hình dịch vụ vào bộ nhớ tạm của tôi. Cuối cùng bảo tôi dán nó vào mục "Dịch vụ dịch" trên trang cài đặt Jiandao và áp dụng.
+    Làm theo hướng dẫn: hỏi tôi muốn dùng dịch vụ nào và khóa API của tôi ở đâu. Dùng khóa của tôi và mẫu yêu cầu trong hướng dẫn để kiểm tra cho đến khi yêu cầu thành công. Ghi JSON cấu hình dịch vụ vào bộ nhớ tạm của tôi. Cuối cùng bảo tôi dán nó vào mục "Dịch vụ dịch" trên trang cài đặt Readomi và áp dụng.
     Cấu hình hiện tại của tôi, khóa đã được che:
     $2
 shortcutKeySelector:

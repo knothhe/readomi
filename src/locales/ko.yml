@@ -1,6 +1,6 @@
-name: Jiandao
-extName: Jiandao
-extDescription: 지금 읽고 있는 웹 페이지를 번역합니다. 그 외에는 아무것도 하지 않습니다.
+name: Readomi
+extName: Readomi
+extDescription: 웹 페이지, 문단, 자막 번역으로 읽기를 돕습니다.
 languageCombobox:
   searchLanguages: 언어 검색…
   noLanguagesFound: 언어를 찾을 수 없습니다
@@ -30,7 +30,7 @@ popup:
     description: 에이전트가 만든 구성을 설정 페이지에 붙여 넣으면 번역할 수 있습니다.
     openSettings: 설정에서 구성하기
     resetTitle: 번역 서비스를 다시 구성해 주세요
-    resetDescription: Jiandao의 구성 형식이 바뀌어 이전 구성을 이어 쓸 수 없어 삭제했습니다. 에이전트가 만든 구성을 설정 페이지에 붙여 넣으면 다시 번역할 수 있습니다.
+    resetDescription: Readomi의 구성 형식이 바뀌어 이전 구성을 이어 쓸 수 없어 삭제했습니다. 에이전트가 만든 구성을 설정 페이지에 붙여 넣으면 다시 번역할 수 있습니다.
 errorRecovery:
   title: 문제가 발생했습니다
   description: 복구 모드가 활성화되었습니다. 페이지를 새로고침하거나 설정을 초기화한 뒤 다시 시도하세요.
@@ -54,7 +54,7 @@ options:
       description: 안내를 에이전트에게 전달하세요. 에이전트가 키로 번역 서비스 구성을 확인해 클립보드에 넣어 줍니다. 아래에 붙여 넣으세요.
     reset:
       title: 번역 서비스를 다시 구성해 주세요
-      description: Jiandao의 구성 형식이 바뀌어 이전 구성을 이어 쓸 수 없어 삭제했습니다. 안내를 에이전트에게 전달하세요. 에이전트가 키로 번역 서비스 구성을 확인해 클립보드에 넣어 줍니다. 아래에 붙여 넣으세요.
+      description: Readomi의 구성 형식이 바뀌어 이전 구성을 이어 쓸 수 없어 삭제했습니다. 안내를 에이전트에게 전달하세요. 에이전트가 키로 번역 서비스 구성을 확인해 클립보드에 넣어 줍니다. 아래에 붙여 넣으세요.
     copyInstructions: 에이전트용 안내 복사
     copied: 복사됨
     edit: 수정
@@ -82,6 +82,17 @@ options:
     cancel: 취소
     apply: 적용
     applying: 확인 중…
+  appearance:
+    title: 모양
+    colorTheme: 테마 색상
+    description: 화면, 번역 표시, 도구 모음 아이콘에 적용됩니다. 밝고 어두운 모양은 시스템을 따릅니다.
+    default: 기본값
+    saveFailed: 테마 색상을 저장하지 못했습니다. 다시 시도해 주세요.
+    colors:
+      terra: 테라코타
+      plum: 플럼
+      amber: 앰버
+      teal: 틸
   reading:
     title: 읽기
     whileTranslating: 번역할 때
@@ -143,16 +154,16 @@ options:
     togglePage: 이 페이지 번역 / 원문 보기
 translation:
   sameLanguage: 원본 언어와 대상 언어는 달라야 합니다
-  noApiKey: 먼저 API 키를 추가하세요. 툴바의 Jiandao 아이콘을 클릭하면 설정할 수 있습니다.
+  noApiKey: 먼저 API 키를 추가하세요. 툴바의 Readomi 아이콘을 클릭하면 설정할 수 있습니다.
   failed: 번역 실패
   retry: 다시 시도
   unknownError: 문제가 발생했습니다
 agentInstructions:
   noConfiguration: (아직 없음)
   text: |
-    브라우저 확장 프로그램 Jiandao(简道翻译)로 웹 페이지를 번역하고 있습니다. 번역 서비스를 설정해 주세요.
+    브라우저 확장 프로그램 Readomi로 웹 페이지를 번역하고 있습니다. 번역 서비스를 설정해 주세요.
     먼저 가이드를 읽어 주세요: $1
-    가이드를 따라 주세요: 제가 원하는 서비스와 API 키의 위치를 물어봐 주세요. 가이드의 요청 템플릿으로 제 키를 사용해 요청이 성공할 때까지 확인해 주세요. 번역 서비스 구성 JSON을 제 클립보드에 써 주세요. 마지막으로 Jiandao 설정 페이지의 "번역 서비스"에 붙여 넣고 적용하라고 알려 주세요.
+    가이드를 따라 주세요: 제가 원하는 서비스와 API 키의 위치를 물어봐 주세요. 가이드의 요청 템플릿으로 제 키를 사용해 요청이 성공할 때까지 확인해 주세요. 번역 서비스 구성 JSON을 제 클립보드에 써 주세요. 마지막으로 Readomi 설정 페이지의 "번역 서비스"에 붙여 넣고 적용하라고 알려 주세요.
     현재 구성(키는 가려짐):
     $2
 shortcutKeySelector:

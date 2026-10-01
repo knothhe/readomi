@@ -5,6 +5,16 @@ import { exportConfigBackup, parseConfigBackup } from "../backup"
 const configured = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "sk-backup", headers: { Authorization: "secret" }, connectionCheck: { ok: true, checkedAt: 1 } })) }
 
 describe("local configuration backups", () => {
+  it("exports Readomi themes and accepts earlier backups from this fork", () => {
+    const config = { ...configured, appearance: { colorTheme: "plum" as const } }
+    const text = exportConfigBackup(config)
+    expect(JSON.parse(text).format).toBe("readomi-config")
+    expect(parseConfigBackup(text).appearance).toEqual(config.appearance)
+    const { appearance: _, ...old } = configured
+    const imported = parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...old, version: 3 } }))
+    expect(imported.appearance.colorTheme).toBe("terra")
+    expect(imported.providersConfig[0].apiKey).toBe("sk-backup")
+  })
   it("round trips new shortcuts and rejects two actions sharing a key combination", () => {
     const next = { ...configured, features: { ...configured.features, hoverHotkey: "shift" as const, modeShortcut: "Alt+M", subtitlesShortcut: "Alt+V" } }
     expect(parseConfigBackup(exportConfigBackup(next)).features).toEqual(next.features)

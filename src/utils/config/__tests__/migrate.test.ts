@@ -26,6 +26,18 @@ function withoutVersion(config: object): Record<string, unknown> {
 }
 
 describe("migrateStoredConfig", () => {
+  it("adds the default theme to version 3 without losing credentials or reading preferences", () => {
+    const { appearance: _, ...old } = DEFAULT_CONFIG
+    const stored = { ...old, version: 3, reading: { wordPrefixEmphasis: true }, providersConfig: old.providersConfig.map(p => ({ ...p, apiKey: "kept-key" })) }
+    const result = migrateStoredConfig(stored)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.config.appearance).toEqual({ colorTheme: "terra" })
+      expect(result.config.providersConfig).toEqual(stored.providersConfig)
+      expect(result.config.reading.wordPrefixEmphasis).toBe(true)
+      expect(result.config.version).toBe(CONFIG_VERSION)
+    }
+  })
   it("upgrades version 2 while preserving services, features and the page shortcut", () => {
     const old = { ...DEFAULT_CONFIG, version: 2, features: { hoverTranslation: true, videoSubtitles: true, subtitleMode: "translationOnly" } }
     expect(migrateStoredConfig(old)).toEqual({ ok: true, config: { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, ...old.features } } })
