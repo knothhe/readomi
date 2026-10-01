@@ -401,7 +401,7 @@ translationShortcuts:
   subtitles: Toggle video subtitles
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
   hover: Hover translation trigger
-  hoverHint: Hover over a paragraph and hold the trigger key or left mouse button for 500 ms. Trigger again to restore the original. Text fields are excluded; dragging cancels a mouse hold.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift

@@ -401,7 +401,7 @@ translationShortcuts:
   subtitles: 切换视频字幕
   hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕开关只影响当前页面，需要先启用视频字幕翻译。
   hover: 悬停翻译触发方式
-  hoverHint: 鼠标停在段落上，按住触发键或鼠标左键 500 毫秒；再次触发恢复原文。输入框中不触发，拖动鼠标会取消长按。
+  hoverHint: 鼠标停在段落上，点按触发键并松开即可翻译；按住 500 毫秒也会自动翻译，同一次按键只触发一次。鼠标左键需要长按 500 毫秒。再次触发恢复原文；输入框中不触发，组合键或拖动鼠标会取消触发。
   alt: Option / Alt
   control: Control
   shift: Shift

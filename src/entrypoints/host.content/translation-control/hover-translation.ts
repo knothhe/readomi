@@ -10,18 +10,21 @@ import { validateTranslationConfigAndToast } from "@/utils/host/translate/transl
 import { isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 
-/** Read Frog's held-modifier interaction, using the existing paragraph renderer. */
+const KEYBOARD_TRIGGERS = { "Alt": "alt", "Control": "control", "Shift": "shift", "`": "backtick" } as const
+
+/** Read Frog's tap-or-hold keyboard interaction and mouse hold, using the paragraph renderer. */
 export function bindHoverTranslation(target: Document = document) {
   let hovered: Element | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
   let session = 0
-  let held = false
+  let press: { hotkey: Config["features"]["hoverHotkey"], trigger: () => void } | null = null
+  const pressedKeys = new Set<string>()
   let busy = false
   let mouseStart: { x: number, y: number } | null = null
   const controller = new AbortController()
   const cancel = () => {
     session++
-    held = false
+    press = null
     mouseStart = null
     clearTimeout(timer)
     timer = undefined
@@ -54,28 +57,57 @@ export function bindHoverTranslation(target: Document = document) {
     }
   }
   const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null) => {
-    if (!element || held || busy)
+    if (!element || press || busy)
       return
-    held = true
     const token = ++session
-    timer = setTimeout(() => {
+    let triggered = false
+    const trigger = () => {
+      // Claim the press before reading storage, so keyup cannot trigger it twice.
+      if (triggered)
+        return
+      triggered = true
+      const candidate = hotkey === "clickAndHold" ? element : hovered ?? element
       void getLocalConfig().then((config) => {
-        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !controller.signal.aborted && element.isConnected)
-          return translate(element, config)
+        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !busy && !controller.signal.aborted && candidate.isConnected)
+          return translate(candidate, config)
       }).catch(error => logger.error("Hover configuration failed", error))
-    }, 500)
+    }
+    press = { hotkey, trigger }
+    timer = setTimeout(trigger, 500)
   }
   const keydown = (event: KeyboardEvent) => {
     if (event.repeat)
       return
-    const hotkey = ({ "Alt": "alt", "Control": "control", "Shift": "shift", "`": "backtick" } as const)[event.key as "Alt" | "Control" | "Shift" | "`"]
-    if (!hotkey || event.metaKey || (event.ctrlKey && hotkey !== "control") || (event.altKey && hotkey !== "alt") || (event.shiftKey && hotkey !== "shift")) {
+    pressedKeys.add(event.code || event.key)
+    const hotkey = KEYBOARD_TRIGGERS[event.key as keyof typeof KEYBOARD_TRIGGERS]
+    if (!hotkey || pressedKeys.size !== 1 || event.metaKey || (event.ctrlKey && hotkey !== "control") || (event.altKey && hotkey !== "alt") || (event.shiftKey && hotkey !== "shift")) {
       cancel()
       return
     }
     if (event.defaultPrevented || isEditableTarget(event.target))
       return
     start(hotkey, hovered ?? target.querySelector(`:hover:not(.${CONTENT_WRAPPER_CLASS})`))
+  }
+  const keyup = (event: KeyboardEvent) => {
+    pressedKeys.delete(event.code || event.key)
+    const hotkey = KEYBOARD_TRIGGERS[event.key as keyof typeof KEYBOARD_TRIGGERS]
+    if (!press || press.hotkey !== hotkey) {
+      cancel()
+      return
+    }
+    clearTimeout(timer)
+    timer = undefined
+    const released = press
+    press = null
+    if (event.defaultPrevented || isEditableTarget(event.target)) {
+      cancel()
+      return
+    }
+    released.trigger()
+  }
+  const reset = () => {
+    pressedKeys.clear()
+    cancel()
   }
   const mousedown = (event: MouseEvent) => {
     cancel()
@@ -90,25 +122,25 @@ export function bindHoverTranslation(target: Document = document) {
   target.addEventListener("mouseover", move, true)
   target.addEventListener("mousemove", move, true)
   target.addEventListener("keydown", keydown, true)
-  target.addEventListener("keyup", cancel, true)
+  target.addEventListener("keyup", keyup, true)
   target.addEventListener("mousedown", mousedown, true)
   target.addEventListener("mouseup", cancel, true)
   target.addEventListener("dragstart", cancel, true)
   target.addEventListener("contextmenu", cancel, true)
-  target.addEventListener("visibilitychange", cancel)
-  target.defaultView?.addEventListener("blur", cancel)
+  target.addEventListener("visibilitychange", reset)
+  target.defaultView?.addEventListener("blur", reset)
   return () => {
-    cancel()
+    reset()
     controller.abort()
     target.removeEventListener("mouseover", move, true)
     target.removeEventListener("mousemove", move, true)
     target.removeEventListener("keydown", keydown, true)
-    target.removeEventListener("keyup", cancel, true)
+    target.removeEventListener("keyup", keyup, true)
     target.removeEventListener("mousedown", mousedown, true)
     target.removeEventListener("mouseup", cancel, true)
     target.removeEventListener("dragstart", cancel, true)
     target.removeEventListener("contextmenu", cancel, true)
-    target.removeEventListener("visibilitychange", cancel)
-    target.defaultView?.removeEventListener("blur", cancel)
+    target.removeEventListener("visibilitychange", reset)
+    target.defaultView?.removeEventListener("blur", reset)
   }
 }
