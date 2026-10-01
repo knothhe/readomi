@@ -76,6 +76,11 @@ it("switches all four themes across settings, popup, translated pages and toolba
     await popup.waitForFunction(color => document.documentElement.dataset.readomiTheme === color, color)
     await article.waitForFunction(primary => getComputedStyle(document.documentElement).getPropertyValue("--readomi-brand").trim().toUpperCase() === primary, primary)
     assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--rf-primary").trim()), primary)
+    // Applying the theme updates the image URL before the new image has loaded.
+    await page.waitForFunction((color) => {
+      const icon = document.querySelector("aside img")
+      return icon?.src.endsWith(`/icon/${color}/32.png`) && icon.complete && icon.naturalWidth > 0
+    }, color, { timeout: 5_000 })
     const icons = await page.locator("aside img").evaluateAll(images => images.map(img => ({ src: img.src, loaded: img.complete && img.naturalWidth > 0 })))
     assert.equal(icons[0].loaded, true)
     assert.match(icons[0].src, new RegExp(`/icon/${color}/32.png$`))

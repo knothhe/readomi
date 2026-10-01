@@ -1,4 +1,4 @@
-/* global chrome -- worker.evaluate() runs a callback in the extension service worker. */
+/* global chrome -- evaluate and waitForFunction callbacks run in the extension. */
 import assert from "node:assert/strict"
 import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -121,6 +121,11 @@ it("user updates from a build whose config cannot be migrated: Given the 1.0 con
   await page.locator("#service").getByText("Set up your translation service again").waitFor()
 
   await configureService(page, extensionId, setupDocumentFor(service.origin))
+  // Connected appears when the config is saved, before the reset notice is cleared.
+  await page.waitForFunction(async () => {
+    const meta = (await chrome.storage.local.get("config$")).config$
+    return meta?.resetAt === undefined
+  }, undefined, { timeout: 5_000 })
   const meta = await worker.evaluate(async () => (await chrome.storage.local.get("config$")).config$)
   assert.equal(meta?.resetAt, undefined, "applying a service ends the notice")
 
