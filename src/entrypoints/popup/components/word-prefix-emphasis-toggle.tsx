@@ -21,7 +21,7 @@ export function WordPrefixEmphasisToggle() {
       title={label}
       onClick={() => void setReadingConfig({ wordPrefixEmphasis: !on })}
       className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-md font-serif text-sm leading-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
+        "flex size-7 shrink-0 items-center justify-center rounded-md font-serif text-[14px] leading-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
         on ? "bg-secondary text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >

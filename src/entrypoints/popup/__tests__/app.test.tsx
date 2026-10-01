@@ -83,6 +83,44 @@ describe("popup app", () => {
     expect(screen.getByText("popup.notTranslatable")).toBeInTheDocument()
   })
 
+  it("persists the hover toggle without changing the trigger or other features, even without a service", async () => {
+    const config: Config = {
+      ...DEFAULT_CONFIG,
+      features: { ...DEFAULT_CONFIG.features, hoverHotkey: "backtick", videoSubtitles: true },
+    }
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+    renderPopup({ config })
+    const toggle = screen.getByRole("switch", { name: "features.hover" })
+    expect(toggle).toHaveAttribute("aria-checked", "false")
+    expect(screen.getByRole("button", { name: "translationShortcuts.hover" })).toHaveTextContent("translationShortcuts.backtick")
+
+    fireEvent.click(toggle)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({
+      ...config.features,
+      hoverTranslation: true,
+    }))
+    expect(toggle).toHaveAttribute("aria-checked", "true")
+
+    fireEvent.click(toggle)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual(config.features))
+    expect(toggle).toHaveAttribute("aria-checked", "false")
+
+    fireEvent.click(screen.getByRole("button", { name: "translationShortcuts.hover" }))
+    expect(openOptionsPage).toHaveBeenCalledWith({ section: "shortcut" })
+  })
+
+  it("keeps long model details in the service tooltip", () => {
+    const provider = configWithKey.providersConfig.find(p => p.id === configWithKey.translate.providerId)!
+    const model = "codex/a-very-long-model-name"
+    renderPopup({ config: {
+      ...configWithKey,
+      providersConfig: configWithKey.providersConfig.map(p => p.id === provider.id ? { ...p, model } : p),
+    } })
+
+    expect(screen.queryByText(new RegExp(model))).toBeNull()
+    expect(screen.getByTitle(`${provider.name} · ${model}`)).toHaveTextContent(provider.name)
+  })
+
   it("turns English word-prefix emphasis on and off from the footer, with or without a service", async () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)
     renderPopup()

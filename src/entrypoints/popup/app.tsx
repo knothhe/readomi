@@ -4,6 +4,7 @@ import { SegmentedControl } from "@/components/segmented-control"
 import { useConfigReset } from "@/hooks/use-config-reset"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
+import { HoverTranslationControl } from "./components/hover-translation-control"
 import { LanguageRow } from "./components/language-row"
 import { PopupFooter } from "./components/popup-footer"
 import { SetupPromptCard } from "./components/setup-prompt-card"
@@ -16,6 +17,8 @@ function DisplayModeControl() {
   return (
     <SegmentedControl
       aria-label={i18n.t("popup.displayMode")}
+      size="sm"
+      className="[&_button]:text-[12px]"
       value={translateConfig.mode}
       options={[
         { value: "bilingual", label: i18n.t("popup.bilingual") },
@@ -38,8 +41,8 @@ export default function App() {
   const configReset = useConfigReset()
 
   return (
-    <div className="flex min-h-[300px] flex-col justify-between">
-      <div className="flex flex-col gap-3.5 px-4 pt-4 pb-4">
+    <div className="flex flex-col">
+      <div className="flex flex-col gap-2.5 p-3.5">
         <LanguageRow muted={needsApiKey} />
         {needsApiKey
           ? <SetupPromptCard afterReset={configReset} />
@@ -49,6 +52,7 @@ export default function App() {
                 <TranslateButton />
               </>
             )}
+        <HoverTranslationControl />
       </div>
       <PopupFooter />
     </div>

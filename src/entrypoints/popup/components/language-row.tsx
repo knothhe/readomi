@@ -26,7 +26,7 @@ function LanguageTrigger({ title, caption, ariaLabel, ...props }: { title: strin
       className="flex h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center gap-0.5 rounded-[10px] border border-border bg-card px-3 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50"
       {...props}
     >
-      <span className="w-full truncate text-sm font-semibold leading-[18px]">{title}</span>
+      <span className="w-full truncate text-[14px] font-semibold leading-[18px]">{title}</span>
       <span className="text-[11px] leading-[14px] text-muted-foreground">{caption}</span>
     </button>
   )

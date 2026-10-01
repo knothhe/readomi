@@ -18,19 +18,21 @@ function describeProvider(provider: ProviderConfig): string {
   return modelId ? `${displayName} · ${modelId}` : displayName
 }
 
-/** Which service translates, as a status line, and the quick toggles. Changing the service is the agent's job, through settings. */
+/** Keep the service name visible; its full model details are in the tooltip. */
 export function PopupFooter() {
   const current = useAtomValue(featureProviderConfigAtom("translate"))
   const ready = !!current && isProviderReady(current)
+  const displayName = current ? current.name || PROVIDER_ITEMS[current.provider].name : ""
+  const serviceLabel = current
+    ? ready ? displayName : `${displayName} · ${i18n.t("popup.provider.missingKey")}`
+    : i18n.t("popup.provider.none")
 
   return (
-    <div className="flex items-center justify-between border-t border-border py-2 pr-2.5 pl-4">
-      <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+    <div className="flex items-center justify-between gap-2 border-t border-border py-1.5 pr-2.5 pl-3.5">
+      <span title={current && ready ? describeProvider(current) : serviceLabel} className="flex min-w-0 items-center gap-1.5 text-[12px] text-muted-foreground">
         <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", ready ? "bg-success" : "bg-attention")} />
         <span className="truncate">
-          {current
-            ? ready ? describeProvider(current) : `${current.name} · ${i18n.t("popup.provider.missingKey")}`
-            : i18n.t("popup.provider.none")}
+          {serviceLabel}
         </span>
       </span>
       <div className="flex shrink-0 items-center gap-0.5">

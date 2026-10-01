@@ -21,7 +21,7 @@ function ProgressLine() {
 
   return (
     <div className="flex flex-col gap-1.5 px-0.5">
-      <div className="flex justify-between text-xs text-muted-foreground">
+      <div className="flex justify-between text-[12px] leading-4 text-muted-foreground">
         <span>
           {finished ? i18n.t("popup.translated") : i18n.t("popup.translating")}
           {progress.failed > 0 && ` · ${i18n.t("popup.failedCount", [String(progress.failed)])}`}
@@ -65,7 +65,7 @@ export function TranslateButton() {
         onClick={toggle}
         disabled={!activeTab.translatable}
         className={cn(
-          "flex h-11 items-center justify-between rounded-[10px] px-4 text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-10 items-center justify-between rounded-[10px] px-3.5 text-[14px] font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
           enabled
             ? "border border-foreground bg-card text-foreground hover:bg-muted/60"
             : "bg-primary text-primary-foreground hover:bg-primary/85",
@@ -79,7 +79,7 @@ export function TranslateButton() {
         )}
       </button>
       {!activeTab.translatable && (
-        <p className="px-0.5 text-xs text-muted-foreground">{i18n.t("popup.notTranslatable")}</p>
+        <p className="px-0.5 text-[12px] leading-4 text-muted-foreground">{i18n.t("popup.notTranslatable")}</p>
       )}
       {enabled && <ProgressLine />}
     </div>

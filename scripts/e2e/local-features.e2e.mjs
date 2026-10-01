@@ -158,8 +158,9 @@ it("manual setup and local backup restore work without an account", async () => 
 it("hover translates and restores one paragraph without enabling whole-page translation", async () => {
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
-  await page.locator("nav a[href=\"#features\"]").click()
+  await page.goto(`chrome-extension://${extensionId}/popup.html`)
   await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
+  await page.getByRole("switch", { name: "Hover translation", checked: true }).waitFor()
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
   await article.bringToFront()
@@ -176,6 +177,15 @@ it("hover translates and restores one paragraph without enabling whole-page tran
   await article.waitForTimeout(650)
   await article.keyboard.up("Alt")
   await article.locator(".readomi-translated-block-content").waitFor({ state: "detached" })
+  // Turning the popup switch off stops hover translation on the existing tab.
+  await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
+  await page.waitForFunction(async () => !(await globalThis.chrome.storage.local.get("config")).config.features.hoverTranslation)
+  await article.bringToFront()
+  await paragraph.hover()
+  await article.keyboard.press("Alt")
+  await article.waitForTimeout(600)
+  assert.equal(await article.locator(".readomi-translated-block-content").count(), 0)
+  assert.equal((await storedConfig(context)).features.hoverTranslation, false)
 })
 
 it("caption DOM translates locally and closing the feature restores the player", async () => {
