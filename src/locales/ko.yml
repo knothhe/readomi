@@ -14,6 +14,7 @@ popup:
   bilingual: 이중 언어
   translationOnly: 번역만
   translate: 이 페이지 번역
+  translateAction: 번역
   showOriginal: 원문 보기
   translating: 번역 중
   translated: 번역됨

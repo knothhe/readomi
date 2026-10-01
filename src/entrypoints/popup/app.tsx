@@ -9,6 +9,7 @@ import { LanguageRow } from "./components/language-row"
 import { PopupFooter } from "./components/popup-footer"
 import { SetupPromptCard } from "./components/setup-prompt-card"
 import { TranslateButton } from "./components/translate-button"
+import { VideoTranslationControl } from "./components/video-translation-control"
 import { usePopupSync } from "./use-popup-sync"
 
 function DisplayModeControl() {
@@ -30,9 +31,8 @@ function DisplayModeControl() {
 }
 
 /**
- * Popup layout reads top to bottom as one sentence: from this language, into
- * that language, shown this way, translate. When the chosen service has no
- * key yet, a card pointing to the settings page takes the action's place.
+ * Language and display mode come first, then matching rows for page, hover and
+ * subtitle translation. A setup card replaces the page action until a service is ready.
  */
 export default function App() {
   usePopupSync()
@@ -46,13 +46,12 @@ export default function App() {
         <LanguageRow muted={needsApiKey} />
         {needsApiKey
           ? <SetupPromptCard afterReset={configReset} />
-          : (
-              <>
-                <DisplayModeControl />
-                <TranslateButton />
-              </>
-            )}
-        <HoverTranslationControl />
+          : <DisplayModeControl />}
+        <div className="flex flex-col">
+          {!needsApiKey && <TranslateButton />}
+          <HoverTranslationControl />
+          <VideoTranslationControl />
+        </div>
       </div>
       <PopupFooter />
     </div>

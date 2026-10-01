@@ -191,8 +191,9 @@ it("hover translates and restores one paragraph without enabling whole-page tran
 it("caption DOM translates locally and closing the feature restores the player", async () => {
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
-  await page.locator("nav a[href=\"#features\"]").click()
+  await page.goto(`chrome-extension://${extensionId}/popup.html`)
   await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
+  await page.getByRole("switch", { name: "Video subtitle translation", checked: true }).waitFor()
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
   await article.evaluate(() => {
@@ -211,4 +212,5 @@ it("caption DOM translates locally and closing the feature restores the player",
   await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
   await article.locator("[data-readomi-subtitles]").waitFor({ state: "detached" })
   assert.notEqual(await article.locator(".ytp-caption-window-container").evaluate(el => getComputedStyle(el).visibility), "hidden")
+  assert.equal((await storedConfig(context)).features.videoSubtitles, false)
 })

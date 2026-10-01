@@ -14,6 +14,7 @@ popup:
   bilingual: バイリンガル
   translationOnly: 翻訳のみ
   translate: このページを翻訳
+  translateAction: 翻訳
   showOriginal: 原文を表示
   translating: 翻訳中
   translated: 翻訳済み

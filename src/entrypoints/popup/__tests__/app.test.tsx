@@ -68,6 +68,19 @@ describe("popup app", () => {
     expect(screen.queryByText("popup.setup.title")).toBeNull()
   })
 
+  it("translates and restores the current tab using the button in the page row", () => {
+    renderPopup({ config: configWithKey })
+    const translate = screen.getByRole("button", { name: "popup.translate" })
+    expect(translate).toHaveTextContent("popup.translateAction")
+
+    fireEvent.click(translate)
+    expect(sendMessage).toHaveBeenCalledWith("tryToSetEnablePageTranslationByTabId", { tabId: 1, enabled: true })
+
+    fireEvent.click(screen.getByRole("button", { name: "popup.showOriginal" }))
+    expect(sendMessage).toHaveBeenCalledWith("tryToSetEnablePageTranslationByTabId", { tabId: 1, enabled: false })
+    expect(screen.getByRole("button", { name: "popup.translate" })).toBeEnabled()
+  })
+
   it("offers to show the original and reports progress while translating", () => {
     renderPopup({ config: configWithKey, enabled: true })
 
@@ -119,6 +132,33 @@ describe("popup app", () => {
 
     expect(screen.queryByText(new RegExp(model))).toBeNull()
     expect(screen.getByTitle(`${provider.name} · ${model}`)).toHaveTextContent(provider.name)
+  })
+
+  it("persists the subtitle toggle while preserving the hover preference and subtitle mode", async () => {
+    const config: Config = {
+      ...configWithKey,
+      features: { ...configWithKey.features, hoverTranslation: true, subtitleMode: "translationOnly", subtitlesShortcut: "Alt+V" },
+    }
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+    renderPopup({ config })
+    const toggle = screen.getByRole("switch", { name: "features.video" })
+    expect(toggle).toHaveAttribute("aria-checked", "false")
+    const mode = screen.getByRole("button", { name: "features.mode" })
+    expect(mode).toHaveTextContent("options.reading.mode.translationOnly")
+
+    fireEvent.click(toggle)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({
+      ...config.features,
+      videoSubtitles: true,
+    }))
+    expect(toggle).toHaveAttribute("aria-checked", "true")
+
+    fireEvent.click(toggle)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual(config.features))
+    expect(toggle).toHaveAttribute("aria-checked", "false")
+
+    fireEvent.click(mode)
+    expect(openOptionsPage).toHaveBeenCalledWith({ section: "features" })
   })
 
   it("turns English word-prefix emphasis on and off from the footer, with or without a service", async () => {

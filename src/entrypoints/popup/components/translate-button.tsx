@@ -6,6 +6,7 @@ import { formatHotkey } from "@/utils/os"
 import { isPageTranslationShortcutEmpty } from "@/utils/page-translation-shortcut"
 import { cn } from "@/utils/styles/utils"
 import { activeTabAtom, pageTranslationEnabledAtom, translationProgressAtom } from "../atoms"
+import { TranslationControlRow } from "./translation-control-row"
 
 export async function setPageTranslation(tabId: number, enabled: boolean) {
   await sendMessage("tryToSetEnablePageTranslationByTabId", { tabId, enabled })
@@ -46,6 +47,7 @@ export function TranslateButton() {
   const activeTab = useAtomValue(activeTabAtom)
   const [enabled, setEnabled] = useAtom(pageTranslationEnabledAtom)
   const translateConfig = useAtomValue(configFieldsAtomMap.translate)
+  const progress = useAtomValue(translationProgressAtom)
 
   const shortcut = translateConfig.page.shortcut
   const shortcutHint = isPageTranslationShortcutEmpty(shortcut) ? null : formatHotkey(shortcut)
@@ -59,29 +61,30 @@ export function TranslateButton() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={toggle}
-        disabled={!activeTab.translatable}
-        className={cn(
-          "flex h-10 items-center justify-between rounded-[10px] px-3.5 text-[14px] font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
-          enabled
-            ? "border border-foreground bg-card text-foreground hover:bg-muted/60"
-            : "bg-primary text-primary-foreground hover:bg-primary/85",
+    <div>
+      <TranslationControlRow
+        label={i18n.t("popup.translate")}
+        hint={shortcutHint && <span className="text-[11px] leading-4 text-muted-foreground">{shortcutHint}</span>}
+        control={(
+          <button
+            type="button"
+            aria-label={enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translate")}
+            onClick={toggle}
+            disabled={!activeTab.translatable}
+            className="h-7 min-w-16 shrink-0 rounded-full bg-muted px-2.5 text-[12px] font-medium text-foreground transition-colors outline-none hover:bg-secondary focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translateAction")}
+          </button>
         )}
-      >
-        <span>{enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translate")}</span>
-        {shortcutHint && (
-          <span className={cn("text-[11px] font-normal tracking-wide", enabled ? "text-muted-foreground" : "text-primary-foreground/60")}>
-            {shortcutHint}
-          </span>
-        )}
-      </button>
-      {!activeTab.translatable && (
-        <p className="px-0.5 text-[12px] leading-4 text-muted-foreground">{i18n.t("popup.notTranslatable")}</p>
+      />
+      {(!activeTab.translatable || (enabled && !!progress?.total)) && (
+        <div className="flex flex-col gap-2 pb-2.5">
+          {!activeTab.translatable && (
+            <p className="px-0.5 text-[12px] leading-4 text-muted-foreground">{i18n.t("popup.notTranslatable")}</p>
+          )}
+          {enabled && <ProgressLine />}
+        </div>
       )}
-      {enabled && <ProgressLine />}
     </div>
   )
 }

@@ -14,6 +14,7 @@ popup:
   bilingual: Bilingual
   translationOnly: Translation only
   translate: Translate this page
+  translateAction: Translate
   showOriginal: Show original
   translating: Translating
   translated: Translated

@@ -14,6 +14,7 @@ popup:
   bilingual: 雙語對照
   translationOnly: 僅顯示譯文
   translate: 翻譯此頁
+  translateAction: 翻譯
   showOriginal: 顯示原文
   translating: 翻譯中
   translated: 已翻譯
