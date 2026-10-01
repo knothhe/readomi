@@ -360,6 +360,10 @@ manualService:
   model: Model
   api: Request format
   save: Test and save
+  body: Request parameters (thinking effort, etc.)
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
   title: Configuration backup
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.

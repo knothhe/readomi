@@ -12,6 +12,7 @@ import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { DEFAULT_TRANSLATE_PROMPT } from "@/utils/constants/prompt"
 import { highlightedPrefixes, isWordPrefixHighlightRegistered, stubHighlightRegistry } from "@/utils/host/__tests__/highlight-registry-fake"
 import { fetchProviderModels } from "@/utils/providers/models"
+import { prepareRequest } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
 import App from "../app"
 
@@ -369,14 +370,78 @@ describe("manual service configuration", () => {
     await waitFor(() => expect(store.get(configAtom).providersConfig.find(p => p.id === store.get(configAtom).translate.providerId)?.model).toBe("my-local-model"))
     expect(store.get(configAtom).providersConfig[0].apiKey).toBe("sk-abcdefghijkl")
   })
+  it("shows existing parameters and uses edited nested JSON in the connection check and saved requests", async () => {
+    const existing = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "low" }, max_output_tokens: 1000 } })) }
+    const { store } = await renderSettings(existing)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    const input = screen.getByLabelText("manualService.body")
+    expect(JSON.parse((input as HTMLTextAreaElement).value)).toEqual(existing.providersConfig[0].body)
+    const body = { reasoning: { effort: "none", summary: "auto" }, max_output_tokens: 2000, metadata: { tags: ["translation", null], enabled: false } }
+    fireEvent.change(input, { target: { value: JSON.stringify(body, null, 2) } })
+    expect(store.get(configAtom)).toEqual(existing)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
+    await waitFor(() => expect(screen.queryByLabelText("manualService.body")).toBeNull())
+    const saved = store.get(configAtom)
+    const provider = saved.providersConfig.find(p => p.id === saved.translate.providerId)!
+    expect(provider.body).toEqual(body)
+    expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ body }))
+    expect(prepareRequest(provider, { prompt: "Translate this" }).body).toMatchObject({ ...body, input: "Translate this" })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    expect(JSON.parse((screen.getByLabelText("manualService.body") as HTMLTextAreaElement).value)).toEqual(body)
+  })
+  it.each(["{", "[]", "null", "\"text\"", "42", "{\"budget\":1e999}"])("blocks invalid body %s before sending or saving", async (value) => {
+    const { store } = await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value } })
+    expect(screen.getByRole("alert")).toHaveTextContent("manualService.bodyInvalid")
+    expect(screen.getByLabelText("manualService.body")).toHaveAttribute("aria-invalid", "true")
+    const button = screen.getByRole("button", { name: "manualService.save" })
+    expect(button).toBeDisabled()
+    fireEvent.submit(button.closest("form")!)
+    expect(checkConnection).not.toHaveBeenCalled()
+    expect(store.get(configAtom)).toEqual(configured)
+    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "{}" } })
+    expect(screen.queryByRole("alert")).toBeNull()
+    expect(button).toBeEnabled()
+  })
+  it("clears saved parameters when the editor is emptied", async () => {
+    const { store } = await renderSettings({ ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "none" } } })) })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "  " } })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
+    await waitFor(() => expect(screen.queryByLabelText("manualService.body")).toBeNull())
+    expect(store.get(configAtom).providersConfig[0]).not.toHaveProperty("body")
+    expect(vi.mocked(checkConnection).mock.calls[0][0]).not.toHaveProperty("body")
+  })
+  it("changes examples with the wire format without overwriting the parameter draft", async () => {
+    await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    const input = screen.getByLabelText("manualService.body")
+    expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual({ reasoning: { effort: "none" } })
+    fireEvent.change(input, { target: { value: "{\"custom\":true}" } })
+    for (const [api, example] of [
+      ["openai-chat", { reasoning_effort: "none" }],
+      ["anthropic", { thinking: { type: "disabled" } }],
+      ["gemini", { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } }],
+    ] as const) {
+      fireEvent.change(screen.getByLabelText("manualService.api"), { target: { value: api } })
+      expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual(example)
+      expect(input).toHaveValue("{\"custom\":true}")
+    }
+    fireEvent.change(screen.getByLabelText("manualService.type"), { target: { value: "deepseek" } })
+    expect(input).toHaveValue("")
+    expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual({ thinking: { type: "disabled" } })
+  })
   it("does not replace the working service when a manual connection check fails", async () => {
     vi.mocked(checkConnection).mockResolvedValue({ ok: false, checkedAt: 1_000, error: "HTTP 401" })
     const { store } = await renderSettings(configured)
     fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "bad-model" } })
+    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "{\"reasoning\":{\"effort\":\"high\"}}" } })
     fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("HTTP 401"))
     expect(store.get(configAtom).providersConfig).toEqual(configured.providersConfig)
+    expect(screen.getByLabelText("manualService.body")).toHaveValue("{\"reasoning\":{\"effort\":\"high\"}}")
   })
 })
 

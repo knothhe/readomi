@@ -1,6 +1,6 @@
 import type { SetupDocument } from "@/utils/setup-document"
 import { useAtomValue, useSetAtom, useStore } from "jotai"
-import { useEffect, useId, useRef, useState } from "react"
+import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { DEFAULT_REQUEST_API, PROVIDER_TYPES, REQUEST_APIS } from "@/types/config/provider"
@@ -12,6 +12,13 @@ import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection, withConnectionCheck } from "@/utils/providers/test-connection"
 import { applySetupDocument, exportSetupDocument, findMatchingProvider, setupDocumentSchema } from "@/utils/setup-document"
 
+const BODY_EXAMPLES = {
+  "openai-responses": { reasoning: { effort: "none" } },
+  "openai-chat": { reasoning_effort: "none" },
+  "anthropic": { thinking: { type: "disabled" } },
+  "gemini": { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } },
+}
+
 export function ManualServiceForm({ onDone }: { onDone: () => void }) {
   const config = useAtomValue(configAtom)
   const store = useStore()
@@ -21,6 +28,20 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
     name: config.providersConfig.find(p => p.id === config.translate.providerId)?.name,
   }))
   const [key, setKey] = useState("")
+  const [bodyText, setBodyText] = useState(() => draft.body ? JSON.stringify(draft.body, null, 2) : "")
+  const body = useMemo(() => {
+    try {
+      return setupDocumentSchema.shape.body.safeParse(bodyText.trim() ? JSON.parse(bodyText) : undefined)
+    }
+    catch {
+      return { success: false } as const
+    }
+  }, [bodyText])
+  const api = draft.api ?? DEFAULT_REQUEST_API[draft.type]
+  const bodyExample = api === "openai-chat" && draft.type === "deepseek"
+    ? { thinking: { type: "disabled" } }
+    : BODY_EXAMPLES[api]
+  const bodyExampleText = JSON.stringify(bodyExample)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [modelResult, setModelResult] = useState<{ signature: string, models: string[], state: "idle" | "loading" | "list" | "empty" | "failed" }>({ signature: "", models: [], state: "idle" })
@@ -55,14 +76,18 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
     }
   }
   const modelId = useId()
+  const bodyId = useId()
   const fieldClass = "w-full rounded-lg border border-input bg-card px-3 py-2 text-[13px]"
 
   const save = async () => {
+    if (!body.success)
+      return
     setBusy(true)
     setError(null)
     try {
       const document = setupDocumentSchema.parse({
         ...draft,
+        body: body.data,
         name: draft.name?.trim() || undefined,
         baseURL: draft.baseURL?.trim() || undefined,
         apiKey: key.trim() || undefined,
@@ -95,7 +120,14 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
       <fieldset disabled={busy} className="flex flex-col gap-3">
         <label>
           {i18n.t("manualService.type")}
-          <select className={fieldClass} value={draft.type} onChange={e => setDraft({ type: e.target.value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[e.target.value as typeof draft.type] })}>
+          <select
+            className={fieldClass}
+            value={draft.type}
+            onChange={(e) => {
+              setDraft({ type: e.target.value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[e.target.value as typeof draft.type] })
+              setBodyText("")
+            }}
+          >
             {PROVIDER_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
           </select>
         </label>
@@ -137,13 +169,34 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
             {REQUEST_APIS.map(api => <option key={api} value={api}>{api}</option>)}
           </select>
         </label>
+        <div className="flex flex-col gap-2">
+          <label htmlFor={bodyId}>{i18n.t("manualService.body")}</label>
+          <textarea
+            id={bodyId}
+            className={`${fieldClass} resize-y font-mono text-xs leading-[18px]`}
+            rows={5}
+            spellCheck={false}
+            value={bodyText}
+            placeholder={JSON.stringify(bodyExample, null, 2)}
+            aria-invalid={!body.success}
+            aria-describedby={`${bodyId}-hint ${bodyId}-example${body.success ? "" : ` ${bodyId}-error`}`}
+            onChange={e => setBodyText(e.target.value)}
+          />
+          <p id={`${bodyId}-hint`} className="text-xs text-muted-foreground">{i18n.t("manualService.bodyHint")}</p>
+          <p id={`${bodyId}-example`} className="break-words text-xs text-muted-foreground">
+            {i18n.t("manualService.bodyExample")}
+            {" "}
+            <code>{bodyExampleText}</code>
+          </p>
+          {!body.success && <p id={`${bodyId}-error`} role="alert" className="text-xs text-destructive">{i18n.t("manualService.bodyInvalid")}</p>}
+        </div>
         {error && (
           <div role="alert">
             <p className="text-destructive">{i18n.t("options.service.failedNotSaved")}</p>
             <pre className="whitespace-pre-wrap break-all text-xs">{error}</pre>
           </div>
         )}
-        <Button type="submit">{busy ? i18n.t("options.service.applying") : i18n.t("manualService.save")}</Button>
+        <Button type="submit" disabled={!body.success}>{busy ? i18n.t("options.service.applying") : i18n.t("manualService.save")}</Button>
       </fieldset>
     </form>
   )
