@@ -6,6 +6,7 @@ import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
 import { HoverTranslationControl } from "./components/hover-translation-control"
 import { LanguageRow } from "./components/language-row"
+import { PageContextControl } from "./components/page-context-control"
 import { PopupFooter } from "./components/popup-footer"
 import { SetupPromptCard } from "./components/setup-prompt-card"
 import { TranslateButton } from "./components/translate-button"
@@ -32,7 +33,8 @@ function DisplayModeControl() {
 
 /**
  * Language and display mode come first, then matching rows for page, hover and
- * subtitle translation. A setup card replaces the page action until a service is ready.
+ * subtitle translation and the page-context preference. A setup card replaces
+ * the page action until a service is ready.
  */
 export default function App() {
   usePopupSync()
@@ -51,6 +53,7 @@ export default function App() {
           {!needsApiKey && <TranslateButton />}
           <HoverTranslationControl />
           <VideoTranslationControl />
+          <PageContextControl />
         </div>
       </div>
       <PopupFooter />
