@@ -37,7 +37,7 @@ Load the corresponding directory under `.output/` in Chrome or Edge. In Firefox,
 
 In Settings → Translation service, enter and test your service manually, or copy the instructions for an agent and paste its verified configuration. See the [setup guide](./docs/agent-setup.md) and optional [readomi-setup skill](./skills/readomi-setup/SKILL.md). Click "Translate this page" or press `Alt+E` (`Option+E` on Mac); repeat to restore the original.
 
-Readomi has its own extension identity and can coexist with upstream installations. To migrate from an earlier build, export your configuration first and import it into Readomi. Earlier `reading-config` backups from this fork remain supported.
+Readomi has its own extension identity and can coexist with upstream installations.
 
 ## Development and feedback
 

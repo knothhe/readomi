@@ -1,41 +1,36 @@
 import { describe, expect, it } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
-import { exportConfigBackup, parseConfigBackup } from "../backup"
+import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "../backup"
 
 const configured = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "sk-backup", headers: { Authorization: "secret" }, connectionCheck: { ok: true, checkedAt: 1 } })) }
 
 describe("local configuration backups", () => {
-  it.each(["readomi-config", "reading-config"])("migrates custom CSS in %s backups", (format) => {
+  it("round trips custom CSS without rewriting it", () => {
     const config = {
       ...configured,
-      version: 4,
       translate: {
         ...configured.translate,
-        translationNodeStyle: { preset: "line", isCustom: true, customCSS: "[data-jiandao-custom-translation-style='custom'] { color: var(--jiandao-brand); }" },
+        translationNodeStyle: { preset: "line" as const, isCustom: true, customCSS: "[data-readomi-custom-translation-style='custom'] { color: var(--readomi-brand); }" },
       },
     }
-    const imported = parseConfigBackup(JSON.stringify({ format, config }))
-    expect(imported.translate.translationNodeStyle.customCSS).toBe("[data-readomi-custom-translation-style='custom'] { color: var(--readomi-brand); }")
-    expect(imported.providersConfig[0].apiKey).toBe("sk-backup")
-    expect(imported.version).toBe(DEFAULT_CONFIG.version)
+    const imported = parseConfigBackup(exportConfigBackup(config))
+    expect(imported.translate.translationNodeStyle).toEqual(config.translate.translationNodeStyle)
   })
 
-  it("exports Readomi themes and accepts earlier backups from this fork", () => {
+  it("exports Readomi backups and preserves the selected theme", () => {
     const config = { ...configured, appearance: { colorTheme: "plum" as const } }
     const text = exportConfigBackup(config)
     expect(JSON.parse(text).format).toBe("readomi-config")
     expect(parseConfigBackup(text).appearance).toEqual(config.appearance)
-    const { appearance: _, ...old } = configured
-    const imported = parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...old, version: 3 } }))
-    expect(imported.appearance.colorTheme).toBe("terra")
-    expect(imported.providersConfig[0].apiKey).toBe("sk-backup")
   })
-  it("round trips new shortcuts and rejects two actions sharing a key combination", () => {
+
+  it("round trips shortcuts and rejects two actions sharing a key combination", () => {
     const next = { ...configured, features: { ...configured.features, hoverHotkey: "shift" as const, modeShortcut: "Alt+M", subtitlesShortcut: "Alt+V" } }
     expect(parseConfigBackup(exportConfigBackup(next)).features).toEqual(next.features)
-    expect(() => parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...next, features: { ...next.features, modeShortcut: configured.translate.page.shortcut } } }))).toThrow("different key combinations")
+    expect(() => parseConfigBackup(JSON.stringify({ format: "readomi-config", config: { ...next, features: { ...next.features, modeShortcut: configured.translate.page.shortcut } } }))).toThrow("different key combinations")
   })
-  it("round trips secrets, features and prompts while clearing old connection checks", () => {
+
+  it("round trips secrets, features and prompts while clearing connection checks", () => {
     const backup = parseConfigBackup(exportConfigBackup(configured))
     expect(backup.providersConfig[0].apiKey).toBe("sk-backup")
     expect(backup.providersConfig[0].headers).toEqual({ Authorization: "secret" })
@@ -43,17 +38,14 @@ describe("local configuration backups", () => {
     expect(backup.features).toEqual(DEFAULT_CONFIG.features)
     expect(backup.translate).toEqual(DEFAULT_CONFIG.translate)
   })
-  it("migrates version 1 without losing the API key", () => {
-    const { features: _, ...old } = configured
-    const result = parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...old, version: 1 } }))
-    expect(result.providersConfig[0].apiKey).toBe("sk-backup")
-    expect(result.features).toEqual(DEFAULT_CONFIG.features)
-    expect(result.version).toBe(DEFAULT_CONFIG.version)
-  })
-  it("rejects foreign, malformed and future configurations", () => {
+
+  it("rejects foreign, malformed, incomplete and oversized configurations", () => {
     expect(() => parseConfigBackup("{")).toThrow()
     expect(() => parseConfigBackup(JSON.stringify(DEFAULT_CONFIG))).toThrow("Unsupported")
-    expect(() => parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...DEFAULT_CONFIG, version: 99 } }))).toThrow("newer")
-    expect(() => parseConfigBackup(JSON.stringify({ format: "reading-config", config: { ...DEFAULT_CONFIG, providersConfig: [] } }))).toThrow("Invalid provider")
+    expect(() => parseConfigBackup(JSON.stringify({ format: "other-config", config: DEFAULT_CONFIG }))).toThrow("Unsupported")
+    expect(() => parseConfigBackup(JSON.stringify({ format: "readomi-config", config: { ...DEFAULT_CONFIG, providersConfig: [] } }))).toThrow("Invalid provider")
+    const { features: _, ...incomplete } = configured
+    expect(() => parseConfigBackup(JSON.stringify({ format: "readomi-config", config: incomplete }))).toThrow("features")
+    expect(() => parseConfigBackup(" ".repeat(MAX_BACKUP_SIZE + 1))).toThrow("exceeds 1 MB")
   })
 })

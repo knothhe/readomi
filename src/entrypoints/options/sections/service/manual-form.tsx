@@ -5,8 +5,6 @@ import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { DEFAULT_REQUEST_API, PROVIDER_TYPES, REQUEST_APIS } from "@/types/config/provider"
 import { configAtom, writeConfigAtom } from "@/utils/atoms/config"
-import { clearConfigResetNotice } from "@/utils/config/storage"
-import { logger } from "@/utils/logger"
 import { fetchProviderModels } from "@/utils/providers/models"
 import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection, withConnectionCheck } from "@/utils/providers/test-connection"
@@ -98,7 +96,6 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
         throw new Error(check.error || i18n.t("options.service.status.failed"))
       const saved = withConnectionCheck(next, providerId, check)
       await write({ providersConfig: saved.providersConfig, translate: saved.translate })
-      await clearConfigResetNotice().catch(error => logger.error("Could not clear configuration reset notice", error))
       onDone()
     }
     catch (error) {

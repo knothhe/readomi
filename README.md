@@ -37,7 +37,7 @@ Chrome / Edge 加载 `.output/` 下对应构建目录；Firefox 在 `about:debug
 
 打开设置 → 翻译服务，手动填写服务并测试保存，或复制说明给 agent，再粘贴它验证过的配置。配置指南见 [docs/agent-setup.md](./docs/agent-setup.md)，可选 skill 见 [skills/readomi-setup](./skills/readomi-setup/SKILL.md)。之后点击“翻译此页”，或按默认快捷键 `Alt+E`（Mac 为 `Option+E`）；再次触发恢复原文。
 
-Readomi 使用独立的扩展标识，与上游可以同时安装。从此前构建迁移时，可先导出配置，再在 Readomi 中导入；仍兼容本 fork 之前导出的 `reading-config` 备份。
+Readomi 使用独立的扩展标识，与上游可以同时安装。
 
 ## 开发与反馈
 

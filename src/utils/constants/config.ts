@@ -1,5 +1,4 @@
 import type { Config } from "@/types/config/config"
-import { CONFIG_VERSION } from "@/types/config/config"
 import { DEFAULT_TRANSLATE_PROMPTS_CONFIG } from "./prompt"
 import { DEFAULT_PROVIDER_CONFIG_LIST } from "./providers"
 import { DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY } from "./translate"
@@ -10,7 +9,6 @@ export const CONFIG_STORAGE_KEY = "config"
 export const DEFAULT_DETECTED_CODE = "eng" as const
 
 export const DEFAULT_CONFIG: Config = {
-  version: CONFIG_VERSION,
   language: {
     sourceCode: "auto",
     targetCode: "cmn",

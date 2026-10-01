@@ -14,24 +14,14 @@ const languageSchema = z.object({
   level: langLevel,
 })
 
-/**
- * Version of the stored config shape. Bump it with every change to the
- * shape and add the step from the previous version to CONFIG_MIGRATIONS
- * (utils/config/migrate.ts); a stored config with no path to this version
- * is cleared.
- */
-export const CONFIG_VERSION = 5
-
 // Complete config schema
 export const configSchema = z.object({
-  version: z.literal(CONFIG_VERSION),
   language: languageSchema,
-  appearance: z.object({ colorTheme: z.enum(COLOR_THEMES).default(DEFAULT_COLOR_THEME) }).prefault({}),
+  appearance: z.object({ colorTheme: z.enum(COLOR_THEMES).default(DEFAULT_COLOR_THEME) }),
   providersConfig: providersConfigSchema,
-  // A stored config without this section gets the default of each field.
   reading: z.object({
     wordPrefixEmphasis: z.boolean().default(false),
-  }).prefault({}),
+  }),
   translate: translateConfigSchema,
   features: z.object({
     hoverTranslation: z.boolean().default(false),
@@ -40,7 +30,7 @@ export const configSchema = z.object({
     subtitlesShortcut: pageTranslationShortcutSchema.default(""),
     videoSubtitles: z.boolean().default(false),
     subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
-  }).prefault({}),
+  }),
 }).superRefine((data, ctx) => {
   const shortcuts = [data.translate.page.shortcut, data.features.modeShortcut, data.features.subtitlesShortcut].filter(s => s.trim())
   for (const platform of ["mac", "windows"] as const) {

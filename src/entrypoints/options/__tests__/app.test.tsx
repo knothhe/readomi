@@ -455,8 +455,8 @@ describe("configuration file import", () => {
     const previous = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, temperature: 0.9 })) }
     const { store } = await renderSettings(previous, "backup")
     const next = { ...configured, features: { ...configured.features, hoverTranslation: true } }
-    const file = new File(["backup"], "reading-config.json", { type: "application/json" })
-    Object.defineProperty(file, "text", { value: async () => JSON.stringify({ format: "reading-config", config: next }) })
+    const file = new File(["backup"], "readomi-config.json", { type: "application/json" })
+    Object.defineProperty(file, "text", { value: async () => JSON.stringify({ format: "readomi-config", config: next }) })
     fireEvent.change(screen.getByLabelText("configBackup.import"), { target: { files: [file] } })
     await screen.findByRole("button", { name: "configBackup.apply" })
     expect(store.get(configAtom).features.hoverTranslation).toBe(false)

@@ -142,7 +142,7 @@ it("manual setup and local backup restore work without an account", async () => 
   assert.equal(backup.format, "readomi-config")
   assert.equal(backup.config.providersConfig.find(p => p.id === backup.config.translate.providerId).apiKey, doc.apiKey)
   backup.config.features.hoverTranslation = true
-  await page.getByLabel("Import configuration", { exact: true }).setInputFiles({ name: "reading-config.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(backup)) })
+  await page.getByLabel("Import configuration", { exact: true }).setInputFiles({ name: "readomi-config.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(backup)) })
   await page.getByRole("button", { name: "Replace all settings", exact: true }).waitFor()
   assert.equal((await storedConfig(context)).features.hoverTranslation, false)
   await page.getByRole("button", { name: "Replace all settings", exact: true }).click()

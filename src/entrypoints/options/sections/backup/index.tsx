@@ -5,8 +5,6 @@ import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { configAtom, replaceConfigAtom } from "@/utils/atoms/config"
 import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "@/utils/config/backup"
-import { clearConfigResetNotice } from "@/utils/config/storage"
-import { logger } from "@/utils/logger"
 import { SettingsSection } from "../../components/settings-section"
 
 export function BackupSection() {
@@ -53,7 +51,6 @@ export function BackupSection() {
     setError(null)
     try {
       await replace(pending.config)
-      await clearConfigResetNotice().catch(error => logger.error("Could not clear configuration reset notice", error))
       setPending(null)
       setSaved(true)
     }
