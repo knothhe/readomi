@@ -63,7 +63,6 @@ window.READOMI_CANVAS = {
     { file: "Popup-Translating.html", title: "弹窗 · 翻译中", x: 800, y: 0, w: 320, h: 375 },
     { file: "Popup-Dark.html", title: "弹窗 · 深色（跟随系统）", x: 1200, y: 0, w: 320, h: 341 },
     { file: "Popup-Emphasis.html", title: "弹窗 · 英文词首加粗已打开：底栏按钮按下，与翻译操作分开", x: 1600, y: 0, w: 320, h: 341 },
-    { file: "Popup-Setup-Reset.html", title: "弹窗 · 旧配置冲突已清除：说明原因，引导重新配置", x: 2000, y: 0, w: 320, h: 420 },
     { file: "Popup-Hover.html", title: "弹窗 · 悬停翻译已打开", x: 2400, y: 0, w: 320, h: 341 },
     { file: "Popup-Unavailable.html", title: "弹窗 · 当前页面不能翻译", x: 2800, y: 0, w: 320, h: 367 },
     { file: "Popup-Video.html", title: "弹窗 · 视频字幕翻译已打开", x: 3200, y: 0, w: 320, h: 341 },
@@ -85,7 +84,6 @@ window.READOMI_CANVAS = {
     { file: "Settings-Editing.html", title: "翻译服务 · 修改中：当前一行 + 编辑框（已全选）", x: 2400, y: 5060, w: 720, h: 420 },
     { file: "Settings-Edited.html", title: "翻译服务 · 待应用：当前 / 应用后上下对照", x: 3200, y: 5060, w: 720, h: 440 },
     { file: "Settings-Failed.html", title: "翻译服务 · 应用失败：多一行连接结果，不保存", x: 4000, y: 5060, w: 720, h: 500 },
-    { file: "Settings-Agent-Reset.html", title: "翻译服务 · 旧配置冲突已清除：未配置状态多一句原因", x: 4800, y: 5060, w: 720, h: 420 },
     { file: "Quality-Prompt-Editing.html", title: "译文质量 · 修改提示词：原地展开两段文本", x: 0, y: 5900, w: 720, h: 740 },
   ],
   notes: [
