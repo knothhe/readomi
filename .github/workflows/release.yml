@@ -1,8 +1,9 @@
 name: Release Extension
 
 # Bump "version" in package.json, merge it, then push a matching tag
-# (e.g. v1.35.0). A pushed tag also submits the release to the stores through
-# submit.yml; rebuilding assets for an existing tag does not.
+# (e.g. v1.2.0). A pushed tag also submits the release to the stores through
+# submit.yml when Chrome credentials are configured; rebuilding assets for an
+# existing tag does not.
 on:
   push:
     tags:
@@ -10,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag to rebuild assets for (e.g., v1.35.0)"
+        description: "Existing release tag to rebuild assets for (e.g., v1.2.0)"
         required: true
         type: string
 
@@ -22,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      stores-configured: ${{ steps.store-config.outputs.configured }}
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
       HUSKY: 0
@@ -72,10 +75,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Check Store Credentials
+        id: store-config
+        run: |
+          if [ -n "$CHROME_EXTENSION_ID" ] && [ -n "$CHROME_CLIENT_ID" ] && [ -n "$CHROME_CLIENT_SECRET" ] && [ -n "$CHROME_REFRESH_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Chrome credentials are incomplete; skipping store submission."
+          fi
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
   submit:
     name: Submit to Stores
     needs: release
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && needs.release.outputs.stores-configured == 'true'
     permissions:
       contents: read
     uses: ./.github/workflows/submit.yml
