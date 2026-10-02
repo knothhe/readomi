@@ -11,7 +11,7 @@ export const SUBTITLE_POSITIONS = {
 } as const
 
 export function subtitlePresetPatch(preset: SubtitleStyle["preset"]): Pick<SubtitleStyle, "preset" | "fontSize"> {
-  return { preset, fontSize: { clear: 24, compact: 20, study: 28 }[preset] }
+  return { preset, fontSize: { clear: 24, compact: 20, study: 40 }[preset] }
 }
 
 export function subtitlePositionName(position: SubtitlePosition): keyof typeof SUBTITLE_POSITIONS | "custom" {
