@@ -5,8 +5,9 @@ import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { bindHoverTranslation } from "../hover-translation"
 
-vi.mock("@/utils/config/storage", () => ({ getLocalConfig: vi.fn() }))
+vi.mock("@/utils/config/storage", () => ({ getLocalConfig: vi.fn(), watchLocalConfig: vi.fn(() => vi.fn()) }))
 vi.mock("@/utils/host/translate/node-manipulation", () => ({ translateWalkedElement: vi.fn() }))
+vi.mock("@/utils/host/translate/ui/inline-hover-stream-preview", () => ({ createInlineHoverStreamPreview: vi.fn(() => undefined) }))
 vi.mock("@/utils/host/translate/translate-text", () => ({ validateTranslationConfigAndToast: () => true }))
 
 let cleanup: () => void
@@ -69,7 +70,7 @@ describe("tap-or-hold hover translation", () => {
     next.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
     up()
     await vi.advanceTimersByTimeAsync(0)
-    expect(translateWalkedElement).toHaveBeenCalledWith(next, expect.any(String), expect.any(Object), true, expect.any(AbortSignal))
+    expect(translateWalkedElement).toHaveBeenCalledWith(next, expect.any(String), expect.any(Object), true, expect.any(AbortSignal), expect.any(Function))
   })
   it.each([["control", "Control"], ["shift", "Shift"], ["backtick", "`"]] as const)("uses the configured %s trigger instead of Alt", async (hotkey, key) => {
     vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
@@ -101,7 +102,7 @@ describe("tap-or-hold hover translation", () => {
     await vi.advanceTimersByTimeAsync(499)
     expect(translateWalkedElement).not.toHaveBeenCalled()
     await vi.advanceTimersByTimeAsync(1)
-    expect(translateWalkedElement).toHaveBeenCalledWith(document.querySelector("p"), expect.any(String), expect.any(Object), true, expect.any(AbortSignal))
+    expect(translateWalkedElement).toHaveBeenCalledWith(document.querySelector("p"), expect.any(String), expect.any(Object), true, expect.any(AbortSignal), expect.any(Function))
   })
   it.each([true, false])("cancels keyboard combinations in either press order (trigger first: %s)", async (triggerFirst) => {
     down(triggerFirst ? "Alt" : "e")

@@ -395,6 +395,8 @@ features:
   title: 동영상 자막
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverStream: 마우스 오버 번역 스트리밍
+  hoverStreamDescription: 본문의 원래 위치에 번역을 점진적으로 표시해 대기 시간을 줄입니다. 끄면 번역이 완료된 후 표시합니다.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode

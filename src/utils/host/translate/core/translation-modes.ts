@@ -1,3 +1,4 @@
+import type { PageTranslationRequest } from "../stream-request"
 import type { Config } from "@/types/config/config"
 import type { TranslationMode } from "@/types/config/translate"
 import type { TransNode } from "@/types/dom"
@@ -45,13 +46,14 @@ export async function translateNodes(
   config: Config,
   forceBlockTranslation: boolean = false,
   signal?: AbortSignal,
+  translateRequest?: PageTranslationRequest,
 ): Promise<void> {
   const translationMode = config.translate.mode
   if (translationMode === "translationOnly") {
-    await translateNodeTranslationOnlyMode(nodes, walkId, config, toggle, signal)
+    await translateNodeTranslationOnlyMode(nodes, walkId, config, toggle, signal, translateRequest)
   }
   else if (translationMode === "bilingual") {
-    await translateNodesBilingualMode(nodes, walkId, config, toggle, forceBlockTranslation, signal)
+    await translateNodesBilingualMode(nodes, walkId, config, toggle, forceBlockTranslation, signal, translateRequest)
   }
 }
 
@@ -62,6 +64,7 @@ export async function translateNodesBilingualMode(
   toggle: boolean = false,
   forceBlockTranslation: boolean = false,
   signal?: AbortSignal,
+  translateRequest?: PageTranslationRequest,
 ): Promise<void> {
   const transNodes = nodes.filter(node => isTransNode(node))
   if (transNodes.length === 0 || signal?.aborted) {
@@ -88,7 +91,7 @@ export async function translateNodesBilingualMode(
       }
       else {
         unmarkTranslatingInWalk(nodes, walkId)
-        void translateNodesBilingualMode(nodes, walkId, config, toggle, false, signal)
+        void translateNodesBilingualMode(nodes, walkId, config, toggle, false, signal, translateRequest)
         return
       }
     }
@@ -107,6 +110,8 @@ export async function translateNodesBilingualMode(
     translatedWrapperNode.setAttribute(WALKED_ATTRIBUTE, walkId)
     setTranslationDirAndLang(translatedWrapperNode, config)
     const spinner = createSpinnerInside(translatedWrapperNode)
+    if (translateRequest && !translateRequest.showSpinner)
+      spinner.style.setProperty("display", "none", "important")
 
     // Batch DOM insertion to reduce layout thrashing
     const insertOperation = () => {
@@ -124,9 +129,11 @@ export async function translateNodesBilingualMode(
     }
     batchDOMOperation(insertOperation)
 
-    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal)
-    if (signal?.aborted)
+    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest)
+    if (signal?.aborted) {
+      batchDOMOperation(() => translatedWrapperNode.remove())
       return
+    }
 
     const translatedText = getDisplayTranslation(textContent, realTranslatedText)
 
@@ -159,6 +166,7 @@ export async function translateNodeTranslationOnlyMode(
   config: Config,
   toggle: boolean = false,
   signal?: AbortSignal,
+  translateRequest?: PageTranslationRequest,
 ): Promise<void> {
   const isTransNodeAndNotTranslatedWrapper = (node: Node): node is TransNode => {
     if (isHTMLElement(node) && node.classList.contains(CONTENT_WRAPPER_CLASS))
@@ -183,10 +191,12 @@ export async function translateNodeTranslationOnlyMode(
   // </div>,
   // Only save originalContent when there's no existing translation wrapper
   // If wrapper exists, we're removing translation and should restore from saved content
+  const ownedSnapshots: HTMLElement[] = []
   const outerParentElement = outerTransNodes[0].parentElement
   const hasExistingWrapper = outerParentElement?.querySelector(`.${CONTENT_WRAPPER_CLASS}`)
   if (outerParentElement && !originalContentMap.has(outerParentElement) && !hasExistingWrapper) {
     originalContentMap.set(outerParentElement, outerParentElement.innerHTML)
+    ownedSnapshots.push(outerParentElement)
   }
 
   let transNodes: TransNode[] = []
@@ -235,7 +245,7 @@ export async function translateNodeTranslationOnlyMode(
         // same nodes array, we ensure the translation uses the newly created DOM elements since the
         // function will re-query and find the correct parent and child nodes from the restored DOM.
         unmarkTranslatingInWalk(nodes, walkId)
-        void translateNodeTranslationOnlyMode(nodes, walkId, config, toggle, signal)
+        void translateNodeTranslationOnlyMode(nodes, walkId, config, toggle, signal, translateRequest)
         return
       }
     }
@@ -261,6 +271,7 @@ export async function translateNodeTranslationOnlyMode(
     const hasExistingWrapperInParent = parentNode.querySelector(`.${CONTENT_WRAPPER_CLASS}`)
     if (!originalContentMap.has(parentNode) && !hasExistingWrapperInParent) {
       originalContentMap.set(parentNode, parentNode.innerHTML)
+      ownedSnapshots.push(parentNode)
     }
 
     const getStringFormatFromNode = (node: Element | Text) => {
@@ -282,6 +293,8 @@ export async function translateNodeTranslationOnlyMode(
     translatedWrapperNode.style.display = "contents"
     setTranslationDirAndLang(translatedWrapperNode, config)
     const spinner = createSpinnerInside(translatedWrapperNode)
+    if (translateRequest && !translateRequest.showSpinner)
+      spinner.style.setProperty("display", "none", "important")
 
     // Batch DOM insertion to reduce layout thrashing
     const insertOperation = () => {
@@ -299,9 +312,11 @@ export async function translateNodeTranslationOnlyMode(
     }
     batchDOMOperation(insertOperation)
 
-    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal)
-    if (signal?.aborted)
+    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest)
+    if (signal?.aborted) {
+      batchDOMOperation(() => translatedWrapperNode.remove())
       return
+    }
     const translatedText = realTranslatedText ? getDisplayTranslation(textContent, realTranslatedText) : realTranslatedText
 
     if (!translatedText) {
@@ -329,6 +344,8 @@ export async function translateNodeTranslationOnlyMode(
     })
   }
   finally {
+    if (signal?.aborted)
+      ownedSnapshots.forEach(node => originalContentMap.delete(node))
     unmarkTranslatingInWalk(nodes, walkId)
   }
 }

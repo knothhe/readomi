@@ -12,6 +12,22 @@ beforeEach(() => {
   fakeBrowser.reset()
 })
 
+it("defaults older configs to hover streaming without changing existing preferences", async () => {
+  const { hoverStream: _, ...features } = DEFAULT_CONFIG.features
+  const olderConfig = { ...TRANSLATION_ONLY, features: { ...features, hoverTranslation: true, hoverHotkey: "shift" } }
+  await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, olderConfig)
+
+  expect(await getLocalConfig()).toEqual({ ...olderConfig, features: { ...olderConfig.features, hoverStream: true } })
+  expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(olderConfig)
+})
+
+it("keeps an explicit hover streaming preference disabled when loading config", async () => {
+  const config: Config = { ...TRANSLATION_ONLY, features: { ...TRANSLATION_ONLY.features, hoverTranslation: true, hoverStream: false } }
+  await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+
+  expect(await getLocalConfig()).toEqual(config)
+})
+
 it("user stores a config that the schema rejects: Given a watch on a stored config, When an invalid value and then no value is stored, Then the watch and getLocalConfig give the same result", async () => {
   // Given
   await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, TRANSLATION_ONLY)

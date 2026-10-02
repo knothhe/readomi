@@ -2,20 +2,27 @@ import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { WebPagePromptContext } from "@/types/content"
 import type { PromptResolver } from "@/utils/host/translate/api/ai"
+import type { HoverStreamReply, HoverStreamRequest } from "@/utils/host/translate/stream-request"
+import { browser } from "#imports"
+import { LANG_CODE_TO_EN_NAME } from "@/definitions"
 import { BATCH_SEPARATOR, BATCH_SEPARATOR_LINE_PATTERN } from "@/utils/constants/prompt"
 import { DEFAULT_MAX_CHARACTER_PER_BATCH, DEFAULT_MAX_ITEMS_PER_BATCH, INITIAL_REQUEST_RATE, MAX_REQUEST_RATE, MIN_REQUEST_RATE, REQUEST_BURST_SECONDS } from "@/utils/constants/translate"
 import { generateArticleSummary } from "@/utils/content/summary"
 import { cleanText } from "@/utils/content/utils"
+import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { cacheDb } from "@/utils/db/cache-db"
 import { sha256Hex, stringHash } from "@/utils/hash"
 import { executeTranslate } from "@/utils/host/translate/execute-translate"
+import { HOVER_STREAM_PORT } from "@/utils/host/translate/stream-request"
 import { normalizePromptContextValue } from "@/utils/host/translate/translate-text"
 import { logger } from "@/utils/logger"
 import { onMessage } from "@/utils/message"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
+import { requestTextStream } from "@/utils/providers/stream"
 import { BatchQueue } from "@/utils/request/batch-queue"
 import { Pace } from "@/utils/request/pace"
 import { RequestQueue } from "@/utils/request/request-queue"
+import { attachRequestErrorMeta } from "@/utils/request/retry-policy"
 import { serviceLimitsKey, ServiceLimitsStore } from "@/utils/request/service-limits"
 
 export function parseBatchResult(result: string): string[] {
@@ -177,6 +184,62 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
 export function setUpWebPageTranslationQueue() {
   const limits = new ServiceLimitsStore()
   const { requestQueueFor, batchQueue } = createTranslationQueues(getTranslatePrompt, limits)
+
+  browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== HOVER_STREAM_PORT)
+      return
+    const controller = new AbortController()
+    let started = false
+    port.onDisconnect.addListener(() => controller.abort())
+    const reply = (message: HoverStreamReply) => {
+      if (!controller.signal.aborted)
+        port.postMessage(message)
+    }
+    port.onMessage.addListener((data: HoverStreamRequest) => {
+      if (started || controller.signal.aborted)
+        return
+      started = true
+      void (async () => {
+        try {
+          const cached = await cacheDb.translationCache.get(data.hash)
+          controller.signal.throwIfAborted()
+          if (cached) {
+            reply({ type: "done", text: cached.translation })
+            return
+          }
+          await limits.load()
+          const result = await requestQueueFor(data.providerConfig).enqueue(async () => {
+            if (controller.signal.aborted)
+              throw attachRequestErrorMeta(new DOMException("Translation cancelled", "AbortError"), { isRetryable: false })
+            // Each attempt has its own deadline, so a timed-out fetch cannot
+            // continue sending partials while the queue starts a retry.
+            const attempt = new AbortController()
+            const timeout = setTimeout(() => attempt.abort(), 110_000)
+            try {
+              reply({ type: "partial", text: "" })
+              const { systemPrompt, prompt } = await getTranslatePrompt(LANG_CODE_TO_EN_NAME[data.langConfig.targetCode], data.text, { context: data.context })
+              return await requestTextStream(data.providerConfig, {
+                system: systemPrompt,
+                prompt,
+                temperature: data.providerConfig.temperature,
+              }, text => reply({ type: "partial", text }), AbortSignal.any([controller.signal, attempt.signal]))
+            }
+            finally {
+              clearTimeout(timeout)
+            }
+          }, Date.now(), `hover:${data.hash}:${getRandomUUID()}`, 120_000)
+          controller.signal.throwIfAborted()
+          if (result) {
+            await cacheDb.translationCache.put({ key: data.hash, translation: result, createdAt: new Date() })
+          }
+          reply({ type: "done", text: result })
+        }
+        catch (error) {
+          reply({ type: "error", message: error instanceof Error ? error.message : String(error) })
+        }
+      })()
+    })
+  })
 
   onMessage("enqueueTranslateRequest", async (message) => {
     const { data: { text, langConfig, providerConfig, scheduleAt, hash, webTitle, webDescription, webContent, webSummary } } = message

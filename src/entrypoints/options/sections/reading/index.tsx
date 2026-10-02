@@ -44,6 +44,18 @@ export function ReadingSection() {
           {/* The translation style applies to bilingual display only. */}
           {translateConfig.mode === "bilingual" && <StyleSetting />}
           <SettingsRow label={i18n.t("features.hover")} description={i18n.t("features.hoverDescription")} control={<Switch aria-label={i18n.t("features.hover")} checked={features.hoverTranslation} onCheckedChange={hoverTranslation => void setFeatures({ hoverTranslation })} />} />
+          <SettingsRow
+            label={i18n.t("features.hoverStream")}
+            description={i18n.t("features.hoverStreamDescription")}
+            control={(
+              <Switch
+                aria-label={i18n.t("features.hoverStream")}
+                checked={features.hoverStream}
+                disabled={!features.hoverTranslation}
+                onCheckedChange={hoverStream => void setFeatures({ hoverStream })}
+              />
+            )}
+          />
         </SettingsGroup>
         <SettingsGroup caption={i18n.t("options.reading.allPages")}>
           <EnglishPreview />

@@ -395,6 +395,8 @@ features:
   title: 视频字幕
   hover: 悬停翻译
   hoverDescription: 鼠标停在段落上，按快捷键页设置的触发方式翻译；再次触发恢复原文。
+  hoverStream: 悬停翻译流式渲染
+  hoverStreamDescription: 在正文原位逐步显示译文，减少等待；关闭后等待完整译文再显示。
   video: 视频字幕翻译
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   mode: 字幕显示方式

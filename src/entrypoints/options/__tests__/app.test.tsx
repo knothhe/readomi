@@ -238,6 +238,45 @@ describe("settings page", () => {
     await waitFor(() => expect(isWordPrefixHighlightRegistered()).toBe(false))
   })
 
+  it("saves hover streaming independently and preserves it while hover translation is disabled", async () => {
+    const config: Config = { ...configured, features: { ...configured.features, hoverTranslation: true } }
+    const { store } = await renderSettings(config, "reading")
+    const streaming = screen.getByRole("switch", { name: "features.hoverStream" })
+    const hover = screen.getByRole("switch", { name: "features.hover" })
+
+    expect(streaming).toBeChecked()
+    expect(streaming).toBeEnabled()
+    expect(screen.getByText("features.hoverStreamDescription")).toBeInTheDocument()
+    fireEvent.click(streaming)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.hoverStream).toBe(false))
+    expect(store.get(configAtom).features.hoverTranslation).toBe(true)
+
+    fireEvent.click(hover)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.hoverTranslation).toBe(false))
+    expect(streaming).toBeDisabled()
+    expect(streaming).not.toBeChecked()
+    fireEvent.click(streaming)
+    expect(store.get(configAtom).features.hoverStream).toBe(false)
+
+    fireEvent.click(hover)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.hoverTranslation).toBe(true))
+    expect(streaming).toBeEnabled()
+    expect(streaming).not.toBeChecked()
+    fireEvent.click(streaming)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.hoverStream).toBe(true))
+    expect(store.get(configAtom).translate).toEqual(config.translate)
+    expect(store.get(configAtom).providersConfig).toEqual(config.providersConfig)
+  })
+
+  it("keeps the default hover streaming preference selected while hover translation is off", async () => {
+    const { store } = await renderSettings(configured, "reading")
+    const streaming = screen.getByRole("switch", { name: "features.hoverStream" })
+    expect(streaming).toBeChecked()
+    expect(streaming).toBeDisabled()
+    fireEvent.click(streaming)
+    expect(store.get(configAtom).features.hoverStream).toBe(true)
+  })
+
   it("shows an empty editor right away when no service is configured", async () => {
     await renderSettings()
 

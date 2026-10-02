@@ -395,6 +395,8 @@ features:
   title: Phụ đề video
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverStream: Hiển thị bản dịch dần khi rê chuột
+  hoverStreamDescription: Hiển thị bản dịch dần ngay trong nội dung để giảm thời gian chờ. Khi tắt, đợi bản dịch hoàn chỉnh rồi mới hiển thị.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode

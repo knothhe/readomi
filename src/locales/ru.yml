@@ -395,6 +395,8 @@ features:
   title: Видеосубтитры
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverStream: Потоковый перевод при наведении
+  hoverStreamDescription: Показывает перевод постепенно на месте, сокращая ожидание. Если выключено, ждёт полного перевода.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode

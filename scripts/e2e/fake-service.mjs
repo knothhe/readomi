@@ -30,8 +30,9 @@ export const OTHER_REQUEST_PREFIXES = { languageDetection: "You are a language d
  * `holdAnswers()` keeps the answers back until the function it returns is
  * called, like a slow service.
  */
-export async function startFakeService() {
+export async function startFakeService({ streaming = false } = {}) {
   const requests = []
+  let heldStreamCompletion
   let heldAnswers
   const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost")
@@ -79,6 +80,17 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
         .split(/\r?\n[ \t]*%%[ \t]*\r?\n/)
         .map(segment => `【译】${segment.trim().split("\n").at(-1).slice(0, 24)}`)
         .join("\n%%\n")
+      if (streaming && json.stream) {
+        response.setHeader("Content-Type", "text/event-stream")
+        const text = "阅读和经历训练的是你对世界的模型。每一个新想法，都会成为你理解接下来发生的事情的一部分。".repeat(6)
+        for (let index = 0; index < text.length && !response.destroyed; index += 8) {
+          response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: text.slice(index, index + 8) } }] })}\n\n`)
+          await new Promise(resolve => setTimeout(resolve, 30))
+        }
+        await heldStreamCompletion
+        response.end("data: [DONE]\n\n")
+        return
+      }
       response.setHeader("Content-Type", "application/json")
       response.end(JSON.stringify({
         id: "chatcmpl-e2e",
@@ -105,6 +117,14 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
     completions,
     messages,
     translationRequests: () => messages().filter(([message]) => !otherPrefixes.some(prefix => message.content.startsWith(prefix))),
+    holdStreamCompletion() {
+      let release
+      heldStreamCompletion = new Promise(resolve => release = resolve)
+      return () => {
+        heldStreamCompletion = undefined
+        release()
+      }
+    },
     holdAnswers() {
       let release
       heldAnswers = new Promise(resolve => release = resolve)

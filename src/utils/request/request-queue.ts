@@ -13,6 +13,7 @@ export interface RequestTask {
   scheduleAt: number
   createdAt: number
   retryCount: number
+  timeoutMs?: number
   drained: boolean
 }
 
@@ -51,7 +52,7 @@ export class RequestQueue {
     this.waitingQueue = new BinaryHeapPQ<QueuedRequestTask>()
   }
 
-  enqueue<T>(thunk: () => Promise<T>, scheduleAt: number, hash: string): Promise<T> {
+  enqueue<T>(thunk: () => Promise<T>, scheduleAt: number, hash: string, timeoutMs?: number): Promise<T> {
     const duplicateTask = this.duplicateTask(hash)
     if (duplicateTask) {
       // console.info(`🔄 Found duplicate task for hash: ${hash}, returning existing promise`)
@@ -75,6 +76,7 @@ export class RequestQueue {
       scheduleAt,
       createdAt: Date.now(),
       retryCount: 0,
+      timeoutMs,
       drained: false,
     }
 
@@ -144,9 +146,9 @@ export class RequestQueue {
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         timeoutId = setTimeout(() => {
-          // console.info(`⏰ Task ${task.id} timed out after ${this.options.timeoutMs}ms`)
-          reject(new Error(`Task ${task.id} timed out after ${this.options.timeoutMs}ms`))
-        }, this.options.timeoutMs)
+          // console.info(`⏰ Task ${task.id} timed out after ${(task.timeoutMs ?? this.options.timeoutMs)}ms`)
+          reject(new Error(`Task ${task.id} timed out after ${(task.timeoutMs ?? this.options.timeoutMs)}ms`))
+        }, task.timeoutMs ?? this.options.timeoutMs)
       })
 
       // Race between the actual task and timeout

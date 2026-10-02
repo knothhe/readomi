@@ -1,3 +1,4 @@
+import type { PageTranslationRequestOptions } from "./stream-request"
 import type { Config } from "@/types/config/config"
 import { resolveProviderConfig } from "@/utils/constants/feature-providers"
 import { getLocalConfig } from "../../config/storage"
@@ -39,7 +40,7 @@ async function getWebPagePromptContext(
 async function translateTextUsingPageConfig(
   config: Config,
   text: string,
-  options: {
+  options: PageTranslationRequestOptions & {
     extraHashTags?: string[]
     webPageContext?: { webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }
   } = {},
@@ -57,6 +58,8 @@ async function translateTextUsingPageConfig(
     providerConfig,
     extraHashTags: options.extraHashTags,
     webPageContext: options.webPageContext,
+    onPartial: options.onPartial,
+    signal: options.signal,
   })
 }
 
@@ -64,12 +67,14 @@ async function translateTextUsingPageConfig(
  * Page translation — uses FEATURE_PROVIDER_DEFS['translate'].
  * Includes skip-language logic (page translation only).
  */
-export async function translateTextForPage(text: string): Promise<string> {
+export async function translateTextForPage(text: string, options: PageTranslationRequestOptions = {}): Promise<string> {
+  options.signal?.throwIfAborted()
   const config = await getConfigOrThrow()
   const providerConfig = resolveProviderConfig(config, "translate")
   const webPageContext = await getWebPagePromptContext(providerConfig, config.translate.enableAIContentAware, true)
 
   return translateTextUsingPageConfig(config, text, {
+    ...options,
     webPageContext,
   })
 }

@@ -395,6 +395,8 @@ features:
   title: 影片字幕
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverStream: 懸停翻譯串流顯示
+  hoverStreamDescription: 在內文原位逐步顯示譯文，減少等待；關閉後等待完整譯文再顯示。
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode

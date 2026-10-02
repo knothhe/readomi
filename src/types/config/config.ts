@@ -29,6 +29,7 @@ export const configSchema = z.object({
   translate: translateConfigSchema,
   features: z.object({
     hoverTranslation: z.boolean().default(false),
+    hoverStream: z.boolean().default(true),
     hoverHotkey: z.enum(["alt", "control", "shift", "backtick", "clickAndHold"]).default("alt"),
     modeShortcut: pageTranslationShortcutSchema.default(""),
     subtitlesShortcut: pageTranslationShortcutSchema.default(""),

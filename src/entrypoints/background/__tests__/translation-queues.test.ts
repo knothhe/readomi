@@ -1,10 +1,12 @@
 import type { ProviderConfig } from "@/types/config/provider"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { browser } from "#imports"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 
 const onMessageMock = vi.fn()
 const ensureInitializedConfigMock = vi.fn()
 const executeTranslateMock = vi.fn()
+const requestTextStreamMock = vi.fn()
 const generateArticleSummaryMock = vi.fn()
 const articleSummaryCacheGetMock = vi.fn()
 const articleSummaryCachePutMock = vi.fn()
@@ -25,6 +27,10 @@ vi.mock("../config", () => ({
 
 vi.mock("@/utils/host/translate/execute-translate", () => ({
   executeTranslate: executeTranslateMock,
+}))
+
+vi.mock("@/utils/providers/stream", () => ({
+  requestTextStream: requestTextStreamMock,
 }))
 
 vi.mock("@/utils/content/summary", () => ({
@@ -65,6 +71,7 @@ describe("translation queue helpers", () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
+    vi.spyOn(browser.runtime.onConnect, "addListener").mockImplementation(() => {})
 
     ensureInitializedConfigMock.mockResolvedValue({
       ...DEFAULT_CONFIG,
@@ -75,11 +82,36 @@ describe("translation queue helpers", () => {
     })
 
     executeTranslateMock.mockResolvedValue("translated text")
+    requestTextStreamMock.mockResolvedValue("translated text")
     generateArticleSummaryMock.mockResolvedValue("Generated summary")
     articleSummaryCacheGetMock.mockResolvedValue(undefined)
     articleSummaryCachePutMock.mockResolvedValue(undefined)
     translationCacheGetMock.mockResolvedValue(undefined)
     translationCachePutMock.mockResolvedValue(undefined)
+  })
+
+  it("settles a hover port even if the service returns an empty result", async () => {
+    requestTextStreamMock.mockResolvedValueOnce("")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const port = {
+      name: "readomi-hover-translation",
+      onMessage: { addListener: vi.fn() },
+      onDisconnect: { addListener: vi.fn() },
+      postMessage: vi.fn(),
+    }
+    const connect = vi.mocked(browser.runtime.onConnect.addListener).mock.calls[0][0]
+    connect(port as unknown as Parameters<typeof connect>[0])
+    port.onMessage.addListener.mock.calls[0][0]({
+      text: "A paragraph",
+      langConfig: DEFAULT_CONFIG.language,
+      providerConfig: llmProvider,
+      hash: "hover-empty-result",
+    })
+
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", text: "" }))
+    expect(requestTextStreamMock).toHaveBeenCalledOnce()
+    expect(translationCachePutMock).not.toHaveBeenCalled()
   })
 
   it("passes webpage context through the translation queue without generating a new summary", async () => {

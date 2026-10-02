@@ -113,8 +113,8 @@ it("user changes the display mode while the page is translating: Given a slow se
 it("user translates a copy of an article: Given page context is on and the built-in prompt, When the article is translated and then a copy with another description, Then the copy gets its translations from the cache without a new request", async () => {
   const { popup, extensionId } = await setUpService()
   await popup.goto(`chrome-extension://${extensionId}/options.html#quality`)
-  await popup.getByRole("switch", { name: "Use page context" }).click()
-  await popup.getByRole("switch", { name: "Use page context", checked: true }).waitFor()
+  await popup.getByRole("switch", { name: "Use page summary" }).click()
+  await popup.getByRole("switch", { name: "Use page summary", checked: true }).waitFor()
 
   const requestsBefore = service.translationRequests().length
   const { translations: first } = await translateArticle("/article?description=First")

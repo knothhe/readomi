@@ -1,13 +1,16 @@
 import type { Config } from "@/types/config/config"
-import { getLocalConfig } from "@/utils/config/storage"
+import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
+import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { hasNoWalkAncestor, isHTMLElement } from "@/utils/host/dom/filter"
 import { findNearestAncestorBlockNodeFor } from "@/utils/host/dom/find"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
 import { translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
+import { translateTextForPage } from "@/utils/host/translate/translate-variants"
+import { createInlineHoverStreamPreview } from "@/utils/host/translate/ui/inline-hover-stream-preview"
 import { isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 
@@ -21,6 +24,8 @@ export function bindHoverTranslation(target: Document = document) {
   let press: { hotkey: Config["features"]["hoverHotkey"], trigger: () => void } | null = null
   const pressedKeys = new Set<string>()
   let busy = false
+  let activeTranslation: AbortController | undefined
+  let activeCompletion: Promise<void> | undefined
   let mouseStart: { x: number, y: number } | null = null
   const controller = new AbortController()
   const cancel = () => {
@@ -44,18 +49,68 @@ export function bindHoverTranslation(target: Document = document) {
     }
     if (!validateTranslationConfigAndToast(config))
       return
+    activeTranslation?.abort()
     busy = true
+    const request = new AbortController()
+    activeTranslation = request
+    const signal = AbortSignal.any([controller.signal, request.signal])
+    let preview: ReturnType<typeof createInlineHoverStreamPreview>
+    const disposePreview = () => preview?.dispose()
+    signal.addEventListener("abort", disposePreview, { once: true })
     try {
+      preview = config.features.hoverStream ? createInlineHoverStreamPreview(block, config, () => request.abort()) : undefined
       const walkId = getRandomUUID()
       walkAndLabelElement(block, walkId, config)
-      await translateWalkedElement(block, walkId, config, true, controller.signal)
+      const requests: { result: Promise<string>, resolve: (text: string) => void, reject: (error: unknown) => void }[] = []
+      const translateGroup = Object.assign((text: string) => {
+        const onPartial = preview?.register()
+        const result = new Promise<string>((resolve, reject) => {
+          const abort = () => reject(new DOMException("Translation cancelled", "AbortError"))
+          signal.addEventListener("abort", abort, { once: true })
+          void translateTextForPage(text, { onPartial, signal }).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort))
+        })
+        return new Promise<string>((resolve, reject) => requests.push({ result, resolve, reject }))
+      }, { showSpinner: !preview })
+      const finished = translateWalkedElement(block, walkId, config, true, signal, translateGroup)
+      // The walker registers every group synchronously. Release their finished
+      // results together so a paragraph with several groups settles at once.
+      const results = await Promise.allSettled(requests.map(request => request.result))
+      if (preview && requests.length && results.every(result => result.status === "fulfilled") && !signal.aborted) {
+        // Finish the smooth reveal before the canonical paragraph renderer
+        // takes over. The reader stays at the same paragraph throughout.
+        busy = false
+        const apply = await preview.finish(results.map(result => result.value))
+        if (!apply)
+          request.abort()
+      }
+      const commit = async () => {
+        results.forEach((result, index) => {
+          if (signal.aborted)
+            requests[index].reject(new DOMException("Translation cancelled", "AbortError"))
+          else if (result.status === "fulfilled")
+            requests[index].resolve(result.value)
+          else
+            requests[index].reject(result.reason)
+        })
+        await finished
+        flushBatchedOperations()
+      }
+      if (preview)
+        await preview.commitToPage(commit)
+      else
+        await commit()
     }
     catch (error) {
-      if (!controller.signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+      if (!signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
         logger.error("Hover translation failed", error)
     }
     finally {
-      busy = false
+      signal.removeEventListener("abort", disposePreview)
+      preview?.dispose()
+      if (activeTranslation === request) {
+        activeTranslation = undefined
+        busy = false
+      }
     }
   }
   const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null) => {
@@ -69,9 +124,21 @@ export function bindHoverTranslation(target: Document = document) {
         return
       triggered = true
       const candidate = hotkey === "clickAndHold" ? element : hovered ?? element
-      void getLocalConfig().then((config) => {
-        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !busy && !controller.signal.aborted && candidate.isConnected)
-          return translate(candidate, config)
+      void getLocalConfig().then(async (config) => {
+        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !busy && !controller.signal.aborted && candidate.isConnected) {
+          // Finish restoring the previous paragraph before walking another one.
+          // This matters when a completed replacement preview is dismissed by
+          // another hover: its saved original must not outlive the next walk.
+          activeTranslation?.abort()
+          await activeCompletion
+          if (token !== session || busy || controller.signal.aborted || !candidate.isConnected)
+            return
+          const completion = translate(candidate, config)
+          activeCompletion = completion
+          await completion
+          if (activeCompletion === completion)
+            activeCompletion = undefined
+        }
       }).catch((error) => {
         if (!controller.signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
           logger.error("Hover configuration failed", error)
@@ -80,9 +147,18 @@ export function bindHoverTranslation(target: Document = document) {
     press = { hotkey, trigger }
     timer = setTimeout(trigger, 500)
   }
+  const reset = () => {
+    pressedKeys.clear()
+    cancel()
+  }
   const keydown = (event: KeyboardEvent) => {
     if (event.repeat)
       return
+    if (event.key === "Escape") {
+      reset()
+      activeTranslation?.abort()
+      return
+    }
     pressedKeys.add(event.code || event.key)
     const hotkey = KEYBOARD_TRIGGERS[event.key as keyof typeof KEYBOARD_TRIGGERS]
     if (!hotkey || pressedKeys.size !== 1 || event.metaKey || (event.ctrlKey && hotkey !== "control") || (event.altKey && hotkey !== "alt") || (event.shiftKey && hotkey !== "shift")) {
@@ -110,10 +186,6 @@ export function bindHoverTranslation(target: Document = document) {
     }
     released.trigger()
   }
-  const reset = () => {
-    pressedKeys.clear()
-    cancel()
-  }
   const mousedown = (event: MouseEvent) => {
     cancel()
     if (event.button !== 0 || event.defaultPrevented || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey || isEditableTarget(event.target))
@@ -124,6 +196,19 @@ export function bindHoverTranslation(target: Document = document) {
     mouseStart = { x: event.clientX, y: event.clientY }
     start("clickAndHold", element)
   }
+  const unwatch = watchLocalConfig((next, previous) => {
+    if (!next?.features.hoverTranslation || (previous && (
+      next.features.hoverStream !== previous.features.hoverStream
+      || next.translate.mode !== previous.translate.mode
+      || next.translate.providerId !== previous.translate.providerId
+      || next.language.sourceCode !== previous.language.sourceCode
+      || next.language.targetCode !== previous.language.targetCode
+      || JSON.stringify(next.providersConfig) !== JSON.stringify(previous.providersConfig)
+    ))) {
+      reset()
+      activeTranslation?.abort()
+    }
+  })
   target.addEventListener("mouseover", move, true)
   target.addEventListener("mousemove", move, true)
   target.addEventListener("keydown", keydown, true)
@@ -135,7 +220,9 @@ export function bindHoverTranslation(target: Document = document) {
   target.addEventListener("visibilitychange", reset)
   target.defaultView?.addEventListener("blur", reset)
   return () => {
+    unwatch()
     reset()
+    activeTranslation?.abort()
     controller.abort()
     target.removeEventListener("mouseover", move, true)
     target.removeEventListener("mousemove", move, true)

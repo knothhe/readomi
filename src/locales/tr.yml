@@ -395,6 +395,8 @@ features:
   title: Video altyazıları
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverStream: Üzerine gelince çeviriyi akışla göster
+  hoverStreamDescription: Beklemeyi azaltmak için çeviriyi metnin yerinde aşamalı gösterir. Kapatıldığında çevirinin tamamlanmasını bekler.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode

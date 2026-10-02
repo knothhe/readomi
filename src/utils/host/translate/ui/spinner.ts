@@ -1,3 +1,4 @@
+import type { PageTranslationRequest } from "../stream-request"
 import * as React from "react"
 import textSmallCSS from "@/assets/styles/text-small.css?inline"
 import themeCSS from "@/assets/styles/theme.css?inline"
@@ -86,6 +87,7 @@ export async function getTranslatedTextAndRemoveSpinner(
   spinner: HTMLElement,
   translatedWrapperNode: HTMLElement,
   signal?: AbortSignal,
+  translateRequest?: PageTranslationRequest,
 ): Promise<string | undefined> {
   let translatedText: string | undefined
   let succeeded = false
@@ -93,7 +95,7 @@ export async function getTranslatedTextAndRemoveSpinner(
   try {
     if (signal?.aborted || !isExtensionContextValid())
       return undefined
-    translatedText = await translateTextForPage(textContent)
+    translatedText = await (translateRequest ? translateRequest(textContent) : translateTextForPage(textContent))
     succeeded = true
   }
   catch (error) {

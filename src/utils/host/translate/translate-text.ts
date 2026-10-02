@@ -1,3 +1,4 @@
+import type { PageTranslationRequestOptions } from "./stream-request"
 import type { LangCodeISO6393, LangLevel } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
@@ -5,12 +6,13 @@ import type { WebPagePromptContext } from "@/types/content"
 import { i18n } from "#imports"
 import { toast } from "@/components/toast"
 import { LANG_CODE_TO_EN_NAME } from "@/definitions"
-import { getProviderConfigById } from "@/utils/config/helpers"
 
+import { getProviderConfigById } from "@/utils/config/helpers"
 import { logger } from "@/utils/logger"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
 import { sha256Hex } from "../../hash"
 import { sendMessage } from "../../message"
+import { requestHoverStream } from "./stream-request"
 import { prepareTranslationText } from "./text-preparation"
 
 export function normalizePromptContextValue(value: string | null | undefined): string | null | undefined {
@@ -38,6 +40,7 @@ async function buildWebPageHashComponents(
   providerConfig: ProviderConfig,
   partialLangConfig: { sourceCode: LangCodeISO6393 | "auto", targetCode: LangCodeISO6393 },
   webPageContext?: WebPagePromptContext,
+  isBatch: boolean = true,
 ): Promise<string[]> {
   const preparedText = prepareTranslationText(text)
   const normalizedWebPageContext = normalizeWebPagePromptContext(webPageContext)
@@ -50,7 +53,7 @@ async function buildWebPageHashComponents(
 
   const targetLangName = LANG_CODE_TO_EN_NAME[partialLangConfig.targetCode]
   const { systemPrompt, prompt } = await getTranslatePrompt(targetLangName, preparedText, {
-    isBatch: true,
+    isBatch,
     context: normalizedWebPageContext,
   })
   // The rendered prompts contain all webpage context that the model receives.
@@ -59,7 +62,7 @@ async function buildWebPageHashComponents(
   return hashComponents
 }
 
-export interface TranslateTextOptions {
+export interface TranslateTextOptions extends PageTranslationRequestOptions {
   text: string
   langConfig: { sourceCode: LangCodeISO6393 | "auto", targetCode: LangCodeISO6393, level: LangLevel }
   providerConfig: ProviderConfig
@@ -92,17 +95,22 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     providerConfig,
     { sourceCode: langConfig.sourceCode, targetCode: langConfig.targetCode },
     normalizedWebPageContext,
+    !options.onPartial,
   )
 
   // Add extra hash tags for cache differentiation
   hashComponents.push(...extraHashTags)
 
+  const hash = await sha256Hex(...hashComponents)
+  if (options.onPartial) {
+    return requestHoverStream({ text: preparedText, langConfig, providerConfig, hash, context: normalizedWebPageContext }, options)
+  }
   return await sendMessage("enqueueTranslateRequest", {
     text: preparedText,
     langConfig,
     providerConfig,
     scheduleAt: Date.now(),
-    hash: await sha256Hex(...hashComponents),
+    hash,
     webTitle: normalizedWebPageContext?.webTitle,
     webDescription: normalizedWebPageContext?.webDescription,
     webContent: normalizedWebPageContext?.webContent,
