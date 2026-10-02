@@ -54,34 +54,76 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(250)
     expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
   })
-  it("follows the visible progress bar above the controls, preserves the preset and ignores hidden controls", async () => {
+  it("follows YouTube's caption margin across control changes and native cue gaps while preserving custom positions", async () => {
     const player = document.createElement("div")
-    player.className = "html5-video-player"
-    player.innerHTML = "<div class=\"ytp-chrome-bottom\"><div class=\"ytp-progress-bar-container\"></div></div>"
+    player.className = "html5-video-player ytp-autohide"
+    player.innerHTML = "<style>.caption-window.ytp-caption-window-bottom{margin-bottom:70px}.ytp-autohide .caption-window.ytp-caption-window-bottom{margin-bottom:0}</style><div class=\"ytp-caption-window-container\"><div class=\"caption-window ytp-caption-window-bottom\" style=\"bottom:2%\"></div></div>"
     document.body.append(player)
     player.append(video)
-    const controls = player.querySelector<HTMLElement>(".ytp-chrome-bottom")!
-    const progress = player.querySelector<HTMLElement>(".ytp-progress-bar-container")!
-    vi.spyOn(controls, "getBoundingClientRect").mockReturnValue({ width: 640, height: 40, top: 320 } as DOMRect)
-    vi.spyOn(progress, "getBoundingClientRect").mockReturnValue({ width: 640, height: 4, top: 316 } as DOMRect)
-    controls.style.opacity = "0"
+    vi.spyOn(player, "getBoundingClientRect").mockReturnValue({ width: 640, height: 360, top: 0, left: 0 } as DOMRect)
+    const native = player.querySelector<HTMLElement>(".caption-window")!
     update(config)
     await vi.advanceTimersByTimeAsync(750)
     const host = document.querySelector<HTMLElement>("[data-readomi-subtitles]")!
-    expect(Number.parseFloat(host.style.top)).toBeCloseTo(348)
-    controls.style.opacity = "1"
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(352.8)
+    player.classList.remove("ytp-autohide")
     await vi.advanceTimersByTimeAsync(250)
-    expect(Number.parseFloat(host.style.top)).toBeCloseTo(304)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(282.8)
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(config.features.subtitleStyle.position).toEqual({ x: 50, y: 88 })
     expect(translateTextCore).toHaveBeenCalledTimes(1)
-    controls.style.visibility = "hidden"
+    native.style.marginBottom = "84px"
     await vi.advanceTimersByTimeAsync(250)
-    expect(Number.parseFloat(host.style.top)).toBeCloseTo(348)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(268.8)
+    native.remove()
+    await vi.advanceTimersByTimeAsync(250)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(282.8)
+    const probe = player.querySelector<HTMLElement>("[data-readomi-caption-position-probe]")!
+    expect(probe.style.visibility).toBe("hidden")
+    expect(probe.querySelector(".ytp-caption-segment")).toBeNull()
+    player.classList.add("ytp-autohide")
+    await vi.advanceTimersByTimeAsync(250)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(352.8)
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, position: { x: 60, y: 65 } } } })
-    controls.style.visibility = "visible"
+    player.classList.remove("ytp-autohide")
     await vi.advanceTimersByTimeAsync(250)
     expect(Number.parseFloat(host.style.top)).toBeCloseTo(234)
+    cleanup()
+    expect(player.querySelector("[data-readomi-caption-position-probe]")).toBeNull()
+  })
+  it("anchors automatic YouTube captions in fullscreen letterboxing and drags smoothly into the video", async () => {
+    const player = document.createElement("div")
+    player.className = "html5-video-player ytp-autohide"
+    document.body.append(player)
+    player.append(video)
+    vi.spyOn(player, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 1920, height: 1080 } as DOMRect)
+    vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 135, width: 1920, height: 810 } as DOMRect)
+    update(config)
+    await vi.advanceTimersByTimeAsync(750)
+    const host = document.querySelector<HTMLElement>("[data-readomi-subtitles]")!
+    const box = shadow.querySelector<HTMLElement>(".box")!
+    const pointer = (type: string, x: number, y: number) => {
+      const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 })
+      Object.defineProperty(event, "pointerId", { value: 1 })
+      box.dispatchEvent(event)
+    }
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(1058.4)
+    pointer("pointerdown", 960, 1030)
+    pointer("pointermove", 970, 1025)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(1053.4)
+    box.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(1058.4)
+    expect(Number.parseFloat(host.style.left)).toBeCloseTo(960)
+    pointer("pointerdown", 960, 1030)
+    pointer("pointermove", 970, 900)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(928.4)
+    pointer("pointerup", 970, 900)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(928.4)
+    update(config)
+    pointer("pointerdown", 960, 1030)
+    pointer("pointermove", 970, 1025)
+    pointer("pointerup", 970, 1025)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(933)
   })
   it("toggles subtitles for this page, restores native captions and ignores typing", () => {
     const configured = { ...config, features: { ...config.features, subtitlesShortcut: "Alt+V" } }
@@ -125,15 +167,27 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(1000)
     const host = document.querySelector("[data-readomi-subtitles]")
     expect(translateTextCore).toHaveBeenCalledTimes(1)
-    update({ ...config, features: { ...config.features, subtitleMode: "translationOnly", subtitleStyle: { preset: "study", fontSize: 32, position: { x: 55, y: 60 } } } })
+    update({ ...config, features: { ...config.features, subtitleMode: "translationOnly", subtitleStyle: { preset: "study", fontSize: 80, position: { x: 55, y: 60 } } } })
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("32px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("80px")
     expect(shadow.querySelector<HTMLElement>(".original")?.hidden).toBe(true)
     expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
     expect((host as HTMLElement).style.left).toBe("352px")
     expect((host as HTMLElement).style.top).toBe("216px")
     await vi.advanceTimersByTimeAsync(1000)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
+  })
+  it("allows increasing past 40 px and disables the size buttons at the bounds", () => {
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 40 } } })
+    const larger = shadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.larger\"]")!
+    const smaller = shadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.smaller\"]")!
+    expect(larger.disabled).toBe(false)
+    larger.click()
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("41px")
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 80 } } })
+    expect(larger.disabled).toBe(true)
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 14 } } })
+    expect(smaller.disabled).toBe(true)
   })
   it("keeps a pending slow translation when appearance changes, but ignores it after changing the language", async () => {
     let resolve!: (text: string) => void

@@ -1,6 +1,6 @@
 import type { Config } from "@/types/config/config"
 import { i18n } from "#imports"
-import { SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
@@ -9,7 +9,7 @@ import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 import { resolveSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
-import { visibleYouTubeControlsTop } from "@/utils/subtitles/player-controls"
+import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
 import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
 import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
@@ -35,6 +35,8 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   let config = initialConfig
   let appearance = config.features.subtitleStyle
   let renderedPosition = appearance.position
+  let renderedRect = video.getBoundingClientRect()
+  let dragPosition: typeof appearance.position | null = null
   const host = document.createElement("div")
   host.dataset.readomiSubtitles = ""
   host.className = "notranslate"
@@ -57,6 +59,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   document.documentElement.append(host)
   const nativeStyle = document.createElement("style")
   const youtubePlayer = video.closest(".html5-video-player")
+  const youtubeCaptionPosition = youtubePlayer ? createYouTubeCaptionPosition(youtubePlayer) : null
   // Hide only this player's original captions. Restoration removes this style.
   const playerId = getRandomUUID()
   if (youtubePlayer) {
@@ -103,10 +106,13 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   const larger = button(i18n.t("subtitleStyle.larger"), "+")
   const resetPosition = button(i18n.t("subtitleStyle.resetPosition"), i18n.t("subtitleStyle.resetPositionShort"))
   const positionCaption = () => {
-    const rect = video.getBoundingClientRect()
+    const videoRect = video.getBoundingClientRect()
+    const playerRect = !dragPosition && subtitlePositionName(appearance.position) === "bottom" ? youtubePlayer?.getBoundingClientRect() : undefined
+    const rect = playerRect && playerRect.width > 0 && playerRect.height > 0 ? playerRect : videoRect
+    renderedRect = rect
     host.style.maxWidth = `${rect.width * 0.8}px`
-    const controlsTop = subtitlePositionName(appearance.position) === "bottom" ? visibleYouTubeControlsTop(youtubePlayer, rect) : undefined
-    renderedPosition = resolveSubtitlePosition(appearance.position, rect, box.getBoundingClientRect(), controlsTop)
+    const bottomEdge = subtitlePositionName(appearance.position) === "bottom" ? youtubeCaptionPosition?.bottom(rect) : undefined
+    renderedPosition = dragPosition ?? resolveSubtitlePosition(appearance.position, rect, box.getBoundingClientRect(), bottomEdge)
     const centre = rect.width * renderedPosition.x / 100
     host.style.left = `${rect.left + centre}px`
     const toolHalf = tools.getBoundingClientRect().width / 2
@@ -129,8 +135,8 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
     Object.assign(box.style, subtitleTextStyle(appearance))
     presetSelect.value = appearance.preset
     sizeLabel.textContent = `${appearance.fontSize} px`
-    smaller.disabled = appearance.fontSize <= 14
-    larger.disabled = appearance.fontSize >= 40
+    smaller.disabled = appearance.fontSize <= SUBTITLE_FONT_SIZE_MIN
+    larger.disabled = appearance.fontSize >= SUBTITLE_FONT_SIZE_MAX
     positionCaption()
   }
   const persist = (patch: Partial<typeof appearance>) => {
@@ -143,8 +149,8 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
         logger.error("Could not save subtitle appearance", error)
     })
   }
-  smaller.addEventListener("click", () => persist({ fontSize: Math.max(14, appearance.fontSize - 1) }))
-  larger.addEventListener("click", () => persist({ fontSize: Math.min(40, appearance.fontSize + 1) }))
+  smaller.addEventListener("click", () => persist({ fontSize: Math.max(SUBTITLE_FONT_SIZE_MIN, appearance.fontSize - 1) }))
+  larger.addEventListener("click", () => persist({ fontSize: Math.min(SUBTITLE_FONT_SIZE_MAX, appearance.fontSize + 1) }))
   resetPosition.addEventListener("click", () => persist({ position: SUBTITLE_POSITIONS.bottom }))
   presetSelect.addEventListener("change", () => persist(subtitlePresetPatch(presetSelect.value as typeof appearance.preset)))
   tools.append(presetSelect, smaller, sizeLabel, larger, resetPosition)
@@ -152,12 +158,27 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   renderAppearance()
   const disposeDrag = bindSubtitleDrag(box, {
     videoRect: () => video.getBoundingClientRect(),
-    position: () => renderedPosition,
+    position: () => {
+      const rect = video.getBoundingClientRect()
+      if (rect.width <= 0 || rect.height <= 0)
+        return appearance.position
+      return {
+        x: (renderedRect.left + renderedRect.width * renderedPosition.x / 100 - rect.left) / rect.width * 100,
+        y: (renderedRect.top + renderedRect.height * renderedPosition.y / 100 - rect.top) / rect.height * 100,
+      }
+    },
     move: (position) => {
-      appearance = { ...appearance, position }
+      dragPosition = position
       positionCaption()
     },
-    commit: position => persist({ position }),
+    commit: (position) => {
+      dragPosition = null
+      persist({ position })
+    },
+    cancel: () => {
+      dragPosition = null
+      positionCaption()
+    },
   })
 
   const restoreTracks = () => {
@@ -253,6 +274,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
       restoreTracks()
       host.remove()
       nativeStyle.remove()
+      youtubeCaptionPosition?.dispose()
       if (youtubePlayer?.getAttribute("data-readomi-caption-player") === playerId)
         youtubePlayer.removeAttribute("data-readomi-caption-player")
     },

@@ -2,7 +2,7 @@ import { useAtom } from "jotai"
 import { useLayoutEffect, useRef } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
-import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { cn } from "@/utils/styles/utils"
 import { resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
@@ -77,8 +77,8 @@ export function SubtitleStyleEditor() {
             <div className="flex items-center gap-3">
               <input
                 type="range"
-                min="14"
-                max="40"
+                min={SUBTITLE_FONT_SIZE_MIN}
+                max={SUBTITLE_FONT_SIZE_MAX}
                 step="1"
                 aria-label={i18n.t("subtitleStyle.fontSize")}
                 className="w-28 accent-brand sm:w-44"

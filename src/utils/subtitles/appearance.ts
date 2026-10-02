@@ -37,23 +37,24 @@ export function subtitleTextStyle(style: SubtitleStyle) {
 }
 
 /** x is the caption centre, y is its bottom edge, as percentages of the video. */
-export function clampSubtitlePosition(position: SubtitlePosition, video: { width: number, height: number }, caption: { width: number, height: number }): SubtitlePosition {
+export function clampSubtitlePosition(position: SubtitlePosition, video: { width: number, height: number }, caption: { width: number, height: number }, bottomMarginPx?: number): SubtitlePosition {
   if (video.width <= 0 || video.height <= 0)
     return position
   const margin = Math.min(12, video.width / 20, video.height / 20)
+  const bottomMargin = Math.min(margin, bottomMarginPx ?? margin)
   const half = Math.min(caption.width / 2, video.width / 2 - margin)
-  const height = Math.min(caption.height, video.height - margin * 2)
+  const height = Math.min(caption.height, video.height - margin - bottomMargin)
   return {
     x: Math.max((half + margin) / video.width * 100, Math.min(position.x, (video.width - half - margin) / video.width * 100)),
-    y: Math.max((height + margin) / video.height * 100, Math.min(position.y, (video.height - margin) / video.height * 100)),
+    y: Math.max((height + margin) / video.height * 100, Math.min(position.y, (video.height - bottomMargin) / video.height * 100)),
   }
 }
 
-/** Keep the stored bottom preset compatible, but anchor it to pixels rather than 88% of the video. */
-export function resolveSubtitlePosition(position: SubtitlePosition, video: { width: number, height: number }, caption: { width: number, height: number }, controlsTop?: number): SubtitlePosition {
+/** Keep the stored preset compatible while matching YouTube's 2% bottom inset. */
+export function resolveSubtitlePosition(position: SubtitlePosition, video: { width: number, height: number }, caption: { width: number, height: number }, bottomEdge?: number): SubtitlePosition {
   if (video.height > 0 && subtitlePositionName(position) === "bottom") {
-    const edge = Math.min(video.height, controlsTop ?? video.height)
-    position = { x: position.x, y: (edge - 12) / video.height * 100 }
+    const edge = bottomEdge ?? video.height * 0.98
+    return clampSubtitlePosition({ x: position.x, y: edge / video.height * 100 }, video, caption, video.height * 0.02)
   }
   return clampSubtitlePosition(position, video, caption)
 }

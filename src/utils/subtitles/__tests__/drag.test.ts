@@ -9,11 +9,11 @@ function pointer(element: HTMLElement, type: string, x: number, y: number, butto
   Object.defineProperty(event, "pointerId", { value: 1 })
   element.dispatchEvent(event)
 }
-function setup() {
+function setup(initial = { x: 50, y: 88 }) {
   document.body.innerHTML = "<div tabindex=\"0\"><button>+</button></div>"
   const element = document.querySelector("div")!
   vi.spyOn(element, "getBoundingClientRect").mockReturnValue({ width: 200, height: 60 } as DOMRect)
-  let position = { x: 50, y: 88 }
+  let position = initial
   const commit = vi.fn()
   const move = vi.fn((next) => {
     position = next
@@ -48,6 +48,14 @@ describe("subtitle drag interaction", () => {
     element.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
     expect(position()).toEqual({ x: 50, y: 88 })
     expect(commit).not.toHaveBeenCalled()
+  })
+  it("moves continuously from a letterbox anchor and bounds the saved position to the video", () => {
+    const { element, commit, position } = setup({ x: 50, y: 114 })
+    pointer(element, "pointerdown", 320, 420)
+    pointer(element, "pointermove", 330, 410)
+    expect(position().y).toBeCloseTo(114 - 10 / rect.height * 100)
+    pointer(element, "pointerup", 330, 410)
+    expect(commit).toHaveBeenCalledExactlyOnceWith({ x: position().x, y: (rect.height - 12) / rect.height * 100 })
   })
   it("supports keyboard movement and leaves toolbar controls out of the drag gesture", () => {
     const { element, commit, position } = setup()

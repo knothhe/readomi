@@ -1,26 +1,33 @@
-/** The top edge of visible YouTube bottom controls, relative to the video. */
-export function visibleYouTubeControlsTop(player: Element | null, video: { top: number, height: number }): number | undefined {
-  if (!player || video.height <= 0)
-    return undefined
-  let top: number | undefined
-  for (const control of player.querySelectorAll<HTMLElement>(".ytp-chrome-bottom, .ytp-progress-bar-container")) {
-    let visible = true
-    for (let node: Element | null = control; node; node = node.parentElement) {
-      const style = getComputedStyle(node)
-      if (node.hasAttribute("hidden") || style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse" || (style.opacity !== "" && Number(style.opacity) <= 0.01)) {
-        visible = false
-        break
-      }
-      if (node === player)
-        break
-    }
-    if (!visible)
-      continue
-    const rect = control.getBoundingClientRect()
-    const relativeTop = rect.top - video.top
-    if (rect.width <= 0 || rect.height <= 0 || relativeTop < video.height / 2 || relativeTop >= video.height)
-      continue
-    top = Math.min(top ?? relativeTop, relativeTop)
+/** Read YouTube's own caption clearance, including fullscreen and control variants. */
+export function createYouTubeCaptionPosition(player: Element) {
+  // Keep a window available during gaps between native cues. Both classes are
+  // required by YouTube's CSS; omit caption segments so adapters cannot read it.
+  const probe = document.createElement("div")
+  probe.className = "caption-window ytp-caption-window-bottom"
+  probe.dataset.readomiCaptionPositionProbe = ""
+  probe.setAttribute("aria-hidden", "true")
+  Object.assign(probe.style, {
+    position: "absolute",
+    visibility: "hidden",
+    pointerEvents: "none",
+    width: "0",
+    height: "0",
+    border: "0",
+    padding: "0",
+  })
+  player.append(probe)
+  return {
+    /** Caption bottom edge in pixels, relative to the video. */
+    bottom: (video: { top: number, height: number }): number | undefined => {
+      if (video.height <= 0)
+        return undefined
+      if (probe.parentElement !== player)
+        player.append(probe)
+      const native = player.querySelector<HTMLElement>(".caption-window.ytp-caption-window-bottom:not([data-readomi-caption-position-probe])")
+      const margin = Math.max(0, Number.parseFloat(getComputedStyle(native ?? probe).marginBottom) || 0)
+      const rect = player.getBoundingClientRect()
+      return rect.height > 0 ? rect.top + rect.height * 0.98 - margin - video.top : video.height * 0.98 - margin
+    },
+    dispose: () => probe.remove(),
   }
-  return top
 }
