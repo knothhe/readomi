@@ -1,0 +1,20 @@
+{
+  "version": "1.2.1",
+  "locales": [
+    "zh-CN",
+    "en"
+  ],
+  "screenshots": [
+    "01-bilingual",
+    "02-translation-only",
+    "03-hover",
+    "04-subtitles",
+    "05-service"
+  ],
+  "screenshotSize": [
+    1280,
+    800
+  ],
+  "demo": "Original sample text and deterministic loopback-only service; actual built extension UI",
+  "generatedAt": "2026-10-02T11:07:08.234Z"
+}

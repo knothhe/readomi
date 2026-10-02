@@ -40,6 +40,7 @@ tsconfig.local.json
 
 docs/*
 !docs/agent-setup.md
+!docs/chrome-web-store/
 
 /repos
 
