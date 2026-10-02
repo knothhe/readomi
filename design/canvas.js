@@ -6,6 +6,11 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Quality-Prompt-Variables-Expanded.html", title: "译文质量 · 可用网页信息展开", x: 0, y: 43400, w: 1120, h: 1460 },
+    { file: "Quality-Copy-Preview-Quiet.html", title: "译文质量 · 文案预览 · 按需查看", x: 0, y: 42200, w: 1120, h: 860 },
+    { file: "Quality-Copy-Preview-Quiet-Help.html", title: "译文质量 · 文案预览 · 摘要帮助", x: 1200, y: 42200, w: 1120, h: 860 },
+    { file: "Quality-Copy-Preview-Explained.html", title: "译文质量 · 文案预览 · 一句话说明", x: 2400, y: 42200, w: 1120, h: 860 },
+    { file: "Quality-Copy-Preview-Explained-Help.html", title: "译文质量 · 文案预览 · 一句话与帮助", x: 3600, y: 42200, w: 1120, h: 860 },
     { file: "Store-Privacy-zh-CN.html", title: "商店 · 隐私政策中文译文", x: 1200, y: 36400, w: 1120, h: 2300 },
     { file: "Store-Privacy.html", title: "商店 · 隐私政策", x: 0, y: 36400, w: 1120, h: 2440 },
     { file: "Store-01-bilingual-zh-CN.html", title: "商店 · zh-CN · 页面翻译，接着读", x: 0, y: 33800, w: 1280, h: 800 },
