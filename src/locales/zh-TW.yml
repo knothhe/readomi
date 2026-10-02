@@ -83,7 +83,7 @@ options:
   appearance:
     title: 外觀
     colorTheme: 主題色
-    description: 同時套用到介面、譯文標記和工具列圖示。明暗外觀跟隨系統。
+    description: 同時套用到介面、譯文標記和工具列圖示。
     default: 預設
     saveFailed: 主題色未儲存，請重試。
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: 明暗主題
+  system: 跟隨系統
+  light: 亮色
+  dark: 暗色

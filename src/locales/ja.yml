@@ -83,7 +83,7 @@ options:
   appearance:
     title: 外観
     colorTheme: テーマカラー
-    description: 画面、訳文の目印、ツールバーのアイコンに反映されます。明暗はシステムに従います。
+    description: 画面、訳文の目印、ツールバーのアイコンに反映されます。
     default: 既定
     saveFailed: テーマカラーを保存できませんでした。再試行してください。
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: 表示テーマ
+  system: システム
+  light: ライト
+  dark: ダーク

@@ -83,7 +83,7 @@ options:
   appearance:
     title: 外观
     colorTheme: 主题色
-    description: 同时应用到界面、译文标记和工具栏图标。明暗外观跟随系统。
+    description: 同时应用到界面、译文标记和工具栏图标。
     default: 默认
     saveFailed: 主题色没有保存，请重试。
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: 反引号 (`)
   clickAndHold: 鼠标左键长按
   conflict: 此快捷键已用于其他操作，请录制不同的组合键。
+
+appearanceMode:
+  title: 明暗主题
+  system: 跟随系统
+  light: 亮色
+  dark: 暗色

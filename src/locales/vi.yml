@@ -83,7 +83,7 @@ options:
   appearance:
     title: Giao diện
     colorTheme: Màu chủ đề
-    description: Áp dụng cho giao diện, dấu bản dịch và biểu tượng thanh công cụ. Chế độ sáng và tối theo hệ thống.
+    description: Áp dụng cho giao diện, dấu bản dịch và biểu tượng thanh công cụ.
     default: Mặc định
     saveFailed: Chưa lưu được màu chủ đề. Vui lòng thử lại.
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: Giao diện
+  system: Hệ thống
+  light: Sáng
+  dark: Tối

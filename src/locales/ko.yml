@@ -83,7 +83,7 @@ options:
   appearance:
     title: 모양
     colorTheme: 테마 색상
-    description: 화면, 번역 표시, 도구 모음 아이콘에 적용됩니다. 밝고 어두운 모양은 시스템을 따릅니다.
+    description: 인터페이스, 번역 표시 및 도구 모음 아이콘에 적용됩니다.
     default: 기본값
     saveFailed: 테마 색상을 저장하지 못했습니다. 다시 시도해 주세요.
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: 화면 모드
+  system: 시스템
+  light: 라이트
+  dark: 다크

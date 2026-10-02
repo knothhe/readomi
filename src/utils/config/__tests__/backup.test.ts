@@ -18,7 +18,7 @@ describe("local configuration backups", () => {
   })
 
   it("exports Readomi backups and preserves the selected theme", () => {
-    const config = { ...configured, appearance: { colorTheme: "plum" as const } }
+    const config = { ...configured, appearance: { ...DEFAULT_CONFIG.appearance, colorTheme: "plum" as const } }
     const text = exportConfigBackup(config)
     expect(JSON.parse(text).format).toBe("readomi-config")
     expect(parseConfigBackup(text).appearance).toEqual(config.appearance)

@@ -83,7 +83,7 @@ options:
   appearance:
     title: Appearance
     colorTheme: Theme color
-    description: Applies to the interface, translation markers and toolbar icon. Light and dark appearance follows your system.
+    description: Applies to the interface, translation markers and toolbar icon.
     default: Default
     saveFailed: Theme color was not saved. Please try again.
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: Appearance
+  system: System
+  light: Light
+  dark: Dark

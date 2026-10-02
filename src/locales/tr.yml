@@ -83,7 +83,7 @@ options:
   appearance:
     title: Görünüm
     colorTheme: Tema rengi
-    description: Arayüze, çeviri işaretlerine ve araç çubuğu simgesine uygulanır. Açık ve koyu görünüm sistemi izler.
+    description: Arayüze, çeviri işaretlerine ve araç çubuğu simgesine uygulanır.
     default: Varsayılan
     saveFailed: Tema rengi kaydedilemedi. Lütfen tekrar deneyin.
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: Görünüm
+  system: Sistem
+  light: Açık
+  dark: Koyu

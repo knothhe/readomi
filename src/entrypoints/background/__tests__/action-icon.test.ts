@@ -26,7 +26,7 @@ describe("readomi toolbar colors", () => {
   })
 
   it("recolors every tab override while preserving translated state, and sets the default for new tabs", async () => {
-    const config: Config = { ...DEFAULT_CONFIG, appearance: { colorTheme: "plum" } }
+    const config: Config = { ...DEFAULT_CONFIG, appearance: { ...DEFAULT_CONFIG.appearance, colorTheme: "plum" } }
     vi.mocked(ensureInitializedConfig).mockResolvedValue(config)
     await refreshActionIcons()
     expect(browser.action.setIcon).toHaveBeenCalledWith({ path: { 16: "/icon/plum/16.png", 32: "/icon/plum/32.png" } })
@@ -35,7 +35,7 @@ describe("readomi toolbar colors", () => {
   })
 
   it("uses the stored color when translation starts or stops", async () => {
-    vi.mocked(ensureInitializedConfig).mockResolvedValue({ ...DEFAULT_CONFIG, appearance: { colorTheme: "teal" } })
+    vi.mocked(ensureInitializedConfig).mockResolvedValue({ ...DEFAULT_CONFIG, appearance: { ...DEFAULT_CONFIG.appearance, colorTheme: "teal" } })
     await updateActionIcon(2, true)
     await updateActionIcon(2, false)
     expect(browser.action.setIcon).toHaveBeenNthCalledWith(1, { tabId: 2, path: { 16: "/icon/teal/translated-16.png", 32: "/icon/teal/translated-32.png" } })

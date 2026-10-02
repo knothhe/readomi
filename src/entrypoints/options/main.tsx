@@ -11,7 +11,7 @@ import { applyColorTheme } from "@/utils/color-theme"
 import { getLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { renderPersistentReactRoot } from "@/utils/react-root"
-import { applyTheme, getSystemTheme } from "@/utils/theme"
+import { applyTheme, resolveTheme } from "@/utils/theme"
 import App from "./app"
 import "@/assets/styles/theme.css"
 import "@/assets/styles/word-prefix-emphasis.css"
@@ -36,8 +36,9 @@ async function initApp() {
 
   const config = (await getLocalConfig()) ?? DEFAULT_CONFIG
 
-  applyTheme(document.documentElement, getSystemTheme())
-  applyColorTheme(document.documentElement, config.appearance.colorTheme, getSystemTheme())
+  const theme = resolveTheme(config.appearance.mode)
+  applyTheme(document.documentElement, theme)
+  applyColorTheme(document.documentElement, config.appearance.colorTheme, theme)
 
   renderPersistentReactRoot(root, (
     <React.StrictMode>

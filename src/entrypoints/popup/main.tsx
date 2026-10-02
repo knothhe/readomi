@@ -15,7 +15,7 @@ import { getLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { sendMessage } from "@/utils/message"
 import { renderPersistentReactRoot } from "@/utils/react-root"
-import { applyTheme, getSystemTheme } from "@/utils/theme"
+import { applyTheme, resolveTheme } from "@/utils/theme"
 import App from "./app"
 import { activeTabAtom, isTranslatableUrl, pageTranslationEnabledAtom, translationProgressAtom } from "./atoms"
 import "@/assets/styles/text-small.css"
@@ -46,8 +46,9 @@ async function initApp() {
     browser.tabs.query({ active: true, currentWindow: true }),
   ])
   const config = configValue ?? DEFAULT_CONFIG
-  applyTheme(document.documentElement, getSystemTheme())
-  applyColorTheme(document.documentElement, config.appearance.colorTheme, getSystemTheme())
+  const theme = resolveTheme(config.appearance.mode)
+  applyTheme(document.documentElement, theme)
+  applyColorTheme(document.documentElement, config.appearance.colorTheme, theme)
 
   const tabId = activeTab?.id ?? null
   const tabInfo: ActiveTabInfo = {

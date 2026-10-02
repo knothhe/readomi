@@ -1,10 +1,11 @@
 import { useAtom } from "jotai"
 import { browser, i18n } from "#imports"
+import { AppearanceModeControl } from "@/components/appearance-mode-control"
 import { BrandIcon } from "@/components/brand-icon"
 import { toast } from "@/components/toast"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { COLOR_THEMES, getThemeIconPath } from "@/utils/color-theme"
-import { SettingsGroup, SettingsSection } from "../components/settings-section"
+import { SettingsGroup, SettingsRow, SettingsSection } from "../components/settings-section"
 
 const LABELS = {
   terra: "options.appearance.colors.terra",
@@ -17,6 +18,9 @@ export function AppearanceSection() {
   const [appearance, setAppearance] = useAtom(configFieldsAtomMap.appearance)
   return (
     <SettingsSection id="appearance" title={i18n.t("options.appearance.title")}>
+      <SettingsGroup>
+        <SettingsRow label={i18n.t("appearanceMode.title")} control={<AppearanceModeControl />} />
+      </SettingsGroup>
       <SettingsGroup className="gap-4 divide-y-0 p-[18px]">
         <div>
           <h3 className="font-semibold">{i18n.t("options.appearance.colorTheme")}</h3>

@@ -83,7 +83,7 @@ options:
   appearance:
     title: Оформление
     colorTheme: Цвет темы
-    description: Применяется к интерфейсу, меткам перевода и значку на панели. Светлый и тёмный режимы следуют системе.
+    description: Применяется к интерфейсу, меткам перевода и значку панели инструментов.
     default: По умолчанию
     saveFailed: Цвет темы не сохранён. Попробуйте ещё раз.
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: Оформление
+  system: Системная
+  light: Светлая
+  dark: Тёмная

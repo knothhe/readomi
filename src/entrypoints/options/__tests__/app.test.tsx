@@ -145,6 +145,12 @@ describe("settings page", () => {
     await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.appearance.colorTheme).toBe("amber"))
     expect(screen.getByRole("radio", { name: "options.appearance.colors.amber" })).toHaveFocus()
     expect(store.get(configAtom).providersConfig).toEqual(configured.providersConfig)
+    const modes = within(screen.getByRole("group", { name: "appearanceMode.title" }))
+    fireEvent.click(modes.getByRole("button", { name: "appearanceMode.dark" }))
+    await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.appearance).toEqual({ colorTheme: "amber", mode: "dark" }))
+    expect(document.documentElement).toHaveClass("dark")
+    fireEvent.click(modes.getByRole("button", { name: "appearanceMode.system" }))
+    await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.appearance.mode).toBe("system"))
   })
 
   it("previews each reading group above its settings and follows each change", async () => {

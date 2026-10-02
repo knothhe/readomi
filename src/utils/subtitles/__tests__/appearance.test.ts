@@ -17,11 +17,13 @@ describe("subtitle appearance configuration", () => {
   it("adds defaults to existing configurations without losing the user's translation service or mode", () => {
     const old = structuredClone(DEFAULT_CONFIG)
     Reflect.deleteProperty(old.features, "subtitleStyle")
+    Reflect.deleteProperty(old.appearance, "mode")
     old.features.subtitleMode = "translationOnly"
     const migrated = configSchema.parse(old)
     expect(migrated.features.subtitleStyle).toEqual({ preset: "clear", fontSize: 24, position: { x: 50, y: 88 } })
     expect(migrated.features.subtitleMode).toBe("translationOnly")
     expect(migrated.providersConfig).toEqual(old.providersConfig)
+    expect(migrated.appearance).toEqual({ colorTheme: old.appearance.colorTheme, mode: "system" })
   })
   it("merges sequential position and font adjustments into the latest stored config", async () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)

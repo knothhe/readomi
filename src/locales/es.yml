@@ -83,7 +83,7 @@ options:
   appearance:
     title: Apariencia
     colorTheme: Color del tema
-    description: Se aplica a la interfaz, las marcas de traducción y el icono de la barra. El modo claro u oscuro sigue al sistema.
+    description: Se aplica a la interfaz, los marcadores de traducción y el icono de la barra de herramientas.
     default: Predeterminado
     saveFailed: No se guardó el color. Inténtalo de nuevo.
     colors:
@@ -434,3 +434,9 @@ translationShortcuts:
   backtick: Backtick (`)
   clickAndHold: Hold left mouse button
   conflict: This shortcut is used by another action. Record a different combination.
+
+appearanceMode:
+  title: Apariencia
+  system: Sistema
+  light: Claro
+  dark: Oscuro
