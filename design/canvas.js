@@ -6,6 +6,14 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Settings-Hover-Stream-On.html", title: "设置 · 悬停翻译流式渲染开启", x: 0, y: 47800, w: 1120, h: 860 },
+    { file: "Settings-Hover-Stream-Off.html", title: "设置 · 悬停翻译流式渲染关闭", x: 1200, y: 47800, w: 1120, h: 860 },
+    { file: "Hover-Stream-Inline-Waiting.html", title: "悬停 · 正文原位 · 等待译文", x: 3840, y: 46600, w: 880, h: 720 },
+    { file: "Hover-Stream-Inline-Streaming.html", title: "悬停 · 正文原位 · 双语流式", x: 0, y: 46600, w: 880, h: 720 },
+    { file: "Hover-Stream-Inline-Only-Streaming.html", title: "悬停 · 正文原位 · 仅译文流式", x: 960, y: 46600, w: 880, h: 720 },
+    { file: "Hover-Stream-Inline-Long.html", title: "悬停 · 正文原位 · 长译文", x: 1920, y: 46600, w: 880, h: 1080 },
+    { file: "Hover-Stream-Inline-Only-Ready.html", title: "悬停 · 正文原位 · 完成后保持原位", x: 2880, y: 46600, w: 880, h: 720 },
+    { file: "Hover-Stream-Inline-Ready.html", title: "悬停 · 正文原位 · 双语完成", x: 3840, y: 45000, w: 880, h: 720 },
     { file: "Quality-Prompt-Variables-Expanded.html", title: "译文质量 · 可用网页信息展开", x: 0, y: 43400, w: 1120, h: 1460 },
     { file: "Quality-Copy-Preview-Quiet.html", title: "译文质量 · 文案预览 · 按需查看", x: 0, y: 42200, w: 1120, h: 860 },
     { file: "Quality-Copy-Preview-Quiet-Help.html", title: "译文质量 · 文案预览 · 摘要帮助", x: 1200, y: 42200, w: 1120, h: 860 },
