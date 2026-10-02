@@ -6,6 +6,11 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Video-Drag-Fullscreen-Letterbox.html", title: "视频 · 宽银幕字幕拖动中", x: 1200, y: 52520, w: 2000, h: 1160 },
+    { file: "Video-Bottom-Fullscreen-Letterbox.html", title: "视频 · 宽银幕全屏底部字幕", x: 1200, y: 51280, w: 2000, h: 1160 },
+    { file: "Settings-Subtitle-Large.html", title: "设置 · 大字号字幕 · 80 px", x: 0, y: 48800, w: 1120, h: 1280 },
+    { file: "Video-Bottom-Fullscreen-Hidden.html", title: "视频 · 全屏底部字幕 · 播放条隐藏", x: 1200, y: 48800, w: 2000, h: 1160 },
+    { file: "Video-Bottom-Fullscreen-Controls.html", title: "视频 · 全屏底部字幕 · 播放条显示", x: 1200, y: 50040, w: 2000, h: 1160 },
     { file: "Settings-Hover-Stream-On.html", title: "设置 · 悬停翻译流式渲染开启", x: 0, y: 47800, w: 1120, h: 860 },
     { file: "Settings-Hover-Stream-Off.html", title: "设置 · 悬停翻译流式渲染关闭", x: 1200, y: 47800, w: 1120, h: 860 },
     { file: "Hover-Stream-Inline-Waiting.html", title: "悬停 · 正文原位 · 等待译文", x: 3840, y: 46600, w: 880, h: 720 },
