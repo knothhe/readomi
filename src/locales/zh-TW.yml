@@ -135,11 +135,9 @@ options:
   quality:
     title: 譯文品質
     help: "說明"
-    videoShared: "與網頁共用提示詞"
     web: "網頁翻譯"
     webDescription: "網頁標題自動附加。"
-    video: "影片字幕翻譯"
-    videoDescription: "只翻譯字幕，不使用網頁背景或影片摘要。"
+    videoDescription: "影片字幕不使用網頁背景或影片摘要。"
     shared: "網頁與影片字幕共用"
     context:
       title: "使用網頁摘要"

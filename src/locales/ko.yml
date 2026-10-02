@@ -135,11 +135,9 @@ options:
   quality:
     title: 번역 품질
     help: "도움말"
-    videoShared: "웹과 공통 프롬프트 사용"
     web: "웹 번역"
     webDescription: "페이지 제목은 자동으로 추가됩니다."
-    video: "동영상 자막 번역"
-    videoDescription: "자막만 번역하며 웹 배경이나 전체 동영상 요약은 사용하지 않습니다."
+    videoDescription: "동영상 자막은 웹 배경이나 전체 동영상 요약을 사용하지 않습니다."
     shared: "웹과 동영상 자막 공통"
     context:
       title: "페이지 요약 사용"

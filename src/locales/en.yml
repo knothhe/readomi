@@ -135,11 +135,9 @@ options:
   quality:
     title: Translation quality
     help: "Help"
-    videoShared: "Shares the web translation prompt"
     web: "Web translation"
     webDescription: "Page titles are added automatically."
-    video: "Video subtitle translation"
-    videoDescription: "Translates subtitles without webpage context or a full-video summary."
+    videoDescription: "Video subtitles use no webpage context or full-video summary."
     shared: "Shared by web and video subtitles"
     context:
       title: "Use page summary"

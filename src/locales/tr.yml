@@ -135,11 +135,9 @@ options:
   quality:
     title: Çeviri kalitesi
     help: "Yardım"
-    videoShared: "Web çevirisiyle ortak istem kullanır"
     web: "Web çevirisi"
     webDescription: "Sayfa başlığı otomatik eklenir."
-    video: "Video altyazı çevirisi"
-    videoDescription: "Yalnızca altyazıları çevirir; web bağlamını veya tüm video özetini kullanmaz."
+    videoDescription: "Video altyazıları web bağlamını veya tüm video özetini kullanmaz."
     shared: "Web ve video altyazıları için ortak"
     context:
       title: "Sayfa özetini kullan"

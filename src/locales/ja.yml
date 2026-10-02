@@ -135,11 +135,9 @@ options:
   quality:
     title: 翻訳の品質
     help: "ヘルプ"
-    videoShared: "ウェブと共通のプロンプトを使用"
     web: "ウェブ翻訳"
     webDescription: "ページのタイトルは自動で追加されます。"
-    video: "動画字幕の翻訳"
-    videoDescription: "字幕のみ翻訳し、ウェブの背景情報や動画全体の要約は使用しません。"
+    videoDescription: "動画字幕にはウェブの背景情報や動画全体の要約を使用しません。"
     shared: "ウェブと動画字幕で共通"
     context:
       title: "ページの要約を使用"

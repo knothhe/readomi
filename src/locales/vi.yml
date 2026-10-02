@@ -135,11 +135,9 @@ options:
   quality:
     title: Chất lượng bản dịch
     help: "Trợ giúp"
-    videoShared: "Dùng chung lời nhắc với dịch trang web"
     web: "Dịch trang web"
     webDescription: "Tiêu đề trang được tự động thêm."
-    video: "Dịch phụ đề video"
-    videoDescription: "Chỉ dịch phụ đề, không dùng ngữ cảnh web hay bản tóm tắt toàn bộ video."
+    videoDescription: "Phụ đề video không dùng ngữ cảnh web hay bản tóm tắt toàn bộ video."
     shared: "Dùng chung cho trang web và phụ đề"
     context:
       title: "Dùng bản tóm tắt trang"

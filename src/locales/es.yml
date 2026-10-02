@@ -135,11 +135,9 @@ options:
   quality:
     title: Calidad de la traducción
     help: "Ayuda"
-    videoShared: "Comparte el prompt con la traducción web"
     web: "Traducción web"
     webDescription: "El título de la página se añade automáticamente."
-    video: "Traducción de subtítulos"
-    videoDescription: "Traduce solo subtítulos, sin contexto web ni resumen del vídeo completo."
+    videoDescription: "Los subtítulos no usan contexto web ni resumen del vídeo completo."
     shared: "Compartido por web y subtítulos"
     context:
       title: "Usar resumen de la página"

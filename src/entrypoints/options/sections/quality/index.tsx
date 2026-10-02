@@ -61,12 +61,6 @@ export function QualitySection() {
             )}
           />
         </SettingsGroup>
-        <SettingsGroup caption={i18n.t("options.quality.video")}>
-          <SettingsRow
-            label={i18n.t("options.quality.videoShared")}
-            labelAddon={<QualityHelp label={i18n.t("options.quality.videoShared")} text={i18n.t("options.quality.videoDescription")} />}
-          />
-        </SettingsGroup>
         <SettingsGroup caption={i18n.t("options.quality.shared")}>
           {editing
             ? (
@@ -103,7 +97,7 @@ export function QualitySection() {
 }
 
 function PromptHelp() {
-  return <QualityHelp label={i18n.t("options.quality.prompt.title")} text={[i18n.t("options.quality.prompt.description"), i18n.t("options.quality.prompt.background")].join("\n")} />
+  return <QualityHelp label={i18n.t("options.quality.prompt.title")} text={[i18n.t("options.quality.prompt.description"), i18n.t("options.quality.prompt.background"), i18n.t("options.quality.videoDescription")].join("\n")} />
 }
 
 function PromptTextarea({ label, help, value, rows, autoFocus, onChange }: { label: string, help: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
