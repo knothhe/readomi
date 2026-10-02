@@ -2,6 +2,7 @@ import type { Config } from "@/types/config/config"
 import { getLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { hasNoWalkAncestor, isHTMLElement } from "@/utils/host/dom/filter"
 import { findNearestAncestorBlockNodeFor } from "@/utils/host/dom/find"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
@@ -50,14 +51,15 @@ export function bindHoverTranslation(target: Document = document) {
       await translateWalkedElement(block, walkId, config, true, controller.signal)
     }
     catch (error) {
-      logger.error("Hover translation failed", error)
+      if (!controller.signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+        logger.error("Hover translation failed", error)
     }
     finally {
       busy = false
     }
   }
   const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null) => {
-    if (!element || press || busy)
+    if (!element || press || busy || controller.signal.aborted || !isExtensionContextValid())
       return
     const token = ++session
     let triggered = false
@@ -70,7 +72,10 @@ export function bindHoverTranslation(target: Document = document) {
       void getLocalConfig().then((config) => {
         if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !busy && !controller.signal.aborted && candidate.isConnected)
           return translate(candidate, config)
-      }).catch(error => logger.error("Hover configuration failed", error))
+      }).catch((error) => {
+        if (!controller.signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+          logger.error("Hover configuration failed", error)
+      })
     }
     press = { hotkey, trigger }
     timer = setTimeout(trigger, 500)

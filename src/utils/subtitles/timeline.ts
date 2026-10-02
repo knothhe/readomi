@@ -17,7 +17,7 @@ export function cleanCueText(text: string): string {
 
 /** YouTube JSON3 includes word offsets and window-only events in ASR tracks. */
 export function parseYouTubeTranscript(body: string): SubtitleCue[] {
-  if (body.length > 5_000_000)
+  if (!body.trim() || body.length > 5_000_000)
     return []
   try {
     const data = JSON.parse(body)

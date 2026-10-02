@@ -159,6 +159,10 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
       return requestQueueFor(providerConfig).enqueue(thunk, scheduleAt, hash)
     },
     onError: (error, context) => {
+      if (context.willRetry) {
+        logger.info("Batch response could not be aligned; retrying smaller requests", { batchKey: context.batchKey, retryCount: context.retryCount })
+        return
+      }
       const errorType = context.isFallback ? "Individual request" : "Batch request"
       logger.error(
         `${errorType} failed (batchKey: ${context.batchKey}, retry: ${context.retryCount}):`,

@@ -2,6 +2,7 @@ import type { Config } from "@/types/config/config"
 import { getLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { hasNoWalkAncestor, isDontWalkIntoAndDontTranslateAsChildElement, isDontWalkIntoButTranslateAsChildElement, isHTMLElement } from "@/utils/host/dom/filter"
 import { deepQueryTopLevelSelector } from "@/utils/host/dom/find"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
@@ -61,6 +62,8 @@ export class PageTranslationManager implements IPageTranslationManager {
   private lastSourceTitle: string | null = null
   private lastAppliedTranslatedTitle: string | null = null
   private titleRequestVersion = 0
+  private disposed = false
+  private startVersion = 0
 
   constructor(intersectionOptions: SimpleIntersectionOptions = {}) {
     if (intersectionOptions.threshold !== undefined) {
@@ -80,12 +83,43 @@ export class PageTranslationManager implements IPageTranslationManager {
   }
 
   async start(): Promise<void> {
+    try {
+      await this.startInternal()
+    }
+    catch (error) {
+      this.stopInternal({ notify: false })
+      this.reportError("Failed to start page translation:", error)
+    }
+  }
+
+  private canRun(): boolean {
+    return !this.disposed && isExtensionContextValid()
+  }
+
+  private reportError(message: string, error: unknown): void {
+    if (this.canRun() && !isExtensionContextInvalidatedError(error))
+      logger.error(message, error)
+  }
+
+  /** Ends an unloaded content script without changing the background's tab state. */
+  dispose(): void {
+    this.disposed = true
+    this.stopInternal({ notify: false, restoreContent: false })
+  }
+
+  private async startInternal(): Promise<void> {
+    if (!this.canRun())
+      return
     if (this.isPageTranslating) {
-      console.warn("PageTranslationManager is already active")
+      logger.info("PageTranslationManager is already active")
       return
     }
 
+    const version = ++this.startVersion
+    const isCurrent = () => this.canRun() && version === this.startVersion
     const config = await getLocalConfig()
+    if (!isCurrent())
+      return
     if (!config) {
       console.warn("Config is not initialized")
       return
@@ -103,40 +137,56 @@ export class PageTranslationManager implements IPageTranslationManager {
       enabled: true,
       url: window.location.href,
     })
+    if (!isCurrent())
+      return
 
     this.isPageTranslating = true
+    const walkController = new AbortController()
+    this.walkController = walkController
     resetTranslationProgress()
     await this.primeDocumentTitleContext(
       config.translate.enableAIContentAware,
     )
+    if (!isCurrent())
+      return
     this.startDocumentTitleTracking()
 
     // Listen to existing elements when they enter the viewport
     const walkId = getRandomUUID()
     this.walkId = walkId
-    const walkController = new AbortController()
-    this.walkController = walkController
     this.intersectionObserver = new IntersectionObserver(async (entries, observer) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          if (isHTMLElement(entry.target)) {
-            if (!entry.target.closest(`.${CONTENT_WRAPPER_CLASS}`)) {
-              const currentConfig = await getLocalConfig()
-              if (!currentConfig) {
-                logger.error("Global config is not initialized")
-                return
+      try {
+        for (const entry of entries) {
+          if (!isCurrent() || walkController.signal.aborted)
+            return
+          if (entry.isIntersecting) {
+            if (isHTMLElement(entry.target)) {
+              if (!entry.target.closest(`.${CONTENT_WRAPPER_CLASS}`)) {
+                const currentConfig = await getLocalConfig()
+                if (!isCurrent() || walkController.signal.aborted)
+                  return
+                if (!currentConfig) {
+                  logger.error("Global config is not initialized")
+                  return
+                }
+                void translateWalkedElement(entry.target, walkId, currentConfig, false, walkController.signal)
+                  .catch(error => this.reportError("Failed to translate paragraph:", error))
               }
-              void translateWalkedElement(entry.target, walkId, currentConfig, false, walkController.signal)
             }
+            observer.unobserve(entry.target)
           }
-          observer.unobserve(entry.target)
         }
+      }
+      catch (error) {
+        this.reportError("Failed to observe page translation:", error)
       }
     }, this.intersectionOptions)
 
     // Initialize walkability state for existing elements
     this.addWalkBlockedElements(document.body)
     await this.observeTopLevelParagraphs(document.body, config)
+    if (!isCurrent())
+      return
 
     // Start observing mutations from document.body and all shadow roots
     this.observeMutations(document.body)
@@ -156,17 +206,18 @@ export class PageTranslationManager implements IPageTranslationManager {
     await this.start()
   }
 
-  private stopInternal({ notify }: { notify: boolean }): void {
+  private stopInternal({ notify, restoreContent = true }: { notify: boolean, restoreContent?: boolean }): void {
+    this.startVersion++
     if (!this.isPageTranslating) {
-      console.warn("PageTranslationManager is already inactive")
+      logger.info("PageTranslationManager is already inactive")
       return
     }
 
-    if (notify) {
+    if (notify && this.canRun()) {
       void sendMessage("setAndNotifyPageTranslationStateChangedByManager", {
         enabled: false,
         url: window.location.href,
-      })
+      }).catch(error => this.reportError("Failed to report translation state:", error))
     }
 
     this.isPageTranslating = false
@@ -174,7 +225,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     this.walkController?.abort()
     this.walkController = null
     this.walkBlockedElementsCache = new WeakSet()
-    this.stopDocumentTitleTracking()
+    this.stopDocumentTitleTracking(restoreContent)
     resetTranslationProgress()
 
     if (this.intersectionObserver) {
@@ -184,7 +235,8 @@ export class PageTranslationManager implements IPageTranslationManager {
     this.mutationObservers.forEach(observer => observer.disconnect())
     this.mutationObservers = []
 
-    void removeAllTranslatedWrapperNodes()
+    if (restoreContent)
+      removeAllTranslatedWrapperNodes()
   }
 
   private shouldManageDocumentTitle(): boolean {
@@ -200,7 +252,8 @@ export class PageTranslationManager implements IPageTranslationManager {
       await getOrCreateWebPageContext()
     }
     catch (error) {
-      logger.warn("Failed to prime webpage context before translating document title:", error)
+      if (this.canRun() && !isExtensionContextInvalidatedError(error))
+        logger.warn("Failed to prime webpage context before translating document title:", error)
     }
   }
 
@@ -217,7 +270,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     void this.syncDocumentTitle(this.lastSourceTitle)
   }
 
-  private stopDocumentTitleTracking(): void {
+  private stopDocumentTitleTracking(restoreContent = true): void {
     if (!this.shouldManageDocumentTitle()) {
       return
     }
@@ -234,7 +287,7 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     this.titleRequestVersion++
 
-    if (this.lastSourceTitle !== null && document.title !== this.lastSourceTitle) {
+    if (restoreContent && this.lastSourceTitle !== null && document.title !== this.lastSourceTitle) {
       document.title = this.lastSourceTitle
     }
 
@@ -263,7 +316,7 @@ export class PageTranslationManager implements IPageTranslationManager {
   }
 
   private handleDocumentTitleMutation(): void {
-    if (!this.isPageTranslating || !this.shouldManageDocumentTitle()) {
+    if (!this.canRun() || !this.isPageTranslating || !this.shouldManageDocumentTitle()) {
       return
     }
 
@@ -282,7 +335,7 @@ export class PageTranslationManager implements IPageTranslationManager {
   }
 
   private async syncDocumentTitle(sourceTitle: string): Promise<void> {
-    if (!sourceTitle.trim() || !this.isPageTranslating || !this.shouldManageDocumentTitle()) {
+    if (!this.canRun() || !sourceTitle.trim() || !this.isPageTranslating || !this.shouldManageDocumentTitle()) {
       return
     }
 
@@ -290,7 +343,7 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     try {
       const translatedTitle = await translateTextForPageTitle(sourceTitle)
-      if (!this.isPageTranslating || requestVersion !== this.titleRequestVersion) {
+      if (!this.canRun() || !this.isPageTranslating || requestVersion !== this.titleRequestVersion) {
         return
       }
 
@@ -304,7 +357,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       document.title = nextTitle
     }
     catch (error) {
-      if (requestVersion === this.titleRequestVersion) {
+      if (this.canRun() && !isExtensionContextInvalidatedError(error) && requestVersion === this.titleRequestVersion) {
         logger.warn("Failed to translate document title:", error)
       }
     }
@@ -312,10 +365,12 @@ export class PageTranslationManager implements IPageTranslationManager {
 
   private async observeTopLevelParagraphs(container: HTMLElement, existingConfig?: Config): Promise<void> {
     const observer = this.intersectionObserver
-    if (!this.walkId || !observer)
+    if (!this.canRun() || !this.walkId || !observer)
       return
 
     const config = existingConfig ?? await getLocalConfig()
+    if (!this.canRun() || observer !== this.intersectionObserver)
+      return
     if (!config) {
       logger.error("Global config is not initialized")
       return
@@ -418,7 +473,7 @@ export class PageTranslationManager implements IPageTranslationManager {
    */
   private observeMutations(container: HTMLElement): void {
     const mutationObserver = new MutationObserver((records) => {
-      void this.handleMutationRecords(records)
+      void this.handleMutationRecords(records).catch(error => this.reportError("Failed to handle page mutations:", error))
     })
 
     mutationObserver.observe(container, {
@@ -433,7 +488,11 @@ export class PageTranslationManager implements IPageTranslationManager {
   }
 
   private async handleMutationRecords(records: MutationRecord[]): Promise<void> {
+    if (!this.canRun() || !this.isPageTranslating)
+      return
     const config = await getLocalConfig()
+    if (!this.canRun() || !this.isPageTranslating)
+      return
     if (!config) {
       logger.error("Global config is not initialized")
       return
@@ -444,7 +503,7 @@ export class PageTranslationManager implements IPageTranslationManager {
         rec.addedNodes.forEach((node) => {
           if (isHTMLElement(node)) {
             this.addWalkBlockedElements(node)
-            void this.observeTopLevelParagraphs(node, config)
+            void this.observeTopLevelParagraphs(node, config).catch(error => this.reportError("Failed to observe new paragraphs:", error))
             this.observeIsolatedDescendantsMutations(node)
           }
         })
@@ -452,7 +511,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       else if (this.isWalkabilityAttributeMutation(rec)) {
         const el = rec.target
         if (isHTMLElement(el) && this.didChangeToWalkable(el)) {
-          void this.observeTopLevelParagraphs(el, config)
+          void this.observeTopLevelParagraphs(el, config).catch(error => this.reportError("Failed to observe changed paragraph:", error))
         }
       }
     }

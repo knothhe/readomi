@@ -43,6 +43,17 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("does not mount a newly added video after the extension context expires", async () => {
+    cleanup()
+    let invalid = false
+    cleanup = bootstrapVideoSubtitles(() => invalid)
+    update(config)
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
+    invalid = true
+    document.body.append(document.createElement("video"))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
+  })
   it("follows the visible progress bar above the controls, preserves the preset and ignores hidden controls", async () => {
     const player = document.createElement("div")
     player.className = "html5-video-player"

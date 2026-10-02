@@ -3,6 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest"
 import { fakeBrowser } from "wxt/testing/fake-browser"
 import { storage } from "#imports"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
+import { logger } from "@/utils/logger"
 import { getLocalConfig, subscribeLocalConfig, watchLocalConfig } from "../storage"
 
 const TRANSLATION_ONLY: Config = { ...DEFAULT_CONFIG, translate: { ...DEFAULT_CONFIG.translate, mode: "translationOnly" } }
@@ -64,4 +65,20 @@ it("user leaves the page while a subscription starts: Given a stored config, Whe
 
   // Then
   expect(modes).toEqual([])
+})
+
+it.each([
+  ["Extension context invalidated.", false],
+  ["Storage read failed", true],
+])("handles an initial config read rejection: %s", async (message, shouldLog) => {
+  const read = vi.spyOn(storage, "getItem").mockRejectedValueOnce(new Error(message))
+  const log = vi.spyOn(logger, "error")
+  const onConfig = vi.fn()
+  const unsubscribe = subscribeLocalConfig(onConfig)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(read).toHaveBeenCalledOnce()
+  expect(onConfig).not.toHaveBeenCalled()
+  expect(log).toHaveBeenCalledTimes(shouldLog ? 1 : 0)
+  unsubscribe()
+  vi.restoreAllMocks()
 })

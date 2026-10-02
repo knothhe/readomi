@@ -161,7 +161,7 @@ it("manual setup and local backup restore work without an account", async () => 
   await page.getByRole("link", { name: "Video subtitles", exact: true }).click()
   assert.equal(await page.getByRole("switch", { name: "Hover translation", exact: true }).isVisible(), false)
   const presets = page.getByRole("group", { name: "Subtitle preset", exact: true })
-  await presets.getByRole("button", { name: "Study", exact: true }).click()
+  await presets.getByRole("button", { name: "Prominent", exact: true }).click()
   await page.getByRole("slider", { name: "Subtitle size", exact: true }).press("End")
   await page.waitForFunction(async () => (await globalThis.chrome.storage.local.get("config")).config.features.subtitleStyle.fontSize === 40)
   await page.getByRole("slider", { name: "Subtitle size", exact: true }).blur()

@@ -12,11 +12,20 @@ export default defineContentScript({
   cssInjectionMode: "manual",
   async main(ctx) {
     // Prevent double injection (manifest-based + programmatic injection)
-    if (window.__READOMI_HOST_INJECTED__)
+    if (ctx.isInvalid || window.__READOMI_HOST_INJECTED__)
       return
     window.__READOMI_HOST_INJECTED__ = true
+    ctx.onInvalidated(() => window.__READOMI_HOST_INJECTED__ = false)
 
-    const { bootstrapHostContent } = await import("./runtime")
-    await bootstrapHostContent(ctx)
+    try {
+      const { bootstrapHostContent } = await import("./runtime")
+      if (!ctx.isInvalid)
+        await bootstrapHostContent(ctx)
+    }
+    catch (error) {
+      window.__READOMI_HOST_INJECTED__ = false
+      if (!ctx.isInvalid)
+        throw error
+    }
   },
 })

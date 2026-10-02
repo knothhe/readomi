@@ -10,18 +10,25 @@ import { isPageTranslationShortcutEmpty, isValidConfiguredPageTranslationShortcu
  * Toggles page translation on the configured shortcut. Typing into a field
  * never triggers it, and a matched press does not reach the page.
  */
-export async function bindTranslationShortcutKey(pageTranslationManager: PageTranslationManager, target: Document = document) {
+export async function bindTranslationShortcutKey(pageTranslationManager: PageTranslationManager, target: Document = document, isContextInvalid: () => boolean = () => false) {
   let config = await getLocalConfig()
+  if (isContextInvalid())
+    return () => {}
   const unwatch = watchLocalConfig(next => config = next)
 
   const onKeyDown = (event: KeyboardEvent) => {
+    if (isContextInvalid())
+      return
     if (!config || event.defaultPrevented || event.repeat || isEditableTarget(event.target))
       return
     const modeShortcut = config.features.modeShortcut
     if (modeShortcut && eventMatchesHotkey(event, modeShortcut)) {
       event.preventDefault()
       event.stopPropagation()
-      void getDefaultStore().set(configFieldsAtomMap.translate, { mode: config.translate.mode === "bilingual" ? "translationOnly" : "bilingual" }).catch(error => logger.error("Could not switch translation mode", error))
+      void getDefaultStore().set(configFieldsAtomMap.translate, { mode: config.translate.mode === "bilingual" ? "translationOnly" : "bilingual" }).catch((error) => {
+        if (!isContextInvalid())
+          logger.error("Could not switch translation mode", error)
+      })
       return
     }
     const shortcut = config.translate.page.shortcut

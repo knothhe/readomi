@@ -39,18 +39,18 @@ describe("youTube page-world subtitle bridge", () => {
     await window.fetch("https://www.youtube.com/api/timedtext?v=video&lang=en&pot=player-proof")
     fetchMock.mockClear()
     const data = await request()
-    expect(data.cues).toEqual([{ start: 0, end: 2, text: "Hello world" }])
+    expect(data.transcript).toBe(body)
     const url = new URL(fetchMock.mock.calls[0][0])
     expect(url.searchParams.get("pot")).toBe("player-proof")
     expect(url.searchParams.get("fmt")).toBe("json3")
-    expect(await request("again", "video", data.key)).not.toHaveProperty("cues")
+    expect(await request("again", "video", data.key)).not.toHaveProperty("transcript")
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
   it("reuses the player's successful response without sending another subtitle request", async () => {
     fetchMock.mockResolvedValue({ ok: true, clone: () => ({ text: async () => body }) })
     await window.fetch("https://www.youtube.com/api/timedtext?v=video&lang=en&fmt=json3&pot=player-proof")
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(await request()).toMatchObject({ enabled: true, cues: [{ start: 0, end: 2, text: "Hello world" }] })
+    expect(await request()).toMatchObject({ enabled: true, transcript: body })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
   it("fetches the selected language and stops when captions are turned off", async () => {
@@ -65,7 +65,7 @@ describe("youTube page-world subtitle bridge", () => {
   })
   it("falls back on empty responses, throttles retries and does not fetch unrelated videos or foreign URLs", async () => {
     fetchMock.mockResolvedValue({ ok: true, text: async () => "" })
-    expect(await request()).toMatchObject({ cues: [], enabled: true })
+    expect(await request()).toMatchObject({ transcript: "", enabled: true })
     await request("retry")
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(await request("other", "other-video")).toMatchObject({ cues: [], enabled: null })
@@ -81,7 +81,7 @@ describe("youTube page-world subtitle bridge", () => {
     Object.assign(document.querySelector(".html5-video-player")!, {
       getAudioTrack: () => ({ captionTracks: [{ vssId: ".en", url: "https://www.youtube.com/api/timedtext?v=video&lang=en&pot=audio-proof&potc=1" }] }),
     })
-    expect(await request()).toMatchObject({ enabled: true, cues: [{ text: "Hello world", start: 0, end: 2 }] })
+    expect(await request()).toMatchObject({ enabled: true, transcript: body })
     const url = new URL(fetchMock.mock.calls[0][0])
     expect(url.searchParams.get("pot")).toBe("audio-proof")
     expect(url.searchParams.get("xorb")).toBe("2")
@@ -91,5 +91,15 @@ describe("youTube page-world subtitle bridge", () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(fetchMock).not.toHaveBeenCalled()
     expect(window.postMessage).not.toHaveBeenCalled()
+  })
+
+  it("passes XML to the isolated client without invoking a Trusted Types sink", async () => {
+    const xml = "<transcript><text start=\"0\" dur=\"2\">Hello &amp; world</text></transcript>"
+    fetchMock.mockResolvedValue({ ok: true, text: async () => xml })
+    const parse = vi.spyOn(DOMParser.prototype, "parseFromString").mockImplementation(() => {
+      throw new TypeError("This document requires 'TrustedHTML' assignment.")
+    })
+    expect(await request()).toMatchObject({ enabled: true, transcript: xml })
+    expect(parse).not.toHaveBeenCalled()
   })
 })

@@ -234,4 +234,38 @@ describe("pageTranslationManager title handling", () => {
     manager.stop()
     expect(document.title).toBe("Updated Source Title")
   })
+
+  it("disposes while startup is awaiting config without enabling the page or installing observers", async () => {
+    const config = createDeferred<typeof DEFAULT_CONFIG>()
+    mockGetLocalConfig.mockReturnValueOnce(config.promise)
+    const manager = new PageTranslationManager()
+    const startup = manager.start()
+    manager.dispose()
+    config.resolve(DEFAULT_CONFIG)
+    await startup
+    expect(manager.isActive).toBe(false)
+    expect(mockSendMessage).not.toHaveBeenCalled()
+    expect(mockWalkAndLabelElement).not.toHaveBeenCalled()
+    await manager.start()
+    expect(mockSendMessage).not.toHaveBeenCalled()
+  })
+
+  it("disconnects title and body observers on disposal while preserving completed translations", async () => {
+    mockTranslateTextForPageTitle.mockResolvedValueOnce("Translated Title")
+    const manager = new PageTranslationManager()
+    await manager.start()
+    await flushDomUpdates()
+    expect(document.title).toBe("Translated Title")
+    mockGetLocalConfig.mockClear()
+    mockSendMessage.mockClear()
+    manager.dispose()
+    expect(document.title).toBe("Translated Title")
+    expect(mockRemoveAllTranslatedWrapperNodes).not.toHaveBeenCalled()
+    document.title = "A new source title after update"
+    document.body.append(document.createElement("p"))
+    await flushDomUpdates()
+    expect(mockTranslateTextForPageTitle).toHaveBeenCalledOnce()
+    expect(mockGetLocalConfig).not.toHaveBeenCalled()
+    expect(mockSendMessage).not.toHaveBeenCalledWith("setAndNotifyPageTranslationStateChangedByManager", expect.anything())
+  })
 })

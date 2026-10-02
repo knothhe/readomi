@@ -582,9 +582,9 @@ describe("batchQueue – error handling", () => {
     await Promise.all(promises)
 
     expect(onError).toHaveBeenCalledTimes(3)
-    expect(onError).toHaveBeenNthCalledWith(1, expect.any(Error), expect.objectContaining({ retryCount: 0 }))
-    expect(onError).toHaveBeenNthCalledWith(2, expect.any(Error), expect.objectContaining({ retryCount: 1 }))
-    expect(onError).toHaveBeenNthCalledWith(3, expect.any(Error), expect.objectContaining({ retryCount: 1 }))
+    expect(onError).toHaveBeenNthCalledWith(1, expect.any(Error), expect.objectContaining({ retryCount: 0, willRetry: true }))
+    expect(onError).toHaveBeenNthCalledWith(2, expect.any(Error), expect.objectContaining({ retryCount: 1, willRetry: false }))
+    expect(onError).toHaveBeenNthCalledWith(3, expect.any(Error), expect.objectContaining({ retryCount: 1, willRetry: false }))
   })
 
   it("calls onError once on request error (no retry)", async () => {
@@ -611,6 +611,6 @@ describe("batchQueue – error handling", () => {
 
     await promise
     expect(onError).toHaveBeenCalledTimes(1) // Only once, no retry
-    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({ retryCount: 0, isFallback: false }))
+    expect(onError).toHaveBeenCalledWith(error, expect.objectContaining({ retryCount: 0, isFallback: false, willRetry: false }))
   })
 })

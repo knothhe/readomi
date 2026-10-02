@@ -6,7 +6,7 @@ import { it } from "node:test"
 import { configureService, launchBrowser, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
-it("YouTube subtitles preserve preloading, support appearance controls and keep web modes independent", async () => {
+async function subtitlePlayback(transcriptFormat) {
   const service = await startFakeService()
   let context
   let release
@@ -51,10 +51,15 @@ it("YouTube subtitles preserve preloading, support appearance controls and keep 
         return
       }
       if (url.pathname === "/api/timedtext") {
-        await route.fulfill({ contentType: "application/json", body: JSON.stringify({ events }) })
+        const body = transcriptFormat === "json3"
+          ? JSON.stringify({ events })
+          : transcriptFormat === "srv3"
+            ? `<timedtext><body>${events.map(event => `<p t="${event.tStartMs}" d="${event.dDurationMs}"><s>${event.segs[0].utf8}</s></p>`).join("")}</body></timedtext>`
+            : `<transcript>${events.map(event => `<text start="${event.tStartMs / 1000}" dur="${event.dDurationMs / 1000}">${event.segs[0].utf8}</text>`).join("")}</transcript>`
+        await route.fulfill({ contentType: transcriptFormat === "json3" ? "application/json" : "text/xml", body })
         return
       }
-      await route.fulfill({ contentType: "text/html", body: `<!doctype html><meta charset="utf-8"><title>Subtitle playback fixture</title><style>body{background:#faf8f5}.html5-video-player{width:640px;margin:40px auto;position:relative;background:#302b29}video{width:640px;height:360px}.html5-video-player:fullscreen{width:100vw;height:100vh;margin:0}.html5-video-player:fullscreen video{width:100vw;height:100vh}.ytp-chrome-bottom{position:absolute;bottom:4px;left:0;width:100%;height:40px;background:#0008;color:white}.ytp-progress-bar-container{position:absolute;top:-4px;left:12px;right:12px;height:4px;background:#f03}.ytp-autohide .ytp-chrome-bottom{opacity:0;pointer-events:none}.ytp-caption-window-container{position:absolute;bottom:40px;left:100px;color:white}</style><div class="html5-video-player ytp-autohide"><video src="/video.wav" muted autoplay></video><div class="ytp-chrome-bottom"><div class="ytp-progress-bar-container"></div>Ⅱ &nbsp; 1:32 / 2:00</div><div class="ytp-caption-window-container"><span class="ytp-caption-segment">Native caption</span></div></div><script>
+      await route.fulfill({ headers: { "content-security-policy": "require-trusted-types-for 'script'; trusted-types 'none'" }, contentType: "text/html", body: `<!doctype html><meta charset="utf-8"><title>Subtitle playback fixture</title><style>body{background:#faf8f5}.html5-video-player{width:640px;margin:40px auto;position:relative;background:#302b29}video{width:640px;height:360px}.html5-video-player:fullscreen{width:100vw;height:100vh;margin:0}.html5-video-player:fullscreen video{width:100vw;height:100vh}.ytp-chrome-bottom{position:absolute;bottom:4px;left:0;width:100%;height:40px;background:#0008;color:white}.ytp-progress-bar-container{position:absolute;top:-4px;left:12px;right:12px;height:4px;background:#f03}.ytp-autohide .ytp-chrome-bottom{opacity:0;pointer-events:none}.ytp-caption-window-container{position:absolute;bottom:40px;left:100px;color:white}</style><div class="html5-video-player ytp-autohide"><video src="/video.wav" muted autoplay></video><div class="ytp-chrome-bottom"><div class="ytp-progress-bar-container"></div>Ⅱ &nbsp; 1:32 / 2:00</div><div class="ytp-caption-window-container"><span class="ytp-caption-segment">Native caption</span></div></div><script>
 const player = document.querySelector('.html5-video-player');
 player.getPlayerResponse = () => ({videoDetails:{videoId:'readomi-fixture'},captions:{playerCaptionsTracklistRenderer:{captionTracks:[{baseUrl:'https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en',languageCode:'en',vssId:'.en'}]}}});
 player.getOption = () => ({languageCode:'en',vssId:'.en'});
@@ -196,4 +201,8 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     await context?.close()
     await service.close()
   }
-})
+}
+
+for (const format of ["json3", "srv3", "legacy"]) {
+  it(`YouTube ${format} subtitles under Trusted Types preserve preloading, appearance and web modes`, () => subtitlePlayback(format))
+}

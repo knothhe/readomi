@@ -3,6 +3,7 @@ import type { Config } from "@/types/config/config"
 import { storage } from "#imports"
 import { configSchema } from "@/types/config/config"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "../constants/config"
+import { isExtensionContextInvalidatedError, isExtensionContextValid, removeExtensionListener } from "../extension-context"
 import { logger } from "../logger"
 
 /**
@@ -57,9 +58,15 @@ export async function getLocalConfigForWrite(): Promise<Config> {
  * stops the watch.
  */
 export function watchLocalConfig(callback: (newConfig: Config | null, oldConfig: Config | null) => void): () => void {
-  return storage.watch<unknown>(`local:${CONFIG_STORAGE_KEY}`, (newValue, oldValue) => {
-    callback(parseStoredConfig(newValue), parseStoredConfig(oldValue))
+  let stopped = false
+  const unwatch = storage.watch<unknown>(`local:${CONFIG_STORAGE_KEY}`, (newValue, oldValue) => {
+    if (!stopped && isExtensionContextValid())
+      callback(parseStoredConfig(newValue), parseStoredConfig(oldValue))
   })
+  return () => {
+    stopped = true
+    removeExtensionListener(unwatch)
+  }
 }
 
 /**
@@ -76,8 +83,11 @@ export function subscribeLocalConfig(onConfig: (config: Config | null) => void):
   // A change before the watch starts sends no event. Thus read the stored config after the watch starts.
   // A change event that comes first has a newer config than this read.
   void getLocalConfig().then((config) => {
-    if (!changed && !stopped)
+    if (!changed && !stopped && isExtensionContextValid())
       onConfig(config)
+  }).catch((error) => {
+    if (!stopped && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+      logger.error("Failed to read initial config:", error)
   })
   return () => {
     stopped = true

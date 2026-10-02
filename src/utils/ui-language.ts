@@ -1,5 +1,6 @@
 import type { UILanguage } from "./ui-language-options"
 import { browser, i18n } from "#imports"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "./extension-context"
 
 interface Message {
   message: string
@@ -15,6 +16,7 @@ type Translate = (key: string, ...args: Array<number | Array<string | number> | 
 const browserTranslate = i18n.t.bind(i18n) as Translate
 let language: UILanguage = "browser"
 const listeners = new Set<() => void>()
+let lastBrowserLocale = globalThis.navigator?.language ?? "en"
 
 /** Format Chrome message substitutions, including named placeholders and literal dollars. */
 export function formatUIMessage(entry: Message, substitutions: Array<string | number> = []) {
@@ -31,12 +33,24 @@ export function formatUIMessage(entry: Message, substitutions: Array<string | nu
 
 // Keep the generated typed translator, and use the same locale files for an explicit choice.
 const translate: Translate = (key, ...args) => {
-  if (language === "browser" || key.startsWith("@@"))
-    return browserTranslate(key, ...args)
+  const followsBrowser = language === "browser" || key.startsWith("@@")
+  if (followsBrowser && isExtensionContextValid() && typeof browser.i18n?.getMessage === "function") {
+    try {
+      lastBrowserLocale = getUILocale()
+      return browserTranslate(key, ...args)
+    }
+    catch (error) {
+      if (!isExtensionContextInvalidatedError(error))
+        throw error
+    }
+  }
+  // A queued render may finish while the old content script is being disposed.
+  // Use its bundled messages instead of calling an API Chrome has removed.
+  const locale = language === "browser" ? lastBrowserLocale : language
   const messageKey = key.replaceAll(".", "_")
-  const entry = catalogs[`../locales/${language}.yml`]?.[messageKey] ?? catalogs["../locales/en.yml"]?.[messageKey]
+  const entry = catalogs[`../locales/${locale}.yml`]?.[messageKey] ?? catalogs[`../locales/${locale.split("-")[0]}.yml`]?.[messageKey] ?? catalogs["../locales/en.yml"]?.[messageKey]
   if (!entry)
-    return browserTranslate(key, ...args)
+    return isExtensionContextValid() && typeof browser.i18n?.getMessage === "function" ? browserTranslate(key, ...args) : key
   const count = args.find(arg => typeof arg === "number") as number | undefined
   const substitutions = args.find(Array.isArray) as Array<string | number> | undefined
   const message = formatUIMessage(entry, substitutions ?? (count === undefined ? [] : [count]))
@@ -67,10 +81,11 @@ export function getUILocale(): string {
   if (language !== "browser")
     return language
   try {
-    return browser.i18n.getUILanguage()
+    lastBrowserLocale = browser.i18n.getUILanguage()
+    return lastBrowserLocale
   }
   catch {
-    return globalThis.navigator?.language ?? "en"
+    return lastBrowserLocale
   }
 }
 

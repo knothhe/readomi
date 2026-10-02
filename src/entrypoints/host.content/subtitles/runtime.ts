@@ -3,6 +3,7 @@ import { i18n } from "#imports"
 import { SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
@@ -133,9 +134,14 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
     positionCaption()
   }
   const persist = (patch: Partial<typeof appearance>) => {
+    if (!isExtensionContextValid())
+      return
     appearance = { ...appearance, ...patch }
     renderAppearance()
-    void saveSubtitleStyle(patch).catch(error => logger.error("Could not save subtitle appearance", error))
+    void saveSubtitleStyle(patch).catch((error) => {
+      if (isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+        logger.error("Could not save subtitle appearance", error)
+    })
   }
   smaller.addEventListener("click", () => persist({ fontSize: Math.max(14, appearance.fontSize - 1) }))
   larger.addEventListener("click", () => persist({ fontSize: Math.min(40, appearance.fontSize + 1) }))
@@ -253,7 +259,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   }
 }
 
-export function bootstrapVideoSubtitles() {
+export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => false) {
   const players = new Map<HTMLVideoElement, Player>()
   let timer: ReturnType<typeof setInterval> | undefined
   let disposed = false
@@ -271,6 +277,8 @@ export function bootstrapVideoSubtitles() {
     if (disposed || suspended || !config?.features.videoSubtitles)
       return
     const tick = () => {
+      if (disposed || isContextInvalid())
+        return
       for (const [video, player] of players) {
         if (!video.isConnected) {
           player.dispose()
@@ -292,6 +300,8 @@ export function bootstrapVideoSubtitles() {
     config.translate.customPromptsConfig,
   ])
   const unsubscribe = subscribeLocalConfig((config) => {
+    if (disposed || isContextInvalid())
+      return
     const previous = current
     current = config
     if (!config?.features.videoSubtitles)
@@ -305,6 +315,8 @@ export function bootstrapVideoSubtitles() {
     }
   })
   const keydown = (event: KeyboardEvent) => {
+    if (disposed || isContextInvalid())
+      return
     if (!current?.features.videoSubtitles || event.defaultPrevented || event.repeat || isEditableTarget(event.target) || !eventMatchesHotkey(event, current.features.subtitlesShortcut))
       return
     event.preventDefault()

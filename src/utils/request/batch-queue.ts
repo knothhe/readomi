@@ -26,6 +26,14 @@ export interface BatchLimits {
   maxItems: number
 }
 
+export interface BatchErrorContext {
+  batchKey: string
+  retryCount: number
+  isFallback: boolean
+  /** A format mismatch is recoverable until splitting or individual fallback ends. */
+  willRetry: boolean
+}
+
 /**
  * Groups items into batches per `getBatchKey`. When a batch comes back with
  * the wrong number of results, the queue splits it in half and retries the
@@ -48,7 +56,7 @@ export interface BatchOptions<T, R> {
   getCharacters: (data: T) => number
   executeBatch: (dataList: T[]) => Promise<R[]>
   executeIndividual?: (data: T) => Promise<R>
-  onError?: (error: Error, context: { batchKey: string, retryCount: number, isFallback: boolean }) => void
+  onError?: (error: Error, context: BatchErrorContext) => void
 }
 
 export class BatchQueue<T, R> {
@@ -65,7 +73,7 @@ export class BatchQueue<T, R> {
   private getCharacters: (data: T) => number
   private executeBatch: (dataList: T[]) => Promise<R[]>
   private executeIndividual?: (data: T) => Promise<R>
-  private onError?: (error: Error, context: { batchKey: string, retryCount: number, isFallback: boolean }) => void
+  private onError?: (error: Error, context: BatchErrorContext) => void
 
   constructor(config: BatchOptions<T, R>) {
     this.defaultLimits = { maxCharacters: config.maxCharactersPerBatch, maxItems: config.maxItemsPerBatch }
@@ -198,7 +206,9 @@ export class BatchQueue<T, R> {
     catch (error) {
       const err = error as Error
 
-      this.onError?.(err, { batchKey, retryCount, isFallback: false })
+      const willRetry = err instanceof BatchCountMismatchError
+        && (tasks.length > 1 || (this.enableFallbackToIndividual && this.executeIndividual !== undefined))
+      this.onError?.(err, { batchKey, retryCount, isFallback: false, willRetry })
 
       if (!(err instanceof BatchCountMismatchError)) {
         tasks.forEach(task => task.reject(err))
@@ -247,7 +257,7 @@ export class BatchQueue<T, R> {
         }
         catch (error) {
           const err = error as Error
-          this.onError?.(err, { batchKey, retryCount, isFallback: true })
+          this.onError?.(err, { batchKey, retryCount, isFallback: true, willRetry: false })
           task.reject(err)
         }
       }),

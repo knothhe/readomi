@@ -21,6 +21,47 @@ import { bindHoverTranslation } from "./translation-control/hover-translation"
 import { PageTranslationManager } from "./translation-control/page-translation"
 
 export async function bootstrapHostContent(ctx: ContentScriptContext) {
+  if (ctx.isInvalid)
+    return
+
+  const cleanups: Array<() => void> = []
+  let stopped = false
+  const cleanup = () => {
+    if (stopped)
+      return
+    stopped = true
+    for (const dispose of cleanups.splice(0).reverse()) {
+      try {
+        dispose()
+      }
+      catch (error) {
+        logger.warn("Failed to clean up content script:", error)
+      }
+    }
+    window.__READOMI_HOST_INJECTED__ = false
+  }
+  // Register before the first await, so an update during startup also cleans up.
+  ctx.onInvalidated(cleanup)
+  const track = (dispose: () => void) => {
+    if (stopped)
+      dispose()
+    else
+      cleanups.push(dispose)
+  }
+  // WXT checks runtime.id in isInvalid; onInvalidated alone does not poll it.
+  const timer = ctx.setInterval(() => {}, 1000)
+  track(() => clearInterval(timer))
+  try {
+    await startHostContent(ctx, track)
+  }
+  catch (error) {
+    cleanup()
+    if (!ctx.isInvalid)
+      throw error
+  }
+}
+
+async function startHostContent(ctx: ContentScriptContext, track: (dispose: () => void) => void) {
   ensurePresetStyles(document)
   let colorTheme: ColorTheme = "terra"
   let appearanceMode: ThemeMode = "system"
@@ -32,33 +73,56 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
   })
   const appearanceQuery = window.matchMedia?.("(prefers-color-scheme: dark)")
   const updateAppearance = () => setHostColorTheme(colorTheme, resolveTheme(appearanceMode))
+  track(unsubscribeColorTheme)
   appearanceQuery?.addEventListener("change", updateAppearance)
+  track(() => appearanceQuery?.removeEventListener("change", updateAppearance))
   const cleanupHoverTranslation = bindHoverTranslation()
-  const cleanupVideoSubtitles = bootstrapVideoSubtitles()
+  track(cleanupHoverTranslation)
+  const cleanupVideoSubtitles = bootstrapVideoSubtitles(() => ctx.isInvalid)
+  track(cleanupVideoSubtitles)
 
   const cleanupUrlListener = setupUrlChangeListener()
+  track(cleanupUrlListener)
 
   const removeHostToast = window === window.top ? mountHostToast() : () => {}
+  track(removeHostToast)
 
   const manager = new PageTranslationManager({
     root: null,
     rootMargin: `${PRELOAD_MARGIN_PX}px`,
     threshold: PRELOAD_THRESHOLD,
   })
+  track(() => manager.dispose())
 
   // Translate the page again when the popup or the options page changes the translation mode.
   // A change before this point needs no action: page translation starts later and reads the current config.
   const unwatchConfig = watchConfigChanges(manager)
+  track(unwatchConfig)
 
   // Turn the word-prefix emphasis on and off when the reader changes the setting.
   const wordPrefixEmphasis = createWordPrefixEmphasisController(document)
   const unsubscribeWordPrefixEmphasis = subscribeLocalConfig(config => wordPrefixEmphasis.setEnabled(config?.reading.wordPrefixEmphasis === true))
 
-  const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager)
+  track(unsubscribeWordPrefixEmphasis)
+  track(() => wordPrefixEmphasis.setEnabled(false))
+
+  const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager, document, () => ctx.isInvalid)
+  track(cleanupTranslationShortcut)
+  if (ctx.isInvalid)
+    return
 
   const detectAndReportPageLanguage = async (url: string) => {
-    const { detectedCodeOrUnd } = await detectPageLanguageLightweight()
-    void sendMessage("reportDetectedPageLanguage", { url, detectedCodeOrUnd })
+    if (ctx.isInvalid)
+      return
+    try {
+      const { detectedCodeOrUnd } = await detectPageLanguageLightweight()
+      if (!ctx.isInvalid)
+        await sendMessage("reportDetectedPageLanguage", { url, detectedCodeOrUnd })
+    }
+    catch (error) {
+      if (!ctx.isInvalid)
+        logger.error("Failed to report page language:", error)
+    }
   }
 
   // For late-loading iframes: check if translation is already enabled for this tab
@@ -67,15 +131,17 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
     translationEnabled = await sendMessage("getEnablePageTranslationFromContentScript", undefined)
   }
   catch (error) {
-    // Extension context may be invalidated during update, proceed without auto-start
-    logger.error("Failed to check translation state:", error)
+    if (!ctx.isInvalid)
+      logger.error("Failed to check translation state:", error)
   }
+  if (ctx.isInvalid)
+    return
   if (translationEnabled) {
     void manager.start()
   }
 
   const handleUrlChange = async (from: string, to: string) => {
-    if (from !== to) {
+    if (!ctx.isInvalid && from !== to) {
       logger.info("URL changed from", from, "to", to)
       if (manager.isActive) {
         if (areSamePageTranslationOrigin(from, to)) {
@@ -94,9 +160,13 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
 
   const handleExtensionUrlChange = (e: any) => {
     const { from, to } = e.detail
-    void handleUrlChange(from, to)
+    void handleUrlChange(from, to).catch((error) => {
+      if (!ctx.isInvalid)
+        logger.error("Failed to handle URL change:", error)
+    })
   }
   window.addEventListener("extension:URLChange", handleExtensionUrlChange)
+  track(() => window.removeEventListener("extension:URLChange", handleExtensionUrlChange))
 
   // Listen for translation state changes from background
   const cleanupTranslationStateListener = onMessage("askManagerToTogglePageTranslation", (msg) => {
@@ -121,23 +191,9 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
       })
     : () => {}
 
-  ctx.onInvalidated(() => {
-    unsubscribeColorTheme()
-    appearanceQuery?.removeEventListener("change", updateAppearance)
-    cleanupHoverTranslation()
-    cleanupVideoSubtitles()
-    removeHostToast()
-    cleanupUrlListener()
-    cleanupTranslationShortcut()
-    unwatchConfig()
-    unsubscribeWordPrefixEmphasis()
-    wordPrefixEmphasis.setEnabled(false)
-    cleanupTranslationStateListener()
-    cleanupFrameTranslationStateListener()
-    cleanupDetectedLanguageRefreshListener()
-    window.removeEventListener("extension:URLChange", handleExtensionUrlChange)
-    window.__READOMI_HOST_INJECTED__ = false
-  })
+  track(cleanupTranslationStateListener)
+  track(cleanupFrameTranslationStateListener)
+  track(cleanupDetectedLanguageRefreshListener)
 
   // Only the top frame should detect and set language to avoid race conditions from iframes
   if (window === window.top) {

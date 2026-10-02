@@ -3,9 +3,11 @@ import type { BackgroundGenerateTextPayload } from "@/types/background-generate-
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import { getLocalConfig } from "@/utils/config/storage"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { logger } from "@/utils/logger"
 import { sendMessage } from "@/utils/message"
 import { getLanguageDetectionSystemPrompt, parseDetectedLanguageCode } from "@/utils/prompts/language-detection"
+import { defaultRequestRetryPolicy } from "@/utils/request/retry-policy"
 import { cleanText } from "./utils"
 
 const DEFAULT_MIN_LENGTH = 10
@@ -116,6 +118,8 @@ export async function detectLanguageWithLLM(
       config = globalProvider
     }
     catch (error) {
+      if (isExtensionContextInvalidatedError(error))
+        return null
       logger.error("Failed to get global config for language detection:", error)
       return null
     }
@@ -130,6 +134,8 @@ export async function detectLanguageWithLLM(
     }
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      if (!isExtensionContextValid())
+        return null
       try {
         const response = await sendMessage("backgroundGenerateText", payload)
         const detectedCode = parseDetectedLanguageCode(response.text)
@@ -143,7 +149,17 @@ export async function detectLanguageWithLLM(
         }
       }
       catch (error) {
+        if (!isExtensionContextValid() || isExtensionContextInvalidatedError(error))
+          return null
         logger.error(`LLM language detection attempt ${attempt}/${MAX_ATTEMPTS} failed:`, error)
+        if (defaultRequestRetryPolicy.decide(error, {
+          retryCount: attempt - 1,
+          maxRetries: MAX_ATTEMPTS - 1,
+          baseRetryDelayMs: 0,
+          now: Date.now(),
+        }).action === "fail") {
+          return null
+        }
       }
 
       if (attempt === MAX_ATTEMPTS) {

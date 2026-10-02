@@ -1,5 +1,6 @@
 import type { SubtitleCue } from "./timeline"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
+import { parseYouTubeTranscript } from "./timeline"
 import { YOUTUBE_SUBTITLE_REQUEST, YOUTUBE_SUBTITLE_RESPONSE } from "./youtube-bridge"
 
 export function youtubeVideoId(): string {
@@ -27,6 +28,10 @@ export function createYouTubeTimeline() {
     }
     if (Array.isArray(data.cues) && data.cues.length <= 30_000) {
       cues = data.cues.filter((cue: SubtitleCue) => cue && typeof cue.text === "string" && cue.text.length <= 4000 && Number.isFinite(cue.start) && Number.isFinite(cue.end) && cue.start >= 0 && cue.end > cue.start).sort((a: SubtitleCue, b: SubtitleCue) => a.start - b.start)
+    }
+    else if (typeof data.transcript === "string" && data.transcript.length <= 5_000_000) {
+      // XML is parsed in the extension's isolated world, never in the page bridge.
+      cues = parseYouTubeTranscript(data.transcript)
     }
   }
   window.addEventListener("message", onMessage)

@@ -2,6 +2,7 @@
 
 import type { ContentScriptContext } from "#imports"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { ContentScriptContext as TestContentScriptContext } from "wxt/utils/content-script-context"
 import { bootstrapHostContent } from "../runtime"
 
 const {
@@ -21,6 +22,7 @@ const {
     start: ReturnType<typeof vi.fn>
     stop: ReturnType<typeof vi.fn>
     restart: ReturnType<typeof vi.fn>
+    dispose: ReturnType<typeof vi.fn>
   }>,
   mockBindTranslationShortcutKey: vi.fn(),
   mockDetectPageLanguageLightweight: vi.fn(),
@@ -79,6 +81,10 @@ vi.mock("../translation-control/page-translation", () => ({
       this.isActive = true
     })
 
+    dispose = vi.fn(() => {
+      this.isActive = false
+    })
+
     constructor() {
       managerInstances.push(this)
     }
@@ -86,19 +92,10 @@ vi.mock("../translation-control/page-translation", () => ({
 }))
 
 function createContentScriptContext() {
-  const invalidationCallbacks: Array<() => void> = []
-
+  const ctx = new TestContentScriptContext("host")
   return {
-    ctx: {
-      onInvalidated: (callback: () => void) => {
-        invalidationCallbacks.push(callback)
-      },
-    } as ContentScriptContext,
-    invalidate: () => {
-      for (const callback of invalidationCallbacks) {
-        callback()
-      }
-    },
+    ctx: ctx as ContentScriptContext,
+    invalidate: () => ctx.notifyInvalidated(),
   }
 }
 
@@ -159,6 +156,7 @@ describe("bootstrapHostContent URL changes", () => {
     })
 
     invalidate()
+    expect(manager.dispose).toHaveBeenCalledOnce()
   })
 
   it("keeps inactive page translation inactive and only asks auto-translation on SPA navigation", async () => {
@@ -209,5 +207,34 @@ describe("bootstrapHostContent URL changes", () => {
     })
 
     invalidate()
+  })
+
+  it("cleans up when invalidated while the shortcut is still initializing", async () => {
+    let finishShortcut!: (cleanup: () => void) => void
+    const removeShortcut = vi.fn()
+    const removeUrlListener = vi.fn()
+    mockSetupUrlChangeListener.mockReturnValue(removeUrlListener)
+    mockBindTranslationShortcutKey.mockReturnValue(new Promise(resolve => finishShortcut = resolve))
+    const { ctx, invalidate } = createContentScriptContext()
+    const startup = bootstrapHostContent(ctx)
+    invalidate()
+    expect(removeUrlListener).toHaveBeenCalledOnce()
+    finishShortcut(removeShortcut)
+    await startup
+    expect(removeShortcut).toHaveBeenCalledOnce()
+    expect(mockSendMessage).not.toHaveBeenCalled()
+    expect(messageHandlers.size).toBe(0)
+  })
+
+  it("does not report a language detection result after invalidation", async () => {
+    let finishDetection!: (result: { detectedCodeOrUnd: string }) => void
+    mockDetectPageLanguageLightweight.mockReturnValue(new Promise(resolve => finishDetection = resolve))
+    const { ctx, invalidate } = createContentScriptContext()
+    const startup = bootstrapHostContent(ctx)
+    await flushAsyncWork()
+    invalidate()
+    finishDetection({ detectedCodeOrUnd: "fra" })
+    await startup
+    expect(mockSendMessage).not.toHaveBeenCalledWith("reportDetectedPageLanguage", expect.anything())
   })
 })

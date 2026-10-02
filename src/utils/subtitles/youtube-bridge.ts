@@ -1,5 +1,3 @@
-import { parseYouTubeTranscript } from "./timeline"
-
 export const YOUTUBE_SUBTITLE_REQUEST = "readomi:youtube-subtitle-request"
 export const YOUTUBE_SUBTITLE_RESPONSE = "readomi:youtube-subtitle-response"
 
@@ -30,13 +28,25 @@ function timedtextUrl(value: string): URL | null {
   }
 }
 
+/** Keep parsing out of YouTube's page world, whose Trusted Types policy forbids DOMParser. */
+function transcriptBody(body: string): string {
+  if (!body.trim() || body.length > 5_000_000)
+    return ""
+  try {
+    return Array.isArray(JSON.parse(body).events) ? body : ""
+  }
+  catch {
+    return /^\s*(?:<\?xml[^>]*>\s*)?<(?:transcript|timedtext)\b/.test(body) ? body : ""
+  }
+}
+
 /** Runs in the page world. Only subtitle text crosses the bridge, never provider credentials. */
 export function installYouTubeSubtitleBridge() {
   const observed = new Map<string, URL>()
-  const captured = new Map<string, { url: URL, cues: ReturnType<typeof parseYouTubeTranscript> }>()
-  const transcripts = new Map<string, ReturnType<typeof parseYouTubeTranscript>>()
+  const captured = new Map<string, { url: URL, body: string }>()
+  const transcripts = new Map<string, string>()
   const failures = new Map<string, { at: number, url: string }>()
-  const inflight = new Map<string, Promise<ReturnType<typeof parseYouTubeTranscript>>>()
+  const inflight = new Map<string, Promise<string>>()
   const nativeFetch = window.fetch.bind(window)
   const observe = (value: string) => {
     const url = timedtextUrl(value)
@@ -49,10 +59,10 @@ export function installYouTubeSubtitleBridge() {
       observed.delete(observed.keys().next().value!)
   }
   const capture = (url: URL, body: string) => {
-    const cues = parseYouTubeTranscript(body)
-    if (!cues.length)
+    const transcript = transcriptBody(body)
+    if (!transcript)
       return
-    captured.set(url.href, { url, cues })
+    captured.set(url.href, { url, body: transcript })
     if (captured.size > 6)
       captured.delete(captured.keys().next().value!)
   }
@@ -106,7 +116,7 @@ export function installYouTubeSubtitleBridge() {
       return transcripts.get(key)!
     const failure = failures.get(key)
     if (failure && failure.url === url.href && failure.at > Date.now() - 10_000)
-      return []
+      return ""
     const pending = inflight.get(key)
     if (pending)
       return pending
@@ -115,20 +125,20 @@ export function installYouTubeSubtitleBridge() {
       const timeout = setTimeout(() => controller.abort(), 8000)
       try {
         const response = await nativeFetch(url.href, { credentials: "include", signal: controller.signal })
-        const cues = response.ok ? parseYouTubeTranscript(await response.text()) : []
-        if (cues.length) {
-          transcripts.set(key, cues)
+        const body = response.ok ? transcriptBody(await response.text()) : ""
+        if (body) {
+          transcripts.set(key, body)
           if (transcripts.size > 6)
             transcripts.delete(transcripts.keys().next().value!)
         }
         else {
           failures.set(key, { at: Date.now(), url: url.href })
         }
-        return cues
+        return body
       }
       catch {
         failures.set(key, { at: Date.now(), url: url.href })
-        return []
+        return ""
       }
       finally {
         clearTimeout(timeout)
@@ -187,17 +197,17 @@ export function installYouTubeSubtitleBridge() {
       const key = `${videoId}|${track.vssId ?? track.languageCode}|${url.searchParams.get("tlang") ?? ""}`
       const received = Array.from(captured.values()).reverse().find(item => ["v", "lang", "kind", "tlang", "name"].every(param => (item.url.searchParams.get(param) ?? "") === (url.searchParams.get(param) ?? "")))
       if (received) {
-        transcripts.set(key, received.cues)
+        transcripts.set(key, received.body)
         if (transcripts.size > 6)
           transcripts.delete(transcripts.keys().next().value!)
       }
-      const cues = await getTranscript(key, url)
+      const transcript = await getTranscript(key, url)
       const current = player?.getOption?.("captions", "track")
       if (player?.getPlayerResponse?.().videoDetails?.videoId !== videoId || current?.vssId !== selected.vssId || current?.languageCode !== selected.languageCode || current?.translationLanguage?.languageCode !== selected.translationLanguage?.languageCode) {
         respond({ key: "", cues: [], enabled: null })
         return
       }
-      respond({ key, enabled: true, ...(knownKey === key && cues.length ? {} : { cues }) })
+      respond({ key, enabled: true, ...(knownKey === key && transcript ? {} : { transcript }) })
     })().catch(() => respond({ key: "", cues: [], enabled: null }))
   }
   window.addEventListener("message", onMessage)

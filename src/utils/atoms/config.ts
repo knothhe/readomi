@@ -5,6 +5,7 @@ import { selectAtom } from "jotai/utils"
 import { configSchema } from "@/types/config/config"
 import { getLocalConfigForWrite } from "../config/storage"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "../constants/config"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "../extension-context"
 import { logger } from "../logger"
 import { deepMerge } from "../object"
 import { storageAdapter } from "./storage-adapter"
@@ -86,7 +87,8 @@ function queueConfigWrite(
       }
     }
     catch (error) {
-      console.error("Failed to set config to storage:", error)
+      if (isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+        console.error("Failed to set config to storage:", error)
 
       // Roll back, but only if we're still the latest write.
       if (currentWriteVersion === writeVersion) {
@@ -138,16 +140,24 @@ export const resetConfigAtom = atom(
  * 3. Tab reactivation: Reload when tab becomes visible (inactive tabs may miss watch events)
  */
 configAtom.onMount = (setAtom: (newValue: Config) => void) => {
+  let stopped = false
   const syncFromStorage = () => {
+    if (stopped || !isExtensionContextValid())
+      return
     const currentWriteVersion = writeVersion
     // A watch event can contain the value of an older local write.
     // Do not apply the value of the event. Read storage after the queued writes.
     // A newer local write makes this read stale, because its optimistic value is newer.
     void writeQueue.then(async () => {
+      if (stopped || !isExtensionContextValid())
+        return
       const value = await storageAdapter.get<Config>(CONFIG_STORAGE_KEY, DEFAULT_CONFIG, configSchema)
-      if (currentWriteVersion === writeVersion) {
+      if (!stopped && isExtensionContextValid() && currentWriteVersion === writeVersion) {
         setAtom(value)
       }
+    }).catch((error) => {
+      if (!stopped && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+        logger.error("Failed to sync config from storage:", error)
     })
   }
 
@@ -169,8 +179,9 @@ configAtom.onMount = (setAtom: (newValue: Config) => void) => {
   document.addEventListener("visibilitychange", handleVisibilityChange)
 
   return () => {
-    unwatch()
+    stopped = true
     document.removeEventListener("visibilitychange", handleVisibilityChange)
+    unwatch()
   }
 }
 

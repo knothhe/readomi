@@ -88,4 +88,18 @@ describe("bindTranslationShortcutKey", () => {
     expect(manager.start).not.toHaveBeenCalled()
     cleanup()
   })
+
+  it("does not bind a shortcut when the context expires during the config read", async () => {
+    let finishRead!: (config: typeof DEFAULT_CONFIG) => void
+    mockGetLocalConfig.mockReturnValueOnce(new Promise(resolve => finishRead = resolve))
+    const manager = createManager(false)
+    let invalid = false
+    const binding = bindTranslationShortcutKey(manager, document, () => invalid)
+    invalid = true
+    finishRead(DEFAULT_CONFIG)
+    cleanups.push(await binding)
+    const event = press(document.body, { key: "e", altKey: true })
+    expect(manager.start).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  })
 })

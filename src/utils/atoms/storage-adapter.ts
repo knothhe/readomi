@@ -1,6 +1,7 @@
 import type { ZodSchema } from "zod"
 import { storage } from "#imports"
 import { isNonNullish } from "@/utils/utils"
+import { isExtensionContextValid, removeExtensionListener } from "../extension-context"
 
 export const storageAdapter = {
   async get<T>(key: string, fallback: T, schema: ZodSchema<T>): Promise<T> {
@@ -23,10 +24,14 @@ export const storageAdapter = {
     }
   },
   watch<T>(key: string, callback: (newValue: T) => void) {
+    let stopped = false
     const unwatch = storage.watch<T>(`local:${key}`, (newValue) => {
-      if (isNonNullish(newValue))
+      if (!stopped && isExtensionContextValid() && isNonNullish(newValue))
         callback(newValue)
     })
-    return unwatch
+    return () => {
+      stopped = true
+      removeExtensionListener(unwatch)
+    }
   },
 }

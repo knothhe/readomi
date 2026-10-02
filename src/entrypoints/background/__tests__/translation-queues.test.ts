@@ -10,6 +10,10 @@ const articleSummaryCacheGetMock = vi.fn()
 const articleSummaryCachePutMock = vi.fn()
 const translationCacheGetMock = vi.fn()
 const translationCachePutMock = vi.fn()
+const logErrorMock = vi.fn()
+const logInfoMock = vi.fn()
+
+vi.mock("@/utils/logger", () => ({ logger: { error: logErrorMock, info: logInfoMock, warn: vi.fn() } }))
 
 vi.mock("@/utils/message", () => ({
   onMessage: onMessageMock,
@@ -159,5 +163,41 @@ describe("translation queue helpers", () => {
       "page body",
       llmProvider,
     )
+  })
+
+  it("recovers missing batch translations in order without reporting a failed request", async () => {
+    executeTranslateMock.mockImplementation(async (text: string) => text.includes("\n%%\n") ? "incomplete response" : `translated-${text}`)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const texts = ["First paragraph", "Second paragraph", "Third paragraph", "Fourth paragraph"]
+    const results = await Promise.all(texts.map(text => handler({ data: {
+      text,
+      langConfig: DEFAULT_CONFIG.language,
+      providerConfig: { ...llmProvider, id: "partial-batch-provider" },
+      scheduleAt: Date.now(),
+      hash: `partial-${text}`,
+    } })))
+    expect(results).toEqual(texts.map(text => `translated-${text}`))
+    expect(logInfoMock).toHaveBeenCalledWith("Batch response could not be aligned; retrying smaller requests", expect.any(Object))
+    expect(logErrorMock).not.toHaveBeenCalled()
+    for (const text of texts)
+      expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ key: `partial-${text}`, translation: `translated-${text}` }))
+  })
+
+  it("still reports a terminal service failure", async () => {
+    executeTranslateMock.mockRejectedValue(new Error("Invalid API key"))
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    await expect(handler({ data: {
+      text: "A paragraph",
+      langConfig: DEFAULT_CONFIG.language,
+      providerConfig: { ...llmProvider, id: "failing-provider" },
+      scheduleAt: Date.now(),
+      hash: "failing-request",
+    } })).rejects.toThrow("Invalid API key")
+    expect(logErrorMock).toHaveBeenCalledWith(expect.stringContaining("Batch request failed"), "Invalid API key")
+    expect(translationCachePutMock).not.toHaveBeenCalled()
   })
 })

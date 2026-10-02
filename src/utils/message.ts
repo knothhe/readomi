@@ -1,3 +1,4 @@
+import type { RequestErrorMeta } from "./request/retry-policy"
 import type { LangCodeISO6393 } from "@/definitions"
 import type {
   BackgroundGenerateTextPayload,
@@ -7,6 +8,8 @@ import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { TranslationProgress } from "@/types/translation-progress"
 import { browser } from "#imports"
+import { isExtensionContextInvalidatedError, isExtensionContextValid, isMessageConnectionLostError } from "./extension-context"
+import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-policy"
 
 interface ProtocolMap {
   // navigation
@@ -58,7 +61,7 @@ interface Envelope {
 
 type Reply
   = | { ok: true, response: unknown }
-    | { ok: false, error: { name: string, message: string } }
+    | { ok: false, error: { name: string, message: string, requestErrorMeta?: Pick<RequestErrorMeta, "statusCode" | "isRetryable"> } }
 
 function isEnvelope(value: unknown): value is Envelope {
   return typeof value === "object" && value !== null && (value as Envelope).kind === ENVELOPE && typeof (value as Envelope).type === "string"
@@ -74,7 +77,14 @@ async function dispatch(envelope: Envelope, sender: MessageSender | undefined): 
     return { ok: true, response: await handler({ data: envelope.data as never, sender }) }
   }
   catch (error) {
-    return { ok: false, error: { name: error instanceof Error ? error.name : "Error", message: error instanceof Error ? error.message : String(error) } }
+    // Keep retry decisions intact across Chrome's JSON message boundary.
+    // Response bodies and headers stay in the context that made the request.
+    const { statusCode, isRetryable } = getRequestErrorMeta(error)
+    return { ok: false, error: {
+      name: error instanceof Error ? error.name : "Error",
+      message: error instanceof Error ? error.message : String(error),
+      requestErrorMeta: { statusCode, isRetryable },
+    } }
   }
 }
 
@@ -119,14 +129,28 @@ export async function sendMessage<T extends MessageType>(
 ): Promise<ResponseOf<T>> {
   const [data, tabId] = args
   const envelope: Envelope = { kind: ENVELOPE, type, data }
-  const reply: Reply | undefined = tabId === undefined
-    ? await browser.runtime.sendMessage(envelope)
-    : await browser.tabs.sendMessage(tabId, envelope)
-  if (reply === undefined)
-    throw new Error(`No handler answered ${type}`)
+  let reply: Reply | undefined
+  try {
+    reply = tabId === undefined
+      ? await browser.runtime.sendMessage(envelope)
+      : await browser.tabs.sendMessage(tabId, envelope)
+    if (reply === undefined)
+      throw new Error(`No handler answered ${type}`)
+  }
+  catch (error) {
+    // Chrome closes pending ports before invalidating the content context.
+    // Let that unload finish before deciding whether this is a request failure.
+    if (isMessageConnectionLostError(error))
+      await new Promise(resolve => setTimeout(resolve, 250))
+    if (!isExtensionContextValid() || isExtensionContextInvalidatedError(error))
+      throw new Error("Extension context invalidated.")
+    throw error
+  }
   if (!reply.ok) {
     const error = new Error(reply.error.message)
     error.name = reply.error.name
+    if (reply.error.requestErrorMeta)
+      attachRequestErrorMeta(error, reply.error.requestErrorMeta)
     throw error
   }
   return reply.response as ResponseOf<T>
