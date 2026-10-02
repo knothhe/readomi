@@ -415,10 +415,6 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
-  groups:
-    translation: 翻譯設定
-    reading: 閱讀體驗
-    extension: 擴充功能管理
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

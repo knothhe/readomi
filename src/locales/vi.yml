@@ -415,10 +415,6 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
-  groups:
-    translation: Cài đặt dịch
-    reading: Trải nghiệm đọc
-    extension: Quản lý tiện ích
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

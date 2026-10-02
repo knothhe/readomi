@@ -415,10 +415,6 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
-  groups:
-    translation: Translation settings
-    reading: Reading experience
-    extension: Extension management
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

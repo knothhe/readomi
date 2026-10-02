@@ -415,10 +415,6 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
-  groups:
-    translation: Çeviri ayarları
-    reading: Okuma deneyimi
-    extension: Uzantı yönetimi
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…
