@@ -78,6 +78,15 @@ it("user sets up the service on the settings page: Given no key, When the popup 
   await section.getByText("Connected", { exact: true }).waitFor()
   assert.equal(service.completions().length, completionsAfter, "opening settings sends nothing")
 
+  // Agent setup remains an entry point after saving, including after reopening settings.
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
+  await editor.waitFor()
+  assert.equal(JSON.parse(await editor.inputValue()).model, stored.model)
+  await section.getByRole("button", { name: "Copy instructions for your agent", exact: true }).waitFor()
+  await section.getByRole("button", { name: "Cancel", exact: true }).click()
+  assert.equal(await editor.count(), 0)
+  assert.equal(service.completions().length, completionsAfter, "opening and canceling agent setup sends nothing")
+
   await page.goto(`chrome-extension://${extensionId}/popup.html`)
   await page.getByRole("button", { name: /Translate this page/ }).waitFor()
 })
@@ -90,8 +99,8 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   await trackClipboard(page)
   const section = page.locator("#service")
 
-  // Edit opens the editor in place on the current service, key masked.
-  await section.getByRole("button", { name: "Edit", exact: true }).click()
+  // Agent setup opens the editor in place on the current service, key masked.
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const editor = section.getByLabel("Translation service configuration")
   const current = JSON.parse(await editor.inputValue())
   assert.equal(current.apiKey, "…-key")
@@ -119,7 +128,7 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   await page.locator("nav a[href=\"#quality\"]").click()
   const quality = page.locator("#quality")
   await quality.getByRole("button", { name: "Edit", exact: true }).click()
-  await quality.getByLabel("Prompt template").fill("Translate tersely: {{input}}")
+  await quality.getByLabel("Prompt template", { exact: true }).fill("Translate tersely: {{input}}")
   await quality.getByRole("button", { name: "Apply", exact: true }).click()
   await quality.getByText("Custom", { exact: true }).waitFor()
   config = await storedConfig(context)
@@ -136,7 +145,7 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   assert.match(body.messages.at(-1).content, /^Translate tersely: /)
 
   // The instructions carry the service configuration with the key masked, never the key itself.
-  await section.getByRole("button", { name: "Edit", exact: true }).click()
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   await clickButton(page, "Copy instructions for your agent")
   await page.getByRole("button", { name: "Copied" }).waitFor()
   const instructions = (await readClipboardWrites(page)).at(-1)

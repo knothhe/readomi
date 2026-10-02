@@ -11,7 +11,7 @@ a{color:#b6533e}a:hover{color:#b6533e}
 <body>
 <div style="width: 1520px; height: 620px; box-sizing: border-box; background: #faf8f5; color: #302b29; font-size: 13px; padding: 40px; display: flex; flex-direction: column; gap: 16px;">
   <div style="display: flex; flex-direction: column; gap: 4px;">
-    <h2 style="margin: 0; font-size: 15px; font-weight: 600;">翻译服务一节：平时只有预览，需要时才原地出现编辑框</h2>
+    <h2 style="margin: 0; font-size: 15px; font-weight: 600;">翻译服务一节：点击 agent 配置，随时展开当前配置</h2>
     <p style="margin: 0; font-size: 12px; color: #716862;">编辑框里只有翻译服务本身的字段（type、apiKey、model、baseURL、headers、body）。语言、显示方式和提示词不在这里。</p>
   </div>
   <svg width="1440" height="470" viewBox="0 0 1440 470" role="img" aria-label="翻译服务一节的状态关系">
@@ -53,14 +53,14 @@ a{color:#b6533e}a:hover{color:#b6533e}
     <g font-size="12" fill="#716862">
       <text x="300" y="208">粘贴或输入</text>
       <text x="840" y="118">应用，连接成功</text>
-      <text x="1072" y="232">修改</text>
+      <text x="1030" y="232">agent 配置 / 修改</text>
       <text x="1212" y="232">取消</text>
       <text x="850" y="300">内容与已存配置不同</text>
       <text x="590" y="312" text-anchor="end">应用，连接失败</text>
       <text x="672" y="312">改内容</text>
     </g>
   </svg>
-  <p style="margin: 0; font-size: 12px; line-height: 18px; color: #716862;">在“待应用”或“应用失败”时点“取消”，回到进入编辑前的状态（未配置或已配置）。应用时先测试连接，通过才保存，所以失败不会替换正在用的服务。<br>连接结果和检查时间随服务一起保存：应用成功时写入，“测试连接”随时重测并覆盖。打开设置页不发请求，只显示上次结果；从未检查过的服务显示“未检查”。</p>
+  <p style="margin: 0; font-size: 12px; line-height: 18px; color: #716862;">点击“agent 配置”或“修改”展开已脱敏、全选的当前配置，并显示“复制给 agent 的说明”；再次点击同一入口保留正在编辑的内容。<br>在“待应用”或“应用失败”时点“取消”，回到进入编辑前的状态（未配置或已配置）。应用时先测试连接，通过才保存，所以失败不会替换正在用的服务。<br>连接结果和检查时间随服务一起保存：应用成功时写入，“测试连接”随时重测并覆盖。打开设置页不发请求，只显示上次结果；从未检查过的服务显示“未检查”。</p>
 </div>
 </body>
 </html>

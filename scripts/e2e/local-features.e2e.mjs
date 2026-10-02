@@ -47,6 +47,27 @@ it("fetches models from the configured API and preserves drafts across sidebar a
   await page.getByText("Connected", { exact: true }).waitFor()
   const config = await storedConfig(context)
   assert.equal(config.providersConfig.find(p => p.id === config.translate.providerId).model, "manual-model")
+  const completionsAfterSave = service.completions().length
+  await page.getByRole("button", { name: "Agent setup", exact: true }).click()
+  const editor = page.getByLabel("Translation service configuration")
+  const document = JSON.parse(await editor.inputValue())
+  assert.equal(document.model, "manual-model", "agent setup opens the latest manually saved model")
+  assert.equal(document.apiKey, "…-key", "the stored key is masked")
+  await page.getByRole("button", { name: "Copy instructions for your agent", exact: true }).waitFor()
+  await page.getByRole("button", { name: "Cancel", exact: true }).click()
+  await page.getByRole("button", { name: "Agent setup", exact: true }).click()
+  await editor.waitFor()
+  const agentButton = page.getByRole("button", { name: "Agent setup", exact: true })
+  await agentButton.evaluate(button => Promise.all(button.getAnimations().map(animation => animation.finished)))
+  assert.equal(await agentButton.getAttribute("aria-pressed"), "true")
+  assert.notEqual(
+    await agentButton.evaluate(button => getComputedStyle(button).backgroundColor),
+    await page.getByRole("button", { name: "Manual setup", exact: true }).evaluate(button => getComputedStyle(button).backgroundColor),
+    "the active setup method is visibly selected",
+  )
+  assert.equal(service.completions().length, completionsAfterSave, "reopening agent setup makes no connection request")
+  assert.deepEqual(await storedConfig(context), config)
+  await page.screenshot({ path: "/tmp/readomi-agent-setup-reopened.png", fullPage: true })
 })
 
 async function recordShortcut(page, label, combination) {

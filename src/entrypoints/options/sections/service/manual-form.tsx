@@ -44,6 +44,14 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [modelResult, setModelResult] = useState<{ signature: string, models: string[], state: "idle" | "loading" | "list" | "empty" | "failed" }>({ signature: "", models: [], state: "idle" })
   const requestRef = useRef<AbortController | null>(null)
+  // A save may finish after the reader opens another editor.
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
   // A stored key belongs to its endpoint; never carry it to a new address.
   const matching = findMatchingProvider(config.providersConfig, draft)
   const effectiveKey = key.trim() || matching?.apiKey?.trim()
@@ -96,7 +104,8 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
         throw new Error(check.error || i18n.t("options.service.status.failed"))
       const saved = withConnectionCheck(next, providerId, check)
       await write({ providersConfig: saved.providersConfig, translate: saved.translate })
-      onDone()
+      if (mountedRef.current)
+        onDone()
     }
     catch (error) {
       setError(error instanceof Error ? error.message : String(error))

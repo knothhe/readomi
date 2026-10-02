@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider"
 import { toast } from "@/components/toast"
 import { configAtom } from "@/utils/atoms/config"
 import { storageAdapter } from "@/utils/atoms/storage-adapter"
-import { clearClipboard } from "@/utils/clipboard"
+import { clearClipboard, copyText } from "@/utils/clipboard"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { DEFAULT_TRANSLATE_PROMPT } from "@/utils/constants/prompt"
 import { highlightedPrefixes, isWordPrefixHighlightRegistered, stubHighlightRegistry } from "@/utils/host/__tests__/highlight-registry-fake"
@@ -34,6 +34,7 @@ vi.mock("@/components/ui/css-code-editor", () => ({
 vi.mock("@/utils/clipboard", async importOriginal => ({
   ...await importOriginal<typeof import("@/utils/clipboard")>(),
   clearClipboard: vi.fn(),
+  copyText: vi.fn(),
 }))
 
 vi.mock("@/utils/providers/test-connection", async importOriginal => ({
@@ -312,6 +313,38 @@ describe("settings page", () => {
     expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
   })
 
+  it("opens Agent Setup again after configuration and preserves a draft on repeated clicks", async () => {
+    const { store } = await renderSettings(configured)
+    const agent = screen.getByRole("button", { name: "manualService.agent" })
+    const manual = screen.getByRole("button", { name: "manualService.manual" })
+    expect(agent).toHaveAttribute("aria-pressed", "false")
+    expect(manual).toHaveAttribute("aria-pressed", "false")
+
+    fireEvent.click(agent)
+    expect(agent).toHaveAttribute("aria-pressed", "true")
+    expect(manual).toHaveAttribute("aria-pressed", "false")
+    expect(JSON.parse(editor().value)).toEqual({ type: "openai", apiKey: "sk-…ijkl", model: "gpt-6-luna" })
+    expect(editor()).toHaveFocus()
+    expect(editor().selectionStart).toBe(0)
+    expect(editor().selectionEnd).toBe(editor().value.length)
+    expect(screen.getByRole("button", { name: "options.service.copyInstructions" })).toBeInTheDocument()
+    expect(applyButton()).toBeDisabled()
+
+    const draft = JSON.stringify({ type: "openai", apiKey: "sk-…ijkl", model: "draft-model" })
+    fireEvent.change(editor(), { target: { value: draft } })
+    fireEvent.click(agent)
+    expect(editor()).toHaveValue(draft)
+
+    fireEvent.click(screen.getByRole("button", { name: "options.service.cancel" }))
+    expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
+    expect(agent).toHaveAttribute("aria-pressed", "false")
+    fireEvent.click(agent)
+    expect(JSON.parse(editor().value).model).toBe("gpt-6-luna")
+    expect(store.get(configAtom)).toEqual(configured)
+    expect(await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)).toEqual(configured)
+    expect(checkConnection).not.toHaveBeenCalled()
+  })
+
   it("previews what applying would change and reports invalid text", async () => {
     await renderSettings()
 
@@ -327,7 +360,7 @@ describe("settings page", () => {
     expect(applyButton()).toBeEnabled()
   })
 
-  it("checks the connection first and saves the service with the result only when it works", async () => {
+  it("checks and saves the first agent configuration, then lets Agent Setup reopen it", async () => {
     const { store } = await renderSettings()
     fireEvent.change(editor(), { target: { value: JSON.stringify({ type: "deepseek", apiKey: "sk-test", model: "deepseek-flash" }) } })
 
@@ -340,6 +373,13 @@ describe("settings page", () => {
     const service = saved.providersConfig.find(p => p.id === saved.translate.providerId)
     expect(service).toMatchObject({ provider: "deepseek", apiKey: "sk-test", connectionCheck: { ok: true, checkedAt: 1_000 } })
     expect(vi.mocked(checkConnection).mock.calls[0][0]).toMatchObject({ provider: "deepseek", apiKey: "sk-test" })
+
+    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+    expect(JSON.parse(editor().value)).toEqual({ type: "deepseek", apiKey: "sk-…test", model: "deepseek-flash" })
+    expect(applyButton()).toBeDisabled()
+    expect(screen.getByRole("button", { name: "options.service.copyInstructions" })).toBeInTheDocument()
+    expect(store.get(configAtom)).toEqual(saved)
+    expect(checkConnection).toHaveBeenCalledTimes(1)
   })
 
   it("keeps the editor open when it is opened again before the first setup finishes", async () => {
@@ -421,10 +461,12 @@ describe("manual service configuration", () => {
   beforeEach(() => {
     fakeBrowser.reset()
     vi.mocked(checkConnection).mockResolvedValue({ ok: true, checkedAt: 1_000 })
+    vi.mocked(copyText).mockResolvedValue(true)
     vi.mocked(fetchProviderModels).mockResolvedValue(["model-a", "model-b"])
   })
   afterEach(() => {
     cleanup()
+    setUILanguage("browser")
     vi.clearAllMocks()
   })
   it("keeps an unsaved form when switching sections and follows hash navigation", async () => {
@@ -488,7 +530,7 @@ describe("manual service configuration", () => {
     expect(screen.getByLabelText("manualService.model")).toHaveValue("gpt-6-luna")
     expect(screen.getByRole("button", { name: "manualService.save" })).toBeEnabled()
   })
-  it("edits the model through a form while retaining the stored key", async () => {
+  it("opens Agent Setup after a manual model save and copies the latest masked configuration", async () => {
     const { store } = await renderSettings(configured)
     fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
     expect(screen.getByLabelText("manualService.key")).toHaveValue("")
@@ -496,6 +538,50 @@ describe("manual service configuration", () => {
     fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
     await waitFor(() => expect(store.get(configAtom).providersConfig.find(p => p.id === store.get(configAtom).translate.providerId)?.model).toBe("my-local-model"))
     expect(store.get(configAtom).providersConfig[0].apiKey).toBe("sk-abcdefghijkl")
+    await waitFor(() => expect(screen.queryByLabelText("manualService.model")).toBeNull())
+    const saved = store.get(configAtom)
+
+    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+    expect(JSON.parse(editor().value)).toMatchObject({ type: "openai", model: "my-local-model", apiKey: "sk-…ijkl" })
+    expect(applyButton()).toBeDisabled()
+
+    // Use the actual catalog so copied instructions include their substitutions.
+    act(() => setUILanguage("zh-CN"))
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "复制给 agent 的说明" }))
+    })
+    const instructions = vi.mocked(copyText).mock.calls[0][0]
+    expect(instructions).toContain("\"model\": \"my-local-model\"")
+    expect(instructions).toContain("\"apiKey\": \"sk-…ijkl\"")
+    expect(instructions).not.toContain("sk-abcdefghijkl")
+    expect(screen.getByRole("button", { name: "已复制" })).toBeInTheDocument()
+    expect(store.get(configAtom)).toEqual(saved)
+    expect(checkConnection).toHaveBeenCalledTimes(1)
+  })
+  it("finishes a pending manual save without closing the agent draft opened afterward", async () => {
+    let finishCheck!: () => void
+    vi.mocked(checkConnection).mockImplementation(() => new Promise((resolve) => {
+      finishCheck = () => resolve({ ok: true, checkedAt: 1_000 })
+    }))
+    const { store } = await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "saved-manual-model" } })
+    fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
+    expect(checkConnection).toHaveBeenCalledTimes(1)
+
+    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+    const agentEditor = editor()
+    const draft = JSON.stringify({ type: "openai", apiKey: "sk-…ijkl", model: "new-agent-draft" })
+    fireEvent.change(agentEditor, { target: { value: draft } })
+    await act(async () => finishCheck())
+
+    const saved = store.get(configAtom)
+    expect(saved.providersConfig.find(p => p.id === saved.translate.providerId)?.model).toBe("saved-manual-model")
+    expect(editor()).toBe(agentEditor)
+    expect(editor()).toHaveValue(draft)
+    expect(screen.getByRole("button", { name: "manualService.agent" })).toHaveAttribute("aria-pressed", "true")
+    expect(applyButton()).toBeEnabled()
+    expect(checkConnection).toHaveBeenCalledTimes(1)
   })
   it("shows existing parameters and uses edited nested JSON in the connection check and saved requests", async () => {
     const existing = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "low" }, max_output_tokens: 1000 } })) }

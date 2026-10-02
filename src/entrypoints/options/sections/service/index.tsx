@@ -24,8 +24,8 @@ const MONO = "font-mono text-xs text-muted-foreground"
 /*
  * The translation service is a preview by default. The editor appears in
  * place only when it is needed: right away while no service is configured,
- * otherwise after "Edit". Its text is the service part of a setup document;
- * applying it first checks the connection and saves only when that works,
+ * otherwise after "Agent setup" or "Edit". Its text is the service part of
+ * a setup document; applying it first checks the connection and saves only when that works,
  * so a failed attempt never replaces the service in use. See
  * design/Service-States.html.
  */
@@ -33,27 +33,24 @@ export function ServiceSection() {
   const config = useAtomValue(configAtom)
   const active = config.providersConfig.find(p => p.id === config.translate.providerId)
   const configured = !!active?.apiKey?.trim()
-  const [manual, setManual] = useState(false)
-  const [editing, setEditing] = useState(false)
+  const [editorMode, setEditorMode] = useState<"manual" | "agent" | null>(null)
+  const agentEditing = editorMode === "agent" || (!configured && editorMode === null)
+  const methodClass = "aria-pressed:border-brand aria-pressed:bg-secondary aria-pressed:text-foreground"
 
   return (
     <SettingsSection id="service" title={i18n.t("options.service.title")}>
       <div className="flex flex-col gap-3.5 rounded-xl border border-border bg-card px-[18px] py-4">
         <div className="flex gap-2">
-          <Button variant="outline" aria-pressed={manual} onClick={() => setManual(true)}>{i18n.t("manualService.manual")}</Button>
-          <Button variant="outline" aria-pressed={!manual} onClick={() => setManual(false)}>{i18n.t("manualService.agent")}</Button>
+          <Button variant="outline" className={methodClass} aria-pressed={editorMode === "manual"} onClick={() => setEditorMode("manual")}>{i18n.t("manualService.manual")}</Button>
+          <Button variant="outline" className={methodClass} aria-pressed={agentEditing} onClick={() => setEditorMode("agent")}>{i18n.t("manualService.agent")}</Button>
         </div>
-        {manual
+        {editorMode === "manual"
           ? (
-              <ManualServiceForm onDone={() => {
-                setManual(false)
-                setEditing(false)
-              }}
-              />
+              <ManualServiceForm onDone={() => setEditorMode(null)} />
             )
-          : configured && active && !editing
-            ? <ServicePreview provider={active} onEdit={() => setEditing(true)} />
-            : <ServiceEditor current={configured ? active : undefined} onDone={() => setEditing(false)} />}
+          : configured && active && !agentEditing
+            ? <ServicePreview provider={active} onEdit={() => setEditorMode("agent")} />
+            : <ServiceEditor current={configured ? active : undefined} onDone={() => setEditorMode(null)} />}
       </div>
     </SettingsSection>
   )
