@@ -6,8 +6,9 @@ import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
-import { clampSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { resolveSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
+import { visibleYouTubeControlsTop } from "@/utils/subtitles/player-controls"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
 import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
 import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
@@ -103,7 +104,8 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   const positionCaption = () => {
     const rect = video.getBoundingClientRect()
     host.style.maxWidth = `${rect.width * 0.8}px`
-    renderedPosition = clampSubtitlePosition(appearance.position, rect, box.getBoundingClientRect())
+    const controlsTop = subtitlePositionName(appearance.position) === "bottom" ? visibleYouTubeControlsTop(youtubePlayer, rect) : undefined
+    renderedPosition = resolveSubtitlePosition(appearance.position, rect, box.getBoundingClientRect(), controlsTop)
     const centre = rect.width * renderedPosition.x / 100
     host.style.left = `${rect.left + centre}px`
     const toolHalf = tools.getBoundingClientRect().width / 2

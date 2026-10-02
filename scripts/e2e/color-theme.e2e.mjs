@@ -3,6 +3,7 @@ import assert from "node:assert/strict"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import process from "node:process"
 import { afterEach, it } from "node:test"
 import { configureService, launchBrowser, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
@@ -59,6 +60,7 @@ it("switches all four themes across settings, popup, translated pages and toolba
   const tabId = await worker.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, article.url())
   await expectIcon(worker, "terra", tabId, true)
   await article.waitForFunction(() => document.querySelectorAll(".readomi-translated-block-content").length === 5)
+  const originalColor = await article.locator("h1").evaluate(el => getComputedStyle(el).color)
   const requests = service.completions().length
   const popup = await context.newPage()
   await popup.goto(`chrome-extension://${extensionId}/popup.html`)
@@ -86,10 +88,29 @@ it("switches all four themes across settings, popup, translated pages and toolba
     assert.match(icons[0].src, new RegExp(`/icon/${color}/32.png$`))
     await expectIcon(worker, color, undefined, false)
     await expectIcon(worker, color, tabId, true)
+    await article.waitForFunction((primary) => {
+      const probe = document.createElement("span")
+      probe.style.color = primary
+      document.body.append(probe)
+      const expected = getComputedStyle(probe).color
+      probe.remove()
+      return [...document.querySelectorAll(".readomi-translated-block-content")].every(el => getComputedStyle(el).color === expected)
+    }, primary)
+    assert.equal(await article.locator("h1").evaluate(el => getComputedStyle(el).color), originalColor, "only translations receive the theme color")
     assert.equal((await storedConfig(context)).appearance.colorTheme, color)
   }
   assert.equal(service.completions().length, requests, "changing color does not request translations again")
+  if (process.env.WEB_THEME_SCREENSHOT)
+    await article.screenshot({ path: process.env.WEB_THEME_SCREENSHOT })
+  await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", exact: true }).click()
+  await article.waitForFunction(() => {
+    const translations = [...document.querySelectorAll(".readomi-translated-content-wrapper[data-readomi-translation-mode=\"translationOnly\"]")]
+    return translations.length === 5 && translations.every(el => getComputedStyle(el).color === "rgb(182, 83, 62)")
+  })
+  assert.equal(service.completions().length, requests, "switching modes keeps the translated text and its theme color")
   await page.getByRole("radio", { name: "Plum", exact: true }).click()
+  await article.emulateMedia({ colorScheme: "dark" })
+  await article.waitForFunction(() => [...document.querySelectorAll(".readomi-translated-content-wrapper[data-readomi-translation-mode=\"translationOnly\"]")].every(el => getComputedStyle(el).color === "rgb(199, 165, 190)"))
   await page.emulateMedia({ colorScheme: "dark" })
   await page.waitForFunction(() => getComputedStyle(document.documentElement).getPropertyValue("--rf-primary").trim() === "#C7A5BE")
   assert.equal(await page.locator("#appearance").evaluate(el => el.scrollWidth <= el.clientWidth), true)

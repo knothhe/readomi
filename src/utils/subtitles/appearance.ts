@@ -49,6 +49,15 @@ export function clampSubtitlePosition(position: SubtitlePosition, video: { width
   }
 }
 
+/** Keep the stored bottom preset compatible, but anchor it to pixels rather than 88% of the video. */
+export function resolveSubtitlePosition(position: SubtitlePosition, video: { width: number, height: number }, caption: { width: number, height: number }, controlsTop?: number): SubtitlePosition {
+  if (video.height > 0 && subtitlePositionName(position) === "bottom") {
+    const edge = Math.min(video.height, controlsTop ?? video.height)
+    position = { x: position.x, y: (edge - 12) / video.height * 100 }
+  }
+  return clampSubtitlePosition(position, video, caption)
+}
+
 let writeQueue = Promise.resolve()
 /** One storage write at the end of a drag, merging with the latest configuration. */
 export function saveSubtitleStyle(patch: Partial<SubtitleStyle>): Promise<void> {

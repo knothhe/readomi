@@ -61,7 +61,7 @@ export function AppearanceSection() {
             <strong>Readomi</strong>
           </div>
           <p className="font-serif text-[15px]">Reading and experience train your model of the world.</p>
-          <p className="border-l-2 border-brand pl-3" lang="zh">阅读和经历训练的是你对世界的模型。</p>
+          <p className="border-l-2 border-brand pl-3 text-brand" lang="zh">阅读和经历训练的是你对世界的模型。</p>
           <div className="flex h-10 items-center justify-center rounded-lg bg-primary font-semibold text-primary-foreground">{i18n.t("popup.translate")}</div>
         </div>
       </SettingsGroup>

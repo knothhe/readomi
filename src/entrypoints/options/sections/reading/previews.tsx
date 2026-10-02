@@ -46,8 +46,8 @@ export function TranslationPreview() {
               </span>
             </>
           )
-        // Translation only puts the translation in place of the original, without a translation style.
-        : <p className="m-0" lang="zh">{TRANSLATION}</p>}
+        // Translation only keeps the text color without the bilingual decoration.
+        : <p className="m-0 text-brand" lang="zh">{TRANSLATION}</p>}
     </SettingsPreview>
   )
 }

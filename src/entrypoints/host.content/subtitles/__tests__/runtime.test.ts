@@ -43,6 +43,35 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("follows the visible progress bar above the controls, preserves the preset and ignores hidden controls", async () => {
+    const player = document.createElement("div")
+    player.className = "html5-video-player"
+    player.innerHTML = "<div class=\"ytp-chrome-bottom\"><div class=\"ytp-progress-bar-container\"></div></div>"
+    document.body.append(player)
+    player.append(video)
+    const controls = player.querySelector<HTMLElement>(".ytp-chrome-bottom")!
+    const progress = player.querySelector<HTMLElement>(".ytp-progress-bar-container")!
+    vi.spyOn(controls, "getBoundingClientRect").mockReturnValue({ width: 640, height: 40, top: 320 } as DOMRect)
+    vi.spyOn(progress, "getBoundingClientRect").mockReturnValue({ width: 640, height: 4, top: 316 } as DOMRect)
+    controls.style.opacity = "0"
+    update(config)
+    await vi.advanceTimersByTimeAsync(750)
+    const host = document.querySelector<HTMLElement>("[data-readomi-subtitles]")!
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(348)
+    controls.style.opacity = "1"
+    await vi.advanceTimersByTimeAsync(250)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(304)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
+    expect(config.features.subtitleStyle.position).toEqual({ x: 50, y: 88 })
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+    controls.style.visibility = "hidden"
+    await vi.advanceTimersByTimeAsync(250)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(348)
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, position: { x: 60, y: 65 } } } })
+    controls.style.visibility = "visible"
+    await vi.advanceTimersByTimeAsync(250)
+    expect(Number.parseFloat(host.style.top)).toBeCloseTo(234)
+  })
   it("toggles subtitles for this page, restores native captions and ignores typing", () => {
     const configured = { ...config, features: { ...config.features, subtitlesShortcut: "Alt+V" } }
     update(configured)

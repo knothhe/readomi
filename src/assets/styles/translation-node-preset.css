@@ -9,7 +9,7 @@
 .readomi-translated-block-content {
   display: inline-block;
   margin: 8px 0 !important;
-  color: inherit;
+  color: var(--readomi-brand-strong);
   font-family: inherit;
 }
 
@@ -27,9 +27,14 @@
 
 .readomi-translated-inline-content {
   display: inline;
-  color: inherit;
+  color: var(--readomi-brand-strong);
   font-family: inherit;
   text-decoration: inherit;
+}
+
+/* Replacement translations keep the page layout, with the same theme color as bilingual text. */
+.readomi-translated-content-wrapper[data-readomi-translation-mode="translationOnly"] {
+  color: var(--readomi-brand-strong);
 }
 
 /* Simplified Chinese - macOS > Windows > Cross-platform > Fallback */

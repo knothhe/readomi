@@ -40,6 +40,8 @@ it("page translation preserves display contents grid columns in bilingual, trans
       assert.ok(current.wrappers.length > 0, "the metadata was translated")
       assert.ok(current.wrappers.every(parent => parent === "key" || parent === "value"), `translation escaped a grid cell: ${current.wrappers}`)
       assert.equal(await article.locator("time").textContent(), date, "the date remains untouched")
+      const colors = await article.locator(".readomi-translated-inline-content, .readomi-translated-block-content, .readomi-translated-content-wrapper[data-readomi-translation-mode=translationOnly]").evaluateAll(elements => elements.map(el => getComputedStyle(el).color))
+      assert.ok(colors.length > 0 && colors.every(color => color === "rgb(182, 83, 62)"), "block, inline and replacement translations use the theme color")
     }
     await pressTranslateShortcut(article)
     await article.waitForFunction(() => document.querySelector(".prose h2").textContent.includes("【译】"))

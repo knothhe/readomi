@@ -5,7 +5,7 @@ import { SegmentedControl } from "@/components/segmented-control"
 import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { cn } from "@/utils/styles/utils"
-import { clampSubtitlePosition, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 
 export function SubtitleStyleEditor() {
@@ -18,7 +18,7 @@ export function SubtitleStyleEditor() {
     const place = () => {
       if (!previewRef.current || !captionRef.current)
         return
-      const next = clampSubtitlePosition(style.position, previewRef.current.getBoundingClientRect(), captionRef.current.getBoundingClientRect())
+      const next = resolveSubtitlePosition(style.position, previewRef.current.getBoundingClientRect(), captionRef.current.getBoundingClientRect())
       captionRef.current.style.left = `${next.x}%`
       captionRef.current.style.top = `${next.y}%`
     }
