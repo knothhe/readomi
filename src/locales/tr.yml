@@ -136,13 +136,12 @@ options:
     title: Çeviri kalitesi
     help: "Yardım"
     web: "Web çevirisi"
-    webDescription: "Sayfa başlığı otomatik eklenir."
-    videoDescription: "Video altyazıları web bağlamını veya tüm video özetini kullanmaz."
     shared: "Web ve video altyazıları için ortak"
     context:
       title: "Sayfa özetini kullan"
-      description: "Çıkarılan metnin ilk 2.000 karakterini özetleyerek paragraf çevirisine yardımcı olur."
-      note: "Özet oluşturmak bir ek model isteği gerektirir."
+      description: "Her paragrafı çevirirken konuyu anlamaya yardımcı olmak için yazının özetine başvurur."
+      note: "Özet, metnin ilk 2.000 karakterini kullanır; ilk kez oluşturulması çeviri hizmetine ek bir istek gerektirir."
+      purpose: "Paragraf çevirilerinde yazının konusunu dikkate alır."
     prompt:
       title: "Çeviri istemi"
       default: Varsayılan
@@ -150,16 +149,22 @@ options:
       edit: Düzenle
       system: Sistem promptu
       template: Prompt şablonu
-      tokens: "Çevrilecek metin (gerekli): {{input}}. Hedef dil: {{targetLanguage}}."
-      missingInput: Şablonda {{input}} yok.
+      tokens: "{{input}} çevrilecek metindir ve korunmalıdır.\n{{targetLanguage}} seçtiğiniz hedef dildir."
+      missingInput: "Çevrilecek metni eklemek için şablonda {{input}} alanını koruyun."
       restore: Varsayılana döndür
       cancel: İptal
       apply: Uygula
-      description: "Çeviri kuralları ve üslubu."
-      background: "Sayfa başlığı ve etkin özetler otomatik eklenir."
-      systemDescription: "Tonu, terimleri ve çıktı biçimini belirleyin."
-      webTokens: "İsteğe bağlı web değişkenleri: {{webTitle}} başlık, {{webDescription}} açıklama, {{webContent}} metin (en fazla 2.000 karakter), {{webSummary}} özet (yukarıdaki anahtar açık olmalıdır)."
-      emptyContext: "Yalnızca web. Bağlamı olmayan satırlar atlanır; bağlamı ayrı satırlara yazın."
+      description: "Web sayfaları ve altyazılar için kullanılacak tonu, terimleri ve anlatımı belirleyin."
+      background: "Web çevirisi başlığı ve etkin özeti kullanır; altyazı çevirisine yalnızca çevrilecek altyazı metni iletilir."
+      systemDescription: "Modele nasıl çevireceğini söyleyin; örneğin “doğal konuşma dili kullan” veya “teknik terimleri koru”."
+      purpose: "Çevirinin tonunu ve sözcüklerini ayarlayın."
+      variables:
+        title: "Kullanılabilir sayfa bilgileri"
+        pageTitle: "Sayfa başlığı"
+        description: "Sayfa açıklaması"
+        content: "Metnin ilk 2.000 karakteri"
+        summary: "Sayfa özeti (özetler etkin olmalı)"
+        note: "Başlık ve etkin özetler otomatik sağlanır; tekrar yazmanız gerekmez. Diğer sayfa bilgilerini değişkenlerle ayrı satırlara ekleyin; altyazı çevirisi değeri olmayan satırları atlar."
   shortcut:
     title: Kısayol
     togglePage: Bu sayfayı çevir / Orijinali göster

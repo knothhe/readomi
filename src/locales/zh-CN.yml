@@ -136,13 +136,12 @@ options:
     title: 译文质量
     help: "帮助"
     web: "网页翻译"
-    webDescription: "网页标题自动附加。"
-    videoDescription: "视频字幕不使用网页背景或视频摘要。"
     shared: "网页与视频字幕共用"
     context:
       title: "使用网页摘要"
-      description: "先将提取的正文前 2,000 个字符概括为摘要，再辅助段落翻译。"
-      note: "生成摘要会增加一次模型请求。"
+      description: "先参考文章摘要，再翻译每个段落，帮助理解文章主题。"
+      note: "摘要取自正文前 2,000 个字符；首次生成需要额外请求翻译服务。"
+      purpose: "让段落翻译参考文章主题。"
     prompt:
       title: "翻译提示词"
       default: 默认
@@ -150,16 +149,22 @@ options:
       edit: 修改
       system: 系统提示词
       template: 提示词模板
-      tokens: "{{input}} 为待翻译文字（必填），{{targetLanguage}} 为目标语言。"
-      missingInput: 模板里缺少 {{input}}。
+      tokens: "{{input}} 是本次要翻译的文字，必须保留。\n{{targetLanguage}} 是你选择的目标语言。"
+      missingInput: "请在模板中保留 {{input}}，用于放入待翻译文字。"
       restore: 恢复默认
       cancel: 取消
       apply: 应用
-      description: "控制翻译规则和风格。"
-      background: "网页标题及启用的摘要自动附加。"
-      systemDescription: "设置语气、术语和输出格式。"
-      webTokens: "可选网页变量：{{webTitle}} 标题、{{webDescription}} 描述、{{webContent}} 正文（最多 2,000 个字符）、{{webSummary}} 摘要（需开启上方开关）。"
-      emptyContext: "仅网页可用；缺少值时省略背景行，请将背景信息单独成行。"
+      description: "设置译文的语气、术语和表达方式，网页与字幕都会使用。"
+      background: "网页翻译会参考标题和开启后的摘要；字幕翻译只提供待翻译的字幕文字。"
+      systemDescription: "告诉模型怎么翻译，例如“用自然口语”“保留专业术语”。"
+      purpose: "调整译文的语气和用词。"
+      variables:
+        title: "可用的网页信息"
+        pageTitle: "网页标题"
+        description: "网页描述"
+        content: "正文前 2,000 个字符"
+        summary: "网页摘要（需开启摘要）"
+        note: "标题和开启后的摘要会自动提供，无需重复填写。其他网页信息可用变量加入模板，请单独写成一行；字幕翻译会省略没有值的行。"
   shortcut:
     title: 快捷键
     togglePage: 翻译此页 / 显示原文

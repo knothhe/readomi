@@ -136,13 +136,12 @@ options:
     title: 번역 품질
     help: "도움말"
     web: "웹 번역"
-    webDescription: "페이지 제목은 자동으로 추가됩니다."
-    videoDescription: "동영상 자막은 웹 배경이나 전체 동영상 요약을 사용하지 않습니다."
     shared: "웹과 동영상 자막 공통"
     context:
       title: "페이지 요약 사용"
-      description: "추출한 본문의 처음 2,000자를 요약하여 문단 번역에 활용합니다."
-      note: "요약 생성 시 모델 요청이 한 번 추가됩니다."
+      description: "각 문단을 번역하기 전에 글의 요약을 참고하여 주제를 이해하도록 돕습니다."
+      note: "요약은 본문의 처음 2,000자를 사용합니다. 처음 생성할 때 번역 서비스에 추가 요청이 필요합니다."
+      purpose: "문단 번역에 글의 주제를 참고합니다."
     prompt:
       title: "번역 프롬프트"
       default: 기본
@@ -150,16 +149,22 @@ options:
       edit: 수정
       system: 시스템 프롬프트
       template: 프롬프트 템플릿
-      tokens: "번역할 텍스트(필수): {{input}}. 대상 언어: {{targetLanguage}}."
-      missingInput: 템플릿에 {{input}}이 없습니다.
+      tokens: "{{input}}은 번역할 텍스트이므로 반드시 유지해야 합니다.\n{{targetLanguage}}는 선택한 대상 언어입니다."
+      missingInput: "번역할 텍스트를 넣을 수 있도록 템플릿에 {{input}}을 유지하세요."
       restore: 기본값으로 되돌리기
       cancel: 취소
       apply: 적용
-      description: "번역 규칙과 표현 방식을 설정합니다."
-      background: "페이지 제목과 활성화된 요약은 자동으로 추가됩니다."
-      systemDescription: "어조, 용어, 출력 형식을 설정합니다."
-      webTokens: "선택적 웹 변수: {{webTitle}} 제목, {{webDescription}} 설명, {{webContent}} 본문(최대 2,000자), {{webSummary}} 요약(위 스위치를 켜야 함)."
-      emptyContext: "웹에서만 사용합니다. 배경 정보가 없는 줄은 생략되므로 배경 정보를 별도 줄에 작성하세요."
+      description: "웹과 자막 모두에 사용할 어조, 용어, 표현 방식을 설정합니다."
+      background: "웹 번역은 제목과 활성화된 요약을 참고하며, 자막 번역에는 번역할 자막 텍스트만 제공됩니다."
+      systemDescription: "“자연스러운 구어체 사용”, “전문 용어 유지”처럼 번역 방식을 모델에 알려줍니다."
+      purpose: "번역문의 어조와 표현을 조정합니다."
+      variables:
+        title: "사용 가능한 페이지 정보"
+        pageTitle: "페이지 제목"
+        description: "페이지 설명"
+        content: "본문의 처음 2,000자"
+        summary: "페이지 요약(요약 활성화 필요)"
+        note: "제목과 활성화된 요약은 자동으로 제공되므로 반복해서 작성할 필요가 없습니다. 다른 페이지 정보는 변수를 사용해 별도 줄에 넣으세요. 자막 번역에서는 값이 없는 줄을 생략합니다."
   shortcut:
     title: 단축키
     togglePage: 이 페이지 번역 / 원문 보기

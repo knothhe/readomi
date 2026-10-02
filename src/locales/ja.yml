@@ -136,13 +136,12 @@ options:
     title: 翻訳の品質
     help: "ヘルプ"
     web: "ウェブ翻訳"
-    webDescription: "ページのタイトルは自動で追加されます。"
-    videoDescription: "動画字幕にはウェブの背景情報や動画全体の要約を使用しません。"
     shared: "ウェブと動画字幕で共通"
     context:
       title: "ページの要約を使用"
-      description: "抽出した本文の先頭 2,000 文字を要約し、段落の翻訳に使用します。"
-      note: "要約の生成にはモデルへの追加リクエストが必要です。"
+      description: "各段落を翻訳する前に記事の要約を参照し、テーマを理解する手がかりにします。"
+      note: "要約には本文の先頭 2,000 文字を使います。初回の生成には翻訳サービスへの追加リクエストが必要です。"
+      purpose: "段落の翻訳に記事のテーマを活用します。"
     prompt:
       title: "翻訳プロンプト"
       default: デフォルト
@@ -150,16 +149,22 @@ options:
       edit: 編集
       system: システムプロンプト
       template: プロンプトテンプレート
-      tokens: "翻訳するテキスト（必須）：{{input}}。翻訳先の言語：{{targetLanguage}}。"
-      missingInput: テンプレートに {{input}} がありません。
+      tokens: "{{input}} は翻訳するテキストなので、必ず残してください。\n{{targetLanguage}} は選択した翻訳先の言語です。"
+      missingInput: "翻訳するテキストを挿入するため、テンプレートに {{input}} を残してください。"
       restore: デフォルトに戻す
       cancel: キャンセル
       apply: 適用
-      description: "翻訳ルールと表現を設定します。"
-      background: "ページのタイトルと有効な要約は自動で追加されます。"
-      systemDescription: "語調、用語、出力形式を設定します。"
-      webTokens: "任意のウェブ変数：{{webTitle}} タイトル、{{webDescription}} 説明、{{webContent}} 本文（最大 2,000 文字）、{{webSummary}} 要約（上のスイッチを有効にする必要があります）。"
-      emptyContext: "ウェブのみ。背景情報がない行は省略されるため、背景情報は別の行に書いてください。"
+      description: "ウェブと字幕の両方で使う語調、用語、表現を設定します。"
+      background: "ウェブ翻訳ではタイトルと有効な要約を参照します。字幕翻訳では翻訳する字幕のテキストのみを渡します。"
+      systemDescription: "「自然な話し言葉にする」「専門用語を残す」など、翻訳の仕方をモデルに伝えます。"
+      purpose: "訳文の語調や言葉遣いを調整します。"
+      variables:
+        title: "利用できるページ情報"
+        pageTitle: "ページのタイトル"
+        description: "ページの説明"
+        content: "本文の先頭 2,000 文字"
+        summary: "ページの要約（要約を有効にする必要があります）"
+        note: "タイトルと有効な要約は自動で渡されるため、重ねて書く必要はありません。ほかのページ情報は変数を使い、別の行に書いてください。字幕翻訳では値がない行を省略します。"
   shortcut:
     title: ショートカット
     togglePage: このページを翻訳 / 原文を表示

@@ -136,13 +136,12 @@ options:
     title: Translation quality
     help: "Help"
     web: "Web translation"
-    webDescription: "Page titles are added automatically."
-    videoDescription: "Video subtitles use no webpage context or full-video summary."
     shared: "Shared by web and video subtitles"
     context:
       title: "Use page summary"
-      description: "Summarize the first 2,000 characters of extracted page text to help translate paragraphs."
-      note: "Generating a summary adds one model request."
+      description: "Refer to an article summary when translating each paragraph to help understand its topic."
+      note: "The summary uses the first 2,000 characters of page text; generating it for the first time requires an extra request to your translation service."
+      purpose: "Let paragraph translations use the article topic."
     prompt:
       title: "Translation prompt"
       default: Default
@@ -150,16 +149,22 @@ options:
       edit: Edit
       system: System prompt
       template: Prompt template
-      tokens: "Text to translate (required): {{input}}. Target language: {{targetLanguage}}."
-      missingInput: The template is missing {{input}}.
+      tokens: "{{input}} is the text to translate and must be kept.\n{{targetLanguage}} is your selected target language."
+      missingInput: "Keep {{input}} in the template to insert the text to translate."
       restore: Restore default
       cancel: Cancel
       apply: Apply
-      description: "Translation rules and style."
-      background: "Page titles and enabled summaries are added automatically."
-      systemDescription: "Set tone, terminology and output format."
-      webTokens: "Optional web variables: {{webTitle}} title, {{webDescription}} description, {{webContent}} text (up to 2,000 characters), {{webSummary}} summary (requires the switch above)."
-      emptyContext: "Web only. Unavailable background lines are omitted; write background on separate lines."
+      description: "Set the tone, terminology and wording used for both webpages and subtitles."
+      background: "Web translation uses the title and enabled summary; subtitle translation provides only the subtitle text to translate."
+      systemDescription: "Tell the model how to translate, such as “use natural speech” or “keep technical terms”."
+      purpose: "Adjust the tone and wording of translations."
+      variables:
+        title: "Available page information"
+        pageTitle: "Page title"
+        description: "Page description"
+        content: "First 2,000 characters of page text"
+        summary: "Page summary (requires summaries enabled)"
+        note: "Titles and enabled summaries are provided automatically; no need to repeat them. Insert other page information with variables on separate lines; subtitle translation omits lines with unavailable values."
   shortcut:
     title: Shortcut
     togglePage: Translate this page / Show original

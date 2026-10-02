@@ -136,13 +136,12 @@ options:
     title: Calidad de la traducción
     help: "Ayuda"
     web: "Traducción web"
-    webDescription: "El título de la página se añade automáticamente."
-    videoDescription: "Los subtítulos no usan contexto web ni resumen del vídeo completo."
     shared: "Compartido por web y subtítulos"
     context:
       title: "Usar resumen de la página"
-      description: "Resume los primeros 2.000 caracteres del texto extraído para ayudar a traducir los párrafos."
-      note: "Generar un resumen añade una solicitud al modelo."
+      description: "Consulta un resumen del artículo al traducir cada párrafo para ayudar a entender su tema."
+      note: "El resumen usa los primeros 2.000 caracteres del texto; generarlo por primera vez requiere una solicitud adicional al servicio de traducción."
+      purpose: "Permite que los párrafos tengan en cuenta el tema del artículo."
     prompt:
       title: "Prompt de traducción"
       default: Predeterminado
@@ -150,16 +149,22 @@ options:
       edit: Editar
       system: Prompt del sistema
       template: Plantilla del prompt
-      tokens: "Texto a traducir (obligatorio): {{input}}. Idioma de destino: {{targetLanguage}}."
-      missingInput: A la plantilla le falta {{input}}.
+      tokens: "{{input}} es el texto que se traducirá y debe conservarse.\n{{targetLanguage}} es el idioma de destino elegido."
+      missingInput: "Conserva {{input}} en la plantilla para insertar el texto que se traducirá."
       restore: Restablecer el predeterminado
       cancel: Cancelar
       apply: Aplicar
-      description: "Reglas y estilo de traducción."
-      background: "El título y los resúmenes activados se añaden automáticamente."
-      systemDescription: "Define el tono, la terminología y el formato de salida."
-      webTokens: "Variables web opcionales: {{webTitle}} título, {{webDescription}} descripción, {{webContent}} texto (hasta 2.000 caracteres), {{webSummary}} resumen (requiere activar el interruptor anterior)."
-      emptyContext: "Solo web. Se omiten las líneas sin contexto; escribe el contexto en líneas separadas."
+      description: "Define el tono, la terminología y la expresión tanto para páginas web como para subtítulos."
+      background: "La traducción web usa el título y el resumen activado; los subtítulos solo envían el texto que se traducirá."
+      systemDescription: "Indica al modelo cómo traducir, por ejemplo, “usar lenguaje natural” o “conservar términos técnicos”."
+      purpose: "Ajusta el tono y las palabras de la traducción."
+      variables:
+        title: "Información disponible de la página"
+        pageTitle: "Título de la página"
+        description: "Descripción de la página"
+        content: "Primeros 2.000 caracteres del texto"
+        summary: "Resumen de la página (requiere activar resúmenes)"
+        note: "El título y los resúmenes activados se incluyen automáticamente; no hace falta repetirlos. Inserta otra información con variables en líneas separadas; en los subtítulos se omiten las líneas sin valores disponibles."
   shortcut:
     title: Atajo
     togglePage: Traducir esta página / Mostrar original

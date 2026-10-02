@@ -1,11 +1,11 @@
 import type { Config } from "@/types/config/config"
 import { useAtom } from "jotai"
-import { useId, useState } from "react"
+import { Fragment, useId, useState } from "react"
 import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { DEFAULT_TRANSLATE_PROMPT, DEFAULT_TRANSLATE_SYSTEM_PROMPT, getTokenCellText, INPUT } from "@/utils/constants/prompt"
+import { DEFAULT_TRANSLATE_PROMPT, DEFAULT_TRANSLATE_SYSTEM_PROMPT, getTokenCellText, INPUT, WEB_CONTENT, WEB_DESCRIPTION, WEB_SUMMARY, WEB_TITLE } from "@/utils/constants/prompt"
 import { deepMerge } from "@/utils/object"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
 import { QualityHelp } from "./help"
@@ -45,10 +45,11 @@ export function QualitySection() {
         <SettingsGroup caption={i18n.t("options.quality.web")}>
           <SettingsRow
             label={i18n.t("options.quality.context.title")}
+            description={i18n.t("options.quality.context.purpose")}
             labelAddon={(
               <QualityHelp
                 label={i18n.t("options.quality.context.title")}
-                text={[i18n.t("options.quality.webDescription"), i18n.t("options.quality.context.description"), i18n.t("options.quality.context.note")].join("\n")}
+                text={[i18n.t("options.quality.context.description"), i18n.t("options.quality.context.note")].join("\n")}
               />
             )}
             htmlFor={contextSwitchId}
@@ -84,6 +85,7 @@ export function QualitySection() {
                       </span>
                       <PromptHelp />
                     </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.purpose")}</p>
                   </div>
                   <Button variant="outline" className="px-3.5 text-[13px] font-normal" onClick={() => setEditing(true)}>
                     {i18n.t("options.quality.prompt.edit")}
@@ -97,7 +99,30 @@ export function QualitySection() {
 }
 
 function PromptHelp() {
-  return <QualityHelp label={i18n.t("options.quality.prompt.title")} text={[i18n.t("options.quality.prompt.description"), i18n.t("options.quality.prompt.background"), i18n.t("options.quality.videoDescription")].join("\n")} />
+  return <QualityHelp label={i18n.t("options.quality.prompt.title")} text={[i18n.t("options.quality.prompt.description"), i18n.t("options.quality.prompt.background")].join("\n")} />
+}
+
+function WebVariablesHelp() {
+  const variables = [
+    { token: WEB_TITLE, label: i18n.t("options.quality.prompt.variables.pageTitle") },
+    { token: WEB_DESCRIPTION, label: i18n.t("options.quality.prompt.variables.description") },
+    { token: WEB_CONTENT, label: i18n.t("options.quality.prompt.variables.content") },
+    { token: WEB_SUMMARY, label: i18n.t("options.quality.prompt.variables.summary") },
+  ]
+  return (
+    <details className="text-xs leading-relaxed text-muted-foreground">
+      <summary className="w-fit cursor-pointer">{i18n.t("options.quality.prompt.variables.title")}</summary>
+      <dl className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1.5 sm:grid-cols-2">
+        {variables.map(({ token, label }) => (
+          <Fragment key={token}>
+            <dt>{label}</dt>
+            <dd><code>{getTokenCellText(token)}</code></dd>
+          </Fragment>
+        ))}
+      </dl>
+      <p className="mt-2">{i18n.t("options.quality.prompt.variables.note")}</p>
+    </details>
+  )
 }
 
 function PromptTextarea({ label, help, value, rows, autoFocus, onChange }: { label: string, help: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
@@ -165,12 +190,13 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
       />
       <PromptTextarea
         label={i18n.t("options.quality.prompt.template")}
-        help={[i18n.t("options.quality.prompt.tokens"), i18n.t("options.quality.prompt.webTokens"), i18n.t("options.quality.prompt.emptyContext")].join("\n")}
+        help={i18n.t("options.quality.prompt.tokens")}
         value={texts.prompt}
         rows={4}
         onChange={prompt => setTexts(current => ({ ...current, prompt }))}
       />
       {missingInput && <p className="m-0 text-xs leading-[17px] text-destructive">{i18n.t("options.quality.prompt.missingInput")}</p>}
+      <WebVariablesHelp />
       <div className="flex items-center gap-2 pt-1">
         <div className="flex-1">
           <button
