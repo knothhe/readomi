@@ -49,23 +49,17 @@ describe("popup app", () => {
     cleanup()
   })
 
-  it("persists appearance independently of color and translation preferences and follows settings changes", async () => {
-    const config: Config = { ...configWithKey, appearance: { ...configWithKey.appearance, colorTheme: "teal" } }
+  it("follows appearance changes from settings without offering a popup appearance control", async () => {
+    const config: Config = { ...configWithKey, appearance: { colorTheme: "teal", mode: "dark" } }
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
     renderPopup({ config })
-    const choices = within(screen.getByRole("group", { name: "appearanceMode.title" }))
-    expect(choices.getByRole("button", { name: "appearanceMode.system" })).toHaveAttribute("aria-pressed", "true")
-    fireEvent.click(choices.getByRole("button", { name: "appearanceMode.dark" }))
-    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.appearance).toEqual({ colorTheme: "teal", mode: "dark" }))
+    expect(screen.queryByRole("group", { name: "appearanceMode.title" })).toBeNull()
     expect(document.documentElement).toHaveClass("dark")
-    expect(document.documentElement.style.colorScheme).toBe("dark")
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, { ...config, appearance: { ...config.appearance, mode: "light" } })
+    await waitFor(() => expect(document.documentElement).toHaveClass("light"))
     expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.translate).toEqual(config.translate)
-    fireEvent.click(choices.getByRole("button", { name: "appearanceMode.light" }))
-    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.appearance.mode).toBe("light"))
-    expect(document.documentElement).toHaveClass("light")
-    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, { ...config, appearance: { ...config.appearance, mode: "dark" } })
-    await waitFor(() => expect(choices.getByRole("button", { name: "appearanceMode.dark" })).toHaveAttribute("aria-pressed", "true"))
-    expect(document.documentElement).toHaveClass("dark")
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+    await waitFor(() => expect(document.documentElement).toHaveClass("dark"))
   })
 
   it("points to the settings page instead of configuring anything while the service has no key", () => {

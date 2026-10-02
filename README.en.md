@@ -15,7 +15,7 @@ Readomi directly forks Jiandao, which forks Read Frog. Thanks to the authors and
 - **Built around reading:** page translation prioritizes visible paragraphs and preserves layout. Optional paragraph hover translation, existing video subtitle translation and bold English word starts.
 - **Your choice of model:** OpenAI, Anthropic, Gemini, DeepSeek, compatible APIs and local models. Requests go directly from your browser to your configured service.
 - **Flexible setup:** configure manually or use a coding agent to verify a service. Model discovery, configurable shortcuts, custom prompts and local configuration backups.
-- **A distinct identity:** Terra is the default theme. Choose Plum, Amber or Teal in Settings → Appearance; interface accents, translation markers and the toolbar icon change together. Choose Light, Dark or System in the popup or Settings; System is the default.
+- **A distinct identity:** Terra is the default theme. Choose Plum, Amber or Teal in Settings → Appearance; interface accents, translation markers and the toolbar icon change together. Choose Light, Dark or System in Settings → Appearance; System is the default.
 - **Local first:** no account, cloud sync or hosted translation service. Settings, keys and caches stay in the browser. See the [privacy policy](./PRIVACY.md).
 
 Video translation uses enabled YouTube captions or HTML5 subtitle tracks; it does not transcribe videos without captions. Hover and subtitle translation are off by default.
