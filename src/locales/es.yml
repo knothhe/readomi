@@ -134,15 +134,17 @@ options:
         allSaved: Todos los cambios guardados
   quality:
     title: Calidad de la traducción
+    help: "Ayuda"
+    videoShared: "Comparte el prompt con la traducción web"
     web: "Traducción web"
-    webDescription: "El título de la página se envía automáticamente al modelo; se omite si no está disponible."
+    webDescription: "El título de la página se añade automáticamente."
     video: "Traducción de subtítulos"
-    videoDescription: "Traduce los subtítulos actuales y próximos. No usa contexto web ni genera un resumen del vídeo completo."
+    videoDescription: "Traduce solo subtítulos, sin contexto web ni resumen del vídeo completo."
     shared: "Compartido por web y subtítulos"
     context:
       title: "Usar resumen de la página"
       description: "Resume los primeros 2.000 caracteres del texto extraído para ayudar a traducir los párrafos."
-      note: "Solo traducción web. Generar un resumen añade una solicitud al modelo; se reutilizan los resúmenes guardados y la traducción continúa si falla el resumen."
+      note: "Generar un resumen añade una solicitud al modelo."
     prompt:
       title: "Prompt de traducción"
       default: Predeterminado
@@ -150,18 +152,16 @@ options:
       edit: Editar
       system: Prompt del sistema
       template: Plantilla del prompt
-      tokens: "La plantilla debe contener {{input}}, que se sustituye por el texto a traducir; {{targetLanguage}} se sustituye por el idioma de destino."
+      tokens: "Texto a traducir (obligatorio): {{input}}. Idioma de destino: {{targetLanguage}}."
       missingInput: A la plantilla le falta {{input}}.
       restore: Restablecer el predeterminado
       cancel: Cancelar
       apply: Aplicar
-      description: "Define las reglas y el estilo. Los cambios se aplican tanto a la traducción web como a los subtítulos."
-      background: "Los títulos y los resúmenes activados se añaden automáticamente; no hace falta incluirlos en el prompt."
-      systemDescription: "Define reglas como el tono, la terminología y el formato de salida."
-      templateDescription: "Incluye el texto que se traducirá y el idioma de destino."
+      description: "Reglas y estilo de traducción."
+      background: "El título y los resúmenes activados se añaden automáticamente."
+      systemDescription: "Define el tono, la terminología y el formato de salida."
       webTokens: "Variables web opcionales: {{webTitle}} título, {{webDescription}} descripción, {{webContent}} texto (hasta 2.000 caracteres), {{webSummary}} resumen (requiere activar el interruptor anterior)."
-      emptyContext: "Las variables web no se aplican a los subtítulos. Se omiten las líneas con contexto no disponible; escribe el contexto y las reglas en líneas separadas."
-      applyDescription: "Aplicar guarda los cambios; Cancelar descarta la edición; Restaurar rellena el texto predeterminado, que se guarda al aplicar."
+      emptyContext: "Solo web. Se omiten las líneas sin contexto; escribe el contexto en líneas separadas."
   shortcut:
     title: Atajo
     togglePage: Traducir esta página / Mostrar original

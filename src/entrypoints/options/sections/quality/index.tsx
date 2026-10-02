@@ -7,8 +7,8 @@ import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { DEFAULT_TRANSLATE_PROMPT, DEFAULT_TRANSLATE_SYSTEM_PROMPT, getTokenCellText, INPUT } from "@/utils/constants/prompt"
 import { deepMerge } from "@/utils/object"
-import { cn } from "@/utils/styles/utils"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
+import { QualityHelp } from "./help"
 
 type PromptsConfig = Config["translate"]["customPromptsConfig"]
 
@@ -43,10 +43,14 @@ export function QualitySection() {
     <SettingsSection id="quality" title={i18n.t("options.quality.title")}>
       <div className="flex flex-col gap-6">
         <SettingsGroup caption={i18n.t("options.quality.web")}>
-          <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.webDescription")}</p>
           <SettingsRow
             label={i18n.t("options.quality.context.title")}
-            description={i18n.t("options.quality.context.description")}
+            labelAddon={(
+              <QualityHelp
+                label={i18n.t("options.quality.context.title")}
+                text={[i18n.t("options.quality.webDescription"), i18n.t("options.quality.context.description"), i18n.t("options.quality.context.note")].join("\n")}
+              />
+            )}
             htmlFor={contextSwitchId}
             control={(
               <Switch
@@ -55,12 +59,13 @@ export function QualitySection() {
                 onCheckedChange={checked => void setTranslateConfig(deepMerge(translateConfig, { enableAIContentAware: checked }))}
               />
             )}
-          >
-            <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.context.note")}</p>
-          </SettingsRow>
+          />
         </SettingsGroup>
         <SettingsGroup caption={i18n.t("options.quality.video")}>
-          <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.videoDescription")}</p>
+          <SettingsRow
+            label={i18n.t("options.quality.videoShared")}
+            labelAddon={<QualityHelp label={i18n.t("options.quality.videoShared")} text={i18n.t("options.quality.videoDescription")} />}
+          />
         </SettingsGroup>
         <SettingsGroup caption={i18n.t("options.quality.shared")}>
           {editing
@@ -83,30 +88,34 @@ export function QualitySection() {
                       <span className="text-[13px] text-muted-foreground">
                         {custom ? i18n.t("options.quality.prompt.custom") : i18n.t("options.quality.prompt.default")}
                       </span>
+                      <PromptHelp />
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.description")}</p>
                   </div>
                   <Button variant="outline" className="px-3.5 text-[13px] font-normal" onClick={() => setEditing(true)}>
                     {i18n.t("options.quality.prompt.edit")}
                   </Button>
                 </div>
               )}
-          {!editing && <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.background")}</p>}
         </SettingsGroup>
       </div>
     </SettingsSection>
   )
 }
 
-function PromptTextarea({ label, description, value, rows, autoFocus, onChange }: { label: string, description: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
-  const descriptionId = useId()
+function PromptHelp() {
+  return <QualityHelp label={i18n.t("options.quality.prompt.title")} text={[i18n.t("options.quality.prompt.description"), i18n.t("options.quality.prompt.background")].join("\n")} />
+}
+
+function PromptTextarea({ label, help, value, rows, autoFocus, onChange }: { label: string, help: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
+  const id = useId()
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span id={descriptionId} className="text-xs leading-relaxed text-muted-foreground">{description}</span>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-1.5">
+        <label htmlFor={id} className="text-xs text-muted-foreground">{label}</label>
+        <QualityHelp label={label} text={help} />
+      </div>
       <textarea
-        aria-label={label}
-        aria-describedby={descriptionId}
+        id={id}
         value={value}
         spellCheck={false}
         autoFocus={autoFocus}
@@ -114,7 +123,7 @@ function PromptTextarea({ label, description, value, rows, autoFocus, onChange }
         onChange={event => onChange(event.target.value)}
         className="w-full resize-y rounded-lg border border-input bg-card px-3 py-[11px] font-mono text-xs leading-[18px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
       />
-    </label>
+    </div>
   )
 }
 
@@ -150,12 +159,11 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
         <span className="text-[13px] text-muted-foreground">
           {willBeCustom === isCustom ? label(isCustom) : `${label(isCustom)} → ${label(willBeCustom)}`}
         </span>
+        <PromptHelp />
       </div>
-      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.description")}</p>
-      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.background")}</p>
       <PromptTextarea
         label={i18n.t("options.quality.prompt.system")}
-        description={i18n.t("options.quality.prompt.systemDescription")}
+        help={i18n.t("options.quality.prompt.systemDescription")}
         value={texts.systemPrompt}
         rows={14}
         autoFocus
@@ -163,17 +171,12 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
       />
       <PromptTextarea
         label={i18n.t("options.quality.prompt.template")}
-        description={i18n.t("options.quality.prompt.templateDescription")}
+        help={[i18n.t("options.quality.prompt.tokens"), i18n.t("options.quality.prompt.webTokens"), i18n.t("options.quality.prompt.emptyContext")].join("\n")}
         value={texts.prompt}
         rows={4}
         onChange={prompt => setTexts(current => ({ ...current, prompt }))}
       />
-      <p className={cn("m-0 text-xs leading-[17px]", missingInput ? "text-destructive" : "text-muted-foreground")}>
-        {missingInput ? i18n.t("options.quality.prompt.missingInput") : i18n.t("options.quality.prompt.tokens")}
-      </p>
-      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.webTokens")}</p>
-      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.emptyContext")}</p>
-      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.applyDescription")}</p>
+      {missingInput && <p className="m-0 text-xs leading-[17px] text-destructive">{i18n.t("options.quality.prompt.missingInput")}</p>}
       <div className="flex items-center gap-2 pt-1">
         <div className="flex-1">
           <button

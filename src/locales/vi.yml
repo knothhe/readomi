@@ -134,15 +134,17 @@ options:
         allSaved: Đã lưu mọi thay đổi
   quality:
     title: Chất lượng bản dịch
+    help: "Trợ giúp"
+    videoShared: "Dùng chung lời nhắc với dịch trang web"
     web: "Dịch trang web"
-    webDescription: "Tiêu đề trang được tự động gửi cho mô hình dịch; bỏ qua nếu không có."
+    webDescription: "Tiêu đề trang được tự động thêm."
     video: "Dịch phụ đề video"
-    videoDescription: "Dịch phụ đề hiện tại và sắp phát. Không dùng ngữ cảnh trang web và không tạo bản tóm tắt toàn bộ video."
+    videoDescription: "Chỉ dịch phụ đề, không dùng ngữ cảnh web hay bản tóm tắt toàn bộ video."
     shared: "Dùng chung cho trang web và phụ đề"
     context:
       title: "Dùng bản tóm tắt trang"
       description: "Tóm tắt 2.000 ký tự đầu của nội dung đã trích xuất để hỗ trợ dịch từng đoạn."
-      note: "Chỉ áp dụng cho trang web. Tạo bản tóm tắt cần thêm một yêu cầu đến mô hình; bản đã lưu được dùng lại và quá trình dịch vẫn tiếp tục nếu tóm tắt thất bại."
+      note: "Tạo bản tóm tắt cần thêm một yêu cầu đến mô hình."
     prompt:
       title: "Lời nhắc dịch"
       default: Mặc định
@@ -150,18 +152,16 @@ options:
       edit: Sửa
       system: Prompt hệ thống
       template: Mẫu prompt
-      tokens: "Mẫu phải chứa {{input}}, được thay bằng văn bản cần dịch; {{targetLanguage}} được thay bằng ngôn ngữ đích."
+      tokens: "Văn bản cần dịch (bắt buộc): {{input}}. Ngôn ngữ đích: {{targetLanguage}}."
       missingInput: Mẫu thiếu {{input}}.
       restore: Khôi phục mặc định
       cancel: Hủy
       apply: Áp dụng
-      description: "Thiết lập quy tắc và phong cách dịch. Thay đổi áp dụng cho cả trang web và phụ đề video."
-      background: "Tiêu đề trang và bản tóm tắt đã bật được tự động thêm; không cần viết trong lời nhắc."
-      systemDescription: "Thiết lập quy tắc dịch như giọng điệu, thuật ngữ và định dạng đầu ra."
-      templateDescription: "Chèn văn bản cần dịch và ngôn ngữ đích."
+      description: "Quy tắc và phong cách dịch."
+      background: "Tiêu đề và bản tóm tắt đã bật được tự động thêm."
+      systemDescription: "Thiết lập giọng điệu, thuật ngữ và định dạng đầu ra."
       webTokens: "Biến trang web tùy chọn: {{webTitle}} tiêu đề, {{webDescription}} mô tả, {{webContent}} nội dung (tối đa 2.000 ký tự), {{webSummary}} tóm tắt (cần bật công tắc bên trên)."
-      emptyContext: "Biến trang web không áp dụng cho phụ đề video. Các dòng có ngữ cảnh không có sẵn sẽ được bỏ qua; hãy viết ngữ cảnh và quy tắc dịch trên các dòng riêng."
-      applyDescription: "Áp dụng lưu thay đổi; Hủy bỏ chỉnh sửa; Khôi phục mặc định điền nội dung mặc định và được lưu khi áp dụng."
+      emptyContext: "Chỉ cho web. Các dòng thiếu ngữ cảnh bị bỏ qua; hãy viết ngữ cảnh trên các dòng riêng."
   shortcut:
     title: Phím tắt
     togglePage: Dịch trang này / Hiển thị bản gốc

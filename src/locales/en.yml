@@ -134,15 +134,17 @@ options:
         allSaved: All changes saved
   quality:
     title: Translation quality
+    help: "Help"
+    videoShared: "Shares the web translation prompt"
     web: "Web translation"
-    webDescription: "The page title is automatically provided to the translation model; omitted when unavailable."
+    webDescription: "Page titles are added automatically."
     video: "Video subtitle translation"
-    videoDescription: "Translates current and upcoming subtitles. Uses no webpage context and generates no full-video summary."
+    videoDescription: "Translates subtitles without webpage context or a full-video summary."
     shared: "Shared by web and video subtitles"
     context:
       title: "Use page summary"
       description: "Summarize the first 2,000 characters of extracted page text to help translate paragraphs."
-      note: "Web translation only. Generating a summary adds one model request; cached summaries are reused, and translation continues if summarization fails."
+      note: "Generating a summary adds one model request."
     prompt:
       title: "Translation prompt"
       default: Default
@@ -150,18 +152,16 @@ options:
       edit: Edit
       system: System prompt
       template: Prompt template
-      tokens: "The template must contain {{input}}, replaced with the text to translate; {{targetLanguage}} is replaced with the target language."
+      tokens: "Text to translate (required): {{input}}. Target language: {{targetLanguage}}."
       missingInput: The template is missing {{input}}.
       restore: Restore default
       cancel: Cancel
       apply: Apply
-      description: "Controls translation rules and style. Changes apply to both web translation and video subtitles."
-      background: "Page titles and enabled summaries are added automatically; no need to include them in the prompt."
-      systemDescription: "Set translation rules, such as tone, terminology and output format."
-      templateDescription: "Insert the text to translate and the target language."
+      description: "Translation rules and style."
+      background: "Page titles and enabled summaries are added automatically."
+      systemDescription: "Set tone, terminology and output format."
       webTokens: "Optional web variables: {{webTitle}} title, {{webDescription}} description, {{webContent}} text (up to 2,000 characters), {{webSummary}} summary (requires the switch above)."
-      emptyContext: "Web variables do not apply to video subtitles. Lines containing unavailable background are omitted; put background and translation rules on separate lines."
-      applyDescription: "Apply saves changes; Cancel discards edits; Restore default fills in the built-in text, saved when you apply."
+      emptyContext: "Web only. Unavailable background lines are omitted; write background on separate lines."
   shortcut:
     title: Shortcut
     togglePage: Translate this page / Show original

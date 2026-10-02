@@ -134,15 +134,17 @@ options:
         allSaved: すべての変更が保存されました
   quality:
     title: 翻訳の品質
+    help: "ヘルプ"
+    videoShared: "ウェブと共通のプロンプトを使用"
     web: "ウェブ翻訳"
-    webDescription: "ページのタイトルは翻訳モデルに自動で渡されます。ない場合は省略されます。"
+    webDescription: "ページのタイトルは自動で追加されます。"
     video: "動画字幕の翻訳"
-    videoDescription: "現在および次の字幕を翻訳します。ウェブページの背景情報は使用せず、動画全体の要約も生成しません。"
+    videoDescription: "字幕のみ翻訳し、ウェブの背景情報や動画全体の要約は使用しません。"
     shared: "ウェブと動画字幕で共通"
     context:
       title: "ページの要約を使用"
       description: "抽出した本文の先頭 2,000 文字を要約し、段落の翻訳に使用します。"
-      note: "ウェブ翻訳のみ。要約の生成には追加のモデルリクエストが必要です。保存済みの要約は再利用し、生成に失敗しても翻訳は続行します。"
+      note: "要約の生成にはモデルへの追加リクエストが必要です。"
     prompt:
       title: "翻訳プロンプト"
       default: デフォルト
@@ -150,18 +152,16 @@ options:
       edit: 編集
       system: システムプロンプト
       template: プロンプトテンプレート
-      tokens: "テンプレートには {{input}} が必要で、翻訳するテキストに置き換わります。{{targetLanguage}} は翻訳先の言語に置き換わります。"
+      tokens: "翻訳するテキスト（必須）：{{input}}。翻訳先の言語：{{targetLanguage}}。"
       missingInput: テンプレートに {{input}} がありません。
       restore: デフォルトに戻す
       cancel: キャンセル
       apply: 適用
-      description: "翻訳ルールと表現を設定します。変更はウェブ翻訳と動画字幕の両方に適用されます。"
-      background: "ページのタイトルと有効な要約は自動で追加されるため、プロンプトに書く必要はありません。"
-      systemDescription: "語調、用語、出力形式などの翻訳ルールを設定します。"
-      templateDescription: "翻訳するテキストと翻訳先の言語を指定します。"
+      description: "翻訳ルールと表現を設定します。"
+      background: "ページのタイトルと有効な要約は自動で追加されます。"
+      systemDescription: "語調、用語、出力形式を設定します。"
       webTokens: "任意のウェブ変数：{{webTitle}} タイトル、{{webDescription}} 説明、{{webContent}} 本文（最大 2,000 文字）、{{webSummary}} 要約（上のスイッチを有効にする必要があります）。"
-      emptyContext: "ウェブ変数は動画字幕には適用されません。背景情報がない行は省略されます。背景情報と翻訳ルールは別の行に書いてください。"
-      applyDescription: "適用で保存、キャンセルで編集を破棄します。デフォルトに戻すと標準の内容が入り、適用後に保存されます。"
+      emptyContext: "ウェブのみ。背景情報がない行は省略されるため、背景情報は別の行に書いてください。"
   shortcut:
     title: ショートカット
     togglePage: このページを翻訳 / 原文を表示

@@ -42,8 +42,10 @@ export function SettingsPreview({ ref, children, className }: { ref?: Ref<HTMLDi
   )
 }
 
-export function SettingsRow({ label, description, htmlFor, control, children, className }: {
+export function SettingsRow({ label, labelAddon, description, htmlFor, control, children, className }: {
   label: ReactNode
+  /** Optional help next to the label, outside the associated form-control label. */
+  labelAddon?: ReactNode
   /** One line under the label that says what the setting does. */
   description?: ReactNode
   htmlFor?: string
@@ -54,6 +56,15 @@ export function SettingsRow({ label, description, htmlFor, control, children, cl
   className?: string
 }) {
   const LabelTag = htmlFor ? "label" : "div"
+  const labelNode = <LabelTag htmlFor={htmlFor} className="text-[13px] font-medium">{label}</LabelTag>
+  const labelWithAddon = labelAddon
+    ? (
+        <div className="flex min-w-0 items-center gap-1.5">
+          {labelNode}
+          {labelAddon}
+        </div>
+      )
+    : labelNode
 
   return (
     <div className={cn("flex flex-col gap-3 px-4 py-3.5", className)}>
@@ -61,11 +72,11 @@ export function SettingsRow({ label, description, htmlFor, control, children, cl
         {description
           ? (
               <div className="flex min-w-0 flex-col gap-0.5">
-                <LabelTag htmlFor={htmlFor} className="text-[13px] font-medium">{label}</LabelTag>
+                {labelWithAddon}
                 <p className="text-xs text-muted-foreground">{description}</p>
               </div>
             )
-          : <LabelTag htmlFor={htmlFor} className="text-[13px] font-medium">{label}</LabelTag>}
+          : labelWithAddon}
         {control && <div className="shrink-0">{control}</div>}
       </div>
       {children}
