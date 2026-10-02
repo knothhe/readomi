@@ -1,0 +1,9 @@
+{
+  "browser": "chrome",
+  "name": "Readomi",
+  "directories": {
+    "chrome": "~/Extensions/chrome",
+    "firefox": "~/Extensions/firefox",
+    "edge": "~/Extensions/edge"
+  }
+}

@@ -35,6 +35,31 @@ pnpm build:firefox   # Firefox
 
 Load the corresponding directory under `.output/` in Chrome or Edge. In Firefox, temporarily load its `manifest.json` at `about:debugging#/runtime/this-firefox`.
 
+For development, install builds into a stable local directory:
+
+```bash
+cp .install-local.example.json .install-local.json
+# Edit .install-local.json with each browser's parent directory and the plugin name
+pnpm install:local           # Configured browser, defaulting to Chrome
+pnpm install:local chrome
+pnpm install:local firefox
+pnpm install:local edge
+# Override the configured directory
+pnpm install:local --browser chrome --dir "~/Extensions/chrome" --name readomi
+```
+
+Git ignores `.install-local.json`. Set `browser`, `name` and `directories` as shown in
+[.install-local.example.json](./.install-local.example.json). Paths support `~/`;
+relative paths resolve from the repository root. Use `--config <file>` to select another config.
+`directories` and `--dir` specify the **parent directory**. `name` is the plugin subdirectory name, defaults to `readomi`, and can be overridden with `--name`.
+For example, parent `~/Extensions/chrome` and name `readomi` install to `~/Extensions/chrome/readomi/`, preserving other files and plugins in the parent.
+The command builds the selected browser's MV3 extension, updates only that plugin subdirectory and removes obsolete build files inside it.
+If the existing plugin subdirectory belongs to another installation or browser, it shows the full path and asks whether to overwrite **that plugin subdirectory** with `Y/n`.
+Enter or `Y` confirms; `n` or closed input cancels without building or changing files. Subsequent updates for the same project and browser need no further confirmation.
+The plugin subdirectory cannot overlap the repository or `.output/`. Files installed directly into the parent by the old command are preserved, without automatic deletion or migration.
+Load the plugin subdirectory in the browser once (its `manifest.json` in Firefox), then reload the extension after updates.
+Firefox loading is temporary and must be repeated after restarting the browser.
+
 In Settings → Translation service, enter and test your service manually, or copy the instructions for an agent and paste its verified configuration. See the [setup guide](./docs/agent-setup.md) and optional [readomi-setup skill](./skills/readomi-setup/SKILL.md). Click "Translate this page" or press `Alt+E` (`Option+E` on Mac); repeat to restore the original.
 
 Readomi has its own extension identity and can coexist with upstream installations.

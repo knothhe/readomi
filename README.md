@@ -35,6 +35,29 @@ pnpm build:firefox   # Firefox
 
 Chrome / Edge 加载 `.output/` 下对应构建目录；Firefox 在 `about:debugging#/runtime/this-firefox` 临时载入对应目录中的 `manifest.json`。
 
+开发时可以把构建安装到固定的本地目录，避免依赖 `.output/`：
+
+```bash
+cp .install-local.example.json .install-local.json
+# 编辑 .install-local.json，为每个浏览器指定安装父目录和插件 name
+pnpm install:local           # 使用配置中的 browser，默认 Chrome
+pnpm install:local chrome
+pnpm install:local firefox
+pnpm install:local edge
+# 也可以直接指定目录，覆盖配置
+pnpm install:local --browser chrome --dir "~/Extensions/chrome" --name readomi
+```
+
+`.install-local.json` 已被 Git 忽略；可配置 `browser`、`name` 和 `directories`，格式见
+[.install-local.example.json](./.install-local.example.json)。路径支持 `~/`，相对路径以仓库根目录为基准；
+`--config <文件>` 可选择其他配置文件。`directories` 和 `--dir` 都是**父目录**；`name` 是插件子目录名，默认 `readomi`，可用 `--name` 覆盖。
+例如父目录 `~/Extensions/chrome`、名称 `readomi`，实际安装到 `~/Extensions/chrome/readomi/`，不会覆盖父目录或其中的其他插件和文件。
+命令先构建对应浏览器的 MV3 扩展，再更新这个插件子目录并清除其中的旧构建文件。
+已有插件子目录不属于本项目及所选浏览器时，会显示完整路径并用 `Y/n` 询问是否覆盖**这个插件子目录**：回车或 `Y` 确认，`n` 取消且不构建或修改文件；输入结束也会取消。
+确认后只替换插件子目录内的文件，后续更新同项目、同浏览器的子目录无需重复确认。插件子目录不能与仓库或 `.output/` 重叠。
+旧命令曾直接复制到父目录的文件会保留，不自动删除或迁移。首次仍需在浏览器中加载插件子目录（Firefox 选择其中的 `manifest.json`），后续更新后在浏览器中重新加载扩展。
+Firefox 使用临时加载，重启浏览器后需要再次加载。
+
 打开设置 → 翻译服务，手动填写服务并测试保存，或复制说明给 agent，再粘贴它验证过的配置。配置指南见 [docs/agent-setup.md](./docs/agent-setup.md)，可选 skill 见 [skills/readomi-setup](./skills/readomi-setup/SKILL.md)。之后点击“翻译此页”，或按默认快捷键 `Alt+E`（Mac 为 `Option+E`）；再次触发恢复原文。
 
 Readomi 使用独立的扩展标识，与上游可以同时安装。
