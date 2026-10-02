@@ -6,6 +6,7 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Video-Prefetching.html", title: "视频 · 提前翻译中", x: 1600, y: 8760, w: 720, h: 720 },
     { file: "Settings-Request-Parameters-Gemini.html", title: "设置 · 请求参数 · Gemini", x: 0, y: 24600, w: 1120, h: 1120 },
     { file: "Settings-Request-Parameters-Anthropic.html", title: "设置 · 请求参数 · Anthropic", x: 2400, y: 23300, w: 1120, h: 1120 },
     { file: "Settings-Request-Parameters-DeepSeek.html", title: "设置 · 请求参数 · DeepSeek", x: 1200, y: 23300, w: 1120, h: 1120 },
