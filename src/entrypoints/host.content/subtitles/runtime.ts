@@ -4,6 +4,9 @@ import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
+import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
+import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
+import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
 
 /** Text-track support follows Read Frog's local subtitle adapter. No hosted services. */
 export function readActiveCueText(track: TextTrack): string {
@@ -47,15 +50,20 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
     youtubePlayer.append(nativeStyle)
   }
   const modes = new Map<TextTrack, TextTrackMode>()
-  const cache = new Map<string, string>()
+  const timeline = youtubePlayer ? createYouTubeTimeline() : null
+  const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
+  const translations = new SubtitleTranslationWindow(async (input) => {
+    if (!provider?.apiKey?.trim())
+      throw new Error("Translation service is not configured")
+    return translateTextCore({ text: input, langConfig: config.language, providerConfig: provider, extraHashTags: ["video-subtitles"] })
+  })
+  let timelineKey = ""
+  let nativeCues = [] as ReturnType<typeof readTrackCues>
+  let cueCount = -1
   let track: TextTrack | undefined
   let source = ""
   let text = ""
   let changedAt = 0
-  let request: string | null = null
-  let failed: string | null = null
-  let disposed = false
-  let generation = 0
 
   const restoreTracks = () => {
     for (const [track, mode] of modes) {
@@ -80,10 +88,11 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
     const currentSource = `${location.href}|${video.currentSrc || video.src}`
     if (currentSource !== source) {
       source = currentSource
-      generation++
       text = ""
-      failed = null
-      cache.clear()
+      translations.reset()
+      timelineKey = ""
+      nativeCues = []
+      cueCount = -1
       restoreTracks()
       track = undefined
     }
@@ -92,57 +101,55 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
     if (selected !== track) {
       restoreTracks()
       track = selected
-      generation++
-      cache.clear()
+      translations.reset()
+      nativeCues = []
+      cueCount = -1
       text = ""
-      failed = null
     }
     if (track && track.mode !== "hidden") {
       modes.set(track, track.mode)
       track.mode = "hidden"
     }
-    const youtubeText = youtubePlayer && !youtubePlayer.classList.contains("ad-showing") && !youtubePlayer.classList.contains("ad-interrupting")
+    const youtube = timeline?.tick()
+    if (youtube && youtube.key !== timelineKey) {
+      timelineKey = youtube.key
+      translations.reset()
+    }
+    if (track && (track.cues?.length ?? 0) !== cueCount) {
+      nativeCues = readTrackCues(track)
+      cueCount = track.cues?.length ?? 0
+    }
+    const adPlaying = youtubePlayer?.classList.contains("ad-showing") || youtubePlayer?.classList.contains("ad-interrupting")
+    const youtubeText = youtubePlayer && !adPlaying
       ? Array.from(youtubePlayer.querySelectorAll(".ytp-caption-segment")).map(el => el.textContent?.trim()).filter(Boolean).join("\n")
       : ""
-    const next = youtubeText || (track ? readActiveCueText(track) : "")
+    const cues = youtube?.cues.length ? youtube.cues : nativeCues
+    const next = adPlaying || youtube?.enabled === false
+      ? ""
+      : cues.length
+        ? cueAt(cues, video.currentTime)?.text ?? ""
+        : youtubeText || (track ? readActiveCueText(track) : "")
     if (next !== text) {
       text = next
       changedAt = Date.now()
-      failed = null
     }
     const visible = !!text && rect.width > 0 && rect.height > 0 && !video.ended
     box.classList.toggle("empty", !visible)
     original.textContent = config.features.subtitleMode === "bilingual" ? text : ""
     original.hidden = config.features.subtitleMode !== "bilingual"
-    translated.textContent = cache.get(text) ?? (failed === text ? i18n.t("subtitleTranslation.failed") : i18n.t("subtitleTranslation.pending"))
-    if (!visible || request || cache.has(text) || failed === text || Date.now() - changedAt < 300)
-      return
-    const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
-    if (!provider?.apiKey?.trim()) {
-      failed = text
+    translated.textContent = translations.get(text) ?? (translations.hasFailed(text) ? i18n.t("subtitleTranslation.failed") : i18n.t(cues.length ? "subtitleTranslation.prefetching" : "subtitleTranslation.pending"))
+    if (adPlaying || video.ended || youtube?.enabled === false) {
+      translations.update([], video.currentTime, video.playbackRate, "")
       return
     }
-    const input = text
-    const token = generation
-    request = input
-    void translateTextCore({ text: input, langConfig: config.language, providerConfig: provider, extraHashTags: ["video-subtitles"] }).then((result) => {
-      if (disposed || token !== generation)
-        return
-      if (cache.size >= 200)
-        cache.delete(cache.keys().next().value!)
-      cache.set(input, result)
-    }).catch(() => {
-      if (!disposed && token === generation && text === input)
-        failed = input
-    }).finally(() => {
-      request = null
-    })
+    // Known timeline cues are stable; only DOM captions need the settling delay.
+    translations.update(cues, video.currentTime, video.playbackRate, visible && (cues.length || Date.now() - changedAt >= 300) ? text : "")
   }
   return {
     tick,
     dispose: () => {
-      disposed = true
-      generation++
+      timeline?.dispose()
+      translations.dispose()
       restoreTracks()
       host.remove()
       nativeStyle.remove()

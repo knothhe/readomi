@@ -29,6 +29,10 @@ export default defineConfig({
     // moz-extension:// URLs on regular pages. Firefox enforces this more strictly.
     web_accessible_resources: [
       {
+        resources: ["youtube-bridge.js"],
+        matches: ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      },
+      {
         resources: ["assets/*.png", "assets/*.svg", "assets/*.webp", "icon/*/*.png"],
         matches: ["*://*/*", "file:///*"],
       },

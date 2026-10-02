@@ -379,6 +379,7 @@ features:
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
 subtitleTranslation:
+  prefetching: Preparing subtitle translations…
   pending: Translating subtitles…
   failed: Translation failed. This cue will be retried when played again.
 

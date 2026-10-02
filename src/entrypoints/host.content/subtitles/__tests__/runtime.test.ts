@@ -11,12 +11,21 @@ vi.mock("@/utils/config/storage", () => ({ subscribeLocalConfig: (callback: type
   return vi.fn()
 } }))
 vi.mock("@/utils/host/translate/translate-text", () => ({ translateTextCore: vi.fn() }))
+let youtube = { key: "", cues: [] as { start: number, end: number, text: string }[], enabled: null as boolean | null }
+vi.mock("@/utils/subtitles/youtube-client", () => ({ createYouTubeTimeline: () => ({ tick: () => youtube, dispose: vi.fn() }) }))
+let shadow: ShadowRoot
 let cleanup: () => void
 let track: { kind: string, mode: string, activeCues: { text: string }[] }
 let video: HTMLVideoElement
 const config: Config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, videoSubtitles: true }, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "local" })) }
 beforeEach(() => {
   vi.useFakeTimers()
+  youtube = { key: "", cues: [], enabled: null }
+  const attach = Element.prototype.attachShadow
+  vi.spyOn(Element.prototype, "attachShadow").mockImplementation(function (this: Element, options) {
+    shadow = attach.call(this, options)
+    return shadow
+  })
   document.body.innerHTML = "<video></video>"
   video = document.querySelector("video")!
   track = { kind: "subtitles", mode: "showing", activeCues: [{ text: "Hello" }] }
@@ -110,4 +119,65 @@ it("reads YouTube caption DOM even when an empty native track exists", async () 
   cleanup()
   expect(player.hasAttribute("data-readomi-caption-player")).toBe(false)
   expect(track.mode).toBe("showing")
+})
+
+describe("youTube timeline playback", () => {
+  const setup = () => {
+    const player = document.createElement("div")
+    player.className = "html5-video-player"
+    player.innerHTML = "<div class=\"ytp-caption-window-container\"><span class=\"ytp-caption-segment\">Partial DOM text</span></div>"
+    document.body.append(player)
+    player.append(video)
+    track.activeCues = []
+    youtube = { key: "video|en", enabled: true, cues: [
+      { start: 0, end: 2, text: "First sentence." },
+      { start: 2, end: 4, text: "Second sentence." },
+      { start: 5, end: 7, text: "Third sentence." },
+    ] }
+    return player
+  }
+  it("shows a slow result on time for a future cue without pausing and hides subtitle gaps", async () => {
+    setup()
+    vi.mocked(translateTextCore).mockImplementation(({ text }) => new Promise(resolve => setTimeout(resolve, 1500, `译：${text}`)))
+    update(config)
+    expect(shadow.textContent).toContain("subtitleTranslation.prefetching")
+    await vi.advanceTimersByTimeAsync(1750)
+    expect(translateTextCore).toHaveBeenCalledTimes(3)
+    video.currentTime = 2
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector(".original")?.textContent).toBe("Second sentence.")
+    expect(shadow.querySelector(".box")?.textContent).toContain("译：Second sentence.")
+    video.currentTime = 4
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector(".box")?.classList.contains("empty")).toBe(true)
+    expect(video.paused).toBe(false)
+  })
+  it("hides advertisements and clears old language translations on a track switch", async () => {
+    const player = setup()
+    update(config)
+    await vi.advanceTimersByTimeAsync(500)
+    expect(shadow.querySelector(".box")?.textContent).toContain("你好")
+    player.classList.add("ad-showing")
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector(".box")?.classList.contains("empty")).toBe(true)
+    player.classList.remove("ad-showing")
+    vi.mocked(translateTextCore).mockReturnValue(new Promise(() => {}))
+    youtube = { ...youtube, key: "video|fr" }
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector(".box")?.textContent).toContain("subtitleTranslation.prefetching")
+    expect(shadow.querySelector(".box")?.textContent).not.toContain("你好")
+    youtube = { key: "", cues: [], enabled: false }
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector(".box")?.classList.contains("empty")).toBe(true)
+  })
+  it("translates a new DOM caption while the previous request is still slow", async () => {
+    const player = setup()
+    youtube.cues = []
+    vi.mocked(translateTextCore).mockReturnValue(new Promise(() => {}))
+    update(config)
+    await vi.advanceTimersByTimeAsync(750)
+    player.querySelector(".ytp-caption-segment")!.textContent = "New sentence"
+    await vi.advanceTimersByTimeAsync(750)
+    expect(translateTextCore).toHaveBeenCalledWith(expect.objectContaining({ text: "New sentence" }))
+  })
 })

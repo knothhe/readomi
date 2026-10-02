@@ -379,6 +379,7 @@ features:
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   mode: 字幕显示方式
 subtitleTranslation:
+  prefetching: 正在提前翻译字幕…
   pending: 字幕翻译中…
   failed: 字幕翻译失败，下次播放此句时重试。
 
