@@ -134,16 +134,16 @@ options:
         allSaved: All changes saved
   quality:
     title: Translation quality
-    help: "Help"
-    web: "Web translation"
-    shared: "Shared by web and video subtitles"
+    help: Help
+    web: Web translation
+    shared: Shared by web and video subtitles
     context:
-      title: "Use page summary"
-      description: "Refer to an article summary when translating each paragraph to help understand its topic."
+      title: Use page summary
+      description: Refer to an article summary when translating each paragraph to help understand its topic.
       note: "The summary uses the first 2,000 characters of page text; generating it for the first time requires an extra request to your translation service."
-      purpose: "Let paragraph translations use the article topic."
+      purpose: Let paragraph translations use the article topic.
     prompt:
-      title: "Translation prompt"
+      title: Translation prompt
       default: Default
       custom: Custom
       edit: Edit
@@ -155,16 +155,16 @@ options:
       cancel: Cancel
       apply: Apply
       description: "Set the tone, terminology and wording used for both webpages and subtitles."
-      background: "Web translation uses the title and enabled summary; subtitle translation provides only the subtitle text to translate."
+      background: Web translation uses the title and enabled summary; subtitle translation provides only the subtitle text to translate.
       systemDescription: "Tell the model how to translate, such as “use natural speech” or “keep technical terms”."
-      purpose: "Adjust the tone and wording of translations."
+      purpose: Adjust the tone and wording of translations.
       variables:
-        title: "Available page information"
-        pageTitle: "Page title"
-        description: "Page description"
+        title: Available page information
+        pageTitle: Page title
+        description: Page description
         content: "First 2,000 characters of page text"
-        summary: "Page summary (requires summaries enabled)"
-        note: "Titles and enabled summaries are provided automatically; no need to repeat them. Insert other page information with variables on separate lines; subtitle translation omits lines with unavailable values."
+        summary: Page summary (requires summaries enabled)
+        note: Titles and enabled summaries are provided automatically; no need to repeat them. Insert other page information with variables on separate lines; subtitle translation omits lines with unavailable values.
   shortcut:
     title: Shortcut
     togglePage: Translate this page / Show original

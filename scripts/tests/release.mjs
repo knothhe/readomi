@@ -75,9 +75,10 @@ it("previews without changing files, running checks or creating refs", (t) => {
 })
 
 it("commits only the version, creates an annotated tag and atomically pushes both refs", (t) => {
-  const f = fixture(t)
+  const f = fixture(t, [[process.execPath, "-e", "if (require('./package.json').version !== '1.2.0') process.exit(3); console.log('Release check ran before bump')"]])
   const result = f.release("minor", "--apply")
   assert.equal(result.status, 0, result.stderr)
+  assert.match(result.stdout, /Release check ran before bump/)
   assert.equal(f.version(), "1.3.0")
   assert.equal(f.git("log", "-1", "--format=%s"), "chore(release): v1.3.0")
   assert.equal(f.git("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"), "package.json")
@@ -102,12 +103,78 @@ it("rejects untracked work and a different branch before changing the version", 
   assert.equal(f.remoteRef(projectConfig.branch), f.initial)
 })
 
-it("keeps version edits after a failed check and stops before commit, tag or push", (t) => {
+it("stops a failed check before changing the version, commit, tag or remote", (t) => {
   const f = fixture(t, [[process.execPath, "-e", "process.exit(3)"]])
+  const originalPackage = readFileSync(join(f.work, "package.json"), "utf8")
   const result = f.release("patch", "--apply")
   assert.notEqual(result.status, 0)
   assert.match(result.stderr, /Check failed/)
-  assert.equal(f.version(), "1.2.1")
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(readFileSync(join(f.work, "package.json"), "utf8"), originalPackage)
+  assert.equal(f.git("status", "--porcelain"), "")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("preserves unexpected files from a successful check and stops before bumping", (t) => {
+  const f = fixture(t, [[process.execPath, "-e", "require('node:fs').writeFileSync('check-output.txt', 'keep this output')"]])
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /Checks changed the working tree/)
+  assert.equal(readFileSync(join(f.work, "check-output.txt"), "utf8"), "keep this output")
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("preserves version-file edits made by a check without overwriting them with a bump", (t) => {
+  const f = fixture(t, [[process.execPath, "-e", "const fs = require('node:fs'); const pkg = require('./package.json'); pkg.checkOutput = 'keep'; fs.writeFileSync('package.json', JSON.stringify(pkg))"]])
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /A check changed version files/)
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(JSON.parse(readFileSync(join(f.work, "package.json"), "utf8")).checkOutput, "keep")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("preserves changes staged by a check and stops before bumping", (t) => {
+  const f = fixture(t, [
+    [process.execPath, "-e", "require('node:fs').appendFileSync('.gitignore', 'check-output/\\n')"],
+    ["git", "add", ".gitignore"],
+  ])
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /A check staged changes/)
+  assert.equal(f.git("diff", "--cached", "--name-only"), ".gitignore")
+  assert.match(readFileSync(join(f.work, ".gitignore"), "utf8"), /check-output\//)
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("preserves a commit created by a check and stops before bumping", (t) => {
+  const f = fixture(t, [["git", "commit", "--allow-empty", "-m", "check side effect"]])
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /A check changed HEAD/)
+  assert.equal(f.git("log", "-1", "--format=%s"), "check side effect")
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("preserves a branch selected by a check and stops before bumping", (t) => {
+  const f = fixture(t, [["git", "checkout", "-b", "check-branch"]])
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /A check changed branches/)
+  assert.equal(f.git("branch", "--show-current"), "check-branch")
+  assert.equal(f.version(), "1.2.0")
   assert.equal(f.git("rev-parse", "HEAD"), f.initial)
   assert.equal(f.git("tag"), "")
   assert.equal(f.remoteRef(projectConfig.branch), f.initial)
@@ -125,7 +192,7 @@ it("refuses a conflicting remote tag without updating the version", (t) => {
 })
 
 it("resumes the exact release after atomic push rejection without a second bump", (t) => {
-  const f = fixture(t)
+  const f = fixture(t, [[process.execPath, "-e", "if (require('./package.json').version !== '1.2.0') process.exit(3)"]])
   const hook = join(f.remote, "hooks/pre-receive")
   writeFileSync(hook, "#!/bin/sh\nexit 1\n", { mode: 0o755 })
   assert.notEqual(f.release("patch", "--apply").status, 0)

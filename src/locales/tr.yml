@@ -134,16 +134,16 @@ options:
         allSaved: Tüm değişiklikler kaydedildi
   quality:
     title: Çeviri kalitesi
-    help: "Yardım"
-    web: "Web çevirisi"
-    shared: "Web ve video altyazıları için ortak"
+    help: Yardım
+    web: Web çevirisi
+    shared: Web ve video altyazıları için ortak
     context:
-      title: "Sayfa özetini kullan"
-      description: "Her paragrafı çevirirken konuyu anlamaya yardımcı olmak için yazının özetine başvurur."
+      title: Sayfa özetini kullan
+      description: Her paragrafı çevirirken konuyu anlamaya yardımcı olmak için yazının özetine başvurur.
       note: "Özet, metnin ilk 2.000 karakterini kullanır; ilk kez oluşturulması çeviri hizmetine ek bir istek gerektirir."
-      purpose: "Paragraf çevirilerinde yazının konusunu dikkate alır."
+      purpose: Paragraf çevirilerinde yazının konusunu dikkate alır.
     prompt:
-      title: "Çeviri istemi"
+      title: Çeviri istemi
       default: Varsayılan
       custom: Özel
       edit: Düzenle
@@ -155,16 +155,16 @@ options:
       cancel: İptal
       apply: Uygula
       description: "Web sayfaları ve altyazılar için kullanılacak tonu, terimleri ve anlatımı belirleyin."
-      background: "Web çevirisi başlığı ve etkin özeti kullanır; altyazı çevirisine yalnızca çevrilecek altyazı metni iletilir."
-      systemDescription: "Modele nasıl çevireceğini söyleyin; örneğin “doğal konuşma dili kullan” veya “teknik terimleri koru”."
-      purpose: "Çevirinin tonunu ve sözcüklerini ayarlayın."
+      background: Web çevirisi başlığı ve etkin özeti kullanır; altyazı çevirisine yalnızca çevrilecek altyazı metni iletilir.
+      systemDescription: Modele nasıl çevireceğini söyleyin; örneğin “doğal konuşma dili kullan” veya “teknik terimleri koru”.
+      purpose: Çevirinin tonunu ve sözcüklerini ayarlayın.
       variables:
-        title: "Kullanılabilir sayfa bilgileri"
-        pageTitle: "Sayfa başlığı"
-        description: "Sayfa açıklaması"
-        content: "Metnin ilk 2.000 karakteri"
-        summary: "Sayfa özeti (özetler etkin olmalı)"
-        note: "Başlık ve etkin özetler otomatik sağlanır; tekrar yazmanız gerekmez. Diğer sayfa bilgilerini değişkenlerle ayrı satırlara ekleyin; altyazı çevirisi değeri olmayan satırları atlar."
+        title: Kullanılabilir sayfa bilgileri
+        pageTitle: Sayfa başlığı
+        description: Sayfa açıklaması
+        content: Metnin ilk 2.000 karakteri
+        summary: Sayfa özeti (özetler etkin olmalı)
+        note: Başlık ve etkin özetler otomatik sağlanır; tekrar yazmanız gerekmez. Diğer sayfa bilgilerini değişkenlerle ayrı satırlara ekleyin; altyazı çevirisi değeri olmayan satırları atlar.
   shortcut:
     title: Kısayol
     togglePage: Bu sayfayı çevir / Orijinali göster

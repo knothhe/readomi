@@ -134,16 +134,16 @@ options:
         allSaved: 所有變更已儲存
   quality:
     title: 譯文品質
-    help: "說明"
-    web: "網頁翻譯"
-    shared: "網頁與影片字幕共用"
+    help: 說明
+    web: 網頁翻譯
+    shared: 網頁與影片字幕共用
     context:
-      title: "使用網頁摘要"
-      description: "先參考文章摘要，再翻譯每個段落，幫助理解文章主題。"
+      title: 使用網頁摘要
+      description: 先參考文章摘要，再翻譯每個段落，幫助理解文章主題。
       note: "摘要取自正文前 2,000 個字元；首次產生需要額外請求翻譯服務。"
-      purpose: "讓段落翻譯參考文章主題。"
+      purpose: 讓段落翻譯參考文章主題。
     prompt:
-      title: "翻譯提示詞"
+      title: 翻譯提示詞
       default: 預設
       custom: 自訂
       edit: 修改
@@ -154,17 +154,17 @@ options:
       restore: 恢復預設
       cancel: 取消
       apply: 套用
-      description: "設定譯文的語氣、術語和表達方式，網頁與字幕都會使用。"
-      background: "網頁翻譯會參考標題和開啟後的摘要；字幕翻譯只提供待翻譯的字幕文字。"
-      systemDescription: "告訴模型如何翻譯，例如「使用自然口語」「保留專業術語」。"
-      purpose: "調整譯文的語氣和用詞。"
+      description: 設定譯文的語氣、術語和表達方式，網頁與字幕都會使用。
+      background: 網頁翻譯會參考標題和開啟後的摘要；字幕翻譯只提供待翻譯的字幕文字。
+      systemDescription: 告訴模型如何翻譯，例如「使用自然口語」「保留專業術語」。
+      purpose: 調整譯文的語氣和用詞。
       variables:
-        title: "可用的網頁資訊"
-        pageTitle: "網頁標題"
-        description: "網頁描述"
+        title: 可用的網頁資訊
+        pageTitle: 網頁標題
+        description: 網頁描述
         content: "正文前 2,000 個字元"
-        summary: "網頁摘要（需開啟摘要）"
-        note: "標題和開啟後的摘要會自動提供，無需重複填寫。其他網頁資訊可用變數加入範本，請單獨寫成一行；字幕翻譯會省略沒有值的行。"
+        summary: 網頁摘要（需開啟摘要）
+        note: 標題和開啟後的摘要會自動提供，無需重複填寫。其他網頁資訊可用變數加入範本，請單獨寫成一行；字幕翻譯會省略沒有值的行。
   shortcut:
     title: 快速鍵
     togglePage: 翻譯此頁 / 顯示原文

@@ -134,16 +134,16 @@ options:
         allSaved: Todos los cambios guardados
   quality:
     title: Calidad de la traducción
-    help: "Ayuda"
-    web: "Traducción web"
-    shared: "Compartido por web y subtítulos"
+    help: Ayuda
+    web: Traducción web
+    shared: Compartido por web y subtítulos
     context:
-      title: "Usar resumen de la página"
-      description: "Consulta un resumen del artículo al traducir cada párrafo para ayudar a entender su tema."
-      note: "El resumen usa los primeros 2.000 caracteres del texto; generarlo por primera vez requiere una solicitud adicional al servicio de traducción."
-      purpose: "Permite que los párrafos tengan en cuenta el tema del artículo."
+      title: Usar resumen de la página
+      description: Consulta un resumen del artículo al traducir cada párrafo para ayudar a entender su tema.
+      note: El resumen usa los primeros 2.000 caracteres del texto; generarlo por primera vez requiere una solicitud adicional al servicio de traducción.
+      purpose: Permite que los párrafos tengan en cuenta el tema del artículo.
     prompt:
-      title: "Prompt de traducción"
+      title: Prompt de traducción
       default: Predeterminado
       custom: Personalizado
       edit: Editar
@@ -155,16 +155,16 @@ options:
       cancel: Cancelar
       apply: Aplicar
       description: "Define el tono, la terminología y la expresión tanto para páginas web como para subtítulos."
-      background: "La traducción web usa el título y el resumen activado; los subtítulos solo envían el texto que se traducirá."
+      background: La traducción web usa el título y el resumen activado; los subtítulos solo envían el texto que se traducirá.
       systemDescription: "Indica al modelo cómo traducir, por ejemplo, “usar lenguaje natural” o “conservar términos técnicos”."
-      purpose: "Ajusta el tono y las palabras de la traducción."
+      purpose: Ajusta el tono y las palabras de la traducción.
       variables:
-        title: "Información disponible de la página"
-        pageTitle: "Título de la página"
-        description: "Descripción de la página"
-        content: "Primeros 2.000 caracteres del texto"
-        summary: "Resumen de la página (requiere activar resúmenes)"
-        note: "El título y los resúmenes activados se incluyen automáticamente; no hace falta repetirlos. Inserta otra información con variables en líneas separadas; en los subtítulos se omiten las líneas sin valores disponibles."
+        title: Información disponible de la página
+        pageTitle: Título de la página
+        description: Descripción de la página
+        content: Primeros 2.000 caracteres del texto
+        summary: Resumen de la página (requiere activar resúmenes)
+        note: El título y los resúmenes activados se incluyen automáticamente; no hace falta repetirlos. Inserta otra información con variables en líneas separadas; en los subtítulos se omiten las líneas sin valores disponibles.
   shortcut:
     title: Atajo
     togglePage: Traducir esta página / Mostrar original

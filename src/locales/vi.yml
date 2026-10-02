@@ -134,16 +134,16 @@ options:
         allSaved: Đã lưu mọi thay đổi
   quality:
     title: Chất lượng bản dịch
-    help: "Trợ giúp"
-    web: "Dịch trang web"
-    shared: "Dùng chung cho trang web và phụ đề"
+    help: Trợ giúp
+    web: Dịch trang web
+    shared: Dùng chung cho trang web và phụ đề
     context:
-      title: "Dùng bản tóm tắt trang"
-      description: "Tham khảo bản tóm tắt khi dịch từng đoạn để hỗ trợ hiểu chủ đề bài viết."
-      note: "Bản tóm tắt dùng 2.000 ký tự đầu của nội dung; lần tạo đầu tiên cần thêm một yêu cầu đến dịch vụ dịch."
-      purpose: "Cho bản dịch từng đoạn tham khảo chủ đề bài viết."
+      title: Dùng bản tóm tắt trang
+      description: Tham khảo bản tóm tắt khi dịch từng đoạn để hỗ trợ hiểu chủ đề bài viết.
+      note: Bản tóm tắt dùng 2.000 ký tự đầu của nội dung; lần tạo đầu tiên cần thêm một yêu cầu đến dịch vụ dịch.
+      purpose: Cho bản dịch từng đoạn tham khảo chủ đề bài viết.
     prompt:
-      title: "Lời nhắc dịch"
+      title: Lời nhắc dịch
       default: Mặc định
       custom: Tùy chỉnh
       edit: Sửa
@@ -155,15 +155,15 @@ options:
       cancel: Hủy
       apply: Áp dụng
       description: "Thiết lập giọng điệu, thuật ngữ và cách diễn đạt cho cả trang web và phụ đề."
-      background: "Dịch trang web tham khảo tiêu đề và bản tóm tắt đã bật; dịch phụ đề chỉ cung cấp văn bản phụ đề cần dịch."
+      background: Dịch trang web tham khảo tiêu đề và bản tóm tắt đã bật; dịch phụ đề chỉ cung cấp văn bản phụ đề cần dịch.
       systemDescription: "Cho mô hình biết cách dịch, ví dụ “dùng ngôn ngữ tự nhiên” hoặc “giữ thuật ngữ chuyên môn”."
-      purpose: "Điều chỉnh giọng điệu và cách dùng từ của bản dịch."
+      purpose: Điều chỉnh giọng điệu và cách dùng từ của bản dịch.
       variables:
-        title: "Thông tin trang có thể sử dụng"
-        pageTitle: "Tiêu đề trang"
-        description: "Mô tả trang"
-        content: "2.000 ký tự đầu của nội dung"
-        summary: "Bản tóm tắt trang (cần bật tóm tắt)"
+        title: Thông tin trang có thể sử dụng
+        pageTitle: Tiêu đề trang
+        description: Mô tả trang
+        content: 2.000 ký tự đầu của nội dung
+        summary: Bản tóm tắt trang (cần bật tóm tắt)
         note: "Tiêu đề và bản tóm tắt đã bật được cung cấp tự động, không cần điền lại. Dùng biến để thêm thông tin khác trên các dòng riêng; dịch phụ đề sẽ bỏ qua những dòng không có giá trị."
   shortcut:
     title: Phím tắt

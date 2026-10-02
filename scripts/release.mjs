@@ -218,6 +218,13 @@ function main() {
   if (github)
     run(["gh", "auth", "status", "--hostname", "github.com"])
   if (!args.resume) {
+    const originalVersions = new Map([...files.keys()].map(name => [name, read(name)]))
+    for (const command of checks) requireThat(run(command, false, true).status === 0, `Check failed: ${command.join(" ")}. Stopped before updating the version or creating a release commit/tag.`)
+    requireThat(git("rev-parse", "HEAD") === head, "A check changed HEAD. Inspect repository before continuing.")
+    requireThat(git("symbolic-ref", "--short", "HEAD") === branch, "A check changed branches.")
+    requireThat(!git("diff", "--cached", "--name-only"), "A check staged changes. Inspect repository before continuing.")
+    requireThat([...originalVersions].every(([name, content]) => fs.existsSync(name) && fs.lstatSync(name).isFile() && read(name) === content), "A check changed version files. Inspect and resolve manually before retrying.")
+    requireThat(!git("status", "--porcelain", "--untracked-files=all"), "Checks changed the working tree. Inspect and resolve manually before retrying.")
     for (const [name, data] of files) {
       if (data === null) {
         fs.writeFileSync(name, `${target}\n`)
@@ -229,13 +236,9 @@ function main() {
         fs.writeFileSync(name, jsonText(name, data))
       }
     }
-    for (const command of checks) requireThat(run(command, false, true).status === 0, `Check failed: ${command.join(" ")}. Version edits remain for inspection; no release commit/tag was created.`)
-    requireThat(git("rev-parse", "HEAD") === head, "A check changed HEAD. Inspect repository before continuing.")
-    requireThat(git("symbolic-ref", "--short", "HEAD") === branch, "A check changed branches.")
-    requireThat(!git("diff", "--cached", "--name-only"), "A check staged changes. Inspect repository before continuing.")
     const changed = git("diff", "--name-only").split("\n").filter(Boolean)
-    requireThat(changed.length === files.size && changed.every(name => files.has(name)) && !git("ls-files", "--others", "--exclude-standard"), "Checks changed unexpected files. Inspect and resolve manually before retrying.")
-    requireThat(versionFiles(config)[0] === target, "A check changed the release version.")
+    requireThat(changed.length === files.size && changed.every(name => files.has(name)) && !git("ls-files", "--others", "--exclude-standard"), "Unexpected changes after updating the version. Inspect and resolve manually before retrying.")
+    requireThat(versionFiles(config)[0] === target, "Release version differs from the target.")
     git("add", "--", ...files.keys())
     git("commit", "-m", `chore(release): ${tag}`)
     clean()

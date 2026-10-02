@@ -41,6 +41,9 @@ in `design/assets/`.
 ## Testing Notes
 
 - Run the local test suite with `pnpm test`.
+- Locale changes also require `pnpm lint`; tests do not check YAML formatting.
+  Normalize locale formatting with `pnpm exec eslint src/locales/*.yml --fix`
+  and verify that the parsed message values stay unchanged.
 
 ## Version Management
 
