@@ -134,20 +134,34 @@ options:
         allSaved: 所有變更已儲存
   quality:
     title: 譯文品質
+    web: "網頁翻譯"
+    webDescription: "網頁標題會自動提供給翻譯模型；沒有標題時省略。"
+    video: "影片字幕翻譯"
+    videoDescription: "翻譯目前及即將播放的字幕。不使用網頁背景，也不產生整段影片的摘要。"
+    shared: "網頁與影片字幕共用"
     context:
-      title: 結合全文脈絡
+      title: "使用網頁摘要"
+      description: "先將擷取的正文前 2,000 個字元概括為摘要，再輔助段落翻譯。"
+      note: "僅影響網頁翻譯。首次產生摘要會增加一次模型請求；已有摘要會重用，產生失敗仍繼續翻譯。"
     prompt:
-      title: 提示詞
+      title: "翻譯提示詞"
       default: 預設
       custom: 自訂
       edit: 修改
       system: 系統提示詞
       template: 提示詞範本
-      tokens: 範本必須包含 {{input}}。可用：{{targetLanguage}} {{webTitle}} {{webDescription}} {{webContent}} {{webSummary}}
+      tokens: "範本必須包含 {{input}}，它會替換為待翻譯文字；{{targetLanguage}} 會替換為目標語言。"
       missingInput: 範本裡缺少 {{input}}。
       restore: 恢復預設
       cancel: 取消
       apply: 套用
+      description: "控制翻譯規則和表達風格。修改後同時影響網頁翻譯和影片字幕翻譯。"
+      background: "網頁標題和啟用後的摘要由擴充功能自動附加，無需寫入提示詞。"
+      systemDescription: "設定翻譯規則，例如語氣、術語和輸出格式。"
+      templateDescription: "放入本次待翻譯的文字和目標語言。"
+      webTokens: "可選網頁變數：{{webTitle}} 標題、{{webDescription}} 描述、{{webContent}} 正文（最多 2,000 個字元）、{{webSummary}} 摘要（需開啟上方開關）。"
+      emptyContext: "網頁變數不適用於影片字幕。沒有值的背景行會省略；請將背景資訊與翻譯規則分行書寫。"
+      applyDescription: "點擊「套用」儲存；「取消」放棄本次修改；「恢復預設」填回預設內容，套用後生效。"
   shortcut:
     title: 快速鍵
     togglePage: 翻譯此頁 / 顯示原文

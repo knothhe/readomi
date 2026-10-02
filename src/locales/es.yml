@@ -134,20 +134,34 @@ options:
         allSaved: Todos los cambios guardados
   quality:
     title: Calidad de la traducción
+    web: "Traducción web"
+    webDescription: "El título de la página se envía automáticamente al modelo; se omite si no está disponible."
+    video: "Traducción de subtítulos"
+    videoDescription: "Traduce los subtítulos actuales y próximos. No usa contexto web ni genera un resumen del vídeo completo."
+    shared: "Compartido por web y subtítulos"
     context:
-      title: Usar el contexto de la página
+      title: "Usar resumen de la página"
+      description: "Resume los primeros 2.000 caracteres del texto extraído para ayudar a traducir los párrafos."
+      note: "Solo traducción web. Generar un resumen añade una solicitud al modelo; se reutilizan los resúmenes guardados y la traducción continúa si falla el resumen."
     prompt:
-      title: Prompt
+      title: "Prompt de traducción"
       default: Predeterminado
       custom: Personalizado
       edit: Editar
       system: Prompt del sistema
       template: Plantilla del prompt
-      tokens: "La plantilla debe contener {{input}}. Disponibles: {{targetLanguage}} {{webTitle}} {{webDescription}} {{webContent}} {{webSummary}}"
+      tokens: "La plantilla debe contener {{input}}, que se sustituye por el texto a traducir; {{targetLanguage}} se sustituye por el idioma de destino."
       missingInput: A la plantilla le falta {{input}}.
       restore: Restablecer el predeterminado
       cancel: Cancelar
       apply: Aplicar
+      description: "Define las reglas y el estilo. Los cambios se aplican tanto a la traducción web como a los subtítulos."
+      background: "Los títulos y los resúmenes activados se añaden automáticamente; no hace falta incluirlos en el prompt."
+      systemDescription: "Define reglas como el tono, la terminología y el formato de salida."
+      templateDescription: "Incluye el texto que se traducirá y el idioma de destino."
+      webTokens: "Variables web opcionales: {{webTitle}} título, {{webDescription}} descripción, {{webContent}} texto (hasta 2.000 caracteres), {{webSummary}} resumen (requiere activar el interruptor anterior)."
+      emptyContext: "Las variables web no se aplican a los subtítulos. Se omiten las líneas con contexto no disponible; escribe el contexto y las reglas en líneas separadas."
+      applyDescription: "Aplicar guarda los cambios; Cancelar descarta la edición; Restaurar rellena el texto predeterminado, que se guarda al aplicar."
   shortcut:
     title: Atajo
     togglePage: Traducir esta página / Mostrar original

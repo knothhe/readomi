@@ -134,20 +134,34 @@ options:
         allSaved: Tüm değişiklikler kaydedildi
   quality:
     title: Çeviri kalitesi
+    web: "Web çevirisi"
+    webDescription: "Sayfa başlığı çeviri modeline otomatik olarak iletilir; yoksa atlanır."
+    video: "Video altyazı çevirisi"
+    videoDescription: "Geçerli ve yaklaşan altyazıları çevirir. Web sayfası bağlamını kullanmaz ve tüm videonun özetini oluşturmaz."
+    shared: "Web ve video altyazıları için ortak"
     context:
-      title: Sayfa bağlamını kullan
+      title: "Sayfa özetini kullan"
+      description: "Çıkarılan metnin ilk 2.000 karakterini özetleyerek paragraf çevirisine yardımcı olur."
+      note: "Yalnızca web çevirisi. Özet oluşturmak bir ek model isteği gerektirir; kayıtlı özetler yeniden kullanılır ve özet oluşturulamazsa çeviri devam eder."
     prompt:
-      title: Prompt
+      title: "Çeviri istemi"
       default: Varsayılan
       custom: Özel
       edit: Düzenle
       system: Sistem promptu
       template: Prompt şablonu
-      tokens: "Şablon {{input}} içermelidir. Kullanılabilir: {{targetLanguage}} {{webTitle}} {{webDescription}} {{webContent}} {{webSummary}}"
+      tokens: "Şablon {{input}} içermelidir; bu alan çevrilecek metinle, {{targetLanguage}} ise hedef dille değiştirilir."
       missingInput: Şablonda {{input}} yok.
       restore: Varsayılana döndür
       cancel: İptal
       apply: Uygula
+      description: "Çeviri kurallarını ve üslubunu belirler. Değişiklikler hem web çevirisine hem video altyazılarına uygulanır."
+      background: "Sayfa başlıkları ve etkin özetler otomatik eklenir; isteme yazmanız gerekmez."
+      systemDescription: "Ton, terimler ve çıktı biçimi gibi çeviri kurallarını belirleyin."
+      templateDescription: "Çevrilecek metni ve hedef dili ekleyin."
+      webTokens: "İsteğe bağlı web değişkenleri: {{webTitle}} başlık, {{webDescription}} açıklama, {{webContent}} metin (en fazla 2.000 karakter), {{webSummary}} özet (yukarıdaki anahtar açık olmalıdır)."
+      emptyContext: "Web değişkenleri video altyazılarında kullanılmaz. Bağlamı olmayan satırlar atlanır; bağlamı ve çeviri kurallarını ayrı satırlara yazın."
+      applyDescription: "Uygula değişiklikleri kaydeder; İptal düzenlemeleri siler; Varsayılanı geri yükle standart metni doldurur ve uyguladığınızda kaydedilir."
   shortcut:
     title: Kısayol
     togglePage: Bu sayfayı çevir / Orijinali göster

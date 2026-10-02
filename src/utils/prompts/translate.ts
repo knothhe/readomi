@@ -25,8 +25,45 @@ export interface TranslatePromptResult {
   prompt: string
 }
 
-export function resolvePromptReplacementValue(value: string | null | undefined, fallback: string): string {
-  return typeof value === "string" && value.trim() !== "" ? value : fallback
+const CONTEXT_TOKENS = [WEB_TITLE, WEB_DESCRIPTION, WEB_CONTENT, WEB_SUMMARY] as const
+
+/** Render the template before inserting input, so source text is never treated as a template. */
+function renderTemplate(template: string, replacements: Record<string, string>) {
+  const usedContext = new Set<string>()
+  const sourceLines = template.split(/\r?\n/)
+  const backgroundHeadings = new Set<string>()
+  for (const [index, line] of sourceLines.entries()) {
+    if (!/^#{1,6}\s/.test(line))
+      continue
+    const following = sourceLines.slice(index + 1)
+    const nextHeading = following.findIndex(value => /^#{1,6}\s/.test(value))
+    const section = nextHeading === -1 ? following : following.slice(0, nextHeading)
+    if (section.some(value => CONTEXT_TOKENS.some(token => value.includes(getTokenCellText(token)))))
+      backgroundHeadings.add(line)
+  }
+  const lines = sourceLines.filter((line) => {
+    const missingBackground = CONTEXT_TOKENS.some(token => line.includes(getTokenCellText(token)) && !replacements[token])
+    // A mixed input/background line must not discard the text to translate.
+    if (missingBackground && !line.includes(getTokenCellText(INPUT)))
+      return false
+    for (const token of CONTEXT_TOKENS) {
+      if (line.includes(getTokenCellText(token)) && replacements[token])
+        usedContext.add(token)
+    }
+    return true
+  })
+
+  // Remove empty Markdown sections, including the metadata block in older saved prompts.
+  for (let index = lines.length - 1; index >= 0; index--) {
+    if (!backgroundHeadings.has(lines[index]))
+      continue
+    const nextContent = lines.slice(index + 1).find(line => line.trim())
+    if (!nextContent || /^#{1,6}\s/.test(nextContent))
+      lines.splice(index, 1)
+  }
+
+  const text = lines.join("\n").replace(/\{\{(targetLanguage|input|webTitle|webDescription|webContent|webSummary)\}\}/g, (_match, token: string) => replacements[token]).trim()
+  return { text, usedContext }
 }
 
 export function getTranslatePromptFromConfig(
@@ -54,33 +91,33 @@ export function getTranslatePromptFromConfig(
     prompt = customPrompt?.prompt ?? DEFAULT_TRANSLATE_PROMPT
   }
 
-  // For batch mode, append batch rules to system prompt
-  if (options?.isBatch) {
-    systemPrompt = `${systemPrompt}
-
-${DEFAULT_BATCH_TRANSLATE_PROMPT}`
+  const replacements: Record<string, string> = {
+    [TARGET_LANGUAGE]: targetLang,
+    [INPUT]: input,
+    [WEB_TITLE]: options?.context?.webTitle?.trim() ?? "",
+    [WEB_DESCRIPTION]: options?.context?.webDescription?.trim() ?? "",
+    [WEB_CONTENT]: options?.context?.webContent?.trim() ?? "",
+    [WEB_SUMMARY]: options?.context?.webSummary?.trim() ?? "",
   }
+  const renderedSystem = renderTemplate(systemPrompt, replacements)
+  const renderedPrompt = renderTemplate(prompt, replacements)
+  const usedContext = new Set([...renderedSystem.usedContext, ...renderedPrompt.usedContext])
 
-  // Build title and summary replacement values
-  const title = resolvePromptReplacementValue(options?.context?.webTitle, "No title available")
-  const description = resolvePromptReplacementValue(options?.context?.webDescription, "No description available")
-  const contentText = resolvePromptReplacementValue(options?.context?.webContent, "No content available")
-  const summary = resolvePromptReplacementValue(options?.context?.webSummary, "No summary available")
+  // Page background is independent of custom translation rules. Legacy templates
+  // can still place it explicitly; do not append the same field twice.
+  const background: string[] = []
+  if (replacements[WEB_TITLE] && !usedContext.has(WEB_TITLE))
+    background.push(`Webpage title: ${replacements[WEB_TITLE]}`)
+  if (replacements[WEB_SUMMARY] && !usedContext.has(WEB_SUMMARY))
+    background.push(`Webpage summary: ${replacements[WEB_SUMMARY]}`)
 
-  // Replace tokens in both prompts
-  const replaceTokens = (text: string) =>
-    text
-      .replaceAll(getTokenCellText(TARGET_LANGUAGE), targetLang)
-      .replaceAll(getTokenCellText(INPUT), input)
-      .replaceAll(getTokenCellText(WEB_TITLE), title)
-      .replaceAll(getTokenCellText(WEB_DESCRIPTION), description)
-      .replaceAll(getTokenCellText(WEB_CONTENT), contentText)
-      .replaceAll(getTokenCellText(WEB_SUMMARY), summary)
+  const systemParts = [renderedSystem.text]
+  if (background.length)
+    systemParts.push(`## Webpage context\n${background.join("\n")}`)
+  if (options?.isBatch)
+    systemParts.push(DEFAULT_BATCH_TRANSLATE_PROMPT)
 
-  return {
-    systemPrompt: replaceTokens(systemPrompt),
-    prompt: replaceTokens(prompt),
-  }
+  return { systemPrompt: systemParts.filter(Boolean).join("\n\n"), prompt: renderedPrompt.text }
 }
 
 export async function getTranslatePrompt(

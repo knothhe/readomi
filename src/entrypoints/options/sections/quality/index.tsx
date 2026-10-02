@@ -32,7 +32,7 @@ function toPromptsConfig(texts: PromptTexts): PromptsConfig {
   return { promptId: CUSTOM_PROMPT_ID, patterns: [{ id: CUSTOM_PROMPT_ID, name: "Custom", ...texts }] }
 }
 
-/** What the model is told: whether it sees the whole page, and the prompt itself, edited in place. */
+/** Page background is separate from the translation rules shared with subtitles. */
 export function QualitySection() {
   const [translateConfig, setTranslateConfig] = useAtom(configFieldsAtomMap.translate)
   const contextSwitchId = useId()
@@ -41,53 +41,72 @@ export function QualitySection() {
 
   return (
     <SettingsSection id="quality" title={i18n.t("options.quality.title")}>
-      <SettingsGroup>
-        <SettingsRow
-          label={i18n.t("options.quality.context.title")}
-          htmlFor={contextSwitchId}
-          control={(
-            <Switch
-              id={contextSwitchId}
-              checked={translateConfig.enableAIContentAware}
-              onCheckedChange={checked => void setTranslateConfig(deepMerge(translateConfig, { enableAIContentAware: checked }))}
-            />
-          )}
-        />
-        {editing
-          ? (
-              <PromptEditor
-                initial={custom ?? DEFAULT_PROMPT}
-                isCustom={!!custom}
-                onCancel={() => setEditing(false)}
-                onApply={async (texts) => {
-                  await setTranslateConfig({ ...translateConfig, customPromptsConfig: toPromptsConfig(texts) })
-                  setEditing(false)
-                }}
+      <div className="flex flex-col gap-6">
+        <SettingsGroup caption={i18n.t("options.quality.web")}>
+          <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.webDescription")}</p>
+          <SettingsRow
+            label={i18n.t("options.quality.context.title")}
+            description={i18n.t("options.quality.context.description")}
+            htmlFor={contextSwitchId}
+            control={(
+              <Switch
+                id={contextSwitchId}
+                checked={translateConfig.enableAIContentAware}
+                onCheckedChange={checked => void setTranslateConfig(deepMerge(translateConfig, { enableAIContentAware: checked }))}
               />
-            )
-          : (
-              <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-                <div className="flex min-w-0 items-baseline gap-2.5">
-                  <span className="text-[13px] font-medium">{i18n.t("options.quality.prompt.title")}</span>
-                  <span className="text-[13px] text-muted-foreground">
-                    {custom ? i18n.t("options.quality.prompt.custom") : i18n.t("options.quality.prompt.default")}
-                  </span>
-                </div>
-                <Button variant="outline" className="px-3.5 text-[13px] font-normal" onClick={() => setEditing(true)}>
-                  {i18n.t("options.quality.prompt.edit")}
-                </Button>
-              </div>
             )}
-      </SettingsGroup>
+          >
+            <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.context.note")}</p>
+          </SettingsRow>
+        </SettingsGroup>
+        <SettingsGroup caption={i18n.t("options.quality.video")}>
+          <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.videoDescription")}</p>
+        </SettingsGroup>
+        <SettingsGroup caption={i18n.t("options.quality.shared")}>
+          {editing
+            ? (
+                <PromptEditor
+                  initial={custom ?? DEFAULT_PROMPT}
+                  isCustom={!!custom}
+                  onCancel={() => setEditing(false)}
+                  onApply={async (texts) => {
+                    await setTranslateConfig({ ...translateConfig, customPromptsConfig: toPromptsConfig(texts) })
+                    setEditing(false)
+                  }}
+                />
+              )
+            : (
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <div className="flex items-baseline gap-2.5">
+                      <span className="text-[13px] font-medium">{i18n.t("options.quality.prompt.title")}</span>
+                      <span className="text-[13px] text-muted-foreground">
+                        {custom ? i18n.t("options.quality.prompt.custom") : i18n.t("options.quality.prompt.default")}
+                      </span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.description")}</p>
+                  </div>
+                  <Button variant="outline" className="px-3.5 text-[13px] font-normal" onClick={() => setEditing(true)}>
+                    {i18n.t("options.quality.prompt.edit")}
+                  </Button>
+                </div>
+              )}
+          {!editing && <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.background")}</p>}
+        </SettingsGroup>
+      </div>
     </SettingsSection>
   )
 }
 
-function PromptTextarea({ label, value, rows, autoFocus, onChange }: { label: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
+function PromptTextarea({ label, description, value, rows, autoFocus, onChange }: { label: string, description: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
+  const descriptionId = useId()
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
+      <span id={descriptionId} className="text-xs leading-relaxed text-muted-foreground">{description}</span>
       <textarea
+        aria-label={label}
+        aria-describedby={descriptionId}
         value={value}
         spellCheck={false}
         autoFocus={autoFocus}
@@ -132,8 +151,11 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
           {willBeCustom === isCustom ? label(isCustom) : `${label(isCustom)} → ${label(willBeCustom)}`}
         </span>
       </div>
+      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.description")}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.background")}</p>
       <PromptTextarea
         label={i18n.t("options.quality.prompt.system")}
+        description={i18n.t("options.quality.prompt.systemDescription")}
         value={texts.systemPrompt}
         rows={14}
         autoFocus
@@ -141,6 +163,7 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
       />
       <PromptTextarea
         label={i18n.t("options.quality.prompt.template")}
+        description={i18n.t("options.quality.prompt.templateDescription")}
         value={texts.prompt}
         rows={4}
         onChange={prompt => setTexts(current => ({ ...current, prompt }))}
@@ -148,6 +171,9 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
       <p className={cn("m-0 text-xs leading-[17px]", missingInput ? "text-destructive" : "text-muted-foreground")}>
         {missingInput ? i18n.t("options.quality.prompt.missingInput") : i18n.t("options.quality.prompt.tokens")}
       </p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.webTokens")}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.emptyContext")}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.applyDescription")}</p>
       <div className="flex items-center gap-2 pt-1">
         <div className="flex-1">
           <button

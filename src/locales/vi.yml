@@ -134,20 +134,34 @@ options:
         allSaved: Đã lưu mọi thay đổi
   quality:
     title: Chất lượng bản dịch
+    web: "Dịch trang web"
+    webDescription: "Tiêu đề trang được tự động gửi cho mô hình dịch; bỏ qua nếu không có."
+    video: "Dịch phụ đề video"
+    videoDescription: "Dịch phụ đề hiện tại và sắp phát. Không dùng ngữ cảnh trang web và không tạo bản tóm tắt toàn bộ video."
+    shared: "Dùng chung cho trang web và phụ đề"
     context:
-      title: Dùng ngữ cảnh của trang
+      title: "Dùng bản tóm tắt trang"
+      description: "Tóm tắt 2.000 ký tự đầu của nội dung đã trích xuất để hỗ trợ dịch từng đoạn."
+      note: "Chỉ áp dụng cho trang web. Tạo bản tóm tắt cần thêm một yêu cầu đến mô hình; bản đã lưu được dùng lại và quá trình dịch vẫn tiếp tục nếu tóm tắt thất bại."
     prompt:
-      title: Prompt
+      title: "Lời nhắc dịch"
       default: Mặc định
       custom: Tùy chỉnh
       edit: Sửa
       system: Prompt hệ thống
       template: Mẫu prompt
-      tokens: "Mẫu phải chứa {{input}}. Có thể dùng: {{targetLanguage}} {{webTitle}} {{webDescription}} {{webContent}} {{webSummary}}"
+      tokens: "Mẫu phải chứa {{input}}, được thay bằng văn bản cần dịch; {{targetLanguage}} được thay bằng ngôn ngữ đích."
       missingInput: Mẫu thiếu {{input}}.
       restore: Khôi phục mặc định
       cancel: Hủy
       apply: Áp dụng
+      description: "Thiết lập quy tắc và phong cách dịch. Thay đổi áp dụng cho cả trang web và phụ đề video."
+      background: "Tiêu đề trang và bản tóm tắt đã bật được tự động thêm; không cần viết trong lời nhắc."
+      systemDescription: "Thiết lập quy tắc dịch như giọng điệu, thuật ngữ và định dạng đầu ra."
+      templateDescription: "Chèn văn bản cần dịch và ngôn ngữ đích."
+      webTokens: "Biến trang web tùy chọn: {{webTitle}} tiêu đề, {{webDescription}} mô tả, {{webContent}} nội dung (tối đa 2.000 ký tự), {{webSummary}} tóm tắt (cần bật công tắc bên trên)."
+      emptyContext: "Biến trang web không áp dụng cho phụ đề video. Các dòng có ngữ cảnh không có sẵn sẽ được bỏ qua; hãy viết ngữ cảnh và quy tắc dịch trên các dòng riêng."
+      applyDescription: "Áp dụng lưu thay đổi; Hủy bỏ chỉnh sửa; Khôi phục mặc định điền nội dung mặc định và được lưu khi áp dụng."
   shortcut:
     title: Phím tắt
     togglePage: Dịch trang này / Hiển thị bản gốc

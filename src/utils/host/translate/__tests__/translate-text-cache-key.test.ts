@@ -94,19 +94,24 @@ describe("translation cache key", () => {
     expect(secondKey).toBe(firstKey)
   })
 
-  it("user gets a cached translation: Given a custom prompt that sends no page context to the model, When the page title, description, content and summary are different, Then both translations use one cache entry", async () => {
+  it("reuses a custom-prompt translation when only unused description and content change", async () => {
     await saveTranslatePrompt("{{input}}")
 
     const firstKey = await cacheKeyFor({})
     const secondKey = await cacheKeyFor({
-      webTitle: "Changelog",
       webDescription: "Changes in the release",
       webContent: "Other page body.",
-      webSummary: "The release removes an old setting.",
     })
 
     // The model receives the same request.
     expect(secondKey).toBe(firstKey)
+  })
+
+  it("invalidates a custom-prompt translation when automatically attached page background changes", async () => {
+    await saveTranslatePrompt("{{input}}")
+    const firstKey = await cacheKeyFor({})
+    const secondKey = await cacheKeyFor({ webSummary: "A different topic." })
+    expect(secondKey).not.toBe(firstKey)
   })
 
   it("user gets a new translation: Given a custom prompt that sends {{webContent}} to the model, When the page content is different only at the end, Then the translations use different cache entries", async () => {
@@ -123,7 +128,7 @@ describe("translation cache key", () => {
   it.each([
     ["title", { webTitle: "Changelog" }],
     ["summary", { webSummary: "The release removes an old setting." }],
-  ])("user gets a new translation: Given the default prompt, which uses {{webTitle}} and {{webSummary}}, When the page %s is different, Then the translations use different cache entries", async (_field, pageChanges) => {
+  ])("invalidates a default-prompt translation when the automatically attached page %s changes", async (_field, pageChanges) => {
     const firstKey = await cacheKeyFor({})
     const secondKey = await cacheKeyFor(pageChanges)
 

@@ -22,11 +22,7 @@ export const DEFAULT_TRANSLATE_SYSTEM_PROMPT = `You are a professional ${getToke
 1. Output only the translated content, without explanations or additional content (such as "Here's the translation:" or "Translation as follows:")
 2. The returned translation must maintain exactly the same number of paragraphs and format as the original text.
 3. If the text contains HTML tags, consider where the tags should be placed in the translation while maintaining fluency.
-4. For content that should not be translated (such as proper nouns, code, etc.), keep the original text.
-
-## Document Metadata for Context Awareness
-Webpage title: ${getTokenCellText(WEB_TITLE)}
-Webpage summary: ${getTokenCellText(WEB_SUMMARY)}`
+4. For content that should not be translated (such as proper nouns, code, etc.), keep the original text.`
 
 export const DEFAULT_TRANSLATE_PROMPT = `Translate to ${getTokenCellText(TARGET_LANGUAGE)}:
 
