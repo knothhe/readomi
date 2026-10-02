@@ -93,7 +93,7 @@ options:
       amber: 琥珀
       teal: 墨青
   reading:
-    title: 閱讀
+    title: 網頁閱讀
     whileTranslating: 翻譯時
     allPages: 所有網頁
     mode:
@@ -375,7 +375,7 @@ configBackup:
   saved: Configuration imported.
   failed: Import failed. Current settings have not changed.
 features:
-  title: Paragraph and video translation
+  title: 影片字幕
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
   video: Video subtitle translation

@@ -30,7 +30,7 @@ export function subtitleTextStyle(style: SubtitleStyle) {
     textAlign: "center" as const,
     whiteSpace: "pre-line" as const,
     textShadow: "0 2px 4px #000,0 0 2px #000",
-    background: style.preset === "clear" ? "transparent" : style.preset === "compact" ? "rgba(15,20,35,.85)" : "rgba(15,20,35,.65)",
+    background: style.preset === "clear" ? "transparent" : style.preset === "compact" ? "rgba(15,20,35,.65)" : "rgba(15,20,35,.35)",
     borderRadius: style.preset === "clear" ? "0" : "8px",
     padding: style.preset === "clear" ? "0" : style.preset === "compact" ? "8px 14px" : "10px 16px",
   }

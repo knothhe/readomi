@@ -163,6 +163,14 @@ describe("settings page", () => {
     const translationPreview = within(document.getElementById("reading")!).getByText(/^Reading and experience train your model of the world\.$/).parentElement!
     const englishPreview = screen.getByText(/Even if you forget what you read/)
 
+    fireEvent.click(screen.getByRole("switch", { name: "features.hover" }))
+    await waitFor(() => expect(store.get(configAtom).features.hoverTranslation).toBe(true))
+    fireEvent.click(screen.getByRole("link", { name: "features.title" }))
+    expect(screen.queryByRole("switch", { name: "features.hover" })).toBeNull()
+    expect(screen.getByRole("switch", { name: "features.video" })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole("link", { name: "options.reading.title" }))
+    expect(screen.getByRole("switch", { name: "features.hover" })).toBeChecked()
+
     // Translation only shows the translation alone, and the translation style, which applies to bilingual display only, goes away.
     expect(screen.getByRole("group", { name: "options.reading.style.title" })).toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "options.reading.mode.translationOnly" }))

@@ -21,6 +21,7 @@ const MODE_LABEL_KEY = {
 export function ReadingSection() {
   const [translateConfig, setTranslateConfig] = useAtom(configFieldsAtomMap.translate)
   const [readingConfig, setReadingConfig] = useAtom(configFieldsAtomMap.reading)
+  const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
   const emphasisId = useId()
 
   return (
@@ -42,6 +43,7 @@ export function ReadingSection() {
           />
           {/* The translation style applies to bilingual display only. */}
           {translateConfig.mode === "bilingual" && <StyleSetting />}
+          <SettingsRow label={i18n.t("features.hover")} description={i18n.t("features.hoverDescription")} control={<Switch aria-label={i18n.t("features.hover")} checked={features.hoverTranslation} onCheckedChange={hoverTranslation => void setFeatures({ hoverTranslation })} />} />
         </SettingsGroup>
         <SettingsGroup caption={i18n.t("options.reading.allPages")}>
           <EnglishPreview />

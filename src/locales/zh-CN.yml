@@ -93,7 +93,7 @@ options:
       amber: 琥珀
       teal: 墨青
   reading:
-    title: 阅读
+    title: 网页阅读
     whileTranslating: 翻译时
     allPages: 所有网页
     mode:
@@ -375,7 +375,7 @@ configBackup:
   saved: 配置已导入。
   failed: 导入失败，当前设置未更改。
 features:
-  title: 局部与视频翻译
+  title: 视频字幕
   hover: 悬停翻译
   hoverDescription: 鼠标停在段落上，按快捷键页设置的触发方式翻译；再次触发恢复原文。
   video: 视频字幕翻译

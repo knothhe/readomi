@@ -93,7 +93,7 @@ options:
       amber: Ámbar
       teal: Verde azulado
   reading:
-    title: Lectura
+    title: Lectura web
     whileTranslating: Al traducir
     allPages: Todas las páginas
     mode:
@@ -375,7 +375,7 @@ configBackup:
   saved: Configuration imported.
   failed: Import failed. Current settings have not changed.
 features:
-  title: Paragraph and video translation
+  title: Subtítulos de vídeo
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
   video: Video subtitle translation

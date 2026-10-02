@@ -11,7 +11,6 @@ export function FeaturesSection() {
   return (
     <SettingsSection id="features" title={i18n.t("features.title")}>
       <SettingsGroup>
-        <SettingsRow label={i18n.t("features.hover")} description={i18n.t("features.hoverDescription")} control={<Switch aria-label={i18n.t("features.hover")} checked={features.hoverTranslation} onCheckedChange={hoverTranslation => void setFeatures({ hoverTranslation })} />} />
         <SettingsRow label={i18n.t("features.video")} description={i18n.t("features.videoDescription")} control={<Switch aria-label={i18n.t("features.video")} checked={features.videoSubtitles} onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })} />} />
         <SettingsRow
           label={i18n.t("features.mode")}

@@ -93,7 +93,7 @@ options:
       amber: アンバー
       teal: ティール
   reading:
-    title: 閲覧
+    title: ウェブ閲覧
     whileTranslating: 翻訳時
     allPages: すべてのページ
     mode:
@@ -375,7 +375,7 @@ configBackup:
   saved: Configuration imported.
   failed: Import failed. Current settings have not changed.
 features:
-  title: Paragraph and video translation
+  title: 動画字幕
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
   video: Video subtitle translation

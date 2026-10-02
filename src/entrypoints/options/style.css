@@ -2,3 +2,18 @@ body {
   /* Chrome set the font to 75% of the default size */
   font-size: initial; /* reset to 16px */
 }
+
+/* A quiet video stand-in shared by the main preview and the preset samples. */
+.subtitle-preview-scene {
+  background:
+    radial-gradient(ellipse 85% 75% at 10% 120%, #7c9588 0 99%, transparent 100%),
+    radial-gradient(ellipse 100% 80% at 90% 115%, #a6b9b1 0 99%, transparent 100%),
+    linear-gradient(150deg, #f1e6d9, #dce8e5);
+}
+
+.dark .subtitle-preview-scene {
+  background:
+    radial-gradient(ellipse 85% 75% at 10% 120%, #49635d 0 99%, transparent 100%),
+    radial-gradient(ellipse 100% 80% at 90% 115%, #647d77 0 99%, transparent 100%),
+    linear-gradient(150deg, #a59b8e, #859f9f);
+}

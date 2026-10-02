@@ -37,7 +37,7 @@ export function SubtitleStyleEditor() {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="text-[15px] font-semibold">{i18n.t("subtitleStyle.title")}</h3>
-      <div ref={previewRef} aria-label={i18n.t("subtitleStyle.preview")} className="relative aspect-video overflow-hidden rounded-xl bg-linear-to-br from-[#342b38] to-[#252c38]">
+      <div ref={previewRef} aria-label={i18n.t("subtitleStyle.preview")} className="subtitle-preview-scene relative aspect-video overflow-hidden rounded-xl">
         <div
           ref={captionRef}
           className="absolute w-max max-w-[80%] -translate-x-1/2 -translate-y-full"
@@ -58,7 +58,7 @@ export function SubtitleStyleEditor() {
                 onClick={() => void setFeatures({ subtitleStyle: { ...style, ...subtitlePresetPatch(preset) } })}
                 className={cn("flex flex-col items-center gap-2 rounded-lg border px-2 py-2.5 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50", style.preset === preset ? "border-brand bg-secondary text-foreground" : "border-border bg-card text-muted-foreground hover:bg-muted")}
               >
-                <span aria-hidden="true" className="flex h-16 w-full items-center justify-center rounded-md bg-[#302b29]">
+                <span aria-hidden="true" className="subtitle-preview-scene flex h-16 w-full items-center justify-center rounded-md">
                   <span style={{ ...subtitleTextStyle({ ...style, ...subtitlePresetPatch(preset) }), fontSize: preset === "study" ? "18px" : "13px", padding: "4px 12px" }}>
                     Aa
                     <br />

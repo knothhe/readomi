@@ -93,7 +93,7 @@ options:
       amber: Hổ phách
       teal: Xanh cổ vịt
   reading:
-    title: Đọc
+    title: Đọc trang web
     whileTranslating: Khi dịch
     allPages: Mọi trang
     mode:
@@ -375,7 +375,7 @@ configBackup:
   saved: Configuration imported.
   failed: Import failed. Current settings have not changed.
 features:
-  title: Paragraph and video translation
+  title: Phụ đề video
   hover: Hover translation
   hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
   video: Video subtitle translation
