@@ -41,3 +41,14 @@ in `design/assets/`.
 ## Testing Notes
 
 - Run the local test suite with `pnpm test`.
+
+## Version Management
+
+- `package.json` is the version source of truth. Follow `RELEASING.md` and
+  `.release.json`; use `pnpm release patch|minor|major` or an exact version to
+  preview. Add `--apply` only when an actual release is requested.
+- The release command runs checks, commits the version, creates an annotated
+  `v<version>` tag, and atomically pushes `main` and that tag. Existing CI creates
+  the GitHub Release and uploads extension archives.
+- Version-management tests run with `pnpm test:release` using temporary local
+  repositories. `pnpm release:chrome` only uploads to an existing Release.

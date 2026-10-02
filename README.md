@@ -51,3 +51,9 @@ pnpm build
 界面设计以 `design/` 为准，可直接打开 [design/index.html](./design/index.html)。浏览器测试用 `pnpm test:e2e`；首次运行先执行 `pnpm exec playwright-core install --no-shell chromium`。
 
 问题与建议请提交到 [Readomi Issues](https://github.com/knothhe/readomi/issues)。本项目继承上游的 GNU GPL v3 许可，见 [LICENSE](./LICENSE)。
+
+## 版本管理
+
+用 `pnpm release patch`（或 `minor` / `major`）预览版本更新；加 `--apply`
+才会执行检查、版本提交、tag 和推送。GitHub Release 与扩展包由现有 CI 发布。
+版本选择、首次接入和失败恢复见 [RELEASING.md](./RELEASING.md)。

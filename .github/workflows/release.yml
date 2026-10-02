@@ -1,7 +1,8 @@
 name: Release Extension
 
-# Bump "version" in package.json, merge it, then push a matching tag
-# (e.g. v1.2.0). A pushed tag also submits the release to the stores through
+# Run `pnpm release patch` to preview, then add `--apply` to update the version,
+# check, commit, tag and atomically push main and its matching tag. See RELEASING.md.
+# A pushed tag also submits the release to the stores through
 # submit.yml when Chrome credentials are configured; rebuilding assets for an
 # existing tag does not.
 on:
@@ -58,6 +59,9 @@ jobs:
 
       - name: Run Tests
         run: pnpm test
+
+      - name: Test Version Management
+        run: pnpm test:release
 
       - name: Build and Zip Extension
         run: pnpm zip:all

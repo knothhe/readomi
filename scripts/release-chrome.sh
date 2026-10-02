@@ -13,9 +13,10 @@ Build the Chrome extension ZIP and upload it to a GitHub Release.
 Usage:
   pnpm release:chrome
 
-The version is read from package.json and uploaded to the matching v<version>
-release, which is created automatically if it does not exist. The target
-repository is resolved by GitHub CLI from the current repository's git remote.
+The working tree must be clean and HEAD must match the v<version> tag read from
+package.json. The GitHub Release must already exist; use pnpm release to manage
+versions and tags. This command only builds and uploads the Chrome ZIP. The
+target repository is resolved by GitHub CLI from the current git remote.
 EOF
 }
 
@@ -29,7 +30,7 @@ if [[ $# -ne 0 ]]; then
   exit 2
 fi
 
-for command_name in node pnpm gh; do
+for command_name in git node pnpm gh; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "Error: required command '$command_name' was not found." >&2
     exit 1
@@ -39,12 +40,28 @@ done
 PACKAGE_VERSION="$(node -p "require('./package.json').version")"
 TAG="v$PACKAGE_VERSION"
 
+if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
+  echo "Error: working tree must be clean before building a release asset." >&2
+  exit 1
+fi
+
+git check-ref-format "refs/tags/$TAG"
+if ! TAG_COMMIT="$(git rev-parse --verify "refs/tags/$TAG^{commit}" 2>/dev/null)" || [[ "$TAG_COMMIT" != "$(git rev-parse HEAD)" ]]; then
+  echo "Error: HEAD must match the existing $TAG tag. Use 'pnpm release' to release a new version." >&2
+  exit 1
+fi
+
 if ! gh auth status --hostname github.com >/dev/null 2>&1; then
   echo "Error: GitHub CLI is not authenticated. Run 'gh auth login' first." >&2
   exit 1
 fi
 
 REPOSITORY="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
+
+if ! gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
+  echo "Error: GitHub Release '$TAG' is not available. Wait for Release Extension CI, or inspect its failure before uploading." >&2
+  exit 1
+fi
 
 echo "Building Chrome extension version $PACKAGE_VERSION..."
 pnpm zip
@@ -59,14 +76,6 @@ if [[ ${#chrome_zips[@]} -ne 1 ]]; then
 fi
 
 CHROME_ZIP="${chrome_zips[0]}"
-
-if ! gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
-  echo "Release '$TAG' does not exist in '$REPOSITORY'; creating it..."
-  gh release create "$TAG" \
-    --repo "$REPOSITORY" \
-    --title "$TAG" \
-    --generate-notes
-fi
 
 echo "Uploading '$CHROME_ZIP' to $REPOSITORY release $TAG..."
 gh release upload "$TAG" "$CHROME_ZIP" --repo "$REPOSITORY" --clobber

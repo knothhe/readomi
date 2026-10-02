@@ -46,6 +46,9 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      - name: Test version management
+        run: pnpm test:release
+
   e2e:
     name: E2E
     runs-on: ubuntu-latest

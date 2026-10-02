@@ -51,3 +51,10 @@ pnpm build
 `design/` is the UI source of truth; open [design/index.html](./design/index.html) directly. Run browser tests with `pnpm test:e2e`; first install Chromium with `pnpm exec playwright-core install --no-shell chromium`.
 
 Send questions and suggestions to [Readomi Issues](https://github.com/knothhe/readomi/issues). Readomi inherits upstream's GNU GPL v3 license; see [LICENSE](./LICENSE).
+
+## Version management
+
+Use `pnpm release patch` (or `minor` / `major`) to preview a version update. Add
+`--apply` to run checks, commit the version, create a tag and push. Existing CI
+publishes the GitHub Release and extension archives. See [RELEASING.md](./RELEASING.md)
+for version selection, initial setup and recovery instructions (in Chinese).
