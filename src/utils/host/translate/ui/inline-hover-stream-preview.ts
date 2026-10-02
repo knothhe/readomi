@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react"
 import type { Config } from "@/types/config/config"
 import { createElement } from "react"
 import { createRoot } from "react-dom/client"
@@ -17,8 +18,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
     return undefined
   const only = config.translate.mode === "translationOnly"
   const reducedMotion = view.matchMedia("(prefers-reduced-motion: reduce)").matches
-  const lineHeight = Number.parseFloat(computed.lineHeight) || Number.parseFloat(computed.fontSize) * 1.65
-  const quantum = lineHeight * 3
+  let lineHeight = Number.parseFloat(computed.lineHeight) || Number.parseFloat(computed.fontSize) * 1.65
   const inset = computed.boxSizing === "border-box" ? 0 : Number.parseFloat(computed.paddingTop) + Number.parseFloat(computed.paddingBottom) + Number.parseFloat(computed.borderTopWidth) + Number.parseFloat(computed.borderBottomWidth)
   const originalHeight = anchor.getBoundingClientRect().height
   const sourceText = anchor.textContent
@@ -39,15 +39,14 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
   const style = doc.createElement("style")
   const styleConfig = config.translate.translationNodeStyle
   const translationCSS = only ? "" : styleConfig?.isCustom && styleConfig.customCSS ? styleConfig.customCSS : customTranslationNodeCss.replace(/@import[^;]+;/g, "")
-  style.textContent = `${translationNodePresetCss + translationCSS}:host{color:inherit;font:inherit}.content{position:absolute!important;top:0;left:0;right:0;display:block!important;margin:0!important;box-sizing:border-box;overflow-wrap:anywhere;white-space:pre-wrap;line-height:inherit}.group+.group{margin-top:16px}.group:empty{display:none}`
+  style.textContent = `${translationNodePresetCss + translationCSS}:host{color:inherit;font:inherit}.content{position:absolute!important;top:0;left:0;right:0}.preview-translation{display:block!important;margin:0!important;box-sizing:border-box;overflow-wrap:anywhere;white-space:pre-wrap}.preview-group+.preview-group{margin-top:16px}.group:empty{display:none}`
   const content = doc.createElement("div")
-  content.className = `content ${CONTENT_WRAPPER_CLASS} ${only ? "" : BLOCK_CONTENT_CLASS}`
-  if (!only)
-    content.dataset.readomiCustomTranslationStyle = styleConfig?.isCustom ? "custom" : styleConfig?.preset ?? "line"
+  content.className = "content"
   setTranslationDirAndLang(content, config)
   shadow.append(style, content)
   const root = createRoot(content)
   const groups = new Map<number, string>()
+  const groupTypography = new Map<number, CSSProperties>()
   const completedGroups = new Set<number>()
   const progressCallbacks = new Map<number, (length: number) => void>()
   const completionCallbacks = new Map<number, () => void>()
@@ -92,6 +91,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
     const natural = content.getBoundingClientRect().height
     // One line of read-ahead lets the height transition finish before new text
     // reaches the edge. Grow in three-line steps and never shrink mid-stream.
+    const quantum = lineHeight * 3
     const next = Math.max(reserved, originalHeight, Math.ceil((natural + lineHeight) / quantum) * quantum)
     if (next <= reserved)
       return
@@ -116,7 +116,14 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
     root.render([...groups.entries()].map(([key, partial]) => {
       const template = doc.createElement("template")
       template.innerHTML = partial.replace(/&(?:#x?[\da-f]*|[a-z]*)$/i, "").trimStart()
-      return createElement(SmoothPreviewText, { key, content: template.content.textContent ?? "", done, onProgress: progressCallbacks.get(key), onComplete: completionCallbacks.get(key) })
+      const text = template.content.textContent ?? ""
+      return createElement("div", { key, className: "preview-group", style: { ...groupTypography.get(key), display: text ? "block" : "none" } },
+        createElement("div", {
+          "className": `preview-translation ${CONTENT_WRAPPER_CLASS} ${only ? "" : BLOCK_CONTENT_CLASS}`,
+          "lang": content.lang,
+          "dir": content.dir,
+          "data-readomi-custom-translation-style": only ? undefined : styleConfig?.isCustom ? "custom" : styleConfig?.preset ?? "line",
+        }, createElement(SmoothPreviewText, { content: text, done, onProgress: progressCallbacks.get(key), onComplete: completionCallbacks.get(key) })))
     }))
   }
   const schedule = () => {
@@ -144,9 +151,27 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
   doc.addEventListener("keydown", escape, true)
   view.addEventListener("resize", scheduleHeight)
   return {
-    register() {
+    register(typographyElement = anchor) {
       const key = groups.size
       groups.set(key, "")
+      // Keep the flow box on the anchor, but inherit each group's typography
+      // from the final renderer's insertion container. Sites such as YouTube
+      // give that inner text container a different size from the outer block.
+      const typography = view.getComputedStyle(typographyElement)
+      groupTypography.set(key, {
+        fontFamily: typography.fontFamily,
+        fontSize: typography.fontSize,
+        fontWeight: typography.fontWeight,
+        fontStyle: typography.fontStyle,
+        fontStretch: typography.fontStretch,
+        fontVariant: typography.fontVariant,
+        lineHeight: typography.lineHeight,
+        letterSpacing: typography.letterSpacing,
+        wordSpacing: typography.wordSpacing,
+        textTransform: typography.textTransform,
+        color: typography.color,
+      })
+      lineHeight = Math.max(lineHeight, Number.parseFloat(typography.lineHeight) || Number.parseFloat(typography.fontSize) * 1.65)
       progressCallbacks.set(key, (length) => {
         if (length && only && !disposed && !committing && !sourceHidden) {
           sourceHidden = true

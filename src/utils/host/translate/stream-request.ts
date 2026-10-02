@@ -16,8 +16,8 @@ export type HoverStreamReply
     | { type: "done", text: string }
     | { type: "error", message: string }
 
-/** Request override used by the paragraph renderer, with its loading state. */
-export type PageTranslationRequest = ((text: string) => Promise<string>) & { showSpinner?: boolean }
+/** The typography element is the container where the final translation inherits its styles. */
+export type PageTranslationRequest = ((text: string, typographyElement?: HTMLElement) => Promise<string>) & { showSpinner?: boolean }
 
 export interface PageTranslationRequestOptions {
   onPartial?: (text: string) => void

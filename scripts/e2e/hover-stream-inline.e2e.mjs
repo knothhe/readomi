@@ -75,6 +75,108 @@ for (const mode of ["bilingual", "translationOnly"]) {
     await page.waitForFunction(text => document.querySelector("p").innerHTML === text, original)
   })
 }
+async function typography(locator) {
+  return locator.evaluate((node) => {
+    const style = getComputedStyle(node)
+    return {
+      fontSize: style.fontSize,
+      lineHeight: style.lineHeight,
+      fontWeight: style.fontWeight,
+      letterSpacing: style.letterSpacing,
+    }
+  })
+}
+const commentTypography = { fontSize: "14px", lineHeight: "20px", fontWeight: "500", letterSpacing: "0.3px" }
+for (const { mode, customCSS, expected } of [
+  { mode: "bilingual", expected: commentTypography },
+  { mode: "translationOnly", expected: commentTypography },
+  {
+    mode: "bilingual",
+    customCSS: "[data-readomi-custom-translation-style='custom'] { font-size:1.2em;line-height:1.5;font-weight:600;letter-spacing:0.05em }",
+    expected: { fontSize: "16.8px", lineHeight: "25.2px", fontWeight: "600", letterSpacing: "0.84px" },
+  },
+]) {
+  it(`nested ${mode} inherits comment typography throughout streaming${customCSS ? " with relative custom CSS" : ""}`, async () => {
+    const page = await setup(mode)
+    if (customCSS) {
+      await context.serviceWorkers()[0].evaluate(async (customCSS) => {
+        const { config } = await chrome.storage.local.get("config")
+        config.translate.translationNodeStyle = { preset: "line", isCustom: true, customCSS }
+        await chrome.storage.local.set({ config })
+      }, customCSS)
+    }
+    const paragraph = page.locator("p").first()
+    // YouTube comment text has its own typography inside a smaller flow-root
+    // container. The preview reserves space in that container, while the final
+    // translation is inserted inside the single inline child.
+    await paragraph.evaluate((node) => {
+      const comment = document.createElement("span")
+      comment.style.cssText = "display:inline;font-size:14px;line-height:20px;font-weight:500;letter-spacing:0.3px"
+      comment.textContent = node.textContent
+      node.style.cssText = "display:flow-root;font-size:10px;line-height:normal;font-weight:400;letter-spacing:normal"
+      node.replaceChildren(comment)
+    })
+    assert.deepEqual(await typography(paragraph.locator("span").first()), commentTypography)
+    await paragraph.hover()
+    await page.keyboard.press("Alt")
+    const preview = page.locator("[data-readomi-inline-preview]")
+    const streamingText = preview.locator(".group").first()
+    await streamingText.getByText(/阅读和经历/).waitFor()
+    const streamingTypography = await typography(streamingText)
+    release()
+    await preview.waitFor({ state: "detached" })
+    const wrapper = paragraph.locator(`[data-readomi-translation-mode="${mode}"]`)
+    await wrapper.getByText(/阅读和经历/).waitFor()
+    const translatedText = mode === "bilingual"
+      ? wrapper.locator(".readomi-translated-block-content, .readomi-translated-inline-content")
+      : wrapper
+    const completedTypography = await typography(translatedText)
+    assert.deepEqual(completedTypography, expected, "completion inherits the inner comment text's typography")
+    assert.deepEqual(streamingTypography, expected, "streaming inherits the inner comment text's typography")
+    assert.deepEqual(streamingTypography, completedTypography, "completion does not change the translation's typography")
+  })
+}
+it("separate streaming groups retain each nested comment's typography", async () => {
+  const page = await setup("bilingual")
+  const paragraph = page.locator("p").first()
+  const expected = [
+    commentTypography,
+    { fontSize: "20px", lineHeight: "28px", fontWeight: "700", letterSpacing: "0.6px" },
+  ]
+  await paragraph.evaluate((node, styles) => {
+    const text = node.textContent
+    node.style.cssText = "display:flow-root;font-size:10px;line-height:normal;font-weight:400;letter-spacing:normal;padding:12px"
+    node.replaceChildren(...styles.map((style, index) => {
+      const block = document.createElement("div")
+      block.dataset.commentGroup = index
+      const comment = document.createElement("span")
+      Object.assign(comment.style, style)
+      comment.textContent = text
+      block.append(comment)
+      return block
+    }))
+  }, expected)
+  // The outer container owns the padding, so this pointer position translates
+  // both nested blocks in one hover rather than only the inner text under it.
+  await paragraph.hover({ position: { x: 5, y: 5 } })
+  await page.keyboard.press("Alt")
+  const preview = page.locator("[data-readomi-inline-preview]")
+  const groups = preview.locator(".group")
+  await groups.nth(1).getByText(/阅读和经历/).waitFor()
+  assert.equal(await groups.count(), 2)
+  const streamingTypography = await Promise.all(expected.map((_, index) => typography(groups.nth(index))))
+  release()
+  await preview.waitFor({ state: "detached" })
+  const completedTypography = []
+  for (let index = 0; index < expected.length; index++) {
+    const translation = paragraph.locator(`[data-comment-group="${index}"] .readomi-translated-block-content, [data-comment-group="${index}"] .readomi-translated-inline-content`)
+    await translation.getByText(/阅读和经历/).waitFor()
+    completedTypography.push(await typography(translation))
+  }
+  assert.deepEqual(completedTypography, expected, "completed groups inherit their respective inner text")
+  assert.deepEqual(streamingTypography, expected, "streaming groups inherit their respective inner text")
+  assert.deepEqual(streamingTypography, completedTypography, "neither group changes typography on completion")
+})
 it("cancelling inline replacement restores source and all temporary layout styles", async () => {
   const page = await setup("translationOnly")
   const paragraph = page.locator("p").first()

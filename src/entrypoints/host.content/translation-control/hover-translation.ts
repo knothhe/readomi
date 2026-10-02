@@ -62,8 +62,8 @@ export function bindHoverTranslation(target: Document = document) {
       const walkId = getRandomUUID()
       walkAndLabelElement(block, walkId, config)
       const requests: { result: Promise<string>, resolve: (text: string) => void, reject: (error: unknown) => void }[] = []
-      const translateGroup = Object.assign((text: string) => {
-        const onPartial = preview?.register()
+      const translateGroup = Object.assign((text: string, typographyElement?: HTMLElement) => {
+        const onPartial = preview?.register(typographyElement)
         const result = new Promise<string>((resolve, reject) => {
           const abort = () => reject(new DOMException("Translation cancelled", "AbortError"))
           signal.addEventListener("abort", abort, { once: true })

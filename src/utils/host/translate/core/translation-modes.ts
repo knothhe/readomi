@@ -129,7 +129,8 @@ export async function translateNodesBilingualMode(
     }
     batchDOMOperation(insertOperation)
 
-    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest)
+    const typographyElement = isTextNode(targetNode) || transNodes.length > 1 ? targetNode.parentElement ?? undefined : targetNode
+    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest, typographyElement)
     if (signal?.aborted) {
       batchDOMOperation(() => translatedWrapperNode.remove())
       return
@@ -312,7 +313,8 @@ export async function translateNodeTranslationOnlyMode(
     }
     batchDOMOperation(insertOperation)
 
-    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest)
+    const typographyElement = allChildNodes.at(-1)?.parentElement ?? parentNode
+    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest, typographyElement)
     if (signal?.aborted) {
       batchDOMOperation(() => translatedWrapperNode.remove())
       return
