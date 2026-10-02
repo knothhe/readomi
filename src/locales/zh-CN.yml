@@ -5,12 +5,14 @@ languageCombobox:
   searchLanguages: 搜索语言…
   noLanguagesFound: 没有找到语言
 popup:
+  pageText: 网页文字
+  videoSubtitles: 视频字幕
   auto: 自动
   autoDetected: 自动检测
   sourceLanguage: 源语言
   targetLanguage: 目标语言
   translateInto: 译成
-  displayMode: 显示方式
+  displayMode: 网页文字显示方式
   bilingual: 双语对照
   translationOnly: 仅译文
   translate: 翻译此页
@@ -378,6 +380,33 @@ features:
   video: 视频字幕翻译
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   mode: 字幕显示方式
+subtitleStyle:
+  title: 字幕样式与位置
+  adjust: 样式与位置
+  preset: 字幕预设
+  fontSize: 字幕字号
+  fontDescription: 同时缩放原文和译文，原文略小。
+  position: 字幕位置
+  preview: 字幕预览
+  previewOriginal: and the long-awaited folding one.
+  previewTranslation: 以及期待已久的折叠款。
+  dragHint: 拖动字幕调整位置
+  adjustmentHint: 在视频上拖动字幕调整位置；悬停时可快速切换预设和字号。调整会自动保存。
+  smaller: 减小字号
+  larger: 增大字号
+  reset: 恢复默认
+  resetPosition: 字幕位置复位
+  resetPositionShort: 复位
+  presets:
+    clear: 清晰
+    compact: 轻量
+    study: 学习
+  positions:
+    top: 顶部
+    center: 居中
+    bottom: 底部
+    custom: 自定义位置
+
 subtitleTranslation:
   prefetching: 正在提前翻译字幕…
   pending: 字幕翻译中…

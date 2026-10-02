@@ -1,8 +1,10 @@
 import { useAtom } from "jotai"
 import { i18n } from "#imports"
+import { SegmentedControl } from "@/components/segmented-control"
 import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
+import { SubtitleStyleEditor } from "./subtitle-style-editor"
 
 export function FeaturesSection() {
   const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
@@ -14,13 +16,20 @@ export function FeaturesSection() {
         <SettingsRow
           label={i18n.t("features.mode")}
           control={(
-            <select aria-label={i18n.t("features.mode")} className="rounded-lg border border-input bg-card px-3 py-2" value={features.subtitleMode} onChange={e => void setFeatures({ subtitleMode: e.target.value as typeof features.subtitleMode })}>
-              <option value="bilingual">{i18n.t("options.reading.mode.bilingual")}</option>
-              <option value="translationOnly">{i18n.t("options.reading.mode.translationOnly")}</option>
-            </select>
+            <SegmentedControl
+              aria-label={i18n.t("features.mode")}
+              size="sm"
+              value={features.subtitleMode}
+              options={[
+                { value: "bilingual", label: i18n.t("options.reading.mode.bilingual") },
+                { value: "translationOnly", label: i18n.t("options.reading.mode.translationOnly") },
+              ]}
+              onChange={subtitleMode => void setFeatures({ subtitleMode })}
+            />
           )}
         />
       </SettingsGroup>
+      <SubtitleStyleEditor />
     </SettingsSection>
   )
 }

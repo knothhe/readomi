@@ -5,39 +5,44 @@ import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { openOptionsPage } from "@/utils/navigation"
 import { formatHotkey } from "@/utils/os"
+import { subtitlePositionName } from "@/utils/subtitles/appearance"
+import { DisplayModeControl } from "./display-mode-control"
 import { TranslationControlRow } from "./translation-control-row"
 
-/** The same global subtitle preference and display mode as Settings. */
+/** Subtitle modes are edited here independently of web text, without opening Settings. */
 export function VideoTranslationControl() {
   const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
   const id = useId()
-  const mode = i18n.t(`options.reading.mode.${features.subtitleMode}`)
   const shortcut = features.subtitlesShortcut.trim() ? formatHotkey(features.subtitlesShortcut) : null
+  const style = features.subtitleStyle
+  const summary = [i18n.t(`subtitleStyle.presets.${style.preset}`), `${style.fontSize} px`, i18n.t(`subtitleStyle.positions.${subtitlePositionName(style.position)}`)].join(" · ")
 
   return (
-    <TranslationControlRow
-      label={i18n.t("features.video")}
-      controlId={id}
-      hint={(
+    <section aria-label={i18n.t("popup.videoSubtitles")} className="flex flex-col gap-2 border-t border-border pt-2.5">
+      <TranslationControlRow
+        label={i18n.t("popup.videoSubtitles")}
+        controlId={id}
+        hint={shortcut && <span className="text-[11px] leading-4 text-muted-foreground">{shortcut}</span>}
+        control={(
+          <Switch
+            id={id}
+            aria-label={i18n.t("features.video")}
+            checked={features.videoSubtitles}
+            onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })}
+          />
+        )}
+      />
+      <DisplayModeControl value={features.subtitleMode} label={i18n.t("features.mode")} onChange={subtitleMode => void setFeatures({ subtitleMode })} />
+      <div className="flex items-center justify-between gap-2 px-0.5 py-0.5 text-[11px] leading-4">
+        <span className="min-w-0 truncate text-muted-foreground" title={summary}>{summary}</span>
         <button
           type="button"
-          aria-label={i18n.t("features.mode")}
-          title={i18n.t("features.videoDescription")}
           onClick={() => void openOptionsPage({ section: "features" })}
-          className="max-w-full truncate rounded text-left text-[11px] leading-4 text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="shrink-0 rounded text-brand outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          {mode}
-          {shortcut && ` · ${shortcut}`}
+          {i18n.t("subtitleStyle.adjust")}
         </button>
-      )}
-      control={(
-        <Switch
-          id={id}
-          aria-label={i18n.t("features.video")}
-          checked={features.videoSubtitles}
-          onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })}
-        />
-      )}
-    />
+      </div>
+    </section>
   )
 }

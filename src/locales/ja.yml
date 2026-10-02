@@ -5,6 +5,8 @@ languageCombobox:
   searchLanguages: 言語を検索…
   noLanguagesFound: 言語が見つかりません
 popup:
+  pageText: Web text
+  videoSubtitles: Video subtitles
   auto: 自動
   autoDetected: 自動検出
   sourceLanguage: ソース言語
@@ -378,6 +380,33 @@ features:
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
+subtitleStyle:
+  title: Subtitle style and position
+  adjust: Style and position
+  preset: Subtitle preset
+  fontSize: Subtitle size
+  fontDescription: Scales both lines, with the original slightly smaller.
+  position: Subtitle position
+  preview: Subtitle preview
+  previewOriginal: and the long-awaited folding one.
+  previewTranslation: 以及期待已久的折叠款。
+  dragHint: Drag subtitles to move them
+  adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
+  smaller: Decrease subtitle size
+  larger: Increase subtitle size
+  reset: Restore defaults
+  resetPosition: Reset subtitle position
+  resetPositionShort: Reset
+  presets:
+    clear: Clear
+    compact: Compact
+    study: Study
+  positions:
+    top: Top
+    center: Center
+    bottom: Bottom
+    custom: Custom position
+
 subtitleTranslation:
   prefetching: Preparing subtitle translations…
   pending: Translating subtitles…

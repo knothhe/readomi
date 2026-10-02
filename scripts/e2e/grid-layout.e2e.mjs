@@ -47,7 +47,7 @@ it("page translation preserves display contents grid columns in bilingual, trans
     assert.equal(await article.locator(".email-meta a[href=\"mailto:hello@example.com\"]").count(), 1)
     assert.equal(await article.locator(".prose a[href=\"https://example.com/\"]").count(), 1)
 
-    await popup.getByRole("button", { name: "Translation only", exact: true }).click()
+    await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", exact: true }).click()
     await article.waitForFunction(() => document.querySelector(".prose h2").textContent.trim().startsWith("【译】"))
     await assertColumns()
 

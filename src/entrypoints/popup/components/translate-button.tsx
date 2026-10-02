@@ -63,7 +63,7 @@ export function TranslateButton() {
   return (
     <div>
       <TranslationControlRow
-        label={i18n.t("popup.translate")}
+        label={i18n.t("popup.pageText")}
         hint={shortcutHint && <span className="text-[11px] leading-4 text-muted-foreground">{shortcutHint}</span>}
         control={(
           <button

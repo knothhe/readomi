@@ -78,6 +78,23 @@ describe("settings page", () => {
     vi.unstubAllGlobals()
   })
 
+  it("previews subtitle presets, preserves a dragged position and restores the defaults", async () => {
+    const custom: Config = { ...configured, features: { ...configured.features, subtitleMode: "translationOnly", subtitleStyle: { preset: "clear", fontSize: 30, position: { x: 60, y: 65 } } } }
+    const { store } = await renderSettings(custom, "features")
+    expect(screen.queryByText("subtitleStyle.previewOriginal")).toBeNull()
+    expect(screen.getByText("subtitleStyle.positions.custom")).toBeInTheDocument()
+    fireEvent.click(within(screen.getByRole("group", { name: "subtitleStyle.preset" })).getByRole("button", { name: "subtitleStyle.presets.compact" }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ preset: "compact", fontSize: 20, position: { x: 60, y: 65 } }))
+    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "32" } })
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(32))
+    fireEvent.click(within(screen.getByRole("group", { name: "subtitleStyle.position" })).getByRole("button", { name: "subtitleStyle.positions.top" }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.position).toEqual({ x: 50, y: 18 }))
+    fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.reset" }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(DEFAULT_CONFIG.features.subtitleStyle))
+    expect(store.get(configAtom).features.subtitleMode).toBe("translationOnly")
+    expect(store.get(configAtom).translate.mode).toBe(custom.translate.mode)
+  })
+
   it("has translation settings and a separate appearance section", async () => {
     const { container } = await renderSettings(configured)
 

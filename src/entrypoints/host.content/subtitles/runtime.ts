@@ -1,9 +1,13 @@
 import type { Config } from "@/types/config/config"
 import { i18n } from "#imports"
+import { SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
+import { logger } from "@/utils/logger"
+import { clampSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
 import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
 import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
@@ -22,21 +26,30 @@ export function readActiveCueText(track: TextTrack): string {
 interface Player {
   tick: () => void
   dispose: () => void
+  updateConfig: (config: Config) => void
 }
 
-function mountPlayer(video: HTMLVideoElement, config: Config): Player {
+function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
+  let config = initialConfig
+  let appearance = config.features.subtitleStyle
+  let renderedPosition = appearance.position
   const host = document.createElement("div")
   host.dataset.readomiSubtitles = ""
   host.className = "notranslate"
   host.setAttribute("translate", "no")
   const shadow = host.attachShadow({ mode: "closed" })
   const style = document.createElement("style")
-  style.textContent = ":host{position:fixed!important;z-index:2147483646!important;pointer-events:none!important;display:block!important}.box{background:rgba(15,20,35,.85);color:#fff;border-radius:8px;padding:10px 16px;text-align:center;white-space:pre-line;font:500 18px/1.5 system-ui;max-width:100%;box-sizing:border-box}.original{font-size:15px;margin-bottom:4px}.empty{display:none}"
+  style.textContent = `:host{position:fixed!important;z-index:2147483646!important;pointer-events:none!important;display:block!important;width:max-content!important;transform:translate(-50%,-100%)!important}.box{position:relative;max-width:100%;box-sizing:border-box;font-family:system-ui;pointer-events:auto;touch-action:none;user-select:none;cursor:grab;outline:none}.box:focus-visible{outline:2px solid #fff8;outline-offset:6px}.box.dragging{cursor:grabbing}.original{font-size:.85em;margin-bottom:4px}.translated{font-size:1em}.empty{display:none}.tools{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#151923;white-space:nowrap;font:12px system-ui;color:white;text-shadow:none;cursor:default;opacity:0;pointer-events:none;transition:opacity .15s}.box:hover .tools,.box:focus-within .tools,.box.dragging .tools{opacity:1;pointer-events:auto}.tools::after{content:"";position:absolute;top:100%;left:0;width:100%;height:8px}.tools-below .tools::after{top:auto;bottom:100%}.tools button,.tools select{font:12px system-ui;color:white;background:#ffffff1f;border:0;border-radius:4px;padding:4px 8px;cursor:pointer}.tools option{background:#151923;color:white}.tools button:disabled{opacity:.4;cursor:default}.tools button:focus-visible,.tools select:focus-visible{outline:2px solid white;outline-offset:2px}.tools-below .tools{bottom:auto;top:calc(100% + 8px)}`
   const box = document.createElement("div")
   const original = document.createElement("div")
   original.className = "original"
   const translated = document.createElement("div")
+  translated.className = "translated"
   box.className = "box empty"
+  box.tabIndex = 0
+  box.setAttribute("role", "group")
+  box.setAttribute("aria-label", i18n.t("subtitleStyle.dragHint"))
+  box.title = i18n.t("subtitleStyle.dragHint")
   box.append(original, translated)
   shadow.append(style, box)
   document.documentElement.append(host)
@@ -64,6 +77,70 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
   let source = ""
   let text = ""
   let changedAt = 0
+  const tools = document.createElement("div")
+  tools.className = "tools"
+  tools.title = ""
+  const presetSelect = document.createElement("select")
+  presetSelect.setAttribute("aria-label", i18n.t("subtitleStyle.preset"))
+  for (const preset of SUBTITLE_PRESETS) {
+    const option = document.createElement("option")
+    option.value = preset
+    option.textContent = i18n.t(`subtitleStyle.presets.${preset}`)
+    presetSelect.append(option)
+  }
+  const sizeLabel = document.createElement("output")
+  const button = (label: string, text: string) => {
+    const element = document.createElement("button")
+    element.type = "button"
+    element.setAttribute("aria-label", label)
+    element.title = label
+    element.textContent = text
+    return element
+  }
+  const smaller = button(i18n.t("subtitleStyle.smaller"), "−")
+  const larger = button(i18n.t("subtitleStyle.larger"), "+")
+  const resetPosition = button(i18n.t("subtitleStyle.resetPosition"), i18n.t("subtitleStyle.resetPositionShort"))
+  const positionCaption = () => {
+    const rect = video.getBoundingClientRect()
+    host.style.maxWidth = `${rect.width * 0.8}px`
+    renderedPosition = clampSubtitlePosition(appearance.position, rect, box.getBoundingClientRect())
+    const centre = rect.width * renderedPosition.x / 100
+    host.style.left = `${rect.left + centre}px`
+    const toolHalf = tools.getBoundingClientRect().width / 2
+    tools.style.left = `calc(50% + ${Math.max(toolHalf + 12, Math.min(centre, rect.width - toolHalf - 12)) - centre}px)`
+    host.style.top = `${rect.top + rect.height * renderedPosition.y / 100}px`
+    const captionTop = rect.height * renderedPosition.y / 100 - box.getBoundingClientRect().height
+    box.classList.toggle("tools-below", captionTop < 48)
+  }
+  const renderAppearance = () => {
+    Object.assign(box.style, subtitleTextStyle(appearance))
+    presetSelect.value = appearance.preset
+    sizeLabel.textContent = `${appearance.fontSize} px`
+    smaller.disabled = appearance.fontSize <= 14
+    larger.disabled = appearance.fontSize >= 40
+    positionCaption()
+  }
+  const persist = (patch: Partial<typeof appearance>) => {
+    appearance = { ...appearance, ...patch }
+    renderAppearance()
+    void saveSubtitleStyle(patch).catch(error => logger.error("Could not save subtitle appearance", error))
+  }
+  smaller.addEventListener("click", () => persist({ fontSize: Math.max(14, appearance.fontSize - 1) }))
+  larger.addEventListener("click", () => persist({ fontSize: Math.min(40, appearance.fontSize + 1) }))
+  resetPosition.addEventListener("click", () => persist({ position: SUBTITLE_POSITIONS.bottom }))
+  presetSelect.addEventListener("change", () => persist(subtitlePresetPatch(presetSelect.value as typeof appearance.preset)))
+  tools.append(presetSelect, smaller, sizeLabel, larger, resetPosition)
+  box.prepend(tools)
+  renderAppearance()
+  const disposeDrag = bindSubtitleDrag(box, {
+    videoRect: () => video.getBoundingClientRect(),
+    position: () => renderedPosition,
+    move: (position) => {
+      appearance = { ...appearance, position }
+      positionCaption()
+    },
+    commit: position => persist({ position }),
+  })
 
   const restoreTracks = () => {
     for (const [track, mode] of modes) {
@@ -82,9 +159,6 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
       document.documentElement.append(host)
     }
     const rect = video.getBoundingClientRect()
-    host.style.left = `${rect.left + rect.width * 0.1}px`
-    host.style.top = `${rect.top + rect.height * 0.75}px`
-    host.style.width = `${rect.width * 0.8}px`
     const currentSource = `${location.href}|${video.currentSrc || video.src}`
     if (currentSource !== source) {
       source = currentSource
@@ -138,6 +212,7 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
     original.textContent = config.features.subtitleMode === "bilingual" ? text : ""
     original.hidden = config.features.subtitleMode !== "bilingual"
     translated.textContent = translations.get(text) ?? (translations.hasFailed(text) ? i18n.t("subtitleTranslation.failed") : i18n.t(cues.length ? "subtitleTranslation.prefetching" : "subtitleTranslation.pending"))
+    positionCaption()
     if (adPlaying || video.ended || youtube?.enabled === false) {
       translations.update([], video.currentTime, video.playbackRate, "")
       return
@@ -147,7 +222,14 @@ function mountPlayer(video: HTMLVideoElement, config: Config): Player {
   }
   return {
     tick,
+    updateConfig: (next) => {
+      config = next
+      appearance = next.features.subtitleStyle
+      renderAppearance()
+      tick()
+    },
     dispose: () => {
+      disposeDrag()
       timeline?.dispose()
       translations.dispose()
       restoreTracks()
@@ -192,11 +274,23 @@ export function bootstrapVideoSubtitles() {
     tick()
     timer = setInterval(tick, 250)
   }
+  const requestKey = (config: Config | null) => config && JSON.stringify([
+    config.language,
+    config.providersConfig.find(provider => provider.id === config.translate.providerId),
+    config.translate.customPromptsConfig,
+  ])
   const unsubscribe = subscribeLocalConfig((config) => {
+    const previous = current
     current = config
     if (!config?.features.videoSubtitles)
       suspended = false
-    reconcile()
+    if (config?.features.videoSubtitles && !suspended && timer !== undefined && requestKey(previous) === requestKey(config)) {
+      // Mode, size and position changes must not discard the lookahead buffer.
+      players.forEach(player => player.updateConfig(config))
+    }
+    else {
+      reconcile()
+    }
   })
   const keydown = (event: KeyboardEvent) => {
     if (!current?.features.videoSubtitles || event.defaultPrevented || event.repeat || isEditableTarget(event.target) || !eventMatchesHotkey(event, current.features.subtitlesShortcut))

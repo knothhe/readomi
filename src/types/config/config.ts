@@ -5,6 +5,7 @@ import { COLOR_THEMES, DEFAULT_COLOR_THEME } from "@/utils/color-theme"
 import { FEATURE_PROVIDER_DEFS } from "@/utils/constants/feature-providers"
 import { normalizePageTranslationShortcut } from "@/utils/page-translation-shortcut"
 import { providersConfigSchema } from "./provider"
+import { DEFAULT_SUBTITLE_STYLE, subtitleStyleSchema } from "./subtitle-style"
 import { pageTranslationShortcutSchema, translateConfigSchema } from "./translate"
 
 // Language schema
@@ -29,6 +30,7 @@ export const configSchema = z.object({
     modeShortcut: pageTranslationShortcutSchema.default(""),
     subtitlesShortcut: pageTranslationShortcutSchema.default(""),
     videoSubtitles: z.boolean().default(false),
+    subtitleStyle: subtitleStyleSchema.default(DEFAULT_SUBTITLE_STYLE),
     subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
   }),
 }).superRefine((data, ctx) => {

@@ -1,4 +1,5 @@
 import type { Config } from "@/types/config/config"
+import { DEFAULT_SUBTITLE_STYLE } from "@/types/config/subtitle-style"
 import { DEFAULT_TRANSLATE_PROMPTS_CONFIG } from "./prompt"
 import { DEFAULT_PROVIDER_CONFIG_LIST } from "./providers"
 import { DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY } from "./translate"
@@ -19,7 +20,7 @@ export const DEFAULT_CONFIG: Config = {
   reading: {
     wordPrefixEmphasis: false,
   },
-  features: { hoverTranslation: false, hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", videoSubtitles: false, subtitleMode: "bilingual" },
+  features: { hoverTranslation: false, hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", videoSubtitles: false, subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
   translate: {
     providerId: "openai-default",
     mode: "bilingual",

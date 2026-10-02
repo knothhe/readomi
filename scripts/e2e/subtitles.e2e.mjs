@@ -3,10 +3,10 @@ import assert from "node:assert/strict"
 import { Buffer } from "node:buffer"
 import process from "node:process"
 import { it } from "node:test"
-import { configureService, launchBrowser } from "./browser.mjs"
+import { configureService, launchBrowser, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
-it("YouTube subtitles stay synchronized after a slow model response, seek immediately and hide ads", async () => {
+it("YouTube subtitles preserve preloading, support appearance controls and keep web modes independent", async () => {
   const service = await startFakeService()
   let context
   let release
@@ -54,7 +54,7 @@ it("YouTube subtitles stay synchronized after a slow model response, seek immedi
         await route.fulfill({ contentType: "application/json", body: JSON.stringify({ events }) })
         return
       }
-      await route.fulfill({ contentType: "text/html", body: `<!doctype html><meta charset="utf-8"><title>Subtitle playback fixture</title><style>body{background:#faf8f5}.html5-video-player{width:640px;margin:40px auto;position:relative;background:#302b29}video{width:640px;height:360px}.ytp-caption-window-container{position:absolute;bottom:40px;left:100px;color:white}</style><div class="html5-video-player"><video src="/video.wav" muted autoplay></video><div class="ytp-caption-window-container"><span class="ytp-caption-segment">Native caption</span></div></div><script>
+      await route.fulfill({ contentType: "text/html", body: `<!doctype html><meta charset="utf-8"><title>Subtitle playback fixture</title><style>body{background:#faf8f5}.html5-video-player{width:640px;margin:40px auto;position:relative;background:#302b29}video{width:640px;height:360px}.html5-video-player:fullscreen{width:100vw;height:100vh;margin:0}.html5-video-player:fullscreen video{width:100vw;height:100vh}.ytp-caption-window-container{position:absolute;bottom:40px;left:100px;color:white}</style><div class="html5-video-player"><video src="/video.wav" muted autoplay></video><div class="ytp-caption-window-container"><span class="ytp-caption-segment">Native caption</span></div></div><script>
 const player = document.querySelector('.html5-video-player');
 player.getPlayerResponse = () => ({videoDetails:{videoId:'readomi-fixture'},captions:{playerCaptionsTracklistRenderer:{captionTracks:[{baseUrl:'https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en',languageCode:'en',vssId:'.en'}]}}});
 player.getOption = () => ({languageCode:'en',vssId:'.en'});
@@ -62,13 +62,24 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
 </script>` })
     })
     const cdp = await context.newCDPSession(page)
+    const find = (node, predicate) => predicate(node) ? node : [...(node.children ?? []), ...(node.shadowRoots ?? [])].map(child => find(child, predicate)).find(Boolean)
+    const attr = (node, name) => {
+      const index = node.attributes?.indexOf(name) ?? -1
+      return index >= 0 ? node.attributes[index + 1] : undefined
+    }
+    const bounds = async (node) => {
+      const model = await cdp.send("DOM.getBoxModel", { nodeId: node.nodeId }).catch(() => null)
+      if (!model)
+        return null
+      const quad = model.model.border
+      return { left: quad[0], top: quad[1], right: quad[2], bottom: quad[5] }
+    }
+    const controlBounds = async (label) => {
+      const { root } = await cdp.send("DOM.getDocument", { depth: -1, pierce: true })
+      return bounds(find(root, node => attr(node, "aria-label") === label))
+    }
     const snapshot = async () => {
       const { root } = await cdp.send("DOM.getDocument", { depth: -1, pierce: true })
-      const find = (node, predicate) => predicate(node) ? node : [...(node.children ?? []), ...(node.shadowRoots ?? [])].map(child => find(child, predicate)).find(Boolean)
-      const attr = (node, name) => {
-        const index = node.attributes?.indexOf(name) ?? -1
-        return index >= 0 ? node.attributes[index + 1] : undefined
-      }
       const text = node => node ? node.nodeType === 3 ? node.nodeValue : (node.children ?? []).map(text).join("") : ""
       const host = find(root, node => attr(node, "data-readomi-subtitles") !== undefined)
       const shadow = host?.shadowRoots?.[0]
@@ -76,7 +87,7 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
         return {}
       const box = find(shadow, node => attr(node, "class")?.split(" ").includes("box"))
       const original = find(shadow, node => attr(node, "class") === "original")
-      return { original: text(original), text: text(box), hidden: attr(box, "class")?.split(" ").includes("empty") }
+      return { original: text(original), text: text(box), hidden: attr(box, "class")?.split(" ").includes("empty"), bounds: await bounds(box) }
     }
     const waitForSubtitle = async (predicate) => {
       const deadline = Date.now() + 15000
@@ -89,6 +100,17 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
       }
       throw new Error(`Subtitle state timed out: ${JSON.stringify(state)}`)
     }
+    const waitForStoredConfig = async (predicate) => {
+      const deadline = Date.now() + 15000
+      while (Date.now() < deadline) {
+        const config = await storedConfig(context)
+        if (predicate(config))
+          return config
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      throw new Error("Subtitle configuration was not saved")
+    }
+    const waitForStoredStyle = async predicate => (await waitForStoredConfig(config => predicate(config.features.subtitleStyle))).features.subtitleStyle
     release = service.holdAnswers()
     await page.goto("https://www.youtube.com/watch?v=readomi-fixture")
     await waitForSubtitle(state => state.text?.includes("Preparing subtitle translations"))
@@ -104,11 +126,53 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     await waitForSubtitle(state => state.text?.includes("【译】Sentence 45."))
     await page.evaluate(() => document.querySelector(".html5-video-player").classList.add("ad-showing"))
     await waitForSubtitle(state => state.hidden)
+    await page.evaluate(() => document.querySelector(".html5-video-player").classList.remove("ad-showing"))
+    await waitForSubtitle(state => state.hidden === false)
+    const initial = (await snapshot()).bounds
+    await page.mouse.move((initial.left + initial.right) / 2, (initial.top + initial.bottom) / 2)
+    const plus = await controlBounds("Increase subtitle size")
+    await page.mouse.click((plus.left + plus.right) / 2, (plus.top + plus.bottom) / 2)
+    await waitForStoredStyle(style => style.fontSize === 25)
+    const beforeDrag = (await snapshot()).bounds
+    const x = (beforeDrag.left + beforeDrag.right) / 2
+    const y = (beforeDrag.top + beforeDrag.bottom) / 2
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.mouse.move(x - 80, y - 60, { steps: 8 })
+    await page.mouse.up()
+    const moved = await waitForStoredStyle(style => Math.abs(style.position.x - 37.5) < 0.5 && Math.abs(style.position.y - (88 - 60 / 360 * 100)) < 0.5)
+    assert.equal(await page.evaluate(() => document.querySelector("video").paused), false, "dragging does not pause playback")
+    await page.evaluate(() => document.querySelector(".html5-video-player").requestFullscreen())
+    const fullscreen = await page.locator("video").boundingBox()
+    await waitForSubtitle(state => state.bounds && Math.abs(((state.bounds.left + state.bounds.right) / 2 - fullscreen.x) / fullscreen.width * 100 - moved.position.x) < 0.5)
+    await page.evaluate(() => document.exitFullscreen())
+    const normalVideo = await page.locator("video").boundingBox()
+    await waitForSubtitle(state => state.bounds && Math.abs(((state.bounds.left + state.bounds.right) / 2 - normalVideo.x) / normalVideo.width * 100 - moved.position.x) < 0.5)
     if (process.env.SUBTITLE_SCREENSHOT) {
-      await page.evaluate(() => document.querySelector(".html5-video-player").classList.remove("ad-showing"))
-      await waitForSubtitle(state => state.hidden === false)
       await page.screenshot({ path: process.env.SUBTITLE_SCREENSHOT })
     }
+    const popup = await context.newPage()
+    await popup.setViewportSize({ width: 320, height: 460 })
+    await popup.goto(`chrome-extension://${extensionId}/popup.html`)
+    const webMode = popup.getByRole("group", { name: "Web text display mode" })
+    const subtitleMode = popup.getByRole("group", { name: "Subtitle display mode" })
+    await webMode.getByRole("button", { name: "Translation only", exact: true }).click()
+    await popup.waitForFunction(() => document.querySelector("section[aria-label=\"Web text\"] button[aria-pressed=\"true\"]")?.textContent.includes("Translation only"))
+    assert.equal((await waitForStoredConfig(config => config.translate.mode === "translationOnly")).features.subtitleMode, "bilingual")
+    if (process.env.POPUP_SCREENSHOT)
+      await popup.screenshot({ path: process.env.POPUP_SCREENSHOT, animations: "disabled" })
+    await subtitleMode.getByRole("button", { name: "Translation only", exact: true }).click()
+    await webMode.getByRole("button", { name: "Bilingual", exact: true }).click()
+    const finalConfig = await waitForStoredConfig(config => config.features.subtitleMode === "translationOnly" && config.translate.mode === "bilingual")
+    assert.equal(finalConfig.features.subtitleMode, "translationOnly")
+    assert.equal(finalConfig.translate.mode, "bilingual")
+    assert.deepEqual(finalConfig.features.subtitleStyle, moved)
+    await popup.reload()
+    await popup.waitForFunction(() => {
+      const groups = [...document.querySelectorAll("[role=\"group\"]")]
+      const selected = label => groups.find(group => group.getAttribute("aria-label") === label)?.querySelector("[aria-pressed=\"true\"]")?.textContent
+      return selected("Web text display mode") === "Bilingual" && selected("Subtitle display mode") === "Translation only"
+    })
   }
   finally {
     release?.()

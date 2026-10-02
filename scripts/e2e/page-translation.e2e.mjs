@@ -71,8 +71,8 @@ it("user changes the display mode: Given a translated article in bilingual mode,
   const { article } = await translateArticle()
   const requestsBefore = service.completions().length
 
-  await popup.getByRole("button", { name: "Translation only", exact: true }).click()
-  await popup.getByRole("button", { name: "Translation only", pressed: true }).waitFor()
+  await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", exact: true }).click()
+  await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", pressed: true }).waitFor()
 
   // Each paragraph changes on its own when its translation comes back, so wait until all of them show only a translation.
   await article.waitForFunction(() => [...document.querySelectorAll("h1, p")].every(element => element.textContent.trim().startsWith("【译】")), undefined, { timeout: 10_000 })
@@ -94,8 +94,8 @@ it("user changes the display mode while the page is translating: Given a slow se
     await article.keyboard.press("Alt+E")
     await article.locator(".readomi-spinner").first().waitFor({ timeout: 10_000 })
 
-    await popup.getByRole("button", { name: "Translation only", exact: true }).click()
-    await popup.getByRole("button", { name: "Translation only", pressed: true }).waitFor()
+    await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", exact: true }).click()
+    await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", pressed: true }).waitFor()
     // The page translation restarts: each paragraph waits again for its translation in the new mode.
     await article.locator(".readomi-translated-content-wrapper[data-readomi-translation-mode=\"translationOnly\"]").first().waitFor({ timeout: 10_000 })
   }
