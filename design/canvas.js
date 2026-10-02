@@ -6,6 +6,9 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Settings-Language-Choices.html", title: "设置 · 界面语言 · 全部选项", x: 0, y: 32300, w: 1120, h: 1120 },
+    { file: "Settings-Language-English.html", title: "设置 · 界面语言 · English", x: 1200, y: 32300, w: 1120, h: 940 },
+    { file: "Settings-Language-Failed.html", title: "设置 · 界面语言 · 保存失败", x: 2400, y: 32300, w: 1120, h: 940 },
     { file: "Settings-Subtitle-Study.html", title: "设置 · 学习字幕 · 40 px", x: 0, y: 30700, w: 1120, h: 1280 },
     { file: "Settings-Subtitle-Dark.html", title: "设置 · 视频字幕 · 深色", x: 1200, y: 30700, w: 1120, h: 1280 },
     { file: "Settings-Subtitle-Mobile.html", title: "设置 · 视频字幕 · 窄屏", x: 2400, y: 30700, w: 390, h: 1450 },
