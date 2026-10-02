@@ -121,6 +121,7 @@ window.READOMI_CANVAS = {
     { file: "Quality-Prompt-Editing.html", title: "译文质量 · 修改共用提示词", x: 0, y: 39000, w: 1120, h: 1460 },
     { file: "Quality-Summary-On.html", title: "译文质量 · 网页摘要开启", x: 2400, y: 39000, w: 1120, h: 860 },
     { file: "Quality-Prompt-Invalid.html", title: "译文质量 · 模板缺少待翻译文字", x: 1200, y: 39000, w: 1120, h: 1460 },
+    { file: "Quality-Prompt-Help.html", title: "译文质量 · 共用提示词帮助", x: 3600, y: 40600, w: 1120, h: 860 },
     { file: "Quality-Summary-Help.html", title: "译文质量 · 网页摘要帮助", x: 2400, y: 40600, w: 1120, h: 860 },
     { file: "Quality-Prompt-Variables.html", title: "译文质量 · 提示词模板帮助", x: 1200, y: 40600, w: 1120, h: 1460 },
     { file: "Quality-Prompt-Default.html", title: "译文质量 · 恢复默认待应用", x: 0, y: 40600, w: 1120, h: 1460 },
