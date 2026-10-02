@@ -6,6 +6,8 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Page-YouTube-Comment-Streaming.html", title: "页面 · YouTube 评论 · 流式译文", x: 0, y: 54000, w: 1200, h: 360 },
+    { file: "Page-YouTube-Comment-Ready.html", title: "页面 · YouTube 评论 · 翻译完成", x: 1280, y: 54000, w: 1200, h: 360 },
     { file: "Video-Drag-Fullscreen-Letterbox.html", title: "视频 · 宽银幕字幕拖动中", x: 1200, y: 52520, w: 2000, h: 1160 },
     { file: "Video-Bottom-Fullscreen-Letterbox.html", title: "视频 · 宽银幕全屏底部字幕", x: 1200, y: 51280, w: 2000, h: 1160 },
     { file: "Settings-Subtitle-Large.html", title: "设置 · 大字号字幕 · 80 px", x: 0, y: 48800, w: 1120, h: 1280 },
