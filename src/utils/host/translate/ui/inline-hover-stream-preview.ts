@@ -116,7 +116,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
     root.render([...groups.entries()].map(([key, partial]) => {
       const template = doc.createElement("template")
       template.innerHTML = partial.replace(/&(?:#x?[\da-f]*|[a-z]*)$/i, "").trimStart()
-      const text = template.content.textContent ?? ""
+      const text = (template.content.textContent ?? "").trimStart()
       return createElement("div", { key, className: "preview-group", style: { ...groupTypography.get(key), display: text ? "block" : "none" } },
         createElement("div", {
           "className": `preview-translation ${CONTENT_WRAPPER_CLASS} ${only ? "" : BLOCK_CONTENT_CLASS}`,
@@ -151,8 +151,9 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
   doc.addEventListener("keydown", escape, true)
   view.addEventListener("resize", scheduleHeight)
   return {
-    register(typographyElement = anchor) {
+    register(typographyElement = anchor, onTextVisible?: () => void) {
       const key = groups.size
+      let revealed = false
       groups.set(key, "")
       // Keep the flow box on the anchor, but inherit each group's typography
       // from the final renderer's insertion container. Sites such as YouTube
@@ -173,6 +174,12 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       })
       lineHeight = Math.max(lineHeight, Number.parseFloat(typography.lineHeight) || Number.parseFloat(typography.fontSize) * 1.65)
       progressCallbacks.set(key, (length) => {
+        if (length && !disposed && !committing && !revealed) {
+          revealed = true
+          // SmoothPreviewText has written the first visible text, before paint.
+          // Keep the page renderer's waiting dot until that point.
+          onTextVisible?.()
+        }
         if (length && only && !disposed && !committing && !sourceHidden) {
           sourceHidden = true
           setAnchorStyle("visibility", "hidden")

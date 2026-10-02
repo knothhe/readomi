@@ -36,10 +36,22 @@ for (const mode of ["bilingual", "translationOnly"]) {
     const page = await setup(mode)
     const paragraph = page.locator("p").first()
     const original = await paragraph.innerHTML()
-    await paragraph.hover()
-    await page.keyboard.press("Alt")
+    const resume = service.holdAnswers()
+    try {
+      const count = service.completions().length
+      await paragraph.hover()
+      await page.keyboard.press("Alt")
+      await waitForStreamRequest(count)
+      await paragraph.locator(".readomi-spinner").waitFor({ state: "visible" })
+      assert.equal(await paragraph.locator(".readomi-spinner:visible").count(), 1)
+      assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
+    }
+    finally {
+      resume()
+    }
     const preview = page.locator("[data-readomi-inline-preview]")
     await preview.locator(".content").getByText(/阅读和经历/).waitFor()
+    assert.equal(await paragraph.locator(".readomi-spinner:visible").count(), 0, "the loading dot disappears when the stream first becomes readable")
     const heights = await preview.evaluate(async (node) => {
       const heights = [Number.parseFloat(node.style.height)]
       const observer = new MutationObserver(() => {
@@ -68,6 +80,7 @@ for (const mode of ["bilingual", "translationOnly"]) {
     release()
     await preview.waitFor({ state: "detached" })
     await paragraph.getByText(/阅读和经历/).waitFor()
+    assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
     assert.equal((await paragraph.boundingBox()).y, paragraphTop, "completion preserves the paragraph's reading position")
     assert.ok(!await paragraph.getAttribute("style"), "replacement restores temporary layout styles")
     await paragraph.hover()
@@ -198,6 +211,7 @@ it("cancelling inline replacement restores source and all temporary layout style
   await page.keyboard.press("Escape")
   await preview.waitFor({ state: "detached" })
   await page.waitForFunction(text => document.querySelector("p").textContent === text, original)
+  assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
   assert.equal(await paragraph.getAttribute("style"), "")
   assert.equal(await paragraph.locator("span").first().getAttribute("style"), originalStyle)
   assert.equal(await paragraph.locator("span").first().evaluate(node => getComputedStyle(node).visibility), "visible")
@@ -221,44 +235,52 @@ it("inline preview remeasures wrapping in a narrow viewport and restores on disa
   })
   await preview.waitFor({ state: "detached" })
   await page.waitForFunction(text => document.querySelector("p").innerHTML === text, original)
+  assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
 })
 
-it("waiting for the first output keeps source geometry and can be cancelled", async () => {
-  const page = await setup("translationOnly")
-  const resume = service.holdAnswers()
-  try {
-    const paragraph = page.locator("p").first()
-    const original = await paragraph.innerHTML()
-    const originalText = await paragraph.textContent()
-    const initialBounds = await paragraph.boundingBox()
-    const below = page.locator("p").nth(1)
-    const initialY = (await below.boundingBox()).y
-    const count = service.completions().length
-    await paragraph.hover()
-    await page.keyboard.press("Alt")
-    await waitForStreamRequest(count)
-    // Observe past the old delayed loading label while the service withholds
-    // every output chunk, so a reintroduced waiting UI cannot pass unnoticed.
-    await page.waitForTimeout(350)
-    assert.equal(await page.getByText("Waiting for translation…", { exact: true }).count(), 0)
-    assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
-    assert.equal(await paragraph.textContent(), originalText)
-    assert.deepEqual(await paragraph.boundingBox(), initialBounds)
-    assert.equal((await below.boundingBox()).y, initialY)
-    const cancelled = context.waitForEvent("requestfailed", {
-      predicate: request => request.url() === `${service.origin}/v1/chat/completions` && request.postDataJSON()?.stream === true,
-      timeout: 10_000,
-    })
-    await page.keyboard.press("Escape")
-    assert.match((await cancelled).failure()?.errorText ?? "", /abort|cancel/i)
-    await page.waitForFunction(text => document.querySelector("p").innerHTML === text, original)
-    assert.deepEqual(await paragraph.boundingBox(), initialBounds)
-    assert.equal((await below.boundingBox()).y, initialY)
-  }
-  finally {
-    resume()
-  }
-})
+for (const mode of ["bilingual", "translationOnly"]) {
+  it(`waiting for the first ${mode} output shows a loading dot and can be cancelled`, async () => {
+    const page = await setup(mode)
+    const resume = service.holdAnswers()
+    try {
+      const paragraph = page.locator("p").first()
+      const original = await paragraph.innerHTML()
+      const originalText = await paragraph.textContent()
+      const initialBounds = await paragraph.boundingBox()
+      const below = page.locator("p").nth(1)
+      const initialY = (await below.boundingBox()).y
+      const count = service.completions().length
+      await paragraph.hover()
+      await page.keyboard.press("Alt")
+      await waitForStreamRequest(count)
+      await paragraph.locator(".readomi-spinner").waitFor({ state: "visible" })
+      // The service withholds every output chunk; the existing page loading dot
+      // remains visible without replacing the source or reserving preview space.
+      await page.waitForTimeout(350)
+      assert.equal(await paragraph.locator(".readomi-spinner:visible").count(), 1)
+      assert.equal(await page.getByText("Waiting for translation…", { exact: true }).count(), 0)
+      assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
+      assert.equal(await paragraph.textContent(), originalText)
+      assert.deepEqual(await paragraph.boundingBox(), initialBounds)
+      assert.equal((await below.boundingBox()).y, initialY)
+      if (mode === "bilingual")
+        await page.screenshot({ path: "/tmp/readomi-hover-waiting.png", fullPage: true })
+      const cancelled = context.waitForEvent("requestfailed", {
+        predicate: request => request.url() === `${service.origin}/v1/chat/completions` && request.postDataJSON()?.stream === true,
+        timeout: 10_000,
+      })
+      await page.keyboard.press("Escape")
+      assert.match((await cancelled).failure()?.errorText ?? "", /abort|cancel/i)
+      await page.waitForFunction(text => document.querySelector("p").innerHTML === text, original)
+      assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
+      assert.deepEqual(await paragraph.boundingBox(), initialBounds)
+      assert.equal((await below.boundingBox()).y, initialY)
+    }
+    finally {
+      resume()
+    }
+  })
+}
 
 async function setStreaming(enabled) {
   const options = context.pages()[0]
@@ -302,11 +324,14 @@ for (const mode of ["bilingual", "translationOnly"]) {
       await paragraph.hover()
       await page.keyboard.press("Alt")
       await waitForRequestCount(count + 1)
+      await paragraph.locator(".readomi-spinner").waitFor({ state: "visible" })
+      assert.equal(await paragraph.locator(".readomi-spinner:visible").count(), 1)
       assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
       assert.ok((await paragraph.textContent()).includes(original), "the source remains readable until completion")
       assert.ok(service.completions().slice(count).every(({ body }) => !JSON.parse(body).stream), "off uses complete-result requests")
       resume()
       await paragraph.getByText(/【译】/).waitFor()
+      assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
       assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
       await paragraph.hover()
       await page.keyboard.press("Alt")
@@ -328,11 +353,41 @@ it("turning streaming off mid-translation cancels the preview and the next hover
   await setStreaming(false)
   await preview.waitFor({ state: "detached" })
   await page.waitForFunction(text => document.querySelector("p").innerHTML === text, original)
+  assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
   const count = service.completions().length
   await page.bringToFront()
   await paragraph.hover()
   await page.keyboard.press("Alt")
   await paragraph.getByText(/【译】/).waitFor()
+  assert.ok(service.completions().slice(count).every(({ body }) => !JSON.parse(body).stream))
+  assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
+  assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
+})
+it("turning streaming off while waiting cancels the loading dot and the next hover waits for completion", async () => {
+  const page = await setup("translationOnly")
+  const paragraph = page.locator("p").first()
+  const original = await paragraph.innerHTML()
+  const resume = service.holdAnswers()
+  try {
+    const count = service.completions().length
+    await paragraph.hover()
+    await page.keyboard.press("Alt")
+    await waitForStreamRequest(count)
+    await paragraph.locator(".readomi-spinner").waitFor({ state: "visible" })
+    await setStreaming(false)
+    await page.waitForFunction(text => document.querySelector("p").innerHTML === text, original)
+    assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
+    assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
+  }
+  finally {
+    resume()
+  }
+  const count = service.completions().length
+  await page.bringToFront()
+  await paragraph.hover()
+  await page.keyboard.press("Alt")
+  await paragraph.getByText(/【译】/).waitFor()
+  assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
   assert.ok(service.completions().slice(count).every(({ body }) => !JSON.parse(body).stream))
   assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
 })
@@ -341,9 +396,20 @@ it("a grid paragraph uses complete-result rendering to preserve its layout", asy
   const paragraph = page.locator("p").first()
   await paragraph.evaluate(node => node.style.display = "grid")
   const count = service.completions().length
-  await paragraph.hover()
-  await page.keyboard.press("Alt")
+  const resume = service.holdAnswers()
+  try {
+    await paragraph.hover()
+    await page.keyboard.press("Alt")
+    await waitForRequestCount(count + 1)
+    await paragraph.locator(".readomi-spinner").waitFor({ state: "visible" })
+    assert.equal(await paragraph.locator(".readomi-spinner:visible").count(), 1)
+    assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
+  }
+  finally {
+    resume()
+  }
   await paragraph.getByText(/【译】/).waitFor()
+  assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
   assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
   assert.ok(service.completions().slice(count).every(({ body }) => !JSON.parse(body).stream))
   assert.equal(await paragraph.evaluate(node => getComputedStyle(node).display), "grid")
@@ -357,6 +423,7 @@ it("a source update while waiting cancels the old translation without overwritin
     await paragraph.hover()
     await page.keyboard.press("Alt")
     await waitForStreamRequest(count)
+    await paragraph.locator(".readomi-spinner").waitFor({ state: "visible" })
     assert.equal(await page.getByText("Waiting for translation…", { exact: true }).count(), 0)
     const cancelled = context.waitForEvent("requestfailed", {
       predicate: request => request.url() === `${service.origin}/v1/chat/completions` && request.postDataJSON()?.stream === true,
@@ -366,6 +433,7 @@ it("a source update while waiting cancels the old translation without overwritin
     assert.match((await cancelled).failure()?.errorText ?? "", /abort|cancel/i)
     resume()
     assert.equal(await paragraph.textContent(), "The article was updated while the translation was waiting.")
+    assert.equal(await paragraph.locator(".readomi-spinner").count(), 0)
     assert.equal(await page.locator("[data-readomi-inline-preview]").count(), 0)
   }
   finally {

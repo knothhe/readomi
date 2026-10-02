@@ -96,7 +96,7 @@ export async function getTranslatedTextAndRemoveSpinner(
   try {
     if (signal?.aborted || !isExtensionContextValid())
       return undefined
-    translatedText = await (translateRequest ? translateRequest(textContent, typographyElement) : translateTextForPage(textContent))
+    translatedText = await (translateRequest ? translateRequest(textContent, typographyElement, () => spinner.remove()) : translateTextForPage(textContent))
     succeeded = true
   }
   catch (error) {

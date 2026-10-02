@@ -16,8 +16,11 @@ export type HoverStreamReply
     | { type: "done", text: string }
     | { type: "error", message: string }
 
-/** The typography element is the container where the final translation inherits its styles. */
-export type PageTranslationRequest = ((text: string, typographyElement?: HTMLElement) => Promise<string>) & { showSpinner?: boolean }
+/**
+ * Typography comes from the final text container. Streaming renderers call
+ * hideSpinner when the first text becomes visible, before the request finishes.
+ */
+export type PageTranslationRequest = ((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void) => Promise<string>) & { showSpinner?: boolean }
 
 export interface PageTranslationRequestOptions {
   onPartial?: (text: string) => void

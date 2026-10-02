@@ -62,15 +62,15 @@ export function bindHoverTranslation(target: Document = document) {
       const walkId = getRandomUUID()
       walkAndLabelElement(block, walkId, config)
       const requests: { result: Promise<string>, resolve: (text: string) => void, reject: (error: unknown) => void }[] = []
-      const translateGroup = Object.assign((text: string, typographyElement?: HTMLElement) => {
-        const onPartial = preview?.register(typographyElement)
+      const translateGroup = Object.assign((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void) => {
+        const onPartial = preview?.register(typographyElement, hideSpinner)
         const result = new Promise<string>((resolve, reject) => {
           const abort = () => reject(new DOMException("Translation cancelled", "AbortError"))
           signal.addEventListener("abort", abort, { once: true })
           void translateTextForPage(text, { onPartial, signal }).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort))
         })
         return new Promise<string>((resolve, reject) => requests.push({ result, resolve, reject }))
-      }, { showSpinner: !preview })
+      }, { showSpinner: true })
       const finished = translateWalkedElement(block, walkId, config, true, signal, translateGroup)
       // The walker registers every group synchronously. Release their finished
       // results together so a paragraph with several groups settles at once.
