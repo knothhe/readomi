@@ -47,6 +47,7 @@ errorRecovery:
     confirm: Sıfırla
     cancel: İptal
 options:
+  version: Sürüm
   title: Ayarlar
   service:
     title: Çeviri hizmeti
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: Çeviri ayarları
+    reading: Okuma deneyimi
+    extension: Uzantı yönetimi
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

@@ -47,6 +47,7 @@ errorRecovery:
     confirm: Restablecer
     cancel: Cancelar
 options:
+  version: Versión
   title: Configuración
   service:
     title: Servicio de traducción
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: Ajustes de traducción
+    reading: Experiencia de lectura
+    extension: Gestión de la extensión
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

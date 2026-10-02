@@ -5,6 +5,7 @@ import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { configAtom, replaceConfigAtom } from "@/utils/atoms/config"
 import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "@/utils/config/backup"
+import { EXTENSION_VERSION } from "@/utils/constants/app"
 import { SettingsSection } from "../../components/settings-section"
 
 export function BackupSection() {
@@ -21,7 +22,7 @@ export function BackupSection() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = "readomi-config.json"
+    link.download = `readomi-config-v${EXTENSION_VERSION}.json`
     link.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }

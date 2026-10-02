@@ -47,6 +47,7 @@ errorRecovery:
     confirm: Đặt lại
     cancel: Hủy
 options:
+  version: Phiên bản
   title: Cài đặt
   service:
     title: Dịch vụ dịch
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: Cài đặt dịch
+    reading: Trải nghiệm đọc
+    extension: Quản lý tiện ích
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

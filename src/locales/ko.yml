@@ -47,6 +47,7 @@ errorRecovery:
     confirm: 초기화
     cancel: 취소
 options:
+  version: 버전
   title: 설정
   service:
     title: 번역 서비스
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: 번역 설정
+    reading: 읽기 환경
+    extension: 확장 프로그램 관리
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

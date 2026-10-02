@@ -47,6 +47,7 @@ errorRecovery:
     confirm: 重設
     cancel: 取消
 options:
+  version: 版本
   title: 設定
   service:
     title: 翻譯服務
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: 翻譯設定
+    reading: 閱讀體驗
+    extension: 擴充功能管理
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

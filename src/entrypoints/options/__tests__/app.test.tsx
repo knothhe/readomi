@@ -98,7 +98,13 @@ describe("settings page", () => {
   it("has translation settings and a separate appearance section", async () => {
     const { container } = await renderSettings(configured)
 
-    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "quality", "shortcut", "features", "appearance", "backup"])
+    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "quality", "reading", "features", "shortcut", "appearance", "backup"])
+    const navigation = within(screen.getByRole("navigation", { name: "settingsNavigation.label" }))
+    const groupedLinks = (name: string) => within(navigation.getByRole("group", { name })).getAllByRole("link").map(link => link.getAttribute("href"))
+    expect(groupedLinks("settingsNavigation.groups.translation")).toEqual(["#service", "#quality"])
+    expect(groupedLinks("settingsNavigation.groups.reading")).toEqual(["#reading", "#features", "#shortcut"])
+    expect(groupedLinks("settingsNavigation.groups.extension")).toEqual(["#appearance", "#backup"])
+    expect(screen.getByText("options.version 1.0.0")).toBeInTheDocument()
     expect(screen.queryByText(/options\.advanced/)).toBeNull()
     expect(screen.getByRole("link", { name: "options.service.title" })).toHaveAttribute("aria-current", "page")
     expect(screen.queryByRole("heading", { name: "options.reading.title" })).toBeNull()

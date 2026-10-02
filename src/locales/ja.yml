@@ -47,6 +47,7 @@ errorRecovery:
     confirm: リセット
     cancel: キャンセル
 options:
+  version: バージョン
   title: 設定
   service:
     title: 翻訳サービス
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: 翻訳設定
+    reading: 読書体験
+    extension: 拡張機能の管理
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…

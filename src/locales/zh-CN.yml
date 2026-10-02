@@ -47,6 +47,7 @@ errorRecovery:
     confirm: 重置
     cancel: 取消
 options:
+  version: 版本
   title: 设置
   service:
     title: 翻译服务
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: 设置分区
+  groups:
+    translation: 翻译设置
+    reading: 阅读体验
+    extension: 插件管理
 modelDiscovery:
   fetch: 获取模型
   loading: 获取中…

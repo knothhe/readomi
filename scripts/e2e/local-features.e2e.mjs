@@ -126,6 +126,8 @@ it("manual setup and local backup restore work without an account", async () => 
   const { page, extensionId } = await setUp()
   const doc = setupDocumentFor(service.origin)
   await page.goto(`chrome-extension://${extensionId}/options.html`)
+  const manifest = JSON.parse(await readFile(new URL("../../.output/chrome-mv3/manifest.json", import.meta.url), "utf8"))
+  await page.getByText(`Version ${manifest.version}`, { exact: true }).waitFor()
   await page.getByRole("button", { name: "Manual setup", exact: true }).click()
   await page.getByLabel("Service type").selectOption("openai-compatible")
   await page.getByLabel("API URL", { exact: true }).fill(doc.baseURL)
@@ -138,6 +140,7 @@ it("manual setup and local backup restore work without an account", async () => 
   const downloadPromise = page.waitForEvent("download")
   await page.getByRole("button", { name: "Export configuration", exact: true }).click()
   const download = await downloadPromise
+  assert.equal(download.suggestedFilename(), `readomi-config-v${manifest.version}.json`)
   const backup = JSON.parse(await readFile(await download.path(), "utf8"))
   assert.equal(backup.format, "readomi-config")
   assert.equal(backup.config.providersConfig.find(p => p.id === backup.config.translate.providerId).apiKey, doc.apiKey)

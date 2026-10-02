@@ -47,6 +47,7 @@ errorRecovery:
     confirm: Reset
     cancel: Cancel
 options:
+  version: Version
   title: Settings
   service:
     title: Translation service
@@ -414,6 +415,10 @@ subtitleTranslation:
 
 settingsNavigation:
   label: Settings sections
+  groups:
+    translation: Translation settings
+    reading: Reading experience
+    extension: Extension management
 modelDiscovery:
   fetch: Fetch models
   loading: Fetching…
