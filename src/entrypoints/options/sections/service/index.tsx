@@ -14,6 +14,7 @@ import { formatRelativeTime } from "@/utils/relative-time"
 import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
 import { applySetupDocument, describeSetupDocument, describesThinkingOff, exportSetupDocument, maskApiKey, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
 import { cn } from "@/utils/styles/utils"
+import { getUILocale } from "@/utils/ui-language"
 import { SettingsSection } from "../../components/settings-section"
 import { ManualServiceForm } from "./manual-form"
 
@@ -97,7 +98,7 @@ function CopyInstructionsButton() {
   ────────────────────────────── */
 
 function checkStatus(check: ConnectionCheck | undefined, now: number) {
-  const locale = navigator.language
+  const locale = getUILocale()
   if (!check)
     return { dot: "bg-muted-foreground/50", tone: "text-muted-foreground", label: i18n.t("options.service.status.unchecked"), when: null }
   const when = i18n.t("options.service.checkedAt", [formatRelativeTime(check.checkedAt, now, locale)])

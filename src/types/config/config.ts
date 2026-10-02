@@ -5,6 +5,7 @@ import { COLOR_THEMES, DEFAULT_COLOR_THEME } from "@/utils/color-theme"
 import { FEATURE_PROVIDER_DEFS } from "@/utils/constants/feature-providers"
 import { normalizePageTranslationShortcut } from "@/utils/page-translation-shortcut"
 import { THEME_MODES } from "@/utils/theme"
+import { UI_LANGUAGES } from "@/utils/ui-language-options"
 import { providersConfigSchema } from "./provider"
 import { DEFAULT_SUBTITLE_STYLE, subtitleStyleSchema } from "./subtitle-style"
 import { pageTranslationShortcutSchema, translateConfigSchema } from "./translate"
@@ -19,6 +20,7 @@ const languageSchema = z.object({
 // Complete config schema
 export const configSchema = z.object({
   language: languageSchema,
+  ui: z.object({ language: z.enum(UI_LANGUAGES).default("browser") }).default({ language: "browser" }),
   appearance: z.object({ colorTheme: z.enum(COLOR_THEMES).default(DEFAULT_COLOR_THEME), mode: z.enum(THEME_MODES).default("system") }),
   providersConfig: providersConfigSchema,
   reading: z.object({

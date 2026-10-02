@@ -441,3 +441,8 @@ appearanceMode:
   system: 跟隨系統
   light: 亮色
   dark: 暗色
+
+uiLanguage:
+  title: 介面語言
+  browser: 跟隨瀏覽器
+  saveFailed: 無法儲存介面語言，請重試。

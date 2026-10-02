@@ -5,8 +5,11 @@ import { createStore, Provider } from "jotai"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fakeBrowser } from "wxt/testing/fake-browser"
 import { storage } from "#imports"
+import { LanguageProvider } from "@/components/providers/language-provider"
 import { ThemeProvider } from "@/components/providers/theme-provider"
+import { toast } from "@/components/toast"
 import { configAtom } from "@/utils/atoms/config"
+import { storageAdapter } from "@/utils/atoms/storage-adapter"
 import { clearClipboard } from "@/utils/clipboard"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { DEFAULT_TRANSLATE_PROMPT } from "@/utils/constants/prompt"
@@ -14,6 +17,7 @@ import { highlightedPrefixes, isWordPrefixHighlightRegistered, stubHighlightRegi
 import { fetchProviderModels } from "@/utils/providers/models"
 import { prepareRequest } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
+import { setUILanguage } from "@/utils/ui-language"
 import App from "../app"
 
 vi.mock("@/utils/providers/models", () => ({ fetchProviderModels: vi.fn() }))
@@ -54,9 +58,13 @@ async function renderSettings(config: Config = DEFAULT_CONFIG, section = "servic
   store.set(configAtom, config)
   const view = render(
     <Provider store={store}>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
+      <LanguageProvider>
+        {() => (
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        )}
+      </LanguageProvider>
     </Provider>,
   )
   return { ...view, store }
@@ -67,6 +75,7 @@ const applyButton = () => screen.getByRole("button", { name: "options.service.ap
 
 describe("settings page", () => {
   beforeEach(() => {
+    setUILanguage("browser")
     fakeBrowser.reset()
     vi.mocked(checkConnection).mockResolvedValue({ ok: true, checkedAt: 1_000 })
     vi.mocked(clearClipboard).mockResolvedValue(undefined)
@@ -74,6 +83,7 @@ describe("settings page", () => {
 
   afterEach(() => {
     cleanup()
+    setUILanguage("browser")
     vi.clearAllMocks()
     vi.unstubAllGlobals()
   })
@@ -133,6 +143,46 @@ describe("settings page", () => {
     fireEvent.focus(input)
     fireEvent.keyDown(document, { key: "Delete" })
     await waitFor(() => expect(store.get(configAtom).features.modeShortcut).toBe(""))
+  })
+
+  it("switches interface language immediately, persists it, and keeps translation languages and service drafts", async () => {
+    const { store } = await renderSettings(configured)
+    fireEvent.click(screen.getByRole("button", { name: "options.service.edit" }))
+    fireEvent.change(editor(), { target: { value: "unfinished service configuration" } })
+    fireEvent.click(screen.getByRole("link", { name: "options.appearance.title" }))
+    const selector = screen.getByLabelText("uiLanguage.title")
+    expect(selector).toHaveValue("browser")
+    expect(within(selector).getAllByRole("option")).toHaveLength(10)
+    fireEvent.change(selector, { target: { value: "zh-CN" } })
+    await waitFor(() => expect(screen.getByLabelText("界面语言")).toHaveValue("zh-CN"))
+    expect(screen.getByRole("heading", { name: "外观" })).toBeInTheDocument()
+    expect(document.documentElement.lang).toBe("zh-CN")
+    await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.ui.language).toBe("zh-CN"))
+    expect(store.get(configAtom).language).toEqual(configured.language)
+    expect(store.get(configAtom).providersConfig).toEqual(configured.providersConfig)
+    fireEvent.click(screen.getByRole("link", { name: "翻译服务" }))
+    expect(screen.getByLabelText("翻译服务配置")).toHaveValue("unfinished service configuration")
+    fireEvent.click(screen.getByRole("link", { name: "外观" }))
+    fireEvent.change(screen.getByLabelText("界面语言"), { target: { value: "browser" } })
+    await waitFor(() => expect(screen.getByLabelText("uiLanguage.title")).toHaveValue("browser"))
+  })
+
+  it("restores the saved interface language and reports a failed save", async () => {
+    const { store } = await renderSettings({ ...configured, ui: { language: "zh-CN" } }, "appearance")
+    const notify = vi.spyOn(toast, "error").mockImplementation(() => 0)
+    const write = vi.spyOn(storageAdapter, "set").mockRejectedValueOnce(new Error("Storage unavailable"))
+    try {
+      expect(screen.getByLabelText("界面语言")).toHaveValue("zh-CN")
+      fireEvent.change(screen.getByLabelText("界面语言"), { target: { value: "ja" } })
+      await waitFor(() => expect(notify).toHaveBeenCalledWith("无法保存界面语言，请重试。"))
+      expect(screen.getByLabelText("界面语言")).toHaveValue("zh-CN")
+      expect(store.get(configAtom).ui.language).toBe("zh-CN")
+      expect((await storage.getItem<Config>("local:config"))?.ui.language).toBe("zh-CN")
+    }
+    finally {
+      notify.mockRestore()
+      write.mockRestore()
+    }
   })
 
   it("changes theme with mouse and keyboard, persists it, and keeps the configured service", async () => {

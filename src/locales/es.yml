@@ -441,3 +441,8 @@ appearanceMode:
   system: Sistema
   light: Claro
   dark: Oscuro
+
+uiLanguage:
+  title: Idioma de la interfaz
+  browser: Seguir el navegador
+  saveFailed: No se guardó el idioma de la interfaz. Inténtalo de nuevo.

@@ -1,4 +1,5 @@
 import { defineConfig } from "wxt"
+import { uiLanguageMessages } from "./scripts/ui-language-messages.ts"
 
 // Readomi's own public key pins its extension ID across local builds.
 // Independent of Jiandao's Chrome Web Store identity; no private key is distributed.
@@ -74,6 +75,6 @@ export default defineConfig({
     },
   },
   vite: () => ({
-    plugins: [],
+    plugins: [uiLanguageMessages()],
   }),
 })

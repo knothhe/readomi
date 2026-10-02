@@ -10,6 +10,7 @@ export const CONFIG_STORAGE_KEY = "config"
 export const DEFAULT_DETECTED_CODE = "eng" as const
 
 export const DEFAULT_CONFIG: Config = {
+  ui: { language: "browser" },
   language: {
     sourceCode: "auto",
     targetCode: "cmn",

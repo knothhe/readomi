@@ -441,3 +441,8 @@ appearanceMode:
   system: Hệ thống
   light: Sáng
   dark: Tối
+
+uiLanguage:
+  title: Ngôn ngữ giao diện
+  browser: Theo trình duyệt
+  saveFailed: Không thể lưu ngôn ngữ giao diện. Vui lòng thử lại.

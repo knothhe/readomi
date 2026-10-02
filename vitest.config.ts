@@ -1,10 +1,11 @@
 import { configDefaults, defineConfig } from "vitest/config"
 
 import { WxtVitest } from "wxt/testing/vitest-plugin"
+import { uiLanguageMessages } from "./scripts/ui-language-messages.ts"
 
 export default defineConfig({
   // TODO: remove any
-  plugins: [WxtVitest() as any],
+  plugins: [WxtVitest() as any, uiLanguageMessages()],
   test: {
     exclude: [...configDefaults.exclude, "**/.claude/**", "**/repos/**"],
     environment: "node",

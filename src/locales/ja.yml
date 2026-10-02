@@ -441,3 +441,8 @@ appearanceMode:
   system: システム
   light: ライト
   dark: ダーク
+
+uiLanguage:
+  title: 表示言語
+  browser: ブラウザーに合わせる
+  saveFailed: 表示言語を保存できませんでした。もう一度お試しください。

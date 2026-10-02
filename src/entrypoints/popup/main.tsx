@@ -6,6 +6,7 @@ import { Provider as JotaiProvider } from "jotai"
 import { useHydrateAtoms } from "jotai/utils"
 import * as React from "react"
 import { browser } from "#imports"
+import { LanguageProvider } from "@/components/providers/language-provider"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { RecoveryBoundary } from "@/components/recovery/recovery-boundary"
 import { Toasts } from "@/components/toast"
@@ -16,6 +17,7 @@ import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { sendMessage } from "@/utils/message"
 import { renderPersistentReactRoot } from "@/utils/react-root"
 import { applyTheme, resolveTheme } from "@/utils/theme"
+import { setUILanguage } from "@/utils/ui-language"
 import App from "./app"
 import { activeTabAtom, isTranslatableUrl, pageTranslationEnabledAtom, translationProgressAtom } from "./atoms"
 import "@/assets/styles/text-small.css"
@@ -46,6 +48,7 @@ async function initApp() {
     browser.tabs.query({ active: true, currentWindow: true }),
   ])
   const config = configValue ?? DEFAULT_CONFIG
+  setUILanguage(config.ui.language)
   const theme = resolveTheme(config.appearance.mode)
   applyTheme(document.documentElement, theme)
   applyColorTheme(document.documentElement, config.appearance.colorTheme, theme)
@@ -79,12 +82,16 @@ async function initApp() {
             [translationProgressAtom, progress],
           ]}
         >
-          <ThemeProvider>
-            <Toasts />
-            <RecoveryBoundary>
-              <App />
-            </RecoveryBoundary>
-          </ThemeProvider>
+          <LanguageProvider>
+            {() => (
+              <ThemeProvider>
+                <Toasts />
+                <RecoveryBoundary>
+                  <App />
+                </RecoveryBoundary>
+              </ThemeProvider>
+            )}
+          </LanguageProvider>
         </HydrateAtoms>
       </JotaiProvider>
     </React.StrictMode>

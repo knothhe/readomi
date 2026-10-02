@@ -441,3 +441,8 @@ appearanceMode:
   system: System
   light: Light
   dark: Dark
+
+uiLanguage:
+  title: Interface language
+  browser: Follow browser
+  saveFailed: Interface language was not saved. Please try again.

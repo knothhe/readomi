@@ -10,6 +10,7 @@ import { createWordPrefixEmphasisController } from "@/utils/host/word-prefix-emp
 import { logger } from "@/utils/logger"
 import { onMessage, sendMessage } from "@/utils/message"
 import { resolveTheme } from "@/utils/theme"
+import { setUILanguage } from "@/utils/ui-language"
 import { areSamePageTranslationOrigin } from "@/utils/url"
 import { setupUrlChangeListener } from "./listen"
 import { mountHostToast } from "./mount-host-toast"
@@ -24,6 +25,7 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
   let colorTheme: ColorTheme = "terra"
   let appearanceMode: ThemeMode = "system"
   const unsubscribeColorTheme = subscribeLocalConfig((config) => {
+    setUILanguage(config?.ui.language ?? "browser")
     colorTheme = config?.appearance.colorTheme ?? "terra"
     appearanceMode = config?.appearance.mode ?? "system"
     setHostColorTheme(colorTheme, resolveTheme(appearanceMode))

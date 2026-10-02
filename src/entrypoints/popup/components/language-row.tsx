@@ -1,7 +1,6 @@
 import type { PickerItem } from "@/components/language-picker"
 import type { LangCodeISO6393 } from "@/definitions"
 import { useAtom, useAtomValue } from "jotai"
-import { useMemo } from "react"
 import { i18n } from "#imports"
 import { IconArrowRight } from "@/components/icons"
 import { LanguagePicker } from "@/components/language-picker"
@@ -38,13 +37,13 @@ export function LanguageRow({ muted = false }: { muted?: boolean }) {
   const [language, setLanguage] = useAtom(configFieldsAtomMap.language)
   const detectedCode = useAtomValue(detectedCodeAtom)
 
-  const targetItems = useMemo(() => langCodeISO6393Schema.options.map(code => languageItem(code, code)), [])
-  const sourceItems = useMemo<PickerItem<SourceCode>[]>(() => [
+  const targetItems = langCodeISO6393Schema.options.map(code => languageItem(code, code))
+  const sourceItems: PickerItem<SourceCode>[] = [
     languageItem<SourceCode>("auto", detectedCode, (
       <span className="ml-auto rounded-full bg-muted px-1.5 text-[10px] text-muted-foreground">{i18n.t("popup.auto")}</span>
     )),
     ...targetItems,
-  ], [detectedCode, targetItems])
+  ]
 
   const isAuto = language.sourceCode === "auto"
   const sourceTitle = getLanguageName(language.sourceCode === "auto" ? detectedCode : language.sourceCode)

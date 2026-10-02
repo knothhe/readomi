@@ -441,3 +441,8 @@ appearanceMode:
   system: Системная
   light: Светлая
   dark: Тёмная
+
+uiLanguage:
+  title: Язык интерфейса
+  browser: Как в браузере
+  saveFailed: Не удалось сохранить язык интерфейса. Попробуйте ещё раз.

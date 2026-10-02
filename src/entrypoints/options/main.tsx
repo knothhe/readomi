@@ -3,6 +3,7 @@ import type { Config } from "@/types/config/config"
 import { Provider as JotaiProvider } from "jotai"
 import { useHydrateAtoms } from "jotai/utils"
 import * as React from "react"
+import { LanguageProvider } from "@/components/providers/language-provider"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { RecoveryBoundary } from "@/components/recovery/recovery-boundary"
 import { Toasts } from "@/components/toast"
@@ -12,6 +13,7 @@ import { getLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { renderPersistentReactRoot } from "@/utils/react-root"
 import { applyTheme, resolveTheme } from "@/utils/theme"
+import { setUILanguage } from "@/utils/ui-language"
 import App from "./app"
 import "@/assets/styles/theme.css"
 import "@/assets/styles/word-prefix-emphasis.css"
@@ -35,6 +37,7 @@ async function initApp() {
   root.className = "antialiased bg-background text-foreground"
 
   const config = (await getLocalConfig()) ?? DEFAULT_CONFIG
+  setUILanguage(config.ui.language)
 
   const theme = resolveTheme(config.appearance.mode)
   applyTheme(document.documentElement, theme)
@@ -44,12 +47,16 @@ async function initApp() {
     <React.StrictMode>
       <JotaiProvider>
         <HydrateAtoms initialValues={[[configAtom, config]]}>
-          <ThemeProvider>
-            <Toasts />
-            <RecoveryBoundary>
-              <App />
-            </RecoveryBoundary>
-          </ThemeProvider>
+          <LanguageProvider>
+            {() => (
+              <ThemeProvider>
+                <Toasts />
+                <RecoveryBoundary>
+                  <App />
+                </RecoveryBoundary>
+              </ThemeProvider>
+            )}
+          </LanguageProvider>
         </HydrateAtoms>
       </JotaiProvider>
     </React.StrictMode>

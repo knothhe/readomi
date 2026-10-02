@@ -115,6 +115,16 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
     box.classList.toggle("tools-below", captionTop < 48)
   }
   const renderAppearance = () => {
+    box.setAttribute("aria-label", i18n.t("subtitleStyle.dragHint"))
+    box.title = i18n.t("subtitleStyle.dragHint")
+    presetSelect.setAttribute("aria-label", i18n.t("subtitleStyle.preset"))
+    for (const option of presetSelect.options)
+      option.textContent = i18n.t(`subtitleStyle.presets.${option.value as typeof SUBTITLE_PRESETS[number]}`)
+    for (const [element, label] of [[smaller, i18n.t("subtitleStyle.smaller")], [larger, i18n.t("subtitleStyle.larger")], [resetPosition, i18n.t("subtitleStyle.resetPosition")]] as const) {
+      element.setAttribute("aria-label", label)
+      element.title = label
+    }
+    resetPosition.textContent = i18n.t("subtitleStyle.resetPositionShort")
     Object.assign(box.style, subtitleTextStyle(appearance))
     presetSelect.value = appearance.preset
     sizeLabel.textContent = `${appearance.fontSize} px`

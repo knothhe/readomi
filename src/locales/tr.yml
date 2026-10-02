@@ -441,3 +441,8 @@ appearanceMode:
   system: Sistem
   light: Açık
   dark: Koyu
+
+uiLanguage:
+  title: Arayüz dili
+  browser: Tarayıcıyı takip et
+  saveFailed: Arayüz dili kaydedilemedi. Lütfen tekrar deneyin.

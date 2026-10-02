@@ -1,10 +1,12 @@
 import { useAtom } from "jotai"
+import { useId } from "react"
 import { browser, i18n } from "#imports"
 import { AppearanceModeControl } from "@/components/appearance-mode-control"
 import { BrandIcon } from "@/components/brand-icon"
 import { toast } from "@/components/toast"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { COLOR_THEMES, getThemeIconPath } from "@/utils/color-theme"
+import { UI_LANGUAGE_NAMES, UI_LANGUAGES } from "@/utils/ui-language-options"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../components/settings-section"
 
 const LABELS = {
@@ -16,8 +18,29 @@ const LABELS = {
 
 export function AppearanceSection() {
   const [appearance, setAppearance] = useAtom(configFieldsAtomMap.appearance)
+  const [ui, setUI] = useAtom(configFieldsAtomMap.ui)
+  const languageId = useId()
   return (
     <SettingsSection id="appearance" title={i18n.t("options.appearance.title")}>
+      <SettingsGroup>
+        <SettingsRow
+          label={i18n.t("uiLanguage.title")}
+          htmlFor={languageId}
+          control={(
+            <select
+              id={languageId}
+              className="w-44 rounded-lg border border-input bg-card px-2 py-2 text-[13px] focus-visible:ring-3 focus-visible:ring-ring/50"
+              value={ui.language}
+              onChange={(event) => {
+                const saveFailed = i18n.t("uiLanguage.saveFailed")
+                void setUI({ language: event.target.value as typeof ui.language }).catch(() => toast.error(saveFailed))
+              }}
+            >
+              {UI_LANGUAGES.map(value => <option key={value} value={value}>{value === "browser" ? i18n.t("uiLanguage.browser") : UI_LANGUAGE_NAMES[value]}</option>)}
+            </select>
+          )}
+        />
+      </SettingsGroup>
       <SettingsGroup>
         <SettingsRow label={i18n.t("appearanceMode.title")} control={<AppearanceModeControl />} />
       </SettingsGroup>
