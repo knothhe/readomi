@@ -22,7 +22,7 @@ export const DEFAULT_CONFIG: Config = {
     wordPrefixEmphasis: false,
   },
   siteRules: { userRules: [], disabledBuiltInRules: [] },
-  features: { hoverTranslation: false, hoverStream: true, hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", videoSubtitles: false, subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
+  features: { hoverTranslation: false, hoverStream: true, hoverHotkey: "alt", modeShortcut: "", subtitlesShortcut: "", videoSubtitles: false, videoExcludedSites: [], subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
   translate: {
     providerId: "openai-default",
     mode: "bilingual",

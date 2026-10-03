@@ -7,6 +7,13 @@ languageCombobox:
 popup:
   pageText: 网页文字
   videoSubtitles: 视频字幕
+  videoSiteExclusion:
+    label: 此网站不翻译视频
+    description: 含子域名，仅影响视频翻译。
+    managed: 此网站由其他规则排除，请在设置中调整。
+    manage: 管理规则
+    saving: 正在保存…
+    unavailable: 当前页面不可用
   auto: 自动
   autoDetected: 自动检测
   sourceLanguage: 源语言
@@ -407,6 +414,35 @@ features:
   video: 视频字幕翻译
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   mode: 字幕显示方式
+videoSiteRules:
+  title: 不翻译的网站
+  description: 匹配的网站不会启动视频翻译；不影响网页翻译。
+  ruleType: 规则类型
+  ruleLabel: 网站规则
+  add: 添加网站
+  remove: 删除规则
+  saved: 已保存
+  invalid: 请输入有效的网站规则。
+  duplicate: 这条规则已存在。
+  saveFailed: 保存失败，请重试。
+  types:
+    domain: 域名（含子域名）
+    pattern: 网址通配符
+    regex: 正则表达式
+  hints:
+    domain: 填写 example.com，将同时排除该域名及所有子域名。
+    pattern: 例如 *.example.com/watch/*，可限定域名和路径。
+    regex: 匹配完整网址，忽略大小写。例如 ^https://([^.]+\.)?example\.com/
+
+videoTranslationControls:
+  title: 视频翻译
+  enable: 开启视频翻译
+  disable: 关闭视频翻译
+  scope: 仅对当前视频生效
+  excluded: 此网站已排除
+  presetButton: 调整字幕预设
+  saveFailed: 保存失败，请重试。
+
 subtitleStyle:
   title: 字幕样式与位置
   adjust: 样式与位置
@@ -423,7 +459,7 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: 拖动字幕调整位置
-  adjustmentHint: 在视频上拖动字幕调整位置；悬停时可快速切换预设和字号。调整会自动保存。
+  adjustmentHint: 在视频上拖动字幕调整位置；点击播放器工具栏中的 Readomi 图标可调整样式和字号。调整会自动保存。
   smaller: 减小字号
   larger: 增大字号
   reset: 恢复默认

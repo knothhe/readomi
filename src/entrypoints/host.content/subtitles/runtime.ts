@@ -1,18 +1,22 @@
 import type { Config } from "@/types/config/config"
+import type { SubtitleStyle } from "@/types/config/subtitle-style"
+import type { VideoTranslationControls } from "@/utils/subtitles/translation-controls"
 import { i18n } from "#imports"
-import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
-import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { shouldShowVideoControls } from "@/utils/subtitles/control-sites"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
 import { createTextTrackSession } from "@/utils/subtitles/text-track-session"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
+import { createVideoTranslationControls } from "@/utils/subtitles/translation-controls"
 import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
+import { isVideoTranslationExcluded } from "@/utils/subtitles/video-site-rules"
 import { currentXVideo, isXHost, xCaptionBottom, xVideoIdentity } from "@/utils/subtitles/x-player"
 import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
 
@@ -30,10 +34,16 @@ export function readActiveCueText(track: TextTrack): string {
 interface Player {
   tick: () => void
   dispose: () => void
+  updateConfig: (config: Config, enabled: boolean, excluded: boolean, storedChange?: boolean) => void
+}
+
+interface SubtitleRenderer {
+  tick: () => void
+  dispose: () => void
   updateConfig: (config: Config) => void
 }
 
-function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
+function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, onStyleChange: (patch: Partial<SubtitleStyle>) => void): SubtitleRenderer {
   let config = initialConfig
   let appearance = config.features.subtitleStyle
   let renderedPosition = appearance.position
@@ -45,7 +55,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   host.setAttribute("translate", "no")
   const shadow = host.attachShadow({ mode: "closed" })
   const style = document.createElement("style")
-  style.textContent = `:host{position:fixed!important;z-index:2147483646!important;pointer-events:none!important;display:block!important;width:max-content!important;transform:translate(-50%,-100%)!important}.box{position:relative;max-width:100%;box-sizing:border-box;font-family:system-ui;pointer-events:auto;touch-action:none;user-select:none;cursor:grab;outline:none}.box:focus-visible{outline:2px solid #fff8;outline-offset:6px}.box.dragging{cursor:grabbing}.original{font-size:.85em;margin-bottom:4px}.translated{font-size:1em}.empty{display:none}.tools{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#151923;white-space:nowrap;font:12px system-ui;color:white;text-shadow:none;cursor:default;opacity:0;pointer-events:none;transition:opacity .15s}.box:hover .tools,.box:focus-within .tools,.box.dragging .tools{opacity:1;pointer-events:auto}.tools::after{content:"";position:absolute;top:100%;left:0;width:100%;height:8px}.tools-below .tools::after{top:auto;bottom:100%}.tools button,.tools select{font:12px system-ui;color:white;background:#ffffff1f;border:0;border-radius:4px;padding:4px 8px;cursor:pointer}.tools option{background:#151923;color:white}.tools button:disabled{opacity:.4;cursor:default}.tools button:focus-visible,.tools select:focus-visible{outline:2px solid white;outline-offset:2px}.tools-below .tools{bottom:auto;top:calc(100% + 8px)}`
+  style.textContent = `:host{position:fixed!important;z-index:2147483646!important;pointer-events:none!important;display:block!important;width:max-content!important;transform:translate(-50%,-100%)!important}.box{position:relative;max-width:100%;box-sizing:border-box;font-family:system-ui;pointer-events:auto;touch-action:none;user-select:none;cursor:grab;outline:none}.box:focus-visible{outline:2px solid #fff8;outline-offset:6px}.box.dragging{cursor:grabbing}.original{font-size:.85em;margin-bottom:4px}.translated{font-size:1em}.empty{display:none}`
   const box = document.createElement("div")
   const original = document.createElement("div")
   original.className = "original"
@@ -86,29 +96,6 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   let source = ""
   let text = ""
   let changedAt = 0
-  const tools = document.createElement("div")
-  tools.className = "tools"
-  tools.title = ""
-  const presetSelect = document.createElement("select")
-  presetSelect.setAttribute("aria-label", i18n.t("subtitleStyle.preset"))
-  for (const preset of SUBTITLE_PRESETS) {
-    const option = document.createElement("option")
-    option.value = preset
-    option.textContent = i18n.t(`subtitleStyle.presets.${preset}`)
-    presetSelect.append(option)
-  }
-  const sizeLabel = document.createElement("output")
-  const button = (label: string, text: string) => {
-    const element = document.createElement("button")
-    element.type = "button"
-    element.setAttribute("aria-label", label)
-    element.title = label
-    element.textContent = text
-    return element
-  }
-  const smaller = button(i18n.t("subtitleStyle.smaller"), "−")
-  const larger = button(i18n.t("subtitleStyle.larger"), "+")
-  const resetPosition = button(i18n.t("subtitleStyle.resetPosition"), i18n.t("subtitleStyle.resetPositionShort"))
   const positionCaption = () => {
     const videoRect = video.getBoundingClientRect()
     box.style.fontSize = `${resolveSubtitleFontSize(appearance, videoRect.width)}px`
@@ -120,46 +107,15 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
     renderedPosition = dragPosition ?? resolveSubtitlePosition(appearance.position, rect, box.getBoundingClientRect(), bottomEdge)
     const centre = rect.width * renderedPosition.x / 100
     host.style.left = `${rect.left + centre}px`
-    const toolHalf = tools.getBoundingClientRect().width / 2
-    tools.style.left = `calc(50% + ${Math.max(toolHalf + 12, Math.min(centre, rect.width - toolHalf - 12)) - centre}px)`
     host.style.top = `${rect.top + rect.height * renderedPosition.y / 100}px`
-    const captionTop = rect.height * renderedPosition.y / 100 - box.getBoundingClientRect().height
-    box.classList.toggle("tools-below", captionTop < 48)
   }
   const renderAppearance = () => {
     box.setAttribute("aria-label", i18n.t("subtitleStyle.dragHint"))
     box.title = i18n.t("subtitleStyle.dragHint")
-    presetSelect.setAttribute("aria-label", i18n.t("subtitleStyle.preset"))
-    for (const option of presetSelect.options)
-      option.textContent = i18n.t(`subtitleStyle.presets.${option.value as typeof SUBTITLE_PRESETS[number]}`)
-    for (const [element, label] of [[smaller, i18n.t("subtitleStyle.smaller")], [larger, i18n.t("subtitleStyle.larger")], [resetPosition, i18n.t("subtitleStyle.resetPosition")]] as const) {
-      element.setAttribute("aria-label", label)
-      element.title = label
-    }
-    resetPosition.textContent = i18n.t("subtitleStyle.resetPositionShort")
     Object.assign(box.style, subtitleTextStyle(appearance))
-    presetSelect.value = appearance.preset
-    sizeLabel.textContent = `${appearance.fontSize} px`
-    smaller.disabled = appearance.fontSize <= SUBTITLE_FONT_SIZE_MIN
-    larger.disabled = appearance.fontSize >= SUBTITLE_FONT_SIZE_MAX
     positionCaption()
   }
-  const persist = (patch: Partial<typeof appearance>) => {
-    if (!isExtensionContextValid())
-      return
-    appearance = { ...appearance, ...patch }
-    renderAppearance()
-    void saveSubtitleStyle(patch).catch((error) => {
-      if (isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
-        logger.error("Could not save subtitle appearance", error)
-    })
-  }
-  smaller.addEventListener("click", () => persist({ fontSize: Math.max(SUBTITLE_FONT_SIZE_MIN, appearance.fontSize - 1) }))
-  larger.addEventListener("click", () => persist({ fontSize: Math.min(SUBTITLE_FONT_SIZE_MAX, appearance.fontSize + 1) }))
-  resetPosition.addEventListener("click", () => persist({ position: SUBTITLE_POSITIONS.bottom }))
-  presetSelect.addEventListener("change", () => persist(subtitlePresetPatch(presetSelect.value as typeof appearance.preset, appearance.fontSizeMode)))
-  tools.append(presetSelect, smaller, sizeLabel, larger, resetPosition)
-  box.prepend(tools)
+  const persist = (patch: Partial<SubtitleStyle>) => onStyleChange(patch)
   renderAppearance()
   const disposeDrag = bindSubtitleDrag(box, {
     videoRect: () => video.getBoundingClientRect(),
@@ -280,8 +236,134 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   }
 }
 
+/** Controls remain available while the caption session is off or between cues. */
+function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnabled: boolean, initialExcluded: boolean, onToggle: (enabled: boolean) => void): Player {
+  let config = initialConfig
+  let lastStoredConfig = initialConfig
+  let enabled = initialEnabled
+  let excluded = initialExcluded
+  let renderer: SubtitleRenderer | null = null
+  let disposed = false
+  let savedAppearance = config.features.subtitleStyle
+  let saveGeneration = 0
+  const pendingAppearance = new Map<number, Partial<SubtitleStyle>>()
+  let controls: VideoTranslationControls | null = null
+  const syncControls = () => {
+    if (shouldShowVideoControls(video)) {
+      controls ??= createVideoTranslationControls(video, {
+        enabled,
+        excluded,
+        appearance: config.features.subtitleStyle,
+        onToggle,
+        onStyleChange: persist,
+      })
+    }
+    else {
+      controls?.dispose()
+      controls = null
+    }
+  }
+  const render = () => {
+    syncControls()
+    controls?.update({ enabled, excluded, appearance: config.features.subtitleStyle })
+    if (enabled && !excluded) {
+      renderer ??= mountSubtitleRenderer(video, config, persist)
+      renderer.updateConfig(config)
+    }
+    else {
+      renderer?.dispose()
+      renderer = null
+    }
+  }
+  const applyPendingAppearance = () => {
+    const subtitleStyle = Array.from(pendingAppearance.values()).reduce<SubtitleStyle>((style, patch) => ({ ...style, ...patch }), savedAppearance)
+    config = { ...config, features: { ...config.features, subtitleStyle } }
+  }
+  function persist(patch: Partial<SubtitleStyle>) {
+    if (disposed || !isExtensionContextValid())
+      return
+    const generation = ++saveGeneration
+    pendingAppearance.set(generation, patch)
+    applyPendingAppearance()
+    controls?.update({ saveFailed: false })
+    render()
+    void saveSubtitleStyle(patch).then(() => {
+      if (disposed)
+        return
+      savedAppearance = { ...savedAppearance, ...patch }
+      pendingAppearance.delete(generation)
+      applyPendingAppearance()
+      render()
+    }).catch((error) => {
+      pendingAppearance.delete(generation)
+      if (disposed || !isExtensionContextValid() || isExtensionContextInvalidatedError(error))
+        return
+      applyPendingAppearance()
+      render()
+      if (generation === saveGeneration) {
+        controls?.update({ saveFailed: true })
+      }
+      logger.error("Could not save subtitle appearance", error)
+    })
+  }
+  render()
+  return {
+    tick: () => {
+      syncControls()
+      controls?.tick()
+      renderer?.tick()
+    },
+    updateConfig: (next, nextEnabled, nextExcluded, storedChange = false) => {
+      if (!storedChange && lastStoredConfig === next && enabled === nextEnabled && excluded === nextExcluded)
+        return
+      if (storedChange || lastStoredConfig !== next) {
+        if (subtitleRequestKey(config) !== subtitleRequestKey(next)) {
+          renderer?.dispose()
+          renderer = null
+        }
+        config = next
+        lastStoredConfig = next
+        savedAppearance = next.features.subtitleStyle
+        applyPendingAppearance()
+      }
+      enabled = nextEnabled
+      excluded = nextExcluded
+      render()
+    },
+    dispose: () => {
+      disposed = true
+      controls?.dispose()
+      renderer?.dispose()
+      renderer = null
+    },
+  }
+}
+
+function subtitleRequestKey(config: Config): string {
+  return JSON.stringify([
+    config.language,
+    config.providersConfig.find(provider => provider.id === config.translate.providerId),
+    config.translate.customPromptsConfig,
+  ])
+}
+
+/** Session switches belong to a video, and reset when that element plays another source. */
+function videoSessionKey(video: HTMLVideoElement): string {
+  const source = video.currentSrc || video.src
+  if (isXHost())
+    return `${xVideoIdentity(video)}|${source}`
+  const url = new URL(location.href)
+  if (video.closest(".html5-video-player")) {
+    const id = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:shorts|embed)\/([^/]+)/)?.[1]
+    if (id)
+      return `youtube:${id}`
+  }
+  return source || `${url.origin}${url.pathname}`
+}
+
 export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => false) {
   const players = new Map<HTMLVideoElement, Player>()
+  let overrides = new WeakMap<HTMLVideoElement, { key: string, enabled: boolean }>()
   let timer: ReturnType<typeof setInterval> | undefined
   let disposed = false
   let current: Config | null = null
@@ -292,50 +374,54 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     players.forEach(player => player.dispose())
     players.clear()
   }
-  const reconcile = () => {
-    reset()
+  const tick = (storedChange = false) => {
     const config = current
-    if (disposed || suspended || !config?.features.videoSubtitles)
+    if (disposed || isContextInvalid() || !config)
       return
-    const tick = () => {
-      if (disposed || isContextInvalid())
-        return
-      const xVideo = isXHost() ? currentXVideo() : null
-      const videos = isXHost() ? (xVideo ? [xVideo] : []) : Array.from(document.querySelectorAll("video"))
-      for (const [video, player] of players) {
-        if (!video.isConnected || !videos.includes(video)) {
-          player.dispose()
-          players.delete(video)
-        }
+    const excluded = isVideoTranslationExcluded(location.href, config.features.videoExcludedSites)
+    const xVideo = isXHost() ? currentXVideo() : null
+    const videos = isXHost() ? (xVideo ? [xVideo] : []) : Array.from(document.querySelectorAll("video"))
+    for (const [video, player] of players) {
+      if (!video.isConnected || !videos.includes(video)) {
+        player.dispose()
+        players.delete(video)
       }
-      for (const video of videos) {
-        if (!players.has(video))
-          players.set(video, mountPlayer(video, config))
-      }
-      players.forEach(player => player.tick())
     }
-    tick()
-    timer = setInterval(tick, 250)
+    for (const video of videos) {
+      const session = overrides.get(video)
+      if (session && session.key !== videoSessionKey(video))
+        overrides.delete(video)
+      const enabled = !excluded && (overrides.get(video)?.enabled ?? (config.features.videoSubtitles && !suspended))
+      if (!players.has(video)) {
+        players.set(video, mountPlayer(video, config, enabled, excluded, (nextEnabled) => {
+          if (disposed || isContextInvalid() || !current || isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
+            return
+          overrides.set(video, { key: videoSessionKey(video), enabled: nextEnabled })
+          players.get(video)?.updateConfig(current, nextEnabled, false)
+          players.get(video)?.tick()
+        }))
+      }
+      else {
+        players.get(video)!.updateConfig(config, enabled, excluded, storedChange)
+      }
+    }
+    players.forEach(player => player.tick())
   }
-  const requestKey = (config: Config | null) => config && JSON.stringify([
-    config.language,
-    config.providersConfig.find(provider => provider.id === config.translate.providerId),
-    config.translate.customPromptsConfig,
-  ])
   const unsubscribe = subscribeLocalConfig((config) => {
     if (disposed || isContextInvalid())
       return
     const previous = current
     current = config
-    if (!config?.features.videoSubtitles)
+    if (previous?.features.videoSubtitles !== config?.features.videoSubtitles) {
+      overrides = new WeakMap()
       suspended = false
-    if (config?.features.videoSubtitles && !suspended && timer !== undefined && requestKey(previous) === requestKey(config)) {
-      // Mode, size and position changes must not discard the lookahead buffer.
-      players.forEach(player => player.updateConfig(config))
     }
-    else {
-      reconcile()
+    if (!config) {
+      reset()
+      return
     }
+    tick(true)
+    timer ??= setInterval(tick, 250)
   })
   const keydown = (event: KeyboardEvent) => {
     if (disposed || isContextInvalid())
@@ -345,7 +431,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     event.preventDefault()
     event.stopPropagation()
     suspended = !suspended
-    reconcile()
+    overrides = new WeakMap()
+    tick()
   }
   document.addEventListener("keydown", keydown, true)
   return () => {

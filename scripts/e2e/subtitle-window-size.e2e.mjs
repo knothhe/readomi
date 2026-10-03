@@ -39,8 +39,8 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
   await context.route("https://x.com/**", route => route.fulfill({
     contentType: "text/html",
     body: `<!doctype html><meta charset="utf-8"><title>X subtitle size fixture</title>
-      <style>body{margin:0;padding:24px;font:16px system-ui;background:#faf8f5}#player,.reply-player{position:relative;width:640px;height:360px;background:#302b29}video{display:block;width:100%;height:100%}#player:fullscreen{width:100vw;height:100vh}h1{font-size:20px}.controls{box-sizing:border-box;position:absolute;bottom:0;left:0;width:100%;height:60px;background:#0006;color:white;display:flex;align-items:center;padding:12px;gap:16px}.controls button{color:white;background:transparent;border:0}</style>
-      <h1>X video subtitles</h1><article><a href="https://x.com/OpenAIDevs/status/2105708732323909827"><time>Today</time></a><div id="player" data-testid="videoComponent"><video aria-label="Embedded video"></video><div class="controls" data-testid="videoControls"><button type="button">Pause</button><span>0:00 / 1:00</span></div></div></article>
+      <style>body{margin:0;padding:24px;font:16px system-ui;background:#faf8f5}#player,.reply-player{position:relative;width:640px;height:360px;background:#302b29}video{display:block;width:100%;height:100%}#player:fullscreen{width:100vw;height:100vh}h1{font-size:20px}.controls{box-sizing:border-box;position:absolute;bottom:0;left:0;width:100%;height:60px;background:#0006;color:white;display:flex;align-items:center;padding:12px;gap:16px}.controls>span{margin-right:auto}.controls button{color:white;background:transparent;border:0}</style>
+      <h1>X video subtitles</h1><article><a href="https://x.com/OpenAIDevs/status/2105708732323909827"><time>Today</time></a><div id="player" data-testid="videoComponent"><video aria-label="Embedded video"></video><div class="controls" data-testid="videoControls"><button type="button" aria-label="Pause">Ⅱ</button><span>0:00 / 1:00</span><button type="button" aria-label="Fullscreen" onclick="document.querySelector('#player').requestFullscreen()">⛶</button></div></div></article>
       <script>const video=document.querySelector('video');const source=video.addTextTrack('subtitles','en (auto-generated)','en');source.mode='disabled';source.addCue(new VTTCue(0,60,'A new idea.'));const clone=video.addTextTrack('captions','clone','');clone.mode='showing';clone.addCue(new VTTCue(0,60,'Partial rendering clone'));window.e2eSubtitleTracks={source,clone};</script>`,
   }))
   const page = await context.newPage()
@@ -53,6 +53,7 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
   }
   const find = (node, predicate) => predicate(node) ? node : [...(node.children ?? []), ...(node.shadowRoots ?? [])].map(child => find(child, predicate)).find(Boolean)
   const text = node => !node ? "" : node.nodeType === 3 ? node.nodeValue : (node.children ?? []).map(text).join("")
+  const rectangle = quad => quad && { left: quad[0], top: quad[1], right: quad[2], bottom: quad[5] }
   const snapshot = async () => {
     const { root } = await cdp.send("DOM.getDocument", { depth: -1, pierce: true })
     const host = find(root, node => attr(node, "data-readomi-subtitles") !== undefined)
@@ -76,7 +77,19 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
     const model = await cdp.send("DOM.getBoxModel", { nodeId: box.nodeId }).catch(() => null)
     const { computedStyle } = computed
     const quad = model?.model.border
-    return { fontSize: Number.parseFloat(computedStyle.find(p => p.name === "font-size").value), original: text(original), translation: text(translation), bottom: quad?.[5], bounds: quad && { left: quad[0], top: quad[1], right: quad[2], bottom: quad[5] }, hidden: attr(box, "class")?.split(" ").includes("empty") }
+    const controlsHost = find(root, node => attr(node, "data-readomi-video-controls") !== undefined)
+    const controlsShadow = controlsHost?.shadowRoots?.[0]
+    const dock = controlsShadow && attr(controlsHost, "data-hidden") === undefined && attr(controlsHost, "data-idle") === undefined && attr(controlsHost, "data-inline-anchor") === undefined ? find(controlsShadow, node => attr(node, "class") === "dock") : undefined
+    const dockModel = dock ? await cdp.send("DOM.getBoxModel", { nodeId: dock.nodeId }).catch(() => null) : null
+    const controlsHidden = !controlsHost || attr(controlsHost, "data-hidden") !== undefined || attr(controlsHost, "data-idle") !== undefined
+    const menuOpen = controlsShadow && !controlsHidden && find(controlsShadow, node => attr(node, "aria-expanded") === "true")
+    const menuPanel = menuOpen && find(controlsShadow, node => attr(node, "class") === "panel")
+    const menuDock = menuOpen && find(controlsShadow, node => attr(node, "class") === "dock")
+    const [panelModel, menuDockModel] = await Promise.all([
+      menuPanel ? cdp.send("DOM.getBoxModel", { nodeId: menuPanel.nodeId }).catch(() => null) : null,
+      menuDock ? cdp.send("DOM.getBoxModel", { nodeId: menuDock.nodeId }).catch(() => null) : null,
+    ])
+    return { controlsHidden, controlsInert: controlsHost && attr(controlsHost, "inert") !== undefined, dockTop: dockModel?.model.border[1], menuPanel: rectangle(panelModel?.model.border), menuDock: rectangle(menuDockModel?.model.border), fontSize: Number.parseFloat(computedStyle.find(p => p.name === "font-size").value), original: text(original), translation: text(translation), bottom: quad?.[5], bounds: rectangle(quad), hidden: attr(box, "class")?.split(" ").includes("empty") }
   }
   const waitFor = async (predicate) => {
     const deadline = Date.now() + 15000
@@ -91,16 +104,61 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
   }
   await cdp.send("DOM.enable")
   await cdp.send("CSS.enable")
+  const waitForInlineToolbar = async () => {
+    try {
+      await page.waitForFunction(() => {
+        const toolbar = document.querySelector("#player .controls")
+        const host = toolbar?.querySelector("[data-readomi-video-controls]")
+        const fullscreen = toolbar?.querySelector("button[aria-label='Fullscreen']")
+        const play = toolbar?.querySelector("button[aria-label='Pause']")
+        const time = toolbar?.querySelector("span")
+        if (!host || !fullscreen || !play || !time || host.dataset.placement !== "inline" || host.dataset.toolbar !== "x")
+          return false
+        const row = toolbar.getBoundingClientRect()
+        const dock = host.getBoundingClientRect()
+        const button = fullscreen.getBoundingClientRect()
+        return toolbar.firstElementChild === play && host.previousElementSibling === time && host.nextElementSibling === fullscreen && dock.width > 0
+          && dock.left >= time.getBoundingClientRect().right - 0.5 && dock.right <= button.left + 0.5 && button.right <= row.right + 0.5
+          && Math.abs(button.left - dock.right - 24) < 1
+          && dock.top >= row.top && dock.bottom <= row.bottom + 0.5
+          && Math.abs((dock.top + dock.bottom) / 2 - (button.top + button.bottom) / 2) < 1
+      }, undefined, { timeout: 15_000 })
+    }
+    catch (error) {
+      console.info("X toolbar geometry:", await page.locator("#player .controls").evaluate(toolbar => ({
+        bounds: toolbar.getBoundingClientRect().toJSON(),
+        children: [...toolbar.children].map(child => ({
+          tag: child.tagName,
+          bounds: child.getBoundingClientRect().toJSON(),
+          marginLeft: getComputedStyle(child).marginLeft,
+          marginRight: getComputedStyle(child).marginRight,
+          placement: child.getAttribute("data-placement"),
+        })),
+        controls: [...document.querySelectorAll("[data-readomi-video-controls]")].map(host => ({
+          placement: host.getAttribute("data-placement"),
+          bounds: host.getBoundingClientRect().toJSON(),
+        })),
+      })))
+      throw error
+    }
+    assert.equal(await page.locator("#player .controls").evaluate((toolbar) => {
+      const host = toolbar.querySelector("[data-readomi-video-controls]")
+      return toolbar.firstElementChild === toolbar.querySelector("button[aria-label='Pause']") && host?.previousElementSibling === toolbar.querySelector("span") && host?.nextElementSibling === toolbar.querySelector("button[aria-label='Fullscreen']")
+    }), true, "Readomi joins the native X right tools after playback and time, before fullscreen")
+  }
   const ready = await waitFor(state => !state.hidden && state.fontSize === 20 && state.translation?.includes("【译】"))
   assert.equal(ready.original, "A new idea.", "the complete X source wins over its showing clone")
+  await waitForInlineToolbar()
   await page.waitForFunction(() => Object.values(window.e2eSubtitleTracks).every(track => track.mode === "hidden"))
   const videoBounds = await page.locator("#player video").boundingBox()
   const controlsBounds = await page.locator("#player .controls").boundingBox()
   const clearance = Math.min(controlsBounds.height, videoBounds.height * 0.25)
-  await waitFor(state => Math.abs(state.bottom - (videoBounds.y + videoBounds.height * 0.98 - clearance)) < 0.5)
+  await waitFor(state => Math.abs(state.bottom - Math.min(videoBounds.y + videoBounds.height * 0.98 - clearance, state.dockTop === undefined ? Infinity : state.dockTop - 8)) < 0.5)
   await page.locator("#player .controls").evaluate(controls => controls.style.opacity = "0")
-  await waitFor(state => Math.abs(state.bottom - (videoBounds.y + videoBounds.height * 0.98)) < 0.5)
+  await waitFor(state => state.controlsHidden && state.controlsInert && Math.abs(state.bottom - Math.min(videoBounds.y + videoBounds.height * 0.98, state.dockTop === undefined ? Infinity : state.dockTop - 8)) < 0.5)
+  assert.equal(await page.locator("#player .controls [data-readomi-video-controls]").count(), 1, "X opacity auto-hide retains the native toolbar slot")
   await page.locator("#player .controls").evaluate(controls => controls.style.opacity = "1")
+  await waitFor(state => !state.controlsHidden && !state.controlsInert)
   await page.evaluate(() => window.e2eSubtitleTracks.clone.mode = "showing")
   await page.waitForFunction(() => window.e2eSubtitleTracks.clone.mode === "hidden")
   const initialStyle = (await storedConfig(context)).features.subtitleStyle
@@ -112,8 +170,9 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
       player.style.height = `${width * 9 / 16}px`
     }, width)
     await waitFor(state => state.fontSize === 20 * width / 640 && state.translation === ready.translation)
+    await waitForInlineToolbar()
   }
-  await page.locator("#player").evaluate(player => player.requestFullscreen())
+  await page.locator("#player").getByRole("button", { name: "Fullscreen", exact: true }).click()
   const fullscreenWidth = (await page.locator("#player video").boundingBox()).width
   await waitFor(state => Math.abs(state.fontSize - 20 * fullscreenWidth / 640) < 0.05 && state.translation === ready.translation)
   await page.evaluate(() => document.exitFullscreen())
@@ -165,33 +224,45 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
   await waitFor(state => state.fontSize === 24 && state.translation === ready.translation)
   await settings.screenshot({ path: "/tmp/readomi-subtitle-preset-fixed-study.png", fullPage: true })
 
-  // Playwright locators cannot reach the closed shadow root. Use CDP to
-  // select its native control with the same input/change events as selectOption;
-  // persistence and rendering still run through the built extension.
-  const selectFloatingPreset = async (preset) => {
+  // The dock and preset panel use a closed shadow root. CDP reads the
+  // button's bounds, then a real pointer click exercises its product handler.
+  const clickPlayerControl = async (predicate) => {
     const { root } = await cdp.send("DOM.getDocument", { depth: -1, pierce: true })
-    const select = find(root, node => attr(node, "aria-label") === "Subtitle preset")
-    const { object } = await cdp.send("DOM.resolveNode", { nodeId: select.nodeId })
-    try {
-      const result = await cdp.send("Runtime.callFunctionOn", {
-        objectId: object.objectId,
-        functionDeclaration: "function(preset) { this.value = preset; this.dispatchEvent(new Event('input', { bubbles: true })); this.dispatchEvent(new Event('change', { bubbles: true })); return this.value; }",
-        arguments: [{ value: preset }],
-        returnByValue: true,
-      })
-      assert.equal(result.exceptionDetails, undefined)
-      assert.equal(result.result.value, preset)
-    }
-    finally {
-      await cdp.send("Runtime.releaseObject", { objectId: object.objectId })
-    }
+    const host = find(root, node => attr(node, "data-readomi-video-controls") !== undefined)
+    const button = find(host.shadowRoots[0], predicate)
+    assert.ok(button, "the requested player control exists")
+    const { model } = await cdp.send("DOM.getBoxModel", { nodeId: button.nodeId })
+    const quad = model.border
+    await page.mouse.click((quad[0] + quad[2]) / 2, (quad[1] + quad[5]) / 2)
   }
-  await selectFloatingPreset("compact")
+  const selectPlayerPreset = async (preset) => {
+    await clickPlayerControl(node => attr(node, "aria-label") === "Adjust subtitle preset")
+    const video = await page.locator("#player video").boundingBox()
+    await waitFor((state) => {
+      const panel = state.menuPanel
+      const dock = state.menuDock
+      if (!panel || !dock)
+        return false
+      const expectedRight = Math.max(video.x + 12 + panel.right - panel.left, Math.min(dock.right, video.x + video.width - 12))
+      return Math.abs(panel.right - expectedRight) < 2 && panel.bottom <= dock.top + 1
+        && panel.left >= video.x && panel.right <= video.x + video.width
+        && panel.top >= video.y && panel.bottom <= video.y + video.height
+    })
+    await page.locator("#player .controls").evaluate(controls => controls.style.opacity = "0")
+    await waitFor(state => state.controlsHidden && state.controlsInert && !state.menuPanel && !state.menuDock)
+    assert.equal(await page.locator("#player .controls [data-readomi-controls-anchor]").count(), 1, "the hidden preset menu remains anchored in X's native toolbar")
+    await page.locator("#player .controls").evaluate(controls => controls.style.opacity = "1")
+    await waitFor(state => !state.controlsHidden && state.menuPanel && state.menuDock)
+    await clickPlayerControl(node => attr(node, "data-preset") === preset)
+    await clickPlayerControl(node => attr(node, "aria-label") === "Adjust subtitle preset")
+    await waitForInlineToolbar()
+  }
+  await selectPlayerPreset("compact")
   await waitForStyle("compact", 20, "fixed")
   await waitFor(state => state.fontSize === 20 && state.translation === ready.translation)
   await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
   await waitForStyle("compact", 20, "video")
-  await selectFloatingPreset("study")
+  await selectPlayerPreset("study")
   await waitForStyle("study", 24, "video")
   await waitFor(state => state.fontSize === 12 && state.translation === ready.translation)
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, initialStyle.position, "both preset controls preserve the saved position")
@@ -208,6 +279,9 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
     track.addCue(new VTTCue(0, 60, "Reply video sentence."))
     window.e2eReplyTrack = track
   })
+  // Menu clicks leave the pointer over the main video. Isolate the focus
+  // target from that hover target when exercising the existing X selection.
+  await page.mouse.move(0, 0)
   await page.locator("#reply button").focus()
   await waitFor(state => state.original === "Reply video sentence." && state.translation.includes("【译】Reply video sentence."))
   assert.equal(await page.locator("[data-readomi-subtitles]").count(), 1)

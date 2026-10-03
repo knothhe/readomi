@@ -15,17 +15,45 @@ vi.mock("@/utils/host/translate/translate-text", () => ({ translateTextCore: vi.
 let youtube = { key: "", cues: [] as { start: number, end: number, text: string }[], enabled: null as boolean | null }
 vi.mock("@/utils/subtitles/youtube-client", () => ({ createYouTubeTimeline: () => ({ tick: () => youtube, dispose: vi.fn() }) }))
 let shadow: ShadowRoot
+let controlsShadow: ShadowRoot
 let cleanup: () => void
 let track: { kind: string, mode: string, activeCues: { text: string }[] }
 let video: HTMLVideoElement
 const config: Config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, videoSubtitles: true }, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "local" })) }
+
+function attachYouTubePlayer(target = video) {
+  vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=unit"))
+  let main = document.querySelector("#movie_player")
+  if (!main) {
+    main = document.createElement("main")
+    main.id = "movie_player"
+    document.body.append(main)
+  }
+  const player = document.createElement("div")
+  player.className = "html5-video-player"
+  main.append(player)
+  player.append(target)
+  return player
+}
+
+function attachXPlayer() {
+  vi.stubGlobal("location", new URL("https://x.com/example/status/100"))
+  const article = document.createElement("article")
+  article.innerHTML = "<div data-testid='videoComponent'></div>"
+  document.body.append(article)
+  article.querySelector("div")!.append(video)
+}
 beforeEach(() => {
   vi.useFakeTimers()
   youtube = { key: "", cues: [], enabled: null }
   const attach = Element.prototype.attachShadow
   vi.spyOn(Element.prototype, "attachShadow").mockImplementation(function (this: Element, options) {
-    shadow = attach.call(this, options)
-    return shadow
+    const root = attach.call(this, options)
+    if (this.hasAttribute("data-readomi-video-controls"))
+      controlsShadow = root
+    else if (this.hasAttribute("data-readomi-subtitles"))
+      shadow = root
+    return root
   })
   document.body.innerHTML = "<video></video>"
   video = document.querySelector("video")!
@@ -45,6 +73,133 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("offers a session switch even when disabled globally and restores native captions on off", async () => {
+    attachYouTubePlayer()
+    update(DEFAULT_CONFIG)
+    const toggle = () => controlsShadow.querySelector<HTMLButtonElement>(".toggle")!
+    expect(document.querySelector("[data-readomi-video-controls]")).not.toBeNull()
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+    toggle().click()
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+    expect(track.mode).toBe("hidden")
+    toggle().click()
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translateTextCore).not.toHaveBeenCalled()
+    expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
+  })
+  it("does not restart a locally disabled video on style updates and keeps another video translating", async () => {
+    attachYouTubePlayer()
+    const second = document.createElement("video")
+    const secondTrack = { kind: "subtitles", mode: "showing", activeCues: [{ text: "Another video" }] }
+    Object.defineProperty(second, "textTracks", { value: [secondTrack] })
+    vi.spyOn(second, "getBoundingClientRect").mockReturnValue({ left: 0, top: 400, width: 640, height: 360 } as DOMRect)
+    document.body.append(second)
+    attachYouTubePlayer(second)
+    update(config)
+    controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='videoTranslationControls.disable']")!.click()
+    expect(secondTrack.mode).toBe("showing")
+    expect(track.mode).toBe("hidden")
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, preset: "compact" } } })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+    expect(translateTextCore).toHaveBeenCalledWith(expect.objectContaining({ text: "Hello" }))
+  })
+  it("resets the local switch for a replacement source and ignores late results after switching off", async () => {
+    attachXPlayer()
+    let resolve!: (value: string) => void
+    vi.mocked(translateTextCore).mockReturnValue(new Promise(r => resolve = r))
+    update(config)
+    await vi.advanceTimersByTimeAsync(750)
+    controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='videoTranslationControls.disable']")!.click()
+    resolve("Late translation")
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+    video.src = "https://example.com/replacement.mp4"
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+    expect(track.mode).toBe("hidden")
+    expect(shadow.querySelector(".translated")?.textContent).not.toBe("Late translation")
+  })
+  it("keeps a YouTube session switch across chapter, time and playlist URL changes", async () => {
+    vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=one"))
+    const player = document.createElement("div")
+    player.className = "html5-video-player"
+    player.id = "movie_player"
+    document.body.append(player)
+    player.append(video)
+    update(config)
+    controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='videoTranslationControls.disable']")!.click()
+    vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=one&t=32&list=abc#chapter"))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=two"))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+  })
+  it("blocks excluded sites immediately, restores tracks and respects exclusions on SPA navigation", async () => {
+    attachYouTubePlayer()
+    update(config)
+    await vi.advanceTimersByTimeAsync(1000)
+    const withRules = { ...config, features: { ...config.features, videoExcludedSites: [{ type: "pattern" as const, value: "*.youtube.com/watch" }] } }
+    update(withRules)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+    expect(controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='videoTranslationControls.enable']")?.disabled).toBe(true)
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "v", altKey: true }))
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+    vi.stubGlobal("location", new URL("https://www.youtube.com/shorts/other"))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+    vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=two"))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+  })
+  it("rolls back a failed style save without discarding the translation and lets the user retry", async () => {
+    attachYouTubePlayer()
+    const save = vi.spyOn(appearance, "saveSubtitleStyle").mockRejectedValueOnce(new Error("storage failed")).mockResolvedValue(undefined)
+    update(config)
+    await vi.advanceTimersByTimeAsync(1000)
+    const host = document.querySelector("[data-readomi-subtitles]")
+    const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
+    larger.click()
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("21px")
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20px")
+    expect(controlsShadow.querySelector(".error[role='status']")?.textContent).toBe("videoTranslationControls.saveFailed")
+    larger.click()
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("21px")
+    expect(save).toHaveBeenCalledTimes(2)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+  })
+  it("keeps the latest size while an earlier save broadcasts and rolls back only the failed write", async () => {
+    attachYouTubePlayer()
+    let resolveFirst!: () => void
+    let rejectSecond!: (error: Error) => void
+    vi.spyOn(appearance, "saveSubtitleStyle")
+      .mockImplementationOnce(() => new Promise(resolve => resolveFirst = resolve))
+      .mockImplementationOnce(() => new Promise((_, reject) => rejectSecond = reject))
+    update(config)
+    const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
+    larger.click()
+    larger.click()
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22px")
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 21 } } })
+    resolveFirst()
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22px")
+    rejectSecond(new Error("Second write failed"))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("21px")
+  })
   it("does not mount a newly added video after the extension context expires", async () => {
     cleanup()
     let invalid = false
@@ -55,6 +210,40 @@ describe("local subtitle runtime", () => {
     document.body.append(document.createElement("video"))
     await vi.advanceTimersByTimeAsync(250)
     expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
+  })
+
+  it("preserves automatic HTML5 captions outside the toolbar whitelist without mounting controls", async () => {
+    vi.stubGlobal("location", new URL("https://www.bilibili.com/video/BVexample"))
+    video.controls = true
+    update(DEFAULT_CONFIG)
+    expect(document.querySelector("[data-readomi-video-controls]")).toBeNull()
+    expect(track.mode).toBe("showing")
+    update(config)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
+    expect(track.mode).toBe("hidden")
+    expect(document.querySelector("[data-readomi-video-controls]")).toBeNull()
+    expect(document.querySelector("[data-readomi-controls-anchor]")).toBeNull()
+  })
+
+  it("removes and restores a toolbar when its player leaves the supported context without restarting captions", async () => {
+    const player = attachYouTubePlayer()
+    update(config)
+    await vi.advanceTimersByTimeAsync(1000)
+    const captionHost = document.querySelector("[data-readomi-subtitles]")
+    const controlsHost = document.querySelector("[data-readomi-video-controls]")
+    document.body.append(player)
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-video-controls]")).toBeNull()
+    expect(controlsHost?.isConnected).toBe(false)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(captionHost)
+    expect(track.mode).toBe("hidden")
+    document.querySelector("#movie_player")!.append(player)
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-video-controls]")).not.toBeNull()
+    expect(document.querySelector("[data-readomi-video-controls]")).not.toBe(controlsHost)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(captionHost)
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
   })
   it("follows YouTube's caption margin across control changes and native cue gaps while preserving custom positions", async () => {
     const player = document.createElement("div")
@@ -94,6 +283,7 @@ describe("local subtitle runtime", () => {
     expect(player.querySelector("[data-readomi-caption-position-probe]")).toBeNull()
   })
   it("anchors automatic YouTube captions in fullscreen letterboxing and drags smoothly into the video", async () => {
+    vi.spyOn(appearance, "saveSubtitleStyle").mockResolvedValue(undefined)
     const player = document.createElement("div")
     player.className = "html5-video-player ytp-autohide"
     document.body.append(player)
@@ -121,6 +311,7 @@ describe("local subtitle runtime", () => {
     expect(Number.parseFloat(host.style.top)).toBeCloseTo(928.4)
     pointer("pointerup", 970, 900)
     expect(Number.parseFloat(host.style.top)).toBeCloseTo(928.4)
+    await vi.advanceTimersByTimeAsync(0)
     update(config)
     pointer("pointerdown", 960, 1030)
     pointer("pointermove", 970, 1025)
@@ -191,19 +382,23 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(1000)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
   })
-  it("allows increasing past 40 px and disables the size buttons at the bounds", () => {
+  it("allows increasing past 40 px and disables the size buttons at the bounds", async () => {
+    attachYouTubePlayer()
+    vi.spyOn(appearance, "saveSubtitleStyle").mockResolvedValue(undefined)
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 40 } } })
-    const larger = shadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.larger\"]")!
-    const smaller = shadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.smaller\"]")!
+    const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.larger\"]")!
+    const smaller = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.smaller\"]")!
     expect(larger.disabled).toBe(false)
     larger.click()
     expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("41px")
+    await vi.advanceTimersByTimeAsync(0)
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 80 } } })
     expect(larger.disabled).toBe(true)
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 14 } } })
     expect(smaller.disabled).toBe(true)
   })
   it("applies each toolbar preset for the current size mode while preserving position and cached translations", async () => {
+    attachYouTubePlayer()
     const save = vi.spyOn(appearance, "saveSubtitleStyle").mockResolvedValue(undefined)
     const position = { x: 60, y: 65 }
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
@@ -215,17 +410,17 @@ describe("local subtitle runtime", () => {
       const box = shadow.querySelector<HTMLElement>(".box")!
       expect(box.style.fontSize).toBe(fontSizeMode === "video" ? "76px" : "38px")
       const presets = fontSizeMode === "video" ? { clear: 20, compact: 16, study: 24 } : { clear: 24, compact: 20, study: 24 }
-      const select = shadow.querySelector<HTMLSelectElement>("select[aria-label=\"subtitleStyle.preset\"]")!
       for (const [preset, fontSize] of Object.entries(presets)) {
-        select.value = preset
-        select.dispatchEvent(new Event("change", { bubbles: true }))
-        expect(select.value).toBe(preset)
+        const button = controlsShadow.querySelector<HTMLButtonElement>(`button[data-preset="${preset}"]`)!
+        button.click()
+        expect(button.getAttribute("aria-pressed")).toBe("true")
         expect(save).toHaveBeenLastCalledWith({ preset, fontSize })
         expect(box.style.fontSize).toBe(`${fontSizeMode === "video" ? fontSize * 2 : fontSize}px`)
         expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
         expect((host as HTMLElement).style.left).toBe("768px")
         expect((host as HTMLElement).style.top).toBe("468px")
         expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
+        await vi.advanceTimersByTimeAsync(0)
       }
     }
     await vi.advanceTimersByTimeAsync(1000)

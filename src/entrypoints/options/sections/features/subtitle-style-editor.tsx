@@ -9,7 +9,7 @@ import { resolveSubtitleFontSize, resolveSubtitlePosition, SUBTITLE_POSITIONS, s
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 import { SettingsSlider } from "../../components/settings-slider"
 
-export function SubtitleStyleEditor({ children }: { children: ReactNode }) {
+export function SubtitleStyleEditor({ children, footer }: { children: ReactNode, footer?: ReactNode }) {
   const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
   const style = features.subtitleStyle
   const position = subtitlePositionName(style.position)
@@ -101,6 +101,7 @@ export function SubtitleStyleEditor({ children }: { children: ReactNode }) {
           </button>
           <p className="text-[11px] leading-relaxed text-muted-foreground">{i18n.t("subtitleStyle.adjustmentHint")}</p>
         </div>
+        {footer}
       </div>
       <aside className="options-preview-column">
         <h3 className="options-preview-title">{i18n.t("subtitleStyle.preview")}</h3>

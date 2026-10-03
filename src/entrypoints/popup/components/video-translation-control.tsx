@@ -8,6 +8,7 @@ import { formatHotkey } from "@/utils/os"
 import { subtitlePositionName } from "@/utils/subtitles/appearance"
 import { DisplayModeControl } from "./display-mode-control"
 import { TranslationControlRow } from "./translation-control-row"
+import { VideoSiteExclusionControl } from "./video-site-exclusion-control"
 
 /** Subtitle modes are edited here independently of web text, without opening Settings. */
 export function VideoTranslationControl() {
@@ -43,6 +44,7 @@ export function VideoTranslationControl() {
           {i18n.t("subtitleStyle.adjust")}
         </button>
       </div>
+      <VideoSiteExclusionControl />
     </section>
   )
 }

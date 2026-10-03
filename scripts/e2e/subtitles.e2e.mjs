@@ -59,7 +59,7 @@ async function subtitlePlayback(transcriptFormat) {
         await route.fulfill({ contentType: transcriptFormat === "json3" ? "application/json" : "text/xml", body })
         return
       }
-      await route.fulfill({ headers: { "content-security-policy": "require-trusted-types-for 'script'; trusted-types 'none'" }, contentType: "text/html", body: `<!doctype html><meta charset="utf-8"><title>Subtitle playback fixture</title><style>body{background:#faf8f5}.html5-video-player{width:640px;margin:40px auto;position:relative;background:#302b29}video{display:block;width:640px;height:360px}.html5-video-player:fullscreen{width:100vw;height:100vh;margin:0;--yt-delhi-bottom-controls-height:96px}.html5-video-player:fullscreen video{position:absolute;top:12.5vh;width:100vw;height:75vh}.ytp-chrome-bottom{position:absolute;bottom:4px;left:0;width:100%;height:40px;background:#0008;color:white}.ytp-progress-bar-container{position:absolute;top:-4px;left:12px;right:12px;height:4px;background:#f03}.ytp-autohide .ytp-chrome-bottom{opacity:0;pointer-events:none}.ytp-caption-window-container{position:absolute;inset:0}.caption-window.ytp-caption-window-bottom{position:absolute;bottom:2%;left:100px;color:white;margin-bottom:calc(var(--yt-delhi-bottom-controls-height,40px) + 14px)}.ytp-autohide .caption-window.ytp-caption-window-bottom{margin-bottom:0}</style><div class="html5-video-player ytp-autohide"><video src="/video.wav" muted autoplay></video><div class="ytp-chrome-bottom"><div class="ytp-progress-bar-container"></div>Ⅱ &nbsp; 1:32 / 2:00</div><div class="ytp-caption-window-container"><div class="caption-window ytp-caption-window-bottom"><span class="ytp-caption-segment">Native caption</span></div></div></div><script>
+      await route.fulfill({ headers: { "content-security-policy": "require-trusted-types-for 'script'; trusted-types 'none'" }, contentType: "text/html", body: `<!doctype html><meta charset="utf-8"><title>Subtitle playback fixture</title><style>body{background:#faf8f5}.html5-video-player{width:640px;margin:40px auto;position:relative;background:#302b29}video{display:block;width:640px;height:360px}.html5-video-player:fullscreen{width:100vw;height:100vh;margin:0;--yt-delhi-bottom-controls-height:96px}.html5-video-player:fullscreen video{position:absolute;top:12.5vh;width:100vw;height:75vh}.ytp-chrome-bottom{position:absolute;bottom:4px;left:0;width:100%;height:40px;background:#0008;color:white}.ytp-progress-bar-container{position:absolute;top:-4px;left:12px;right:12px;height:4px;background:#f03}.ytp-left-controls{position:absolute;left:12px;top:0;height:100%;display:flex;align-items:center;gap:8px}.ytp-right-controls{position:absolute;right:12px;top:0;height:100%;display:flex;align-items:center;gap:10px}.ytp-autohide .ytp-chrome-bottom{opacity:0;pointer-events:none}.ytp-caption-window-container{position:absolute;inset:0}.caption-window.ytp-caption-window-bottom{position:absolute;bottom:2%;left:100px;color:white;margin-bottom:calc(var(--yt-delhi-bottom-controls-height,40px) + 14px)}.ytp-autohide .caption-window.ytp-caption-window-bottom{margin-bottom:0}</style><div id="movie_player" class="html5-video-player ytp-autohide"><video src="/video.wav" muted autoplay></video><div class="ytp-chrome-bottom"><div class="ytp-progress-bar-container"></div><div class="ytp-left-controls"><span>Ⅱ</span><span>1:32 / 2:00</span></div><div class="ytp-right-controls"><span>⚙</span><span>⛶</span></div></div><div class="ytp-caption-window-container"><div class="caption-window ytp-caption-window-bottom"><span class="ytp-caption-segment">Native caption</span></div></div></div><script>
 const player = document.querySelector('.html5-video-player');
 player.getPlayerResponse = () => ({videoDetails:{videoId:'readomi-fixture'},captions:{playerCaptionsTracklistRenderer:{captionTracks:[{baseUrl:'https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en',languageCode:'en',vssId:'.en'}]}}});
 player.getOption = () => ({languageCode:'en',vssId:'.en'});
@@ -157,11 +157,18 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
       document.exitFullscreen()
     })
     await waitForSubtitle(state => state.bounds && Math.abs(state.bounds.bottom - (videoBounds.y + videoBounds.height * 0.98)) < 0.5)
-    const initial = (await snapshot()).bounds
-    await page.mouse.move((initial.left + initial.right) / 2, (initial.top + initial.bottom) / 2)
+    await page.evaluate(() => document.querySelector(".html5-video-player").classList.remove("ytp-autohide"))
+    await waitForSubtitle(state => state.bounds && Math.abs(state.bounds.bottom - (videoBounds.y + videoBounds.height * 0.98 - 54)) < 0.5)
+    const preset = await controlBounds("Adjust subtitle preset")
+    await page.mouse.click((preset.left + preset.right) / 2, (preset.top + preset.bottom) / 2)
     const plus = await controlBounds("Increase subtitle size")
     await page.mouse.click((plus.left + plus.right) / 2, (plus.top + plus.bottom) / 2)
     await waitForStoredStyle(style => style.fontSize === 21)
+    const closePreset = await controlBounds("Adjust subtitle preset")
+    await page.mouse.click((closePreset.left + closePreset.right) / 2, (closePreset.top + closePreset.bottom) / 2)
+    await page.mouse.click(4, 4)
+    await page.evaluate(() => document.querySelector(".html5-video-player").classList.add("ytp-autohide"))
+    await waitForSubtitle(state => state.bounds && Math.abs(state.bounds.bottom - (videoBounds.y + videoBounds.height * 0.98)) < 0.5)
     const beforeDrag = (await snapshot()).bounds
     const x = (beforeDrag.left + beforeDrag.right) / 2
     const y = (beforeDrag.top + beforeDrag.bottom) / 2

@@ -7,6 +7,13 @@ languageCombobox:
 popup:
   pageText: Web text
   videoSubtitles: Video subtitles
+  videoSiteExclusion:
+    label: 此網站不翻譯影片
+    description: 包含子網域，僅影響影片翻譯。
+    managed: 此網站已被其他規則排除，請在設定中調整。
+    manage: 管理規則
+    saving: 正在儲存…
+    unavailable: 目前頁面無法使用
   auto: 自動
   autoDetected: 自動偵測
   sourceLanguage: 來源語言
@@ -407,6 +414,35 @@ features:
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
+videoSiteRules:
+  title: Sites without video translation
+  description: Matching sites will not start video translation; web page translation is unaffected.
+  ruleType: Rule type
+  ruleLabel: Site rule
+  add: Add site
+  remove: Remove rule
+  saved: Saved
+  invalid: Enter a valid site rule.
+  duplicate: This rule already exists.
+  saveFailed: Could not save. Please try again.
+  types:
+    domain: Domain (including subdomains)
+    pattern: URL wildcard
+    regex: Regular expression
+  hints:
+    domain: Enter example.com to exclude that domain and all its subdomains.
+    pattern: Use *.example.com/watch/* to restrict the domain and path.
+    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+
+videoTranslationControls:
+  title: Video translation
+  enable: Enable video translation
+  disable: Disable video translation
+  scope: Applies only to this video
+  excluded: This site is excluded
+  presetButton: Adjust subtitle preset
+  saveFailed: Could not save. Please try again.
+
 subtitleStyle:
   title: Subtitle style and position
   adjust: Style and position
@@ -423,7 +459,7 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
-  adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
+  adjustmentHint: 在影片上拖曳字幕調整位置；點擊播放器工具列中的 Readomi 圖示可調整樣式和字級。調整會自動儲存。
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults

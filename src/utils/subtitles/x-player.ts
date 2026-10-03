@@ -57,6 +57,23 @@ function controlsGroup(container: HTMLElement): HTMLElement | null {
   return explicit ?? icon?.parentElement?.parentElement?.parentElement?.parentElement ?? null
 }
 
+/** The page's control group supplies its own visibility and idle timing. */
+export function xVideoControls(video: HTMLVideoElement): HTMLElement | null {
+  const container = video.closest<HTMLElement>("[data-testid='videoComponent']") ?? xVideoContainer(video)
+  return container && container !== video.ownerDocument.body && container !== video.ownerDocument.documentElement ? controlsGroup(container) : null
+}
+
+/** X has no stable right-group class. Its last native button is the right edge. */
+export function xVideoToolsStart(controls: HTMLElement): HTMLElement | null {
+  const buttons = Array.from(controls.querySelectorAll<HTMLElement>("button,[role='button']")).filter(button => !button.closest("[data-readomi-video-controls],[data-readomi-controls-anchor]"))
+  if (buttons.length < 2)
+    return null
+  let before: HTMLElement | null = buttons.at(-1)!
+  while (before && before.parentElement !== controls)
+    before = before.parentElement
+  return before
+}
+
 /** X reveals controls on interaction or pause. Read Frog reserves at most 25%. */
 export function xCaptionBottom(video: HTMLVideoElement, rect: { height: number }, captionInteracting = false): number | undefined {
   const container = video.closest<HTMLElement>("[data-testid='videoComponent']") ?? xVideoContainer(video)

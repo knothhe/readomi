@@ -10,6 +10,7 @@ import { providersConfigSchema } from "./provider"
 import { siteRulesConfigSchema } from "./site-rules"
 import { DEFAULT_SUBTITLE_STYLE, subtitleStyleSchema } from "./subtitle-style"
 import { pageTranslationShortcutSchema, translateConfigSchema } from "./translate"
+import { videoSiteRuleSchema } from "./video-site-rules"
 
 // Language schema
 const languageSchema = z.object({
@@ -36,6 +37,7 @@ export const configSchema = z.object({
     modeShortcut: pageTranslationShortcutSchema.default(""),
     subtitlesShortcut: pageTranslationShortcutSchema.default(""),
     videoSubtitles: z.boolean().default(false),
+    videoExcludedSites: z.array(videoSiteRuleSchema).default([]),
     subtitleStyle: subtitleStyleSchema.default(DEFAULT_SUBTITLE_STYLE),
     subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
   }),

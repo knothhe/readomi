@@ -7,6 +7,13 @@ languageCombobox:
 popup:
   pageText: Web text
   videoSubtitles: Video subtitles
+  videoSiteExclusion:
+    label: No traducir vídeos en este sitio
+    description: Incluye subdominios; solo afecta a la traducción de vídeos.
+    managed: Otra regla excluye este sitio. Ajústala en la configuración.
+    manage: Gestionar reglas
+    saving: Guardando…
+    unavailable: No disponible en esta página
   auto: automático
   autoDetected: Detectado automáticamente
   sourceLanguage: Idioma de origen
@@ -407,6 +414,35 @@ features:
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
+videoSiteRules:
+  title: Sites without video translation
+  description: Matching sites will not start video translation; web page translation is unaffected.
+  ruleType: Rule type
+  ruleLabel: Site rule
+  add: Add site
+  remove: Remove rule
+  saved: Saved
+  invalid: Enter a valid site rule.
+  duplicate: This rule already exists.
+  saveFailed: Could not save. Please try again.
+  types:
+    domain: Domain (including subdomains)
+    pattern: URL wildcard
+    regex: Regular expression
+  hints:
+    domain: Enter example.com to exclude that domain and all its subdomains.
+    pattern: Use *.example.com/watch/* to restrict the domain and path.
+    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+
+videoTranslationControls:
+  title: Video translation
+  enable: Enable video translation
+  disable: Disable video translation
+  scope: Applies only to this video
+  excluded: This site is excluded
+  presetButton: Adjust subtitle preset
+  saveFailed: Could not save. Please try again.
+
 subtitleStyle:
   title: Subtitle style and position
   adjust: Style and position
@@ -423,7 +459,7 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
-  adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
+  adjustmentHint: Arrastra los subtítulos sobre el vídeo para moverlos; haz clic en el icono de Readomi en la barra de herramientas del reproductor para ajustar el estilo y el tamaño de letra. Los cambios se guardan automáticamente.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
