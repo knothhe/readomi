@@ -12,7 +12,7 @@ export const extensionPath = resolve(".output/chrome-mv3")
  * `userDataDir` reuses a profile, and `extension` loads another build of the
  * extension, so that a test can start an older build and then update it.
  */
-export async function launchBrowser({ userDataDir = "", extension = extensionPath } = {}) {
+export async function launchBrowser({ userDataDir = "", extension = extensionPath, deviceScaleFactor = 1 } = {}) {
   // Without a build, Chromium loads no extension, and the wait for its service worker only times out.
   await access(resolve(extension, "manifest.json")).catch(() => {
     throw new Error(`no built extension in ${extension}; run pnpm build first`)
@@ -22,6 +22,7 @@ export async function launchBrowser({ userDataDir = "", extension = extensionPat
     // Headless Chromium loads extensions; the headless shell does not.
     channel: "chromium",
     headless: true,
+    deviceScaleFactor,
     // On Linux, Chromium takes the extension UI language from LANGUAGE. The tests find elements by their English names.
     env: { ...process.env, LANGUAGE: "en" },
     args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`],

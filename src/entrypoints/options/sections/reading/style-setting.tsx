@@ -27,18 +27,34 @@ const OFFERED_PRESETS: readonly TranslationNodeStylePreset[] = ["line", "default
 
 const CUSTOM_CHOICE = "custom"
 
-function Chip({ selected, onClick, children }: { selected: boolean, onClick: () => void, children: React.ReactNode }) {
+function StyleChoice({ preset, selected, onClick }: { preset: TranslationNodeStylePreset, selected: boolean, onClick: () => void }) {
   return (
     <button
       type="button"
       aria-pressed={selected}
       onClick={onClick}
       className={cn(
-        "h-7 rounded-full border px-3 text-xs transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:bg-muted",
+        "flex min-w-0 flex-col items-center gap-2 rounded-lg border px-1 py-2.5 text-[10px] transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        selected ? "border-primary bg-accent text-primary" : "border-border bg-card text-muted-foreground hover:bg-muted",
       )}
     >
-      {children}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex h-6 items-center font-serif text-[20px] leading-none text-foreground",
+          preset === "line" && "border-l-2 border-brand pl-1.5",
+          preset === "weakened" && "opacity-50",
+          preset === "textColor" && "text-brand",
+          preset === "dashedLine" && "underline decoration-dashed underline-offset-4",
+          preset === "background" && "rounded-sm bg-accent px-1.5",
+          preset === "blockquote" && "border-l-4 border-brand pl-1.5",
+          preset === "border" && "rounded-sm border border-brand px-1.5",
+          preset === "blur" && "blur-[2px]",
+        )}
+      >
+        Aa
+      </span>
+      <span>{i18n.t(PRESET_LABEL_KEY[preset])}</span>
     </button>
   )
 }
@@ -55,15 +71,21 @@ export function StyleSetting() {
 
   return (
     <SettingsRow label={i18n.t("options.reading.style.title")}>
-      <div role="group" aria-label={i18n.t("options.reading.style.title")} className="flex flex-wrap gap-1.5">
+      <div role="group" aria-label={i18n.t("options.reading.style.title")} className="grid grid-cols-5 gap-2">
         {presets.map(preset => (
-          <Chip key={preset} selected={selected === preset} onClick={() => choosePreset(preset)}>
-            {i18n.t(PRESET_LABEL_KEY[preset])}
-          </Chip>
+          <StyleChoice key={preset} preset={preset} selected={selected === preset} onClick={() => choosePreset(preset)} />
         ))}
-        <Chip selected={selected === CUSTOM_CHOICE} onClick={() => void setTranslateConfig(deepMerge(translateConfig, { translationNodeStyle: { isCustom: true } }))}>
+      </div>
+      <div className="flex justify-end">
+        <button
+          type="button"
+          aria-pressed={selected === CUSTOM_CHOICE}
+          onClick={() => void setTranslateConfig(deepMerge(translateConfig, { translationNodeStyle: { isCustom: true } }))}
+          className={cn("flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-brand outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50", selected === CUSTOM_CHOICE && "bg-accent")}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true" className="size-3.5"><path d="m8 6-6 6 6 6M16 6l6 6-6 6M14 3l-4 18" /></svg>
           {i18n.t("options.reading.style.custom")}
-        </Chip>
+        </button>
       </div>
       {translationNodeStyle.isCustom && <CSSEditor />}
     </SettingsRow>

@@ -2,6 +2,7 @@ import type { Config } from "@/types/config/config"
 import { useSetAtom, useStore } from "jotai"
 import { useRef, useState } from "react"
 import { i18n } from "#imports"
+import { IconAlertCircle, IconArrowRight } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { configAtom, replaceConfigAtom } from "@/utils/atoms/config"
 import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "@/utils/config/backup"
@@ -65,41 +66,66 @@ export function BackupSection() {
   const provider = pending?.config.providersConfig.find(p => p.id === pending.config.translate.providerId)
   return (
     <SettingsSection id="backup" title={i18n.t("configBackup.title")}>
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-[18px]">
-        <p className="text-xs text-muted-foreground">{i18n.t("configBackup.description")}</p>
-        <div className="flex gap-2">
-          <Button variant="outline" disabled={busy} onClick={download}>{i18n.t("configBackup.export")}</Button>
-          <Button variant="outline" disabled={busy} onClick={() => inputRef.current?.click()}>{i18n.t("configBackup.import")}</Button>
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".json,application/json"
-            className="hidden"
-            aria-label={i18n.t("configBackup.import")}
-            onChange={(e) => {
-              void load(e.target.files?.[0])
-              e.target.value = ""
-            }}
-          />
+      <div className="settings-backup-content flex flex-col gap-6">
+        <div className="settings-backup-grid grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="settings-backup-card rounded-2xl border border-border bg-card p-7">
+            <BackupIcon direction="download" />
+            <h3 className="mt-5 text-[17px] font-semibold">{i18n.t("configBackup.backup")}</h3>
+            <Button variant="outline" className="mt-5 gap-2 text-xs" disabled={busy} onClick={download}>
+              {i18n.t("configBackup.export")}
+              <IconArrowRight className="size-3.5" aria-hidden="true" />
+            </Button>
+          </div>
+          <div className="settings-backup-card rounded-2xl border border-border bg-card p-7">
+            <BackupIcon direction="upload" />
+            <h3 className="mt-5 text-[17px] font-semibold">{i18n.t("configBackup.restore")}</h3>
+            <Button variant="outline" className="mt-5 gap-2 text-xs" disabled={busy} onClick={() => inputRef.current?.click()}>
+              {i18n.t("configBackup.import")}
+              <IconArrowRight className="size-3.5" aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          aria-label={i18n.t("configBackup.import")}
+          onChange={(e) => {
+            void load(e.target.files?.[0])
+            e.target.value = ""
+          }}
+        />
+        <div className="flex max-w-[720px] items-start gap-2 text-[11px] leading-[1.7] text-muted-foreground">
+          <IconAlertCircle className="mt-0.5 size-4 shrink-0" stroke={1.6} aria-hidden="true" />
+          <p>{i18n.t("configBackup.description")}</p>
         </div>
         {pending && (
-          <div className="flex flex-col gap-2">
-            <p>{i18n.t("configBackup.preview", [pending.name])}</p>
-            <p>{i18n.t("configBackup.service", [provider?.name ?? "—", provider?.model ?? "—"])}</p>
-            <div className="flex gap-2">
-              <Button disabled={busy} onClick={() => void apply()}>{i18n.t("configBackup.apply")}</Button>
+          <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6">
+            <p className="break-all text-sm font-medium">{i18n.t("configBackup.preview", [pending.name])}</p>
+            <p className="rounded-lg border border-border bg-background p-4 font-mono text-xs leading-[1.7]">{i18n.t("configBackup.service", [provider?.name ?? "—", provider?.model ?? "—"])}</p>
+            <div className="flex flex-wrap justify-end gap-2">
               <Button variant="outline" disabled={busy} onClick={() => setPending(null)}>{i18n.t("configBackup.cancel")}</Button>
+              <Button disabled={busy} onClick={() => void apply()}>{i18n.t("configBackup.apply")}</Button>
             </div>
           </div>
         )}
         {error && (
-          <div role="alert">
-            <p className="text-destructive">{i18n.t("configBackup.failed")}</p>
-            <pre className="whitespace-pre-wrap break-all text-xs">{error}</pre>
+          <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+            <p className="text-xs font-medium text-destructive">{i18n.t("configBackup.failed")}</p>
+            <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-muted-foreground">{error}</pre>
           </div>
         )}
-        {saved && <p role="status">{i18n.t("configBackup.saved")}</p>}
+        {saved && <p role="status" className="text-xs text-success">{i18n.t("configBackup.saved")}</p>}
       </div>
     </SettingsSection>
+  )
+}
+
+function BackupIcon({ direction }: { direction: "download" | "upload" }) {
+  return (
+    <svg className="size-7 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={direction === "download" ? "M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4" : "M12 15V3m-4 4 4-4 4 4M4 16v4h16v-4"} />
+    </svg>
   )
 }

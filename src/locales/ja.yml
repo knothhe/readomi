@@ -49,8 +49,11 @@ errorRecovery:
 options:
   version: バージョン
   title: 設定
+  preview: プレビュー
   service:
     title: 翻訳サービス
+    connectionDetails: 接続の詳細
+    reconfigure: 再設定
     empty:
       title: 翻訳サービスがまだありません
       description: 説明をエージェントに渡してください。エージェントがあなたのキーで翻訳サービスの設定を確認し、クリップボードに入れます。下に貼り付けてください。
@@ -83,6 +86,7 @@ options:
     applying: 確認中…
   appearance:
     title: 外観
+    preferences: 表示設定
     colorTheme: テーマカラー
     description: 画面、訳文の目印、ツールバーのアイコンに反映されます。
     default: 既定
@@ -184,6 +188,7 @@ agentInstructions:
     $2
 shortcutKeySelector:
   placeholder: ショートカットキーを押してください
+  unset: 未設定
 languages:
   eng: 英語
   cmn: 簡体字中国語
@@ -382,6 +387,8 @@ manualService:
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
   title: Configuration backup
+  backup: バックアップ
+  restore: 復元
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
   import: Import configuration
@@ -408,8 +415,8 @@ subtitleStyle:
   fontDescription: Scales both lines, with the original slightly smaller.
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: and the long-awaited folding one.
-  previewTranslation: 以及期待已久的折叠款。
+  previewOriginal: A new idea.
+  previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
   adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
   smaller: Decrease subtitle size
@@ -443,6 +450,8 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its saved key.
 translationShortcuts:
+  restoreDefaults: デフォルトに戻す
+  restoreFailed: デフォルトに戻せませんでした。もう一度お試しください。
   mode: Switch bilingual / translation only
   subtitles: Toggle video subtitles
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.

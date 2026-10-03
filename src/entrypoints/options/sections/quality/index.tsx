@@ -9,6 +9,7 @@ import { DEFAULT_TRANSLATE_PROMPT, DEFAULT_TRANSLATE_SYSTEM_PROMPT, getTokenCell
 import { deepMerge } from "@/utils/object"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
 import { QualityHelp } from "./help"
+import "./style.css"
 
 type PromptsConfig = Config["translate"]["customPromptsConfig"]
 
@@ -40,7 +41,7 @@ export function QualitySection() {
   const custom = activePrompt(translateConfig.customPromptsConfig)
 
   return (
-    <SettingsSection id="quality" title={i18n.t("options.quality.title")}>
+    <SettingsSection id="quality" title={i18n.t("options.quality.title")} className="settings-quality">
       <div className="flex flex-col gap-6">
         <SettingsGroup caption={i18n.t("options.quality.web")}>
           <SettingsRow
@@ -76,18 +77,18 @@ export function QualitySection() {
                 />
               )
             : (
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <div className="flex items-baseline gap-2.5">
-                      <span className="text-[13px] font-medium">{i18n.t("options.quality.prompt.title")}</span>
-                      <span className="text-[13px] text-muted-foreground">
+                <div className="settings-prompt-header">
+                  <div className="min-w-0">
+                    <div className="settings-prompt-heading">
+                      <span className="settings-prompt-title">{i18n.t("options.quality.prompt.title")}</span>
+                      <span className="settings-prompt-status">
                         {custom ? i18n.t("options.quality.prompt.custom") : i18n.t("options.quality.prompt.default")}
                       </span>
                       <PromptHelp />
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{i18n.t("options.quality.prompt.purpose")}</p>
+                    <p className="settings-prompt-purpose">{i18n.t("options.quality.prompt.purpose")}</p>
                   </div>
-                  <Button variant="outline" className="px-3.5 text-[13px] font-normal" onClick={() => setEditing(true)}>
+                  <Button variant="outline" className="settings-prompt-button" onClick={() => setEditing(true)}>
                     {i18n.t("options.quality.prompt.edit")}
                   </Button>
                 </div>
@@ -110,9 +111,9 @@ function WebVariablesHelp() {
     { token: WEB_SUMMARY, label: i18n.t("options.quality.prompt.variables.summary") },
   ]
   return (
-    <details className="text-xs leading-relaxed text-muted-foreground">
+    <details className="settings-prompt-variables">
       <summary className="w-fit cursor-pointer">{i18n.t("options.quality.prompt.variables.title")}</summary>
-      <dl className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1.5 sm:grid-cols-2">
+      <dl className="settings-prompt-variable-list">
         {variables.map(({ token, label }) => (
           <Fragment key={token}>
             <dt>{label}</dt>
@@ -125,12 +126,21 @@ function WebVariablesHelp() {
   )
 }
 
-function PromptTextarea({ label, help, value, rows, autoFocus, onChange }: { label: string, help: string, value: string, rows: number, autoFocus?: boolean, onChange: (value: string) => void }) {
+function PromptTextarea({ label, help, value, variant, autoFocus, invalid, errorId, onChange }: {
+  label: string
+  help: string
+  value: string
+  variant: "system" | "template"
+  autoFocus?: boolean
+  invalid?: boolean
+  errorId?: string
+  onChange: (value: string) => void
+}) {
   const id = useId()
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <label htmlFor={id} className="text-xs text-muted-foreground">{label}</label>
+    <div className="settings-prompt-field">
+      <div className="settings-prompt-heading">
+        <label htmlFor={id}>{label}</label>
         <QualityHelp label={label} text={help} />
       </div>
       <textarea
@@ -138,9 +148,11 @@ function PromptTextarea({ label, help, value, rows, autoFocus, onChange }: { lab
         value={value}
         spellCheck={false}
         autoFocus={autoFocus}
-        style={{ height: `${rows * 18 + 24}px` }}
+        rows={variant === "system" ? 12 : 4}
+        aria-invalid={invalid || undefined}
+        aria-describedby={invalid ? errorId : undefined}
         onChange={event => onChange(event.target.value)}
-        className="w-full resize-y rounded-lg border border-input bg-card px-3 py-[11px] font-mono text-xs leading-[18px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+        className={`settings-prompt-textarea settings-prompt-${variant}`}
       />
     </div>
   )
@@ -154,6 +166,7 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
 }) {
   const [texts, setTexts] = useState(initial)
   const [applying, setApplying] = useState(false)
+  const errorId = useId()
   const inputToken = getTokenCellText(INPUT)
   const missingInput = !texts.prompt.includes(inputToken)
   const willBeCustom = toPromptsConfig(texts).promptId !== null
@@ -172,45 +185,51 @@ function PromptEditor({ initial, isCustom, onCancel, onApply }: {
   const label = (custom: boolean) => custom ? i18n.t("options.quality.prompt.custom") : i18n.t("options.quality.prompt.default")
 
   return (
-    <div className="flex flex-col gap-3.5 px-4 py-3.5">
-      <div className="flex items-baseline gap-2.5">
-        <span className="text-[13px] font-medium">{i18n.t("options.quality.prompt.title")}</span>
-        <span className="text-[13px] text-muted-foreground">
-          {willBeCustom === isCustom ? label(isCustom) : `${label(isCustom)} → ${label(willBeCustom)}`}
-        </span>
-        <PromptHelp />
-      </div>
-      <PromptTextarea
-        label={i18n.t("options.quality.prompt.system")}
-        help={i18n.t("options.quality.prompt.systemDescription")}
-        value={texts.systemPrompt}
-        rows={14}
-        autoFocus
-        onChange={systemPrompt => setTexts(current => ({ ...current, systemPrompt }))}
-      />
-      <PromptTextarea
-        label={i18n.t("options.quality.prompt.template")}
-        help={i18n.t("options.quality.prompt.tokens")}
-        value={texts.prompt}
-        rows={4}
-        onChange={prompt => setTexts(current => ({ ...current, prompt }))}
-      />
-      {missingInput && <p className="m-0 text-xs leading-[17px] text-destructive">{i18n.t("options.quality.prompt.missingInput")}</p>}
-      <WebVariablesHelp />
-      <div className="flex items-center gap-2 pt-1">
-        <div className="flex-1">
-          <button
-            type="button"
-            onClick={() => setTexts(DEFAULT_PROMPT)}
-            className="text-[13px] text-muted-foreground hover:text-foreground"
-          >
-            {i18n.t("options.quality.prompt.restore")}
-          </button>
+    <div>
+      <div className="settings-prompt-header">
+        <div className="settings-prompt-heading">
+          <span className="settings-prompt-title">{i18n.t("options.quality.prompt.title")}</span>
+          <span className="settings-prompt-status">
+            {willBeCustom === isCustom ? label(isCustom) : `${label(isCustom)} → ${label(willBeCustom)}`}
+          </span>
+          <PromptHelp />
         </div>
-        <Button variant="outline" className="px-3.5 text-[13px] font-normal" disabled={applying} onClick={onCancel}>
+      </div>
+      <div className="settings-prompt-editor">
+        <PromptTextarea
+          label={i18n.t("options.quality.prompt.system")}
+          help={i18n.t("options.quality.prompt.systemDescription")}
+          value={texts.systemPrompt}
+          variant="system"
+          autoFocus
+          onChange={systemPrompt => setTexts(current => ({ ...current, systemPrompt }))}
+        />
+        <div className="settings-prompt-template-group">
+          <PromptTextarea
+            label={i18n.t("options.quality.prompt.template")}
+            help={i18n.t("options.quality.prompt.tokens")}
+            value={texts.prompt}
+            variant="template"
+            invalid={missingInput}
+            errorId={errorId}
+            onChange={prompt => setTexts(current => ({ ...current, prompt }))}
+          />
+          {missingInput && <p id={errorId} role="alert" className="settings-prompt-error">{i18n.t("options.quality.prompt.missingInput")}</p>}
+        </div>
+        <WebVariablesHelp />
+      </div>
+      <div className="settings-prompt-actions">
+        <button
+          type="button"
+          onClick={() => setTexts(DEFAULT_PROMPT)}
+          className="settings-prompt-restore"
+        >
+          {i18n.t("options.quality.prompt.restore")}
+        </button>
+        <Button variant="outline" className="settings-prompt-button" disabled={applying} onClick={onCancel}>
           {i18n.t("options.quality.prompt.cancel")}
         </Button>
-        <Button className="px-4 text-[13px] font-semibold" disabled={!changed || missingInput || applying} onClick={() => void apply()}>
+        <Button className="settings-prompt-button" disabled={!changed || missingInput || applying} onClick={() => void apply()}>
           {i18n.t("options.quality.prompt.apply")}
         </Button>
       </div>

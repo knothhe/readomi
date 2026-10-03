@@ -1,4 +1,5 @@
 import type { Getter, Setter } from "jotai"
+import type { DeepPartial } from "../object"
 import type { Config } from "@/types/config/config"
 import { atom } from "jotai"
 import { selectAtom } from "jotai/utils"
@@ -111,7 +112,7 @@ function queueConfigWrite(
  */
 export const writeConfigAtom = atom(
   null,
-  (get, set, patch: Partial<Config>) =>
+  (get, set, patch: DeepPartial<Config>) =>
     queueConfigWrite(get, set, deepMerge(get(configAtom), patch), async () => {
       const stored = await getLocalConfigForWrite()
       return { next: deepMerge(stored, patch), stored }

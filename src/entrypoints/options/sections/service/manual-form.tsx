@@ -9,6 +9,7 @@ import { fetchProviderModels } from "@/utils/providers/models"
 import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection, withConnectionCheck } from "@/utils/providers/test-connection"
 import { applySetupDocument, exportSetupDocument, findMatchingProvider, setupDocumentSchema } from "@/utils/setup-document"
+import { SettingsSelect } from "../../components/settings-select"
 
 const BODY_EXAMPLES = {
   "openai-responses": { reasoning: { effort: "none" } },
@@ -17,7 +18,7 @@ const BODY_EXAMPLES = {
   "gemini": { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } },
 }
 
-export function ManualServiceForm({ onDone }: { onDone: () => void }) {
+export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, onCancel?: () => void }) {
   const config = useAtomValue(configAtom)
   const store = useStore()
   const write = useSetAtom(writeConfigAtom)
@@ -27,6 +28,7 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
   }))
   const [key, setKey] = useState("")
   const [bodyText, setBodyText] = useState(() => draft.body ? JSON.stringify(draft.body, null, 2) : "")
+  const [bodyExpanded, setBodyExpanded] = useState(() => !!draft.body)
   const body = useMemo(() => {
     try {
       return setupDocumentSchema.shape.body.safeParse(bodyText.trim() ? JSON.parse(bodyText) : undefined)
@@ -82,8 +84,15 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
     }
   }
   const modelId = useId()
+  const modelsId = useId()
+  const typeId = useId()
+  const nameId = useId()
+  const urlId = useId()
+  const keyId = useId()
+  const apiId = useId()
   const bodyId = useId()
-  const fieldClass = "w-full rounded-lg border border-input bg-card px-3 py-2 text-[13px]"
+  const fieldClass = "w-full rounded-lg border border-input bg-card px-3 py-2.5 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+  const labelClass = "text-xs font-medium"
 
   const save = async () => {
     if (!body.success)
@@ -117,92 +126,108 @@ export function ManualServiceForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form
-      className="flex flex-col gap-3"
+      className="settings-manual-form flex flex-col gap-5"
       onSubmit={(e) => {
         e.preventDefault()
         void save()
       }}
     >
-      <fieldset disabled={busy} className="flex flex-col gap-3">
-        <label>
-          {i18n.t("manualService.type")}
-          <select
-            className={fieldClass}
+      <fieldset disabled={busy} className="grid min-w-0 grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2">
+        <div className="flex min-w-0 flex-col gap-2">
+          <label className={labelClass} htmlFor={nameId}>{i18n.t("manualService.name")}</label>
+          <input id={nameId} className={fieldClass} value={draft.name ?? ""} onChange={e => setDraft({ ...draft, name: e.target.value })} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label className={labelClass} htmlFor={typeId}>{i18n.t("manualService.type")}</label>
+          <SettingsSelect
+            id={typeId}
+            className="w-full"
             value={draft.type}
-            onChange={(e) => {
-              setDraft({ type: e.target.value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[e.target.value as typeof draft.type] })
+            disabled={busy}
+            options={PROVIDER_TYPES.map(type => ({ value: type, label: type }))}
+            onValueChange={(value) => {
+              setDraft({ type: value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[value as typeof draft.type] })
               setBodyText("")
             }}
-          >
-            {PROVIDER_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-          </select>
-        </label>
-        <label>
-          {i18n.t("manualService.name")}
-          <input className={fieldClass} value={draft.name ?? ""} onChange={e => setDraft({ ...draft, name: e.target.value })} />
-        </label>
-        <label>
-          {i18n.t("manualService.url")}
-          <input className={fieldClass} type="url" value={draft.baseURL ?? ""} onChange={e => setDraft({ ...draft, baseURL: e.target.value })} />
-        </label>
-        <label>
-          {i18n.t("manualService.key")}
-          <input className={fieldClass} type="password" autoComplete="off" value={key} onChange={e => setKey(e.target.value)} />
-        </label>
-        <p className="text-xs text-muted-foreground">{i18n.t("manualService.keyHint")}</p>
-        <div>
-          <label htmlFor={modelId}>{i18n.t("manualService.model")}</label>
-          <div className="flex gap-2">
+          />
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+          <label className={labelClass} htmlFor={urlId}>{i18n.t("manualService.url")}</label>
+          <input id={urlId} className={fieldClass} type="url" value={draft.baseURL ?? ""} onChange={e => setDraft({ ...draft, baseURL: e.target.value })} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+          <label className={labelClass} htmlFor={keyId}>{i18n.t("manualService.key")}</label>
+          <input id={keyId} className={fieldClass} type="password" autoComplete="off" value={key} aria-describedby={`${keyId}-hint`} onChange={e => setKey(e.target.value)} />
+          <p id={`${keyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("manualService.keyHint")}</p>
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+          <label className={labelClass} htmlFor={modelId}>{i18n.t("manualService.model")}</label>
+          <div className="flex flex-wrap gap-2">
             <input id={modelId} className={`${fieldClass} min-w-0 flex-1`} required value={draft.model} onChange={e => setDraft({ ...draft, model: e.target.value })} />
             <Button type="button" variant="outline" disabled={!canFetch || modelState === "loading"} onClick={() => void fetchModels()}>{i18n.t(modelState === "loading" ? "modelDiscovery.loading" : "modelDiscovery.fetch")}</Button>
           </div>
-        </div>
-        <p className="text-xs text-muted-foreground" role="status">
-          {i18n.t(!canFetch ? "modelDiscovery.noKey" : modelState === "failed" ? "modelDiscovery.failed" : modelState === "empty" ? "modelDiscovery.empty" : "modelDiscovery.hint")}
-        </p>
-        {modelState === "list" && (
-          <label>
-            {i18n.t("modelDiscovery.select")}
-            <select className={fieldClass} value={models.includes(draft.model) ? draft.model : ""} onChange={e => e.target.value && setDraft({ ...draft, model: e.target.value })}>
-              <option value="" disabled>{i18n.t("modelDiscovery.select")}</option>
-              {models.map(model => <option key={model} value={model}>{model}</option>)}
-            </select>
-          </label>
-        )}
-        <label>
-          {i18n.t("manualService.api")}
-          <select className={fieldClass} value={draft.api ?? DEFAULT_REQUEST_API[draft.type]} onChange={e => setDraft({ ...draft, api: e.target.value as typeof draft.api })}>
-            {REQUEST_APIS.map(api => <option key={api} value={api}>{api}</option>)}
-          </select>
-        </label>
-        <div className="flex flex-col gap-2">
-          <label htmlFor={bodyId}>{i18n.t("manualService.body")}</label>
-          <textarea
-            id={bodyId}
-            className={`${fieldClass} resize-y font-mono text-xs leading-[18px]`}
-            rows={5}
-            spellCheck={false}
-            value={bodyText}
-            placeholder={JSON.stringify(bodyExample, null, 2)}
-            aria-invalid={!body.success}
-            aria-describedby={`${bodyId}-hint ${bodyId}-example${body.success ? "" : ` ${bodyId}-error`}`}
-            onChange={e => setBodyText(e.target.value)}
-          />
-          <p id={`${bodyId}-hint`} className="text-xs text-muted-foreground">{i18n.t("manualService.bodyHint")}</p>
-          <p id={`${bodyId}-example`} className="break-words text-xs text-muted-foreground">
-            {i18n.t("manualService.bodyExample")}
-            {" "}
-            <code>{bodyExampleText}</code>
+          <p className="text-[11px] leading-[1.7] text-muted-foreground" role="status">
+            {i18n.t(!canFetch ? "modelDiscovery.noKey" : modelState === "failed" ? "modelDiscovery.failed" : modelState === "empty" ? "modelDiscovery.empty" : "modelDiscovery.hint")}
           </p>
-          {!body.success && <p id={`${bodyId}-error`} role="alert" className="text-xs text-destructive">{i18n.t("manualService.bodyInvalid")}</p>}
+          {modelState === "list" && (
+            <div className="flex flex-col gap-2">
+              <label className={labelClass} htmlFor={modelsId}>{i18n.t("modelDiscovery.select")}</label>
+              <SettingsSelect
+                id={modelsId}
+                className="w-full"
+                value={models.includes(draft.model) ? draft.model : ""}
+                disabled={busy}
+                options={[{ value: "", label: i18n.t("modelDiscovery.select"), disabled: true }, ...models.map(model => ({ value: model, label: model }))]}
+                onValueChange={value => value && setDraft({ ...draft, model: value })}
+              />
+            </div>
+          )}
         </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+          <label className={labelClass} htmlFor={apiId}>{i18n.t("manualService.api")}</label>
+          <SettingsSelect
+            id={apiId}
+            className="w-full"
+            value={draft.api ?? DEFAULT_REQUEST_API[draft.type]}
+            disabled={busy}
+            options={REQUEST_APIS.map(api => ({ value: api, label: api }))}
+            onValueChange={value => setDraft({ ...draft, api: value as typeof draft.api })}
+          />
+        </div>
+        <details className="border-y border-border py-4 sm:col-span-2" open={bodyExpanded || !body.success} onToggle={event => setBodyExpanded(event.currentTarget.open)}>
+          <summary className="cursor-pointer text-xs font-medium">{i18n.t("manualService.body")}</summary>
+          <div className="mt-4 flex min-w-0 flex-col gap-2">
+            <textarea
+              id={bodyId}
+              aria-label={i18n.t("manualService.body")}
+              className={`${fieldClass} resize-y font-mono text-xs leading-[18px]`}
+              rows={5}
+              spellCheck={false}
+              value={bodyText}
+              placeholder={JSON.stringify(bodyExample, null, 2)}
+              aria-invalid={!body.success}
+              aria-describedby={`${bodyId}-hint ${bodyId}-example${body.success ? "" : ` ${bodyId}-error`}`}
+              onChange={e => setBodyText(e.target.value)}
+            />
+            <p id={`${bodyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("manualService.bodyHint")}</p>
+            <p id={`${bodyId}-example`} className="break-words text-[11px] leading-[1.7] text-muted-foreground">
+              {i18n.t("manualService.bodyExample")}
+              {" "}
+              <code>{bodyExampleText}</code>
+            </p>
+            {!body.success && <p id={`${bodyId}-error`} role="alert" className="text-xs text-destructive">{i18n.t("manualService.bodyInvalid")}</p>}
+          </div>
+        </details>
         {error && (
-          <div role="alert">
-            <p className="text-destructive">{i18n.t("options.service.failedNotSaved")}</p>
-            <pre className="whitespace-pre-wrap break-all text-xs">{error}</pre>
+          <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 sm:col-span-2">
+            <p className="text-xs font-medium text-destructive">{i18n.t("options.service.failedNotSaved")}</p>
+            <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-muted-foreground">{error}</pre>
           </div>
         )}
-        <Button type="submit" disabled={!body.success}>{busy ? i18n.t("options.service.applying") : i18n.t("manualService.save")}</Button>
+        <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
+          {onCancel && <Button type="button" variant="outline" onClick={onCancel}>{i18n.t("options.service.cancel")}</Button>}
+          <Button type="submit" disabled={!body.success}>{busy ? i18n.t("options.service.applying") : i18n.t("manualService.save")}</Button>
+        </div>
       </fieldset>
     </form>
   )

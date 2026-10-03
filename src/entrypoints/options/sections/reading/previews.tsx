@@ -36,18 +36,18 @@ export function TranslationPreview() {
   }, [mode, translationNodeStyle])
 
   return (
-    <SettingsPreview ref={previewRef}>
+    <SettingsPreview ref={previewRef} className="options-preview-card settings-translation-preview gap-6 p-7">
       {mode === "bilingual"
         ? (
             <>
-              <p className="m-0 font-serif">{SOURCE}</p>
+              <p className="m-0 font-serif text-[30px] leading-[1.3] tracking-[-.5px]">{SOURCE}</p>
               <span className={CONTENT_WRAPPER_CLASS} lang="zh" dir="ltr">
-                <span ref={translationRef} className={cn("text-[13px]", BLOCK_CONTENT_CLASS)}>{TRANSLATION}</span>
+                <span ref={translationRef} className={cn("text-[13px] leading-[1.9]", BLOCK_CONTENT_CLASS)}>{TRANSLATION}</span>
               </span>
             </>
           )
         // Translation only puts the translation in place of the original, without a translation style.
-        : <p className="m-0" lang="zh">{TRANSLATION}</p>}
+        : <p className="m-0 text-[24px] leading-[1.7]" lang="zh">{TRANSLATION}</p>}
     </SettingsPreview>
   )
 }
@@ -59,7 +59,7 @@ export function EnglishPreview() {
   useWordPrefixEmphasis(previewRef, wordPrefixEmphasis)
 
   return (
-    <SettingsPreview ref={previewRef}>
+    <SettingsPreview ref={previewRef} className="settings-english-preview">
       <p className="m-0 font-serif" lang="en">{ENGLISH}</p>
     </SettingsPreview>
   )

@@ -49,8 +49,11 @@ errorRecovery:
 options:
   version: 版本
   title: 设置
+  preview: 效果预览
   service:
     title: 翻译服务
+    connectionDetails: 连接详情
+    reconfigure: 重新配置
     empty:
       title: 还没有翻译服务
       description: 把说明交给你的 agent。它用你的密钥验证好翻译服务的配置，放进剪贴板，你贴到下面。
@@ -83,6 +86,7 @@ options:
     applying: 检查中…
   appearance:
     title: 外观
+    preferences: 界面偏好
     colorTheme: 主题色
     description: 同时应用到界面、译文标记和工具栏图标。
     default: 默认
@@ -184,6 +188,7 @@ agentInstructions:
     $2
 shortcutKeySelector:
   placeholder: 按下快捷键
+  unset: 未设置
 languages:
   eng: 英语
   cmn: 简体中文
@@ -382,6 +387,8 @@ manualService:
   bodyInvalid: 请输入有效的 JSON 对象（不能是数组、字符串或 null）。
 configBackup:
   title: 配置备份
+  backup: 备份
+  restore: 恢复
   description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
   export: 导出配置
   import: 导入配置
@@ -408,8 +415,8 @@ subtitleStyle:
   fontDescription: 同时缩放原文和译文，原文略小。
   position: 字幕位置
   preview: 字幕预览
-  previewOriginal: and the long-awaited folding one.
-  previewTranslation: 以及期待已久的折叠款。
+  previewOriginal: A new idea.
+  previewTranslation: 新的想法。
   dragHint: 拖动字幕调整位置
   adjustmentHint: 在视频上拖动字幕调整位置；悬停时可快速切换预设和字号。调整会自动保存。
   smaller: 减小字号
@@ -443,6 +450,8 @@ modelDiscovery:
   failed: 获取失败，可以重试或手动填写模型 ID。
   noKey: 请先填写 API Key 和 API 地址；已配置的服务可沿用原密钥。
 translationShortcuts:
+  restoreDefaults: 恢复默认
+  restoreFailed: 恢复失败，请重试。
   mode: 切换双语 / 仅译文
   subtitles: 切换视频字幕
   hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕开关只影响当前页面，需要先启用视频字幕翻译。

@@ -49,8 +49,11 @@ errorRecovery:
 options:
   version: 版本
   title: 設定
+  preview: 效果預覽
   service:
     title: 翻譯服務
+    connectionDetails: 連線詳情
+    reconfigure: 重新設定
     empty:
       title: 還沒有翻譯服務
       description: 把說明交給你的 agent。它會用你的金鑰驗證翻譯服務的設定，放進剪貼簿，你貼到下面。
@@ -83,6 +86,7 @@ options:
     applying: 檢查中…
   appearance:
     title: 外觀
+    preferences: 介面偏好
     colorTheme: 主題色
     description: 同時套用到介面、譯文標記和工具列圖示。
     default: 預設
@@ -184,6 +188,7 @@ agentInstructions:
     $2
 shortcutKeySelector:
   placeholder: 請按下快速鍵
+  unset: 未設定
 languages:
   eng: 英語
   cmn: 簡體中文
@@ -382,6 +387,8 @@ manualService:
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
   title: Configuration backup
+  backup: 備份
+  restore: 還原
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
   import: Import configuration
@@ -408,8 +415,8 @@ subtitleStyle:
   fontDescription: Scales both lines, with the original slightly smaller.
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: and the long-awaited folding one.
-  previewTranslation: 以及期待已久的折叠款。
+  previewOriginal: A new idea.
+  previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
   adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
   smaller: Decrease subtitle size
@@ -443,6 +450,8 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its saved key.
 translationShortcuts:
+  restoreDefaults: 恢復預設
+  restoreFailed: 恢復失敗，請再試一次。
   mode: Switch bilingual / translation only
   subtitles: Toggle video subtitles
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.

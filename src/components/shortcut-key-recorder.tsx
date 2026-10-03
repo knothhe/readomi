@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { isModifierKey } from "@/utils/hotkeys"
 import { formatPageTranslationShortcut, isValidConfiguredPageTranslationShortcut, keyboardEventToPageTranslationShortcut } from "@/utils/page-translation-shortcut"
@@ -11,10 +11,10 @@ export function ShortcutKeyRecorder(
   { shortcutKey: string, onChange?: (shortcutKey: string) => void | boolean, className?: string, id?: string },
 ) {
   const [inRecording, setInRecording] = useState(false)
-  const [draftShortcut, setDraftShortcut] = useState("")
   const [optimisticShortcut, setOptimisticShortcut] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const isRecordingRef = useRef(false)
+  const descriptionId = useId()
 
   const endRecording = useCallback((nextShortcut: string | null) => {
     isRecordingRef.current = false
@@ -22,16 +22,8 @@ export function ShortcutKeyRecorder(
 
     if (nextShortcut !== null) {
       const accepted = onChange?.(nextShortcut) !== false
-      setDraftShortcut(accepted ? nextShortcut : "")
       setOptimisticShortcut(accepted ? nextShortcut : null)
     }
-    else {
-      setDraftShortcut("")
-    }
-
-    queueMicrotask(() => {
-      inputRef.current?.blur()
-    })
   }, [onChange])
 
   const cancelRecording = useCallback(() => {
@@ -47,13 +39,12 @@ export function ShortcutKeyRecorder(
   }, [endRecording])
 
   const startRecord = () => {
-    if (isRecordingRef.current) {
+    if (isRecordingRef.current || buttonRef.current?.closest("[hidden]")) {
       return
     }
 
     isRecordingRef.current = true
     setInRecording(true)
-    setDraftShortcut("")
   }
 
   const handleBlur = () => {
@@ -71,6 +62,16 @@ export function ShortcutKeyRecorder(
 
     const handleKeydown = (event: KeyboardEvent) => {
       if (!isRecordingRef.current) {
+        return
+      }
+
+      if (buttonRef.current?.closest("[hidden]")) {
+        cancelRecording()
+        return
+      }
+
+      if (event.key === "Tab") {
+        cancelRecording()
         return
       }
 
@@ -100,8 +101,19 @@ export function ShortcutKeyRecorder(
       commitShortcut(normalizedHotkey)
     }
 
+    // Settings sections remain mounted for their drafts; a hidden recorder must release the keyboard.
+    const observer = new MutationObserver(() => {
+      if (buttonRef.current?.closest("[hidden]"))
+        cancelRecording()
+    })
+    let ancestor: HTMLElement | null = buttonRef.current
+    while (ancestor) {
+      observer.observe(ancestor, { attributes: true, attributeFilter: ["hidden"] })
+      ancestor = ancestor.parentElement
+    }
     document.addEventListener("keydown", handleKeydown, true)
     return () => {
+      observer.disconnect()
       document.removeEventListener("keydown", handleKeydown, true)
     }
   }, [cancelRecording, clearShortcut, commitShortcut, inRecording])
@@ -109,17 +121,35 @@ export function ShortcutKeyRecorder(
   const shortcutKey = optimisticShortcut !== null && optimisticShortcut !== initialShortcutKey
     ? optimisticShortcut
     : initialShortcutKey
+  const displayedKeys = shortcutKey.trim().split("+").filter(Boolean).map(key => formatPageTranslationShortcut(key))
 
   return (
-    <input
-      ref={inputRef}
+    <button
+      ref={buttonRef}
+      type="button"
       id={id}
-      className={cn("h-8 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50", className)}
-      onFocus={startRecord}
+      className={cn("shortcut-key-button group inline-flex min-h-9 max-w-full cursor-pointer flex-wrap items-center justify-end gap-1 rounded-md border-0 bg-transparent py-1 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-offset-4 focus-visible:ring-offset-card", className)}
+      aria-pressed={inRecording}
+      aria-describedby={descriptionId}
+      data-recording={inRecording}
+      data-shortcut={shortcutKey}
+      onClick={startRecord}
       onBlur={handleBlur}
-      value={formatPageTranslationShortcut(inRecording ? draftShortcut : shortcutKey)}
-      placeholder={i18n.t("shortcutKeySelector.placeholder")}
-      readOnly
-    />
+    >
+      <span id={descriptionId} className="sr-only" aria-live="polite">
+        {inRecording ? i18n.t("shortcutKeySelector.placeholder") : formatPageTranslationShortcut(shortcutKey) || i18n.t("shortcutKeySelector.unset")}
+      </span>
+      {inRecording || !displayedKeys.length
+        ? (
+            <span aria-hidden="true" className={cn("shortcut-keycap inline-flex h-7 min-w-[76px] items-center justify-center rounded-[5px] border px-2 text-[11px] leading-none shadow-[0_2px_0_var(--rf-border)]", inRecording ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary text-muted-foreground")}>
+              {i18n.t(inRecording ? "shortcutKeySelector.placeholder" : "shortcutKeySelector.unset")}
+            </span>
+          )
+        : displayedKeys.map(key => (
+            <kbd key={key} aria-hidden="true" className="shortcut-keycap inline-flex h-7 min-w-[30px] items-center justify-center rounded-[5px] border border-border bg-secondary px-2 font-mono text-[11px] font-normal leading-none shadow-[0_2px_0_var(--rf-border)] group-hover:border-primary/40">
+              {key}
+            </kbd>
+          ))}
+    </button>
   )
 }

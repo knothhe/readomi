@@ -27,13 +27,18 @@ async function setUp() {
   return launched
 }
 
+async function selectSetting(page, label, option) {
+  await page.getByRole("combobox", { name: label, exact: true }).click()
+  await page.getByRole("option", { name: option, exact: true }).click()
+}
+
 it("fetches models from the configured API and preserves drafts across sidebar and history navigation", async () => {
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
   await page.getByRole("button", { name: "Manual setup", exact: true }).click()
   assert.equal(service.requests.filter(r => r.url === "/v1/models").length, 0)
   await page.getByRole("button", { name: "Fetch models", exact: true }).click()
-  await page.getByLabel("Select a model").selectOption("second-model")
+  await selectSetting(page, "Select a model", "second-model")
   const request = service.requests.find(r => r.url === "/v1/models")
   assert.equal(request.authorization, "Bearer local-secret-key")
   await page.locator("nav a[href=\"#reading\"]").click()
@@ -86,7 +91,7 @@ it("updates hover and page shortcuts live, switches display mode and toggles cap
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
   await page.locator("nav a[href=\"#shortcut\"]").click()
-  await page.getByLabel("Hover translation trigger", { exact: true }).selectOption("control")
+  await selectSetting(page, "Hover translation trigger", "Control")
   await recordShortcut(page, "Translate this page / Show original", "Alt+P")
   await recordShortcut(page, "Switch bilingual / translation only", "Alt+M")
   await recordShortcut(page, "Toggle video subtitles", "Alt+V")
@@ -105,7 +110,7 @@ it("updates hover and page shortcuts live, switches display mode and toggles cap
   // A tap restores the paragraph; switching to backtick works on the same page.
   await article.keyboard.press("Control")
   await article.locator(".readomi-translated-block-content").waitFor({ state: "detached" })
-  await page.getByLabel("Hover translation trigger", { exact: true }).selectOption("backtick")
+  await selectSetting(page, "Hover translation trigger", "Backtick (`)")
   await page.waitForFunction(async () => (await globalThis.chrome.storage.local.get("config")).config.features.hoverHotkey === "backtick")
   assert.equal((await storedConfig(context)).features.hoverHotkey, "backtick")
   await article.bringToFront()
@@ -151,7 +156,7 @@ it("manual setup and local backup restore work without an account", async () => 
   const manifest = JSON.parse(await readFile(new URL("../../.output/chrome-mv3/manifest.json", import.meta.url), "utf8"))
   await page.getByText(`Version ${manifest.version}`, { exact: true }).waitFor()
   await page.getByRole("button", { name: "Manual setup", exact: true }).click()
-  await page.getByLabel("Service type").selectOption("openai-compatible")
+  await selectSetting(page, "Service type", "openai-compatible")
   await page.getByLabel("API URL", { exact: true }).fill(doc.baseURL)
   await page.getByLabel("API Key", { exact: true }).fill(doc.apiKey)
   await page.getByLabel("Model", { exact: true }).fill(doc.model)

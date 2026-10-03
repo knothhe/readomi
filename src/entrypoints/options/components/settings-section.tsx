@@ -9,8 +9,8 @@ export function SettingsSection({ id, title, children, className }: {
   className?: string
 }) {
   return (
-    <section id={id} className={cn("flex scroll-mt-8 flex-col gap-3", className)}>
-      <h2 className="text-[15px] font-semibold">{title}</h2>
+    <section id={id} className={cn("settings-section", className)}>
+      <h1 className="settings-page-title">{title}</h1>
       {children}
     </section>
   )
@@ -19,15 +19,15 @@ export function SettingsSection({ id, title, children, className }: {
 /** The one container style on the page: rows separated by hairlines, with an optional caption above that names when the rows apply. */
 export function SettingsGroup({ caption, children, className }: { caption?: ReactNode, children: ReactNode, className?: string }) {
   const group = (
-    <div className={cn("flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border bg-card", className)}>
+    <div className={cn("settings-group flex flex-col divide-y divide-border", className)}>
       {children}
     </div>
   )
   if (!caption)
     return group
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-xs text-muted-foreground">{caption}</p>
+    <div className="settings-group-wrap">
+      <h2 className="settings-group-caption">{caption}</h2>
       {group}
     </div>
   )
@@ -36,7 +36,7 @@ export function SettingsGroup({ caption, children, className }: { caption?: Reac
 /** Sample text at the top of a group. It shows the result of the settings below it and follows each change. */
 export function SettingsPreview({ ref, children, className }: { ref?: Ref<HTMLDivElement>, children: ReactNode, className?: string }) {
   return (
-    <div ref={ref} className={cn("flex flex-col gap-1.5 bg-background/50 px-[18px] py-4 text-sm leading-[1.65]", className)}>
+    <div ref={ref} className={cn("settings-preview flex flex-col gap-1.5 bg-background/50 px-[18px] py-4 text-sm leading-[1.65]", className)}>
       {children}
     </div>
   )
@@ -67,8 +67,8 @@ export function SettingsRow({ label, labelAddon, description, htmlFor, control, 
     : labelNode
 
   return (
-    <div className={cn("flex flex-col gap-3 px-4 py-3.5", className)}>
-      <div className="flex items-center justify-between gap-4">
+    <div className={cn("settings-row flex flex-col gap-3", className)}>
+      <div className="settings-row-heading">
         {description
           ? (
               <div className="flex min-w-0 flex-col gap-0.5">
@@ -77,7 +77,7 @@ export function SettingsRow({ label, labelAddon, description, htmlFor, control, 
               </div>
             )
           : labelWithAddon}
-        {control && <div className="shrink-0">{control}</div>}
+        {control && <div className="settings-row-control">{control}</div>}
       </div>
       {children}
     </div>

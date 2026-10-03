@@ -74,6 +74,13 @@ async function renderSettings(config: Config = DEFAULT_CONFIG, section = "servic
 const editor = () => screen.getByLabelText("options.service.editorLabel") as HTMLTextAreaElement
 const applyButton = () => screen.getByRole("button", { name: "options.service.apply" })
 
+function selectValue(trigger: HTMLElement, value: string) {
+  fireEvent.click(trigger)
+  const option = screen.getAllByRole("option").find(option => option.getAttribute("data-value") === value)
+  expect(option).toBeDefined()
+  fireEvent.click(option!)
+}
+
 describe("settings page", () => {
   beforeEach(() => {
     setUILanguage("browser")
@@ -127,24 +134,24 @@ describe("settings page", () => {
 
   it("stores hover and additional shortcuts, rejects conflicts and supports clearing", async () => {
     const { store } = await renderSettings(configured, "shortcut")
-    fireEvent.change(screen.getByLabelText("translationShortcuts.hover"), { target: { value: "clickAndHold" } })
+    selectValue(screen.getByLabelText("translationShortcuts.hover"), "clickAndHold")
     await waitFor(() => expect(store.get(configAtom).features.hoverHotkey).toBe("clickAndHold"))
-    const input = screen.getByLabelText("translationShortcuts.mode")
-    fireEvent.focus(input)
+    const recorder = screen.getByRole("button", { name: "translationShortcuts.mode" })
+    fireEvent.click(recorder)
     fireEvent.keyDown(document, { key: "e", altKey: true })
     expect(screen.getByRole("alert")).toHaveTextContent("translationShortcuts.conflict")
     expect(store.get(configAtom).features.modeShortcut).toBe("")
-    expect(input).toHaveValue("")
+    expect(recorder).toHaveTextContent("shortcutKeySelector.unset")
     await act(async () => {
       await Promise.resolve()
     })
-    fireEvent.focus(input)
+    fireEvent.click(recorder)
     fireEvent.keyDown(document, { key: "m", altKey: true })
     await waitFor(() => expect(store.get(configAtom).features.modeShortcut).toBe("Alt+M"))
     await act(async () => {
       await Promise.resolve()
     })
-    fireEvent.focus(input)
+    fireEvent.click(recorder)
     fireEvent.keyDown(document, { key: "Delete" })
     await waitFor(() => expect(store.get(configAtom).features.modeShortcut).toBe(""))
   })
@@ -155,10 +162,12 @@ describe("settings page", () => {
     fireEvent.change(editor(), { target: { value: "unfinished service configuration" } })
     fireEvent.click(screen.getByRole("link", { name: "options.appearance.title" }))
     const selector = screen.getByLabelText("uiLanguage.title")
-    expect(selector).toHaveValue("browser")
-    expect(within(selector).getAllByRole("option")).toHaveLength(10)
-    fireEvent.change(selector, { target: { value: "zh-CN" } })
-    await waitFor(() => expect(screen.getByLabelText("界面语言")).toHaveValue("zh-CN"))
+    expect(selector).toHaveAttribute("data-value", "browser")
+    fireEvent.click(selector)
+    expect(screen.getAllByRole("option")).toHaveLength(10)
+    fireEvent.keyDown(selector, { key: "Escape" })
+    selectValue(selector, "zh-CN")
+    await waitFor(() => expect(screen.getByLabelText("界面语言")).toHaveAttribute("data-value", "zh-CN"))
     expect(screen.getByRole("heading", { name: "外观" })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe("zh-CN")
     await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.ui.language).toBe("zh-CN"))
@@ -167,8 +176,8 @@ describe("settings page", () => {
     fireEvent.click(screen.getByRole("link", { name: "翻译服务" }))
     expect(screen.getByLabelText("翻译服务配置")).toHaveValue("unfinished service configuration")
     fireEvent.click(screen.getByRole("link", { name: "外观" }))
-    fireEvent.change(screen.getByLabelText("界面语言"), { target: { value: "browser" } })
-    await waitFor(() => expect(screen.getByLabelText("uiLanguage.title")).toHaveValue("browser"))
+    selectValue(screen.getByLabelText("界面语言"), "browser")
+    await waitFor(() => expect(screen.getByLabelText("uiLanguage.title")).toHaveAttribute("data-value", "browser"))
   })
 
   it("restores the saved interface language and reports a failed save", async () => {
@@ -176,10 +185,10 @@ describe("settings page", () => {
     const notify = vi.spyOn(toast, "error").mockImplementation(() => 0)
     const write = vi.spyOn(storageAdapter, "set").mockRejectedValueOnce(new Error("Storage unavailable"))
     try {
-      expect(screen.getByLabelText("界面语言")).toHaveValue("zh-CN")
-      fireEvent.change(screen.getByLabelText("界面语言"), { target: { value: "ja" } })
+      expect(screen.getByLabelText("界面语言")).toHaveAttribute("data-value", "zh-CN")
+      selectValue(screen.getByLabelText("界面语言"), "ja")
       await waitFor(() => expect(notify).toHaveBeenCalledWith("无法保存界面语言，请重试。"))
-      expect(screen.getByLabelText("界面语言")).toHaveValue("zh-CN")
+      expect(screen.getByLabelText("界面语言")).toHaveAttribute("data-value", "zh-CN")
       expect(store.get(configAtom).ui.language).toBe("zh-CN")
       expect((await storage.getItem<Config>("local:config"))?.ui.language).toBe("zh-CN")
     }
@@ -490,7 +499,7 @@ describe("manual service configuration", () => {
     fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
     const select = await screen.findByLabelText("modelDiscovery.select")
     expect(fetchProviderModels).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "sk-abcdefghijkl", provider: "openai" }), expect.any(AbortSignal))
-    fireEvent.change(select, { target: { value: "model-b" } })
+    selectValue(select, "model-b")
     expect(screen.getByLabelText("manualService.model")).toHaveValue("model-b")
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "manual-model" } })
     expect(store.get(configAtom)).toEqual(configured)
@@ -637,11 +646,11 @@ describe("manual service configuration", () => {
       ["anthropic", { thinking: { type: "disabled" } }],
       ["gemini", { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } }],
     ] as const) {
-      fireEvent.change(screen.getByLabelText("manualService.api"), { target: { value: api } })
+      selectValue(screen.getByLabelText("manualService.api"), api)
       expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual(example)
       expect(input).toHaveValue("{\"custom\":true}")
     }
-    fireEvent.change(screen.getByLabelText("manualService.type"), { target: { value: "deepseek" } })
+    selectValue(screen.getByLabelText("manualService.type"), "deepseek")
     expect(input).toHaveValue("")
     expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual({ thinking: { type: "disabled" } })
   })

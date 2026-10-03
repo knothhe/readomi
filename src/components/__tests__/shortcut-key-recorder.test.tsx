@@ -11,20 +11,78 @@ vi.mock("#imports", () => ({
 }))
 
 describe("shortcut key recorder", () => {
+  it("shows each configured key as an individual keycap and begins recording on activation", () => {
+    const onChange = vi.fn()
+    render(<ShortcutKeyRecorder shortcutKey="Alt+Shift+K" onChange={onChange} />)
+    const button = screen.getByRole("button")
+    expect(button.querySelectorAll("kbd")).toHaveLength(3)
+    expect(button.querySelector("kbd:last-child")).toHaveTextContent("K")
+    fireEvent.focus(button)
+    expect(button).toHaveAttribute("aria-pressed", "false")
+    fireEvent.keyDown(document, { key: "e", altKey: true })
+    expect(onChange).not.toHaveBeenCalled()
+    fireEvent.click(button)
+    expect(button).toHaveAttribute("aria-pressed", "true")
+    expect(button).toHaveTextContent("shortcutKeySelector.placeholder")
+  })
+
+  it("shows an unconfigured shortcut as a clickable unset keycap", () => {
+    render(<ShortcutKeyRecorder shortcutKey="" />)
+    expect(screen.getByRole("button")).toHaveTextContent("shortcutKeySelector.unset")
+  })
+
+  it("lets Tab leave the button and cancels recording", () => {
+    const onChange = vi.fn()
+    render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} />)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
+    const tabEvent = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true })
+    fireEvent(document, tabEvent)
+    expect(tabEvent.defaultPrevented).toBe(false)
+    expect(onChange).not.toHaveBeenCalled()
+    fireEvent.keyDown(document, { key: "k", ctrlKey: true })
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it("cancels a mounted recorder when its settings section becomes hidden", async () => {
+    const onChange = vi.fn()
+    const view = render(<div><ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} /></div>)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
+    expect(button).toHaveAttribute("aria-pressed", "true")
+
+    view.rerender(<div hidden><ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} /></div>)
+    await waitFor(() => expect(button).toHaveAttribute("aria-pressed", "false"))
+    expect(onChange).not.toHaveBeenCalled()
+    expect(button).toHaveAttribute("data-shortcut", "Alt+E")
+  })
+
+  it("does not intercept another page's keys immediately after hiding", () => {
+    const onChange = vi.fn()
+    const view = render(<div><ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} /></div>)
+    fireEvent.click(screen.getByRole("button"))
+    view.rerender(<div hidden><ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} /></div>)
+
+    const keyEvent = new KeyboardEvent("keydown", { key: "k", altKey: true, bubbles: true, cancelable: true })
+    fireEvent(document, keyEvent)
+    expect(keyEvent.defaultPrevented).toBe(false)
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
   it("keeps the previous shortcut when the consumer rejects a conflicting combination", async () => {
     render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={() => false} />)
-    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder")
-    fireEvent.focus(input)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "m", altKey: true })
-    await waitFor(() => expect(input).toHaveValue("Alt+E"))
+    await waitFor(() => expect(button).toHaveAttribute("data-shortcut", "Alt+E"))
   })
   it("records modifier shortcuts as portable strings", async () => {
     const onChange = vi.fn()
 
     render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} />)
 
-    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder")
-    fireEvent.focus(input)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "K", ctrlKey: true, shiftKey: true })
 
     await waitFor(() => {
@@ -37,8 +95,8 @@ describe("shortcut key recorder", () => {
 
     render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} />)
 
-    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder")
-    fireEvent.focus(input)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "£", altKey: true, code: "Digit3" })
 
     await waitFor(() => {
@@ -51,8 +109,8 @@ describe("shortcut key recorder", () => {
 
     render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} />)
 
-    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder")
-    fireEvent.focus(input)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "K" })
 
     await waitFor(() => {
@@ -71,13 +129,13 @@ describe("shortcut key recorder", () => {
 
     render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} />)
 
-    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder") as HTMLInputElement
-    fireEvent.focus(input)
+    const button = screen.getByRole("button")
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "Escape" })
 
     await waitFor(() => {
       expect(onChange).not.toHaveBeenCalled()
-      expect(input.value).toBe("Alt+E")
+      expect(button).toHaveAttribute("data-shortcut", "Alt+E")
     })
   })
 
@@ -86,16 +144,16 @@ describe("shortcut key recorder", () => {
 
     render(<ShortcutKeyRecorder shortcutKey="Alt+E" onChange={onChange} />)
 
-    const input = screen.getByPlaceholderText("shortcutKeySelector.placeholder")
+    const button = screen.getByRole("button")
 
-    fireEvent.focus(input)
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "Backspace" })
 
     await waitFor(() => {
       expect(onChange).toHaveBeenLastCalledWith("")
     })
 
-    fireEvent.focus(input)
+    fireEvent.click(button)
     fireEvent.keyDown(document, { key: "Delete" })
 
     await waitFor(() => {

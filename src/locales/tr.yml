@@ -49,8 +49,11 @@ errorRecovery:
 options:
   version: Sürüm
   title: Ayarlar
+  preview: Önizleme
   service:
     title: Çeviri hizmeti
+    connectionDetails: Bağlantı ayrıntıları
+    reconfigure: Yeniden yapılandır
     empty:
       title: Henüz çeviri hizmeti yok
       description: Talimatları ajanınıza verin. Ajan, hizmet yapılandırmasını anahtarınızla doğrulayıp panoya koyar; aşağıya yapıştırın.
@@ -83,6 +86,7 @@ options:
     applying: Kontrol ediliyor…
   appearance:
     title: Görünüm
+    preferences: Arayüz tercihleri
     colorTheme: Tema rengi
     description: Arayüze, çeviri işaretlerine ve araç çubuğu simgesine uygulanır.
     default: Varsayılan
@@ -184,6 +188,7 @@ agentInstructions:
     $2
 shortcutKeySelector:
   placeholder: Bir kısayola basın
+  unset: Ayarlanmamış
 languages:
   eng: İngilizce
   cmn: Basitleştirilmiş Çince
@@ -382,6 +387,8 @@ manualService:
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
   title: Configuration backup
+  backup: Yedekleme
+  restore: Geri yükleme
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
   import: Import configuration
@@ -408,8 +415,8 @@ subtitleStyle:
   fontDescription: Scales both lines, with the original slightly smaller.
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: and the long-awaited folding one.
-  previewTranslation: 以及期待已久的折叠款。
+  previewOriginal: A new idea.
+  previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
   adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
   smaller: Decrease subtitle size
@@ -443,6 +450,8 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its saved key.
 translationShortcuts:
+  restoreDefaults: Varsayılanları geri yükle
+  restoreFailed: Varsayılanlar geri yüklenemedi. Tekrar deneyin.
   mode: Switch bilingual / translation only
   subtitles: Toggle video subtitles
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.

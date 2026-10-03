@@ -49,8 +49,11 @@ errorRecovery:
 options:
   version: Version
   title: Settings
+  preview: Preview
   service:
     title: Translation service
+    connectionDetails: Connection details
+    reconfigure: Reconfigure
     empty:
       title: No translation service yet
       description: Hand the instructions to your agent. It verifies the service configuration with your key and puts it on the clipboard; paste it below.
@@ -83,6 +86,7 @@ options:
     applying: Checking…
   appearance:
     title: Appearance
+    preferences: Interface preferences
     colorTheme: Theme color
     description: Applies to the interface, translation markers and toolbar icon.
     default: Default
@@ -184,6 +188,7 @@ agentInstructions:
     $2
 shortcutKeySelector:
   placeholder: Press a shortcut
+  unset: Not set
 languages:
   eng: English
   cmn: Simplified Chinese
@@ -382,6 +387,8 @@ manualService:
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
   title: Configuration backup
+  backup: Backup
+  restore: Restore
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
   import: Import configuration
@@ -408,8 +415,8 @@ subtitleStyle:
   fontDescription: Scales both lines, with the original slightly smaller.
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: and the long-awaited folding one.
-  previewTranslation: 以及期待已久的折叠款。
+  previewOriginal: A new idea.
+  previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
   adjustmentHint: Drag subtitles on the video to move them; hover to change the preset or size. Changes are saved automatically.
   smaller: Decrease subtitle size
@@ -443,6 +450,8 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its saved key.
 translationShortcuts:
+  restoreDefaults: Restore defaults
+  restoreFailed: Could not restore defaults. Try again.
   mode: Switch bilingual / translation only
   subtitles: Toggle video subtitles
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
