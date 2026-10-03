@@ -2,6 +2,7 @@ import type { TextRequest } from "./request"
 import type { ProviderConfig, RequestApi } from "@/types/config/provider"
 import { describeErrorBody } from "@/utils/error/extract-message"
 import { attachRequestErrorMeta } from "@/utils/request/retry-policy"
+import { fetchProvider } from "./fetch"
 import { extractResponseText, prepareRequest, ProviderRequestError, resolveRequestApi } from "./request"
 
 /** Never expose inline reasoning, including a tag split across network chunks. */
@@ -56,7 +57,7 @@ export async function requestTextStream(
   const url = api === "gemini"
     ? prepared.url.replace(/:generateContent$/, ":streamGenerateContent?alt=sse")
     : prepared.url
-  const response = await fetch(url, {
+  const response = await fetchProvider(url, {
     method: "POST",
     headers: prepared.headers,
     body: JSON.stringify(api === "gemini" ? prepared.body : { ...prepared.body, stream: streaming }),

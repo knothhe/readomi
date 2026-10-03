@@ -1,7 +1,9 @@
 import type { ProviderConfig, RequestApi } from "@/types/config/provider"
 import { DEFAULT_BASE_URLS, DEFAULT_REQUEST_API } from "@/types/config/provider"
+import { APP_USER_AGENT } from "@/utils/constants/app"
 import { describeErrorBody } from "@/utils/error/extract-message"
 import { attachRequestErrorMeta } from "@/utils/request/retry-policy"
+import { fetchProvider } from "./fetch"
 
 /**
  * One text request to a translation service, sent as the service's own API
@@ -135,6 +137,7 @@ export function buildHeaders(api: RequestApi, provider: Pick<ProviderConfig, "ap
     if (value !== "")
       headers.set(key, value)
   }
+  headers.set("User-Agent", APP_USER_AGENT)
   return Object.fromEntries(headers.entries())
 }
 
@@ -218,7 +221,7 @@ export async function requestText(provider: ProviderConfig, request: TextRequest
   const api = resolveRequestApi(provider)
   const { url, headers, body } = prepareRequest(provider, request)
 
-  const response = await fetch(url, {
+  const response = await fetchProvider(url, {
     method: "POST",
     headers,
     body: JSON.stringify(body),

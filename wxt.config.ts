@@ -22,6 +22,7 @@ export default defineConfig({
       "alarms",
       "scripting",
       "webNavigation",
+      ...(browser !== "firefox" ? ["declarativeNetRequestWithHostAccess" as const] : []),
     ],
     host_permissions: [
       "*://*/*", // Required for scripting.executeScript in any frame

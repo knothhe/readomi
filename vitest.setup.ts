@@ -74,6 +74,10 @@ vi.mock("wxt/testing/fake-browser", async () => {
         ...actual.fakeBrowser.identity,
         getRedirectURL: () => "https://mock-redirect-url.chromiumapp.org/",
       },
+      declarativeNetRequest: {
+        ...actual.fakeBrowser.declarativeNetRequest,
+        updateDynamicRules: vi.fn(async () => {}),
+      },
       runtime: {
         ...actual.fakeBrowser.runtime,
         getManifest: () => ({

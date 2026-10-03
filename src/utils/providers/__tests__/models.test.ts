@@ -62,7 +62,7 @@ describe("provider model discovery", () => {
     })
     const pending = fetchProviderModels({ provider: "openai" }, controller.signal)
     controller.abort()
-    await expect(pending).rejects.toThrow("Aborted")
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" })
     fetchMock.mockClear()
     await expect(fetchProviderModels({ provider: "openai-compatible", baseURL: "file:///tmp", apiKey: "secret" })).rejects.toThrow("Invalid API")
     expect(fetchMock).not.toHaveBeenCalled()

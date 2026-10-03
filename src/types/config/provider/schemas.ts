@@ -36,7 +36,7 @@ export const providerConfigItemSchema = z.strictObject({
   /** Model ID exactly as the service expects it. Empty only for a service that has not been set up yet. */
   model: z.string(),
   temperature: z.number().min(0).optional(),
-  /** Extra HTTP headers, sent as given. */
+  /** Extra HTTP headers; User-Agent always identifies Readomi. */
   headers: z.record(z.string(), z.string()).optional(),
   /** JSON merged into the request body after Readomi's own fields, so it can add or override any of them. */
   body: z.record(z.string(), jsonValueSchema).optional(),

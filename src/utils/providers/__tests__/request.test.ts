@@ -2,6 +2,7 @@ import type { AddressInfo } from "node:net"
 import type { ProviderConfig } from "@/types/config/provider"
 import http from "node:http"
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest"
+import { APP_USER_AGENT } from "@/utils/constants/app"
 import { getRequestErrorMeta } from "@/utils/request/retry-policy"
 import { extractResponseText, mergeBody, prepareRequest, ProviderRequestError, requestText } from "../request"
 
@@ -49,7 +50,7 @@ describe("prepareRequest", () => {
   it("builds a chat completions request with the system and user messages", () => {
     const prepared = prepareRequest(provider({ provider: "deepseek", baseURL: undefined }), { system: "S", prompt: "P", temperature: 0.2 })
     expect(prepared.url).toBe("https://api.deepseek.com/chat/completions")
-    expect(prepared.headers).toEqual({ "content-type": "application/json", "authorization": "Bearer secret" })
+    expect(prepared.headers).toEqual({ "content-type": "application/json", "authorization": "Bearer secret", "user-agent": APP_USER_AGENT })
     expect(prepared.body).toEqual({ model: "m", messages: [{ role: "system", content: "S" }, { role: "user", content: "P" }], temperature: 0.2 })
   })
 
@@ -62,14 +63,14 @@ describe("prepareRequest", () => {
   it("builds a Messages API request for Anthropic with its headers and max_tokens", () => {
     const prepared = prepareRequest(provider({ provider: "anthropic", baseURL: undefined, model: "claude-haiku-4-5" }), { system: "S", prompt: "P" })
     expect(prepared.url).toBe("https://api.anthropic.com/v1/messages")
-    expect(prepared.headers).toEqual({ "content-type": "application/json", "x-api-key": "secret", "anthropic-version": "2023-06-01" })
+    expect(prepared.headers).toEqual({ "content-type": "application/json", "x-api-key": "secret", "anthropic-version": "2023-06-01", "user-agent": APP_USER_AGENT })
     expect(prepared.body).toEqual({ model: "claude-haiku-4-5", max_tokens: 8192, system: "S", messages: [{ role: "user", content: "P" }] })
   })
 
   it("builds a generateContent request for Gemini with the model in the path", () => {
     const prepared = prepareRequest(provider({ provider: "gemini", baseURL: undefined, model: "gemini-3.5-flash-lite" }), { system: "S", prompt: "P", temperature: 0 })
     expect(prepared.url).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent")
-    expect(prepared.headers).toEqual({ "content-type": "application/json", "x-goog-api-key": "secret" })
+    expect(prepared.headers).toEqual({ "content-type": "application/json", "x-goog-api-key": "secret", "user-agent": APP_USER_AGENT })
     expect(prepared.body).toEqual({
       systemInstruction: { parts: [{ text: "S" }] },
       contents: [{ role: "user", parts: [{ text: "P" }] }],
@@ -100,8 +101,14 @@ describe("prepareRequest", () => {
 
   it("sends no temperature and no authorization unless the config has them", () => {
     const prepared = prepareRequest(provider({ apiKey: undefined }), { prompt: "P" })
-    expect(prepared.headers).toEqual({ "content-type": "application/json" })
+    expect(prepared.headers).toEqual({ "content-type": "application/json", "user-agent": APP_USER_AGENT })
     expect(prepared.body).not.toHaveProperty("temperature")
+  })
+
+  it("keeps Readomi's identity when extra headers include a differently cased User-Agent", () => {
+    const prepared = prepareRequest(provider({ headers: { "uSeR-aGeNt": "Mozilla/5.0", "X-Tenant": "t1" } }), { prompt: "P" })
+    expect(prepared.headers["user-agent"]).toBe(APP_USER_AGENT)
+    expect(prepared.headers["x-tenant"]).toBe("t1")
   })
 
   it("refuses a compatible service without a base URL or a service without a model", () => {
@@ -147,6 +154,7 @@ describe("requestText", () => {
     expect(recorded).toHaveLength(1)
     expect(recorded[0].url).toBe("/v1/chat/completions")
     expect(recorded[0].headers.authorization).toBe("Bearer secret")
+    expect(recorded[0].headers["user-agent"]).toBe(APP_USER_AGENT)
     expect(recorded[0].body).toEqual({ model: "m", messages: [{ role: "system", content: "S" }, { role: "user", content: "P" }], reasoning_effort: "none" })
   })
 

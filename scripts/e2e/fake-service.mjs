@@ -25,13 +25,15 @@ export const OTHER_REQUEST_PREFIXES = { languageDetection: "You are a language d
  * of the part's last line, keeping the batch separators Readomi uses, so a
  * translated page is easy to recognize. The model "rejected-model" gets a
  * 400 answer, like a service that does not know the model.
- * Every request is recorded in `requests` for assertions; `messages()` and
- * `translationRequests()` give the messages of the recorded requests.
+ * Every API request is recorded in `requests` for assertions; `messages()`
+ * and `translationRequests()` give the messages of the recorded requests.
+ * Article navigation requests are recorded separately in `articleRequests`.
  * `holdAnswers()` keeps the answers back until the function it returns is
  * called, like a slow service.
  */
 export async function startFakeService({ streaming = false } = {}) {
   const requests = []
+  const articleRequests = []
   let heldStreamCompletion
   let heldAnswers
   const server = http.createServer(async (request, response) => {
@@ -53,6 +55,7 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
       return
     }
     if (request.method === "GET" && url.pathname === "/article") {
+      articleRequests.push({ method: request.method, url: request.url, userAgent: request.headers["user-agent"] })
       response.setHeader("Content-Type", "text/html; charset=utf-8")
       response.end(article(url.searchParams.get("description")))
       return
@@ -60,7 +63,7 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
     let body = ""
     for await (const chunk of request)
       body += chunk
-    requests.push({ method: request.method, url: request.url, authorization: request.headers.authorization, body })
+    requests.push({ method: request.method, url: request.url, authorization: request.headers.authorization, userAgent: request.headers["user-agent"], body })
     await heldAnswers
     if (request.method === "GET" && request.url === "/v1/models") {
       response.setHeader("Content-Type", "application/json")
@@ -114,6 +117,7 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
   return {
     origin,
     requests,
+    articleRequests,
     completions,
     messages,
     translationRequests: () => messages().filter(([message]) => !otherPrefixes.some(prefix => message.content.startsWith(prefix))),

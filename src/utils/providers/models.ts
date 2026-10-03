@@ -1,4 +1,5 @@
 import type { ProviderConfig } from "@/types/config/provider"
+import { fetchProvider } from "./fetch"
 import { buildHeaders, resolveBaseURL, resolveRequestApi } from "./request"
 
 export type ModelListProvider = Pick<ProviderConfig, "provider" | "api" | "apiKey" | "baseURL" | "headers">
@@ -23,7 +24,7 @@ export async function fetchProviderModels(provider: ModelListProvider, signal?: 
   const models = new Set<string>()
   const cursors = new Set<string>()
   for (let page = 0; page < 20; page++) {
-    const response = await fetch(url, { method: "GET", headers, signal: requestSignal, redirect: "error" })
+    const response = await fetchProvider(url, { method: "GET", headers, signal: requestSignal, redirect: "error" })
     if (!response.ok)
       throw new Error(`Model list request failed (${response.status})`)
     const json: unknown = await response.json()
