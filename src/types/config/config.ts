@@ -7,6 +7,7 @@ import { normalizePageTranslationShortcut } from "@/utils/page-translation-short
 import { THEME_MODES } from "@/utils/theme"
 import { UI_LANGUAGES } from "@/utils/ui-language-options"
 import { providersConfigSchema } from "./provider"
+import { siteRulesConfigSchema } from "./site-rules"
 import { DEFAULT_SUBTITLE_STYLE, subtitleStyleSchema } from "./subtitle-style"
 import { pageTranslationShortcutSchema, translateConfigSchema } from "./translate"
 
@@ -27,6 +28,7 @@ export const configSchema = z.object({
     wordPrefixEmphasis: z.boolean().default(false),
   }),
   translate: translateConfigSchema,
+  siteRules: siteRulesConfigSchema,
   features: z.object({
     hoverTranslation: z.boolean().default(false),
     hoverStream: z.boolean().default(true),

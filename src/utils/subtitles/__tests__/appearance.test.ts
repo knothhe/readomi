@@ -3,9 +3,25 @@ import { storage } from "#imports"
 import { configSchema } from "@/types/config/config"
 import { subtitleStyleSchema } from "@/types/config/subtitle-style"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
-import { resolveSubtitlePosition, saveSubtitleStyle } from "../appearance"
+import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle } from "../appearance"
 
 describe("subtitle appearance configuration", () => {
+  it("scales the saved size to the video window and keeps fixed pixels independent of its width", () => {
+    const style = DEFAULT_CONFIG.features.subtitleStyle
+    expect(resolveSubtitleFontSize(style, 320)).toBe(12)
+    expect(resolveSubtitleFontSize(style, 640)).toBe(24)
+    expect(resolveSubtitleFontSize(style, 1280)).toBe(48)
+    expect(resolveSubtitleFontSize({ ...style, fontSize: 80 }, 320)).toBe(40)
+    expect(resolveSubtitleFontSize({ ...style, fontSizeMode: "fixed" }, 320)).toBe(24)
+    expect(resolveSubtitleFontSize({ ...style, fontSizeMode: "fixed" }, 1280)).toBe(24)
+    for (const width of [0, Number.NaN, Number.POSITIVE_INFINITY])
+      expect(resolveSubtitleFontSize(style, width)).toBe(24)
+    expect(style.fontSize).toBe(24)
+  })
+  it("adds video-relative sizing to older styles while preserving their saved appearance", () => {
+    expect(subtitleStyleSchema.parse({ preset: "study", fontSize: 38, position: { x: 60, y: 65 } })).toEqual({ preset: "study", fontSize: 38, fontSizeMode: "video", position: { x: 60, y: 65 } })
+    expect(subtitleStyleSchema.parse({ ...DEFAULT_CONFIG.features.subtitleStyle, fontSizeMode: "fixed" }).fontSizeMode).toBe("fixed")
+  })
   it("keeps a 2% bottom inset and accepts YouTube's computed edge without moving custom positions", () => {
     const video = { width: 640, height: 360 }
     const caption = { width: 200, height: 60 }
@@ -22,7 +38,7 @@ describe("subtitle appearance configuration", () => {
     Reflect.deleteProperty(old.appearance, "mode")
     old.features.subtitleMode = "translationOnly"
     const migrated = configSchema.parse(old)
-    expect(migrated.features.subtitleStyle).toEqual({ preset: "clear", fontSize: 24, position: { x: 50, y: 88 } })
+    expect(migrated.features.subtitleStyle).toEqual({ preset: "clear", fontSize: 24, fontSizeMode: "video", position: { x: 50, y: 88 } })
     expect(migrated.features.subtitleMode).toBe("translationOnly")
     expect(migrated.providersConfig).toEqual(old.providersConfig)
     expect(migrated.appearance).toEqual({ colorTheme: old.appearance.colorTheme, mode: "system" })
@@ -30,9 +46,9 @@ describe("subtitle appearance configuration", () => {
   it("merges sequential position and font adjustments into the latest stored config", async () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)
     const a = saveSubtitleStyle({ position: { x: 60, y: 70 } })
-    const b = saveSubtitleStyle({ fontSize: 80 })
+    const b = saveSubtitleStyle({ fontSize: 80, fontSizeMode: "fixed" })
     await Promise.all([a, b])
-    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, subtitleStyle: { preset: "clear", fontSize: 80, position: { x: 60, y: 70 } } } })
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, subtitleStyle: { preset: "clear", fontSize: 80, fontSizeMode: "fixed", position: { x: 60, y: 70 } } } })
   })
   it.each([13, 81, 24.5])("rejects out-of-range or fractional subtitle font size %s", (fontSize) => {
     expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, fontSize }).success).toBe(false)

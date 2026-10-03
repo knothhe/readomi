@@ -7,11 +7,13 @@ import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/u
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
-import { resolveSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
+import { createTextTrackSession } from "@/utils/subtitles/text-track-session"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
 import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
+import { currentXVideo, isXHost, xCaptionBottom, xVideoIdentity } from "@/utils/subtitles/x-player"
 import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
 
 /** Text-track support follows Read Frog's local subtitle adapter. No hosted services. */
@@ -67,7 +69,8 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
     nativeStyle.textContent = `[data-readomi-caption-player="${playerId}"] .ytp-caption-window-container{visibility:hidden!important}`
     youtubePlayer.append(nativeStyle)
   }
-  const modes = new Map<TextTrack, TextTrackMode>()
+  const xPlayer = isXHost()
+  const tracks = createTextTrackSession(video, track => !xPlayer || track.label !== "clone")
   const timeline = youtubePlayer ? createYouTubeTimeline() : null
   const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
   const translations = new SubtitleTranslationWindow(async (input) => {
@@ -79,6 +82,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   let nativeCues = [] as ReturnType<typeof readTrackCues>
   let cueCount = -1
   let track: TextTrack | undefined
+  let trackKey = ""
   let source = ""
   let text = ""
   let changedAt = 0
@@ -107,11 +111,12 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   const resetPosition = button(i18n.t("subtitleStyle.resetPosition"), i18n.t("subtitleStyle.resetPositionShort"))
   const positionCaption = () => {
     const videoRect = video.getBoundingClientRect()
+    box.style.fontSize = `${resolveSubtitleFontSize(appearance, videoRect.width)}px`
     const playerRect = !dragPosition && subtitlePositionName(appearance.position) === "bottom" ? youtubePlayer?.getBoundingClientRect() : undefined
     const rect = playerRect && playerRect.width > 0 && playerRect.height > 0 ? playerRect : videoRect
     renderedRect = rect
     host.style.maxWidth = `${rect.width * 0.8}px`
-    const bottomEdge = subtitlePositionName(appearance.position) === "bottom" ? youtubeCaptionPosition?.bottom(rect) : undefined
+    const bottomEdge = subtitlePositionName(appearance.position) === "bottom" ? youtubeCaptionPosition?.bottom(rect) ?? (xPlayer ? xCaptionBottom(video, rect, box.matches(":hover, :focus-within")) : undefined) : undefined
     renderedPosition = dragPosition ?? resolveSubtitlePosition(appearance.position, rect, box.getBoundingClientRect(), bottomEdge)
     const centre = rect.width * renderedPosition.x / 100
     host.style.left = `${rect.left + centre}px`
@@ -181,14 +186,9 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
     },
   })
 
-  const restoreTracks = () => {
-    for (const [track, mode] of modes) {
-      if (track.mode === "hidden")
-        track.mode = mode
-    }
-    modes.clear()
-  }
   const tick = () => {
+    if (xPlayer)
+      video.dataset.readomiXSubtitlePage = location.pathname
     const fullscreen = document.fullscreenElement
     if (fullscreen && fullscreen !== video && fullscreen.contains(video)) {
       if (host.parentElement !== fullscreen)
@@ -198,7 +198,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
       document.documentElement.append(host)
     }
     const rect = video.getBoundingClientRect()
-    const currentSource = `${location.href}|${video.currentSrc || video.src}`
+    const currentSource = `${xPlayer ? xVideoIdentity(video) : location.href}|${video.currentSrc || video.src}`
     if (currentSource !== source) {
       source = currentSource
       text = ""
@@ -206,22 +206,19 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
       timelineKey = ""
       nativeCues = []
       cueCount = -1
-      restoreTracks()
+      tracks.reset()
       track = undefined
+      trackKey = ""
     }
-    const tracks = Array.from(video.textTracks).filter(t => t.kind === "subtitles" || t.kind === "captions")
-    const selected = tracks.find(t => t.mode === "showing") ?? (track && tracks.includes(track) ? track : tracks.find(t => t.mode === "hidden") ?? tracks[0])
-    if (selected !== track) {
-      restoreTracks()
+    const selected = tracks.sync()
+    const selectedKey = selected ? `${selected.kind}|${selected.language}|${selected.label}` : ""
+    if (selected !== track || selectedKey !== trackKey) {
       track = selected
+      trackKey = selectedKey
       translations.reset()
       nativeCues = []
       cueCount = -1
       text = ""
-    }
-    if (track && track.mode !== "hidden") {
-      modes.set(track, track.mode)
-      track.mode = "hidden"
     }
     const youtube = timeline?.tick()
     if (youtube && youtube.key !== timelineKey) {
@@ -271,7 +268,9 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
       disposeDrag()
       timeline?.dispose()
       translations.dispose()
-      restoreTracks()
+      tracks.dispose()
+      if (xPlayer)
+        delete video.dataset.readomiXSubtitlePage
       host.remove()
       nativeStyle.remove()
       youtubeCaptionPosition?.dispose()
@@ -301,13 +300,15 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     const tick = () => {
       if (disposed || isContextInvalid())
         return
+      const xVideo = isXHost() ? currentXVideo() : null
+      const videos = isXHost() ? (xVideo ? [xVideo] : []) : Array.from(document.querySelectorAll("video"))
       for (const [video, player] of players) {
-        if (!video.isConnected) {
+        if (!video.isConnected || !videos.includes(video)) {
           player.dispose()
           players.delete(video)
         }
       }
-      for (const video of document.querySelectorAll("video")) {
+      for (const video of videos) {
         if (!players.has(video))
           players.set(video, mountPlayer(video, config))
       }

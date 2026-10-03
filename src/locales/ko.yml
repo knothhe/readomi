@@ -413,6 +413,11 @@ subtitleStyle:
   preset: Subtitle preset
   fontSize: Subtitle size
   fontDescription: Scales both lines, with the original slightly smaller.
+  fontSizeMode: Size mode
+  relativeFontDescription: Scales with the video window; the size below is based on a 640-pixel-wide video.
+  fontSizeModes:
+    video: Scale with video
+    fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
   previewOriginal: A new idea.
@@ -474,3 +479,57 @@ uiLanguage:
   title: 인터페이스 언어
   browser: 브라우저 설정 따르기
   saveFailed: 인터페이스 언어를 저장하지 못했습니다. 다시 시도해 주세요.
+
+siteRules:
+  title: Site rules
+  backToReading: Back to Web reading
+  builtIn: Built-in rules
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  enabledCount: Enabled $1 / $2 rules
+  search: "Search by site, rule name or URL"
+  matchCount: $1 matching rules
+  noMatches: No matching rules
+  toggle: Enable $1
+  viewRule: Rule details
+  immediate: Changes apply immediately; active page translations adapt again.
+  custom: Custom rules
+  customDescription: Custom rules apply after built-in rules.
+  editorLabel: Custom site rules
+  saved: Saved
+  unsaved: Unsaved changes
+  characterCount: $1 / $2 characters
+  save: Save rules
+  saving: Saving…
+  revert: Revert changes
+  example: Rule example
+  customPriority: "Custom rules apply after built-in rules; enabled: false pauses a rule."
+  description: Adjust webpage translation scope and display for individual sites.
+  tabsLabel: Rule source
+  showMore: Show more
+  showingCount: Showing $1 / $2 rules
+  copy: Copy rule
+  copied: Copied
+  copyFailed: Could not copy. Try again.
+  emptyTitle: No custom rules yet
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  add: Add rules
+  edit: Edit rules
+  customCount: "Saved rules: $1"
+  editorTitle: Edit custom rules
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  cancel: Cancel
+  validating: Checking…
+  valid: Rules are valid and ready to save
+  allSites: All sites
+  searchHelp: "Try a site name or domain, such as x.com."
+  sourceIntro: Rule library from
+  sourceProject: Read Frog
+  sourceMaintainer: Adapted and maintained by Readomi
+  errors:
+    syntax: Invalid JSON. Check the highlighted details.
+    notArray: Use a JSON array of rules.
+    tooLong: The rules document exceeds 65536 characters.
+    tooMany: Use at most 200 custom rules.
+    schema: Invalid rule fields. Check the details below.
+    duplicateIds: Each custom rule must have a unique id.
+    saveFailed: Rules could not be saved. Try again.

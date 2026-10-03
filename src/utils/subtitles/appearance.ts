@@ -20,10 +20,16 @@ export function subtitlePositionName(position: SubtitlePosition): keyof typeof S
   ) ?? "custom"
 }
 
+/** The saved video-relative size is calibrated for a 640px-wide video window. */
+export function resolveSubtitleFontSize(style: SubtitleStyle, videoWidth = 640): number {
+  const scale = style.fontSizeMode === "video" && Number.isFinite(videoWidth) && videoWidth > 0 ? videoWidth / 640 : 1
+  return style.fontSize * scale
+}
+
 /** Shared presentation for the settings preview and the in-video renderer. */
-export function subtitleTextStyle(style: SubtitleStyle) {
+export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640) {
   return {
-    fontSize: `${style.fontSize}px`,
+    fontSize: `${resolveSubtitleFontSize(style, videoWidth)}px`,
     fontWeight: style.preset === "compact" ? "500" : "600",
     lineHeight: "1.4",
     color: "#fff",

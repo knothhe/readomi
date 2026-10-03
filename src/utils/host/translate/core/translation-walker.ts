@@ -6,7 +6,9 @@ import {
   PARAGRAPH_ATTRIBUTE,
   WALKED_ATTRIBUTE,
 } from "../../../constants/dom-labels"
-import { isBlockTransNode, isHTMLElement, isTextNode, isTransNode } from "../../dom/filter"
+import { isBlockTransNode, isHTMLElement, isNaturalBlockTransNode, isSiteRuleForceBlockStyleElement, isTextNode, isTranslatedWrapperNode, isTransNode } from "../../dom/filter"
+import { deepQueryTopLevelSelector } from "../../dom/find"
+import { removeTranslatedWrapperWithRestore } from "../dom/translation-cleanup"
 import { translateNodes } from "./translation-modes"
 
 /**
@@ -31,15 +33,30 @@ export async function translateWalkedElement(
   if (element.getAttribute(WALKED_ATTRIBUTE) !== walkId)
     return
 
+  // Translation-only containers have no original inline children left to
+  // label. Restore an existing result explicitly instead of depending on a
+  // paragraph attribute left over from its previous walk.
+  if (toggle) {
+    const previousWrappers = deepQueryTopLevelSelector(element, isTranslatedWrapperNode)
+      .filter(wrapper => wrapper.getAttribute(WALKED_ATTRIBUTE) !== walkId)
+    if (previousWrappers.length) {
+      previousWrappers.forEach(removeTranslatedWrapperWithRestore)
+      return
+    }
+  }
+
   const promises: Promise<void>[] = []
 
   if (element.hasAttribute(PARAGRAPH_ATTRIBUTE)) {
     let hasBlockNodeChild = false
+    let hasBlockLayoutChild = false
 
     for (const child of element.childNodes) {
-      if (isHTMLElement(child) && child.hasAttribute(BLOCK_ATTRIBUTE)) {
-        hasBlockNodeChild = true
-        break
+      if (isHTMLElement(child)) {
+        if (child.hasAttribute(BLOCK_ATTRIBUTE))
+          hasBlockNodeChild = true
+        if (isNaturalBlockTransNode(child) || (child.hasAttribute(BLOCK_ATTRIBUTE) && isSiteRuleForceBlockStyleElement(child, config)))
+          hasBlockLayoutChild = true
       }
     }
 
@@ -56,7 +73,7 @@ export async function translateWalkedElement(
       for (const child of children) {
         if (isTransNode(child) && isBlockTransNode(child) && !isTextNode(child)) {
           // force the children to be block translation style unless the parent is a flex parent
-          promises.push(translateNodes(consecutiveInlineNodes, walkId, toggle, config, !isFlexParent, signal, translateRequest))
+          promises.push(translateNodes(consecutiveInlineNodes, walkId, toggle, config, !isFlexParent && hasBlockLayoutChild, signal, translateRequest))
           consecutiveInlineNodes = []
           promises.push(translateWalkedElement(child, walkId, config, toggle, signal, translateRequest))
         }
@@ -66,7 +83,7 @@ export async function translateWalkedElement(
       }
 
       if (consecutiveInlineNodes.length) {
-        promises.push(translateNodes(consecutiveInlineNodes, walkId, toggle, config, !isFlexParent, signal, translateRequest))
+        promises.push(translateNodes(consecutiveInlineNodes, walkId, toggle, config, !isFlexParent && hasBlockLayoutChild, signal, translateRequest))
         consecutiveInlineNodes = []
       }
     }

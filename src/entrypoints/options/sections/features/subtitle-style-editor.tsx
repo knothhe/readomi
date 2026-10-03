@@ -3,9 +3,9 @@ import { useAtom } from "jotai"
 import { useLayoutEffect, useRef } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
-import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_FONT_SIZE_MODES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { resolveSubtitleFontSize, resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitlePositionName, subtitlePresetPatch, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 import { SettingsSlider } from "../../components/settings-slider"
 
@@ -20,9 +20,9 @@ export function SubtitleStyleEditor({ children }: { children: ReactNode }) {
     const place = () => {
       if (!frameRef.current || !previewRef.current || !captionRef.current)
         return
-      // Preview the same 16:9 video at any card width without changing its saved pixel size.
-      previewRef.current.style.zoom = String(frameRef.current.clientWidth > 0 ? frameRef.current.clientWidth / 640 : 1)
-      const next = resolveSubtitlePosition(style.position, previewRef.current.getBoundingClientRect(), captionRef.current.getBoundingClientRect())
+      const rect = previewRef.current.getBoundingClientRect()
+      captionRef.current.style.fontSize = `${resolveSubtitleFontSize(style, rect.width)}px`
+      const next = resolveSubtitlePosition(style.position, rect, captionRef.current.getBoundingClientRect())
       captionRef.current.style.left = `${next.x}%`
       captionRef.current.style.top = `${next.y}%`
     }
@@ -55,7 +55,19 @@ export function SubtitleStyleEditor({ children }: { children: ReactNode }) {
               />
             )}
           />
-          <SettingsRow label={i18n.t("subtitleStyle.fontSize")} description={i18n.t("subtitleStyle.fontDescription")}>
+          <SettingsRow
+            label={i18n.t("subtitleStyle.fontSizeMode")}
+            control={(
+              <SegmentedControl
+                aria-label={i18n.t("subtitleStyle.fontSizeMode")}
+                size="sm"
+                value={style.fontSizeMode}
+                options={SUBTITLE_FONT_SIZE_MODES.map(value => ({ value, label: i18n.t(`subtitleStyle.fontSizeModes.${value}`) }))}
+                onChange={fontSizeMode => void setFeatures({ subtitleStyle: { ...style, fontSizeMode } })}
+              />
+            )}
+          />
+          <SettingsRow label={i18n.t("subtitleStyle.fontSize")} description={i18n.t(style.fontSizeMode === "video" ? "subtitleStyle.relativeFontDescription" : "subtitleStyle.fontDescription")}>
             <SettingsSlider
               min={SUBTITLE_FONT_SIZE_MIN}
               max={SUBTITLE_FONT_SIZE_MAX}
@@ -93,7 +105,7 @@ export function SubtitleStyleEditor({ children }: { children: ReactNode }) {
       <aside className="options-preview-column">
         <h3 className="options-preview-title">{i18n.t("subtitleStyle.preview")}</h3>
         <div ref={frameRef} aria-label={i18n.t("subtitleStyle.preview")} className="relative aspect-video overflow-hidden rounded-xl border border-border">
-          <div ref={previewRef} className="subtitle-preview-scene absolute top-0 left-0 h-[360px] w-[640px]">
+          <div ref={previewRef} className="subtitle-preview-scene absolute inset-0 h-full w-full">
             <div aria-hidden="true" className="absolute top-1/2 left-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white/80">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="size-6">
                 <rect x="3" y="5" width="18" height="14" rx="3" />

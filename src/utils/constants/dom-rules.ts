@@ -102,6 +102,22 @@ export const FORCE_INLINE_TRANSLATION_TAGS = new Set([
 
 export const MAIN_CONTENT_IGNORE_TAGS = new Set(["HEADER", "FOOTER", "NAV", "NOSCRIPT"])
 
+/** The default DOM tag sets, patched by matching site-rule add/remove fields. */
+export type TagSetFamily
+  = | "dontWalkTags"
+    | "dontWalkButTranslateTags"
+    | "mainContentIgnoreTags"
+    | "forceBlockTags"
+    | "forceInlineTranslationTags"
+
+export const DEFAULT_TAG_SETS: Record<TagSetFamily, ReadonlySet<string>> = {
+  dontWalkTags: DONT_WALK_AND_TRANSLATE_TAGS,
+  dontWalkButTranslateTags: DONT_WALK_BUT_TRANSLATE_TAGS,
+  mainContentIgnoreTags: MAIN_CONTENT_IGNORE_TAGS,
+  forceBlockTags: FORCE_BLOCK_TAGS,
+  forceInlineTranslationTags: FORCE_INLINE_TRANSLATION_TAGS,
+}
+
 export const CUSTOM_DONT_WALK_INTO_ELEMENT_SELECTOR_MAP: Record<string, string[]> = {
   "chatgpt.com": [
     ".ProseMirror",
@@ -150,6 +166,12 @@ export const CUSTOM_DONT_WALK_INTO_ELEMENT_SELECTOR_MAP: Record<string, string[]
 }
 
 export const CUSTOM_FORCE_BLOCK_TRANSLATION_SELECTOR_MAP: Record<string, string[]> = {
+  "x.com": [
+    "[data-testid=\"tweetText\"]",
+  ],
+  "twitter.com": [
+    "[data-testid=\"tweetText\"]",
+  ],
   "github.com": [
     "task-lists", // historical regression
   ],

@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react"
 import { useAtom } from "jotai"
 import { useId } from "react"
 import { i18n } from "#imports"
@@ -15,7 +16,7 @@ const MODE_LABEL_KEY = {
 } as const
 
 /** The controls and their live page preview share the same translation settings. */
-export function ReadingSection() {
+export function ReadingSection({ onOpenSiteRules }: { onOpenSiteRules?: (event: MouseEvent<HTMLAnchorElement>) => void }) {
   const [translateConfig, setTranslateConfig] = useAtom(configFieldsAtomMap.translate)
   const [readingConfig, setReadingConfig] = useAtom(configFieldsAtomMap.reading)
   const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
@@ -82,6 +83,20 @@ export function ReadingSection() {
                 />
               )}
             />
+          </SettingsGroup>
+          <SettingsGroup>
+            <a
+              href="#reading/site-rules"
+              className="settings-row settings-nav-row"
+              aria-label={i18n.t("siteRules.title")}
+              onClick={onOpenSiteRules}
+            >
+              <div>
+                <span className="text-[13px] font-medium">{i18n.t("siteRules.title")}</span>
+                <p className="text-xs text-muted-foreground">{i18n.t("siteRules.description")}</p>
+              </div>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+            </a>
           </SettingsGroup>
         </div>
         <aside className="options-preview-column">

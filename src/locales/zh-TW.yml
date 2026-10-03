@@ -413,6 +413,11 @@ subtitleStyle:
   preset: Subtitle preset
   fontSize: Subtitle size
   fontDescription: Scales both lines, with the original slightly smaller.
+  fontSizeMode: Size mode
+  relativeFontDescription: Scales with the video window; the size below is based on a 640-pixel-wide video.
+  fontSizeModes:
+    video: Scale with video
+    fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
   previewOriginal: A new idea.
@@ -474,3 +479,57 @@ uiLanguage:
   title: 介面語言
   browser: 跟隨瀏覽器
   saveFailed: 無法儲存介面語言，請重試。
+
+siteRules:
+  title: 網站規則
+  backToReading: 返回網頁閱讀
+  builtIn: 內建規則
+  builtInDescription: 內建規則自動生效。某個網站顯示異常時，可在這裡停用對應規則。
+  enabledCount: 已啟用 $1 / $2 條
+  search: 依網站、規則名稱或網址搜尋
+  matchCount: $1 條符合
+  noMatches: 沒有符合的規則
+  toggle: 啟用 $1
+  viewRule: 規則詳情
+  immediate: 變更會立即套用；正在翻譯的頁面會重新適配。
+  custom: 自訂規則
+  customDescription: 自訂規則在內建規則之後套用。
+  editorLabel: 自訂網站規則
+  saved: 已儲存
+  unsaved: 有未儲存的變更
+  characterCount: $1 / $2 字元
+  save: 儲存規則
+  saving: 儲存中…
+  revert: 撤銷變更
+  example: 規則範例
+  customPriority: "自訂規則在內建規則之後套用；enabled: false 可暫停一條規則。"
+  description: 針對不同網站調整網頁翻譯範圍與顯示。
+  tabsLabel: 規則來源
+  showMore: 顯示更多
+  showingCount: 顯示 $1 / $2 條
+  copy: 複製規則
+  copied: 已複製
+  copyFailed: 複製失敗，請重試。
+  emptyTitle: 還沒有自訂規則
+  emptyDescription: 內建規則會自動處理常見網站；需要特殊適配時，再新增自己的規則。
+  add: 新增規則
+  edit: 編輯規則
+  customCount: 已儲存 $1 條規則
+  editorTitle: 編輯自訂規則
+  editorDescription: 以 JSON 陣列編寫；儲存後套用，取消則還原已儲存內容。
+  cancel: 取消
+  validating: 檢查中…
+  valid: 規則有效，可以儲存
+  allSites: 所有網站
+  searchHelp: 試試網站名稱或網域，例如 x.com。
+  sourceIntro: 規則庫源自
+  sourceProject: 陪讀蛙（Read Frog）
+  sourceMaintainer: Readomi 適配與維護
+  errors:
+    syntax: JSON 格式無效，請檢查下方詳情。
+    notArray: 請使用由規則組成的 JSON 陣列。
+    tooLong: 規則文件超過 65536 字元。
+    tooMany: 最多支援 200 條自訂規則。
+    schema: 規則欄位無效，請檢查標出的內容。
+    duplicateIds: 每條自訂規則必須使用不同的 id。
+    saveFailed: 規則未儲存，請重試。

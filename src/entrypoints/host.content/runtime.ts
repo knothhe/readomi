@@ -5,6 +5,7 @@ import { subscribeLocalConfig } from "@/utils/config/storage"
 import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translate"
 import { detectPageLanguageLightweight } from "@/utils/content/page-language"
 import { setHostColorTheme } from "@/utils/host-color-theme"
+import { clearSiteRuleStyles, refreshSiteRuleStyles } from "@/utils/host/translate/ui/site-rule-styles"
 import { ensurePresetStyles } from "@/utils/host/translate/ui/style-injector"
 import { createWordPrefixEmphasisController } from "@/utils/host/word-prefix-emphasis"
 import { logger } from "@/utils/logger"
@@ -63,9 +64,12 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
 
 async function startHostContent(ctx: ContentScriptContext, track: (dispose: () => void) => void) {
   ensurePresetStyles(document)
+  track(clearSiteRuleStyles)
   let colorTheme: ColorTheme = "terra"
   let appearanceMode: ThemeMode = "system"
   const unsubscribeColorTheme = subscribeLocalConfig((config) => {
+    if (config)
+      refreshSiteRuleStyles(config)
     setUILanguage(config?.ui.language ?? "browser")
     colorTheme = config?.appearance.colorTheme ?? "terra"
     appearanceMode = config?.appearance.mode ?? "system"

@@ -100,6 +100,86 @@ async function typography(locator) {
   })
 }
 const commentTypography = { fontSize: "14px", lineHeight: "20px", fontWeight: "500", letterSpacing: "0.3px" }
+// Match X's text boundary: a block tweetText container with one inline span.
+// Fulfill the host locally so this regression does not require a login or a
+// live tweet, while the content script still receives X's hostname rules.
+const xTweetFixture = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>X tweet translation</title></head>
+<body style="max-width:600px;margin:40px auto;font:17px/24px Arial,sans-serif"><article>
+<div data-testid="tweetText" style="display:block;white-space:pre-wrap"><span id="tweet-source" style="display:inline">how bro was holding that fx3</span></div>
+</article><p>Another tweet stays below this one.</p></body></html>`
+
+async function quoteAppearance(locator) {
+  return locator.evaluate((node) => {
+    const style = getComputedStyle(node)
+    return {
+      fontSize: style.fontSize,
+      lineHeight: style.lineHeight,
+      borderLeftWidth: style.borderLeftWidth,
+      borderLeftStyle: style.borderLeftStyle,
+      paddingLeft: style.paddingLeft,
+    }
+  })
+}
+
+for (const preset of ["blockquote", "line"]) {
+  for (const streaming of [true, false]) {
+    it(`X ${preset} remains separate after ${streaming ? "streaming" : "complete-result"} translation`, async () => {
+      const page = await setup("bilingual")
+      await context.serviceWorkers()[0].evaluate(async ({ preset, streaming }) => {
+        const { config } = await chrome.storage.local.get("config")
+        config.features.hoverStream = streaming
+        config.translate.translationNodeStyle = { preset, isCustom: false, customCSS: "" }
+        await chrome.storage.local.set({ config })
+      }, { preset, streaming })
+      const fixtureURL = "https://x.com/readomi-test/status/1"
+      await page.route(fixtureURL, route => route.fulfill({ contentType: "text/html", body: xTweetFixture }))
+      await page.goto(fixtureURL)
+      const tweet = page.locator("[data-testid='tweetText']")
+      const source = await tweet.locator("#tweet-source").elementHandle()
+      const sourceText = await source.textContent()
+      const paragraphTop = (await tweet.boundingBox()).y
+      await tweet.hover()
+      await page.keyboard.press("Alt")
+
+      const preview = page.locator("[data-readomi-inline-preview]")
+      let streamingAppearance
+      if (streaming) {
+        const previewText = preview.locator(".preview-translation")
+        await previewText.getByText(/阅读和经历/).waitFor()
+        streamingAppearance = await quoteAppearance(previewText)
+        assert.equal(await previewText.getAttribute("data-readomi-custom-translation-style"), preset)
+        assert.equal(streamingAppearance.borderLeftWidth, preset === "blockquote" ? "4px" : "2px")
+        release()
+        await preview.waitFor({ state: "detached" })
+      }
+
+      const translation = tweet.locator(".readomi-translated-block-content")
+      await translation.getByText(streaming ? /阅读和经历/ : /【译】/).waitFor()
+      assert.equal(await tweet.locator(".readomi-translated-inline-content").count(), 0)
+      assert.equal(await tweet.locator(".readomi-translated-content-wrapper").count(), 1)
+      assert.equal(await translation.getAttribute("data-readomi-custom-translation-style"), preset)
+      assert.equal(await translation.evaluate(node => node.parentElement.parentElement.dataset.testid), "tweetText")
+      const completedAppearance = await quoteAppearance(translation)
+      assert.equal(completedAppearance.borderLeftWidth, preset === "blockquote" ? "4px" : "2px")
+      assert.equal(completedAppearance.borderLeftStyle, "solid")
+      assert.equal(completedAppearance.fontSize, "17px")
+      if (streaming)
+        assert.deepEqual(completedAppearance, streamingAppearance, "the selected quote style and typography survive completion")
+      else
+        assert.equal(await preview.count(), 0)
+      const sourceBounds = await source.boundingBox()
+      const translatedBounds = await translation.boundingBox()
+      assert.ok(translatedBounds.y >= sourceBounds.y + sourceBounds.height, "the translation begins below the source tweet")
+      assert.equal((await tweet.boundingBox()).y, paragraphTop)
+      await tweet.hover()
+      await page.keyboard.press("Alt")
+      await translation.waitFor({ state: "detached" })
+      assert.equal(await tweet.textContent(), sourceText)
+      assert.equal(await source.evaluate(node => node === document.querySelector("#tweet-source")), true, "toggle preserves the original span")
+    })
+  }
+}
+
 for (const { mode, customCSS, expected } of [
   { mode: "bilingual", expected: commentTypography },
   { mode: "translationOnly", expected: commentTypography },

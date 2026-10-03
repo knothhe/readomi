@@ -1,11 +1,22 @@
+import type { Config } from "@/types/config/config"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
-import { isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isShallowInlineHTMLElement, isTranslatedContentNode, isTranslatedWrapperNode } from "./filter"
+import { getEffectiveTagSet, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isShallowInlineHTMLElement, isSiteRuleForceBlockNodeElement, isSiteRuleForceInlineNodeElement, isTranslatedContentNode, isTranslatedWrapperNode } from "./filter"
 import { smashTruncationStyle } from "./style"
 
-export function findNearestAncestorBlockNodeFor(element: Element) {
+function isInlineTraversalElement(element: HTMLElement, config?: Config): boolean {
+  if (config) {
+    if (getEffectiveTagSet(config, "forceBlockTags").has(element.tagName) || isSiteRuleForceBlockNodeElement(element, config))
+      return false
+    if (isSiteRuleForceInlineNodeElement(element, config))
+      return true
+  }
+  return isShallowInlineHTMLElement(element, undefined, config)
+}
+
+export function findNearestAncestorBlockNodeFor(element: Element, config?: Config) {
   const startElement = element.closest(`.${CONTENT_WRAPPER_CLASS}`)?.parentElement || element
   let currentNode = startElement
-  while (currentNode && currentNode.parentElement && isHTMLElement(currentNode) && isShallowInlineHTMLElement(currentNode)) {
+  while (currentNode && currentNode.parentElement && isHTMLElement(currentNode) && isInlineTraversalElement(currentNode, config)) {
     currentNode = currentNode.parentElement
   }
   return currentNode
@@ -47,7 +58,7 @@ export function deepQueryTopLevelSelector(element: HTMLElement | ShadowRoot | Do
   return result
 }
 
-export function unwrapDeepestOnlyHTMLChild(element: HTMLElement) {
+export function unwrapDeepestOnlyHTMLChild(element: HTMLElement, config?: Config) {
   let currentElement = element
   while (currentElement) {
     smashTruncationStyle(currentElement)
@@ -57,7 +68,7 @@ export function unwrapDeepestOnlyHTMLChild(element: HTMLElement) {
         return false
       if (child.nodeType === Node.TEXT_NODE)
         return true
-      return isHTMLElement(child) && !isDontWalkIntoAndDontTranslateAsChildElement(child)
+      return isHTMLElement(child) && !isDontWalkIntoAndDontTranslateAsChildElement(child, config)
     }
 
     const effectiveChildNodes = [...currentElement.childNodes].filter(shouldKeepNode)

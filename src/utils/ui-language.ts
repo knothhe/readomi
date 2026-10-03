@@ -34,10 +34,14 @@ export function formatUIMessage(entry: Message, substitutions: Array<string | nu
 // Keep the generated typed translator, and use the same locale files for an explicit choice.
 const translate: Translate = (key, ...args) => {
   const followsBrowser = language === "browser" || key.startsWith("@@")
+  let browserMessage: string | undefined
   if (followsBrowser && isExtensionContextValid() && typeof browser.i18n?.getMessage === "function") {
     try {
       lastBrowserLocale = getUILocale()
-      return browserTranslate(key, ...args)
+      browserMessage = browserTranslate(key, ...args)
+      // A running page can have newer bundled messages than Chrome's loaded catalog.
+      if (browserMessage || key.startsWith("@@"))
+        return browserMessage
     }
     catch (error) {
       if (!isExtensionContextInvalidatedError(error))
@@ -50,7 +54,7 @@ const translate: Translate = (key, ...args) => {
   const messageKey = key.replaceAll(".", "_")
   const entry = catalogs[`../locales/${locale}.yml`]?.[messageKey] ?? catalogs[`../locales/${locale.split("-")[0]}.yml`]?.[messageKey] ?? catalogs["../locales/en.yml"]?.[messageKey]
   if (!entry)
-    return isExtensionContextValid() && typeof browser.i18n?.getMessage === "function" ? browserTranslate(key, ...args) : key
+    return browserMessage ?? (isExtensionContextValid() && typeof browser.i18n?.getMessage === "function" ? browserTranslate(key, ...args) : key)
   const count = args.find(arg => typeof arg === "number") as number | undefined
   const substitutions = args.find(Array.isArray) as Array<string | number> | undefined
   const message = formatUIMessage(entry, substitutions ?? (count === undefined ? [] : [count]))

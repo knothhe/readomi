@@ -413,6 +413,11 @@ subtitleStyle:
   preset: 字幕预设
   fontSize: 字幕字号
   fontDescription: 同时缩放原文和译文，原文略小。
+  fontSizeMode: 字号方式
+  relativeFontDescription: 随视频窗口缩放；下方字号以 640 像素宽的视频为基准。
+  fontSizeModes:
+    video: 随视频窗口
+    fixed: 固定字号
   position: 字幕位置
   preview: 字幕预览
   previewOriginal: A new idea.
@@ -474,3 +479,57 @@ uiLanguage:
   title: 界面语言
   browser: 跟随浏览器
   saveFailed: 无法保存界面语言，请重试。
+
+siteRules:
+  title: 站点规则
+  backToReading: 返回网页阅读
+  builtIn: 内置规则
+  builtInDescription: 内置规则自动生效。某个网站显示异常时，可在这里停用对应规则。
+  enabledCount: 已启用 $1 / $2 条
+  search: 按网站、规则名称或网址搜索
+  matchCount: $1 条匹配
+  noMatches: 没有匹配的规则
+  toggle: 启用 $1
+  viewRule: 规则详情
+  immediate: 更改会立即应用；正在翻译的页面会重新适配。
+  custom: 自定义规则
+  customDescription: 自定义规则在内置规则之后应用。
+  editorLabel: 自定义站点规则
+  saved: 已保存
+  unsaved: 有未保存的更改
+  characterCount: $1 / $2 字符
+  save: 保存规则
+  saving: 保存中…
+  revert: 撤销更改
+  example: 规则示例
+  customPriority: "自定义规则在内置规则之后应用；enabled: false 可暂停一条规则。"
+  description: 针对不同网站调整网页翻译范围与展示。
+  tabsLabel: 规则来源
+  showMore: 显示更多
+  showingCount: 显示 $1 / $2 条
+  copy: 复制规则
+  copied: 已复制
+  copyFailed: 复制失败，请重试。
+  emptyTitle: 还没有自定义规则
+  emptyDescription: 内置规则会自动处理常见网站；需要特殊适配时，再添加自己的规则。
+  add: 添加规则
+  edit: 编辑规则
+  customCount: 已保存 $1 条规则
+  editorTitle: 编辑自定义规则
+  editorDescription: 以 JSON 数组编写；保存后应用，取消恢复已保存内容。
+  cancel: 取消
+  validating: 检查中…
+  valid: 规则有效，可保存
+  allSites: 所有网站
+  searchHelp: 试试网站名称或域名，例如 x.com。
+  sourceIntro: 规则库源自
+  sourceProject: 陪读蛙（Read Frog）
+  sourceMaintainer: Readomi 适配与维护
+  errors:
+    syntax: JSON 格式无效，请检查下方详情。
+    notArray: 请使用由规则组成的 JSON 数组。
+    tooLong: 规则文档超过 65536 字符。
+    tooMany: 最多支持 200 条自定义规则。
+    schema: 规则字段无效，请检查标出的内容。
+    duplicateIds: 每条自定义规则必须使用不同的 id。
+    saveFailed: 规则没有保存，请重试。

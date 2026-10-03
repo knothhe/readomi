@@ -13,6 +13,7 @@ import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { cacheDb } from "@/utils/db/cache-db"
 import { sha256Hex, stringHash } from "@/utils/hash"
 import { executeTranslate } from "@/utils/host/translate/execute-translate"
+import { auditInlineAtomTokens, hasInlineAtomTokens } from "@/utils/host/translate/inline-atom-tokens"
 import { HOVER_STREAM_PORT } from "@/utils/host/translate/stream-request"
 import { normalizePromptContextValue } from "@/utils/host/translate/translate-text"
 import { logger } from "@/utils/logger"
@@ -27,6 +28,10 @@ import { serviceLimitsKey, ServiceLimitsStore } from "@/utils/request/service-li
 
 export function parseBatchResult(result: string): string[] {
   return result.trim().split(BATCH_SEPARATOR_LINE_PATTERN).map(t => t.trim())
+}
+
+function hasIntactInlineAtoms(source: string, translated: string): boolean {
+  return !hasInlineAtomTokens(source) || auditInlineAtomTokens(source, translated).ok
 }
 
 export async function executeBatchTranslation<TContext>(
@@ -203,7 +208,7 @@ export function setUpWebPageTranslationQueue() {
         try {
           const cached = await cacheDb.translationCache.get(data.hash)
           controller.signal.throwIfAborted()
-          if (cached) {
+          if (cached && hasIntactInlineAtoms(data.text, cached.translation)) {
             reply({ type: "done", text: cached.translation })
             return
           }
@@ -229,7 +234,7 @@ export function setUpWebPageTranslationQueue() {
             }
           }, Date.now(), `hover:${data.hash}:${getRandomUUID()}`, 120_000)
           controller.signal.throwIfAborted()
-          if (result) {
+          if (result && hasIntactInlineAtoms(data.text, result)) {
             await cacheDb.translationCache.put({ key: data.hash, translation: result, createdAt: new Date() })
           }
           reply({ type: "done", text: result })
@@ -247,7 +252,7 @@ export function setUpWebPageTranslationQueue() {
     // Check cache first
     if (hash) {
       const cached = await cacheDb.translationCache.get(hash)
-      if (cached) {
+      if (cached && hasIntactInlineAtoms(text, cached.translation)) {
         return cached.translation
       }
     }
@@ -266,7 +271,7 @@ export function setUpWebPageTranslationQueue() {
     result = await batchQueue.enqueue(data)
 
     // Cache the translation result if successful
-    if (result && hash) {
+    if (result && hash && hasIntactInlineAtoms(text, result)) {
       await cacheDb.translationCache.put({
         key: hash,
         translation: result,

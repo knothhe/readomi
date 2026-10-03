@@ -1,5 +1,6 @@
 export const CONTENT_WRAPPER_CLASS = "readomi-translated-content-wrapper"
 export const INLINE_CONTENT_CLASS = "readomi-translated-inline-content"
+export const INLINE_ATOM_CLASS = "readomi-inline-atom"
 export const BLOCK_CONTENT_CLASS = "readomi-translated-block-content"
 export const FLOAT_WRAP_ATTRIBUTE = "data-readomi-float-wrap"
 

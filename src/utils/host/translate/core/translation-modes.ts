@@ -9,10 +9,11 @@ import {
   WALKED_ATTRIBUTE,
 } from "../../../constants/dom-labels"
 import { batchDOMOperation } from "../../dom/batch-dom"
-import { isBlockTransNode, isHTMLElement, isTextNode, isTransNode } from "../../dom/filter"
+import { isBlockTransNode, isCustomForceBlockTranslation, isHTMLElement, isNaturalBlockTransNode, isTextNode, isTransNode } from "../../dom/filter"
 import { unwrapDeepestOnlyHTMLChild } from "../../dom/find"
 import { getOwnerDocument } from "../../dom/node"
 import { extractTextContent } from "../../dom/traversal"
+import { extractInlineAtomText, renderInlineAtomTranslation } from "../dom/inline-atoms"
 import { removeTranslatedWrapperWithRestore } from "../dom/translation-cleanup"
 import { insertTranslatedNodeIntoWrapper } from "../dom/translation-insertion"
 import { findPreviousTranslatedWrapperInside } from "../dom/translation-wrapper"
@@ -78,10 +79,14 @@ export async function translateNodesBilingualMode(
     markTranslatingInWalk(transNodes, walkId)
 
     const lastNode = transNodes.at(-1)!
-    const targetNode
-      = transNodes.length === 1 && isBlockTransNode(lastNode) && isHTMLElement(lastNode)
-        ? unwrapDeepestOnlyHTMLChild(lastNode)
-        : lastNode
+    let targetNode = lastNode
+    if (transNodes.length === 1 && isBlockTransNode(lastNode) && isHTMLElement(lastNode) && (isNaturalBlockTransNode(lastNode) || isCustomForceBlockTranslation(lastNode, config))) {
+      // Unwrapping also releases truncation along the single-child chain.
+      // Preserve that behavior even when a site's explicit paragraph boundary
+      // keeps the finished translation outside its innermost inline span.
+      const unwrappedNode = unwrapDeepestOnlyHTMLChild(lastNode, config)
+      targetNode = isCustomForceBlockTranslation(lastNode, config) ? lastNode : unwrappedNode
+    }
 
     const existedTranslatedWrapper = findPreviousTranslatedWrapperInside(targetNode, walkId)
     if (existedTranslatedWrapper) {
@@ -96,11 +101,13 @@ export async function translateNodesBilingualMode(
       }
     }
 
-    const textContent = transNodes.map(node => extractTextContent(node, config)).join("").trim()
+    const atomExtraction = extractInlineAtomText(transNodes, config)
+    const textContent = atomExtraction.filterText.trim()
+    const requestText = atomExtraction.requestText.trim()
     if (!textContent || isNumericContent(textContent))
       return
 
-    if (shouldFilterSmallParagraph(textContent))
+    if (shouldFilterSmallParagraph(textContent, config) || (atomExtraction.atoms.length > 0 && !atomExtraction.hasProse))
       return
 
     const ownerDoc = getOwnerDocument(targetNode)
@@ -130,13 +137,13 @@ export async function translateNodesBilingualMode(
     batchDOMOperation(insertOperation)
 
     const typographyElement = isTextNode(targetNode) || transNodes.length > 1 ? targetNode.parentElement ?? undefined : targetNode
-    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, textContent, spinner, translatedWrapperNode, signal, translateRequest, typographyElement)
+    const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, requestText, spinner, translatedWrapperNode, signal, translateRequest, typographyElement)
     if (signal?.aborted) {
       batchDOMOperation(() => translatedWrapperNode.remove())
       return
     }
 
-    const translatedText = getDisplayTranslation(textContent, realTranslatedText)
+    const translatedText = getDisplayTranslation(requestText, realTranslatedText)
 
     if (!translatedText) {
       // Only remove wrapper if translation returned empty (not needed),
@@ -154,6 +161,9 @@ export async function translateNodesBilingualMode(
       translatedText,
       config.translate.translationNodeStyle,
       forceBlockTranslation,
+      config,
+      transNodes,
+      atomExtraction.atoms.length ? (node, text) => renderInlineAtomTranslation(node, text, atomExtraction) : undefined,
     )
   }
   finally {
@@ -203,7 +213,7 @@ export async function translateNodeTranslationOnlyMode(
   let transNodes: TransNode[] = []
   let allChildNodes: ChildNode[] = []
   if (outerTransNodes.length === 1 && isHTMLElement(outerTransNodes[0])) {
-    const unwrappedHTMLChild = unwrapDeepestOnlyHTMLChild(outerTransNodes[0])
+    const unwrappedHTMLChild = unwrapDeepestOnlyHTMLChild(outerTransNodes[0], config)
     allChildNodes = [...unwrappedHTMLChild.childNodes]
     transNodes = allChildNodes.filter(isTransNodeAndNotTranslatedWrapper)
   }
@@ -255,7 +265,7 @@ export async function translateNodeTranslationOnlyMode(
     if (!innerTextContent.trim() || isNumericContent(innerTextContent))
       return
 
-    if (shouldFilterSmallParagraph(innerTextContent))
+    if (shouldFilterSmallParagraph(innerTextContent, config))
       return
 
     const cleanTextContent = (content: string): string => {

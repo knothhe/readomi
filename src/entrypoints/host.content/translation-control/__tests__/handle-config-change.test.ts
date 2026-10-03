@@ -50,4 +50,12 @@ describe("handleTranslationModeChange", () => {
 
     expect(manager.restart).not.toHaveBeenCalled()
   })
+
+  it("restarts an active page when a site rule is edited or disabled", () => {
+    const manager = createMockManager(true)
+    const previous = { ...createMockConfig("bilingual"), siteRules: { userRules: [], disabledBuiltInRules: [] } }
+    const next = { ...previous, siteRules: { userRules: [], disabledBuiltInRules: ["twitter"] } }
+    handleTranslationModeChange(next, previous, manager)
+    expect(manager.restart).toHaveBeenCalledOnce()
+  })
 })

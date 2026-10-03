@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getLocalConfig } from "@/utils/config/storage"
+import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
-import { translateWalkedElement } from "@/utils/host/translate/node-manipulation"
+import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
+import { createInlineHoverStreamPreview } from "@/utils/host/translate/ui/inline-hover-stream-preview"
 import { bindHoverTranslation } from "../hover-translation"
 
 vi.mock("@/utils/config/storage", () => ({ getLocalConfig: vi.fn(), watchLocalConfig: vi.fn(() => vi.fn()) }))
-vi.mock("@/utils/host/translate/node-manipulation", () => ({ translateWalkedElement: vi.fn() }))
+vi.mock("@/utils/host/translate/node-manipulation", () => ({ translateWalkedElement: vi.fn(), removeAllTranslatedWrapperNodes: vi.fn() }))
 vi.mock("@/utils/host/translate/ui/inline-hover-stream-preview", () => ({ createInlineHoverStreamPreview: vi.fn(() => undefined) }))
 vi.mock("@/utils/host/translate/translate-text", () => ({ validateTranslationConfigAndToast: () => true }))
 
@@ -28,6 +29,24 @@ const up = (key = "Alt") => document.dispatchEvent(new KeyboardEvent("keyup", { 
 const keyboardTriggers = [["alt", "Alt"], ["control", "Control"], ["shift", "Shift"], ["backtick", "`"]] as const
 
 describe("tap-or-hold hover translation", () => {
+  it("waits for the complete formula renderer without previewing request placeholders", async () => {
+    document.querySelector("p")!.innerHTML = "The formula <math><mi>x</mi></math> is useful."
+    down()
+    up()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+    expect(createInlineHoverStreamPreview).not.toHaveBeenCalled()
+  })
+
+  it("removes completed hover results when site rules change or the page navigates", () => {
+    const previous = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true } }
+    const next = { ...previous, siteRules: { userRules: [], disabledBuiltInRules: ["twitter"] } }
+    vi.mocked(watchLocalConfig).mock.calls[0][0](next, previous)
+    expect(removeAllTranslatedWrapperNodes).toHaveBeenCalledWith(document)
+    window.dispatchEvent(new CustomEvent("extension:URLChange", { detail: { from: "/one", to: "/two" } }))
+    expect(removeAllTranslatedWrapperNodes).toHaveBeenCalledTimes(2)
+  })
+
   it.each(keyboardTriggers)("translates on release after a short %s tap", async (hotkey, key) => {
     vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
     down(key)

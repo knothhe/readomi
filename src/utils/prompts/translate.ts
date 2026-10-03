@@ -1,6 +1,7 @@
 import type { Config } from "@/types/config/config"
 import type { WebPagePromptContext } from "@/types/content"
 import { getLocalConfig } from "@/utils/config/storage"
+import { hasInlineAtomTokens, INLINE_ATOM_TOKEN_SYSTEM_PROMPT } from "@/utils/host/translate/inline-atom-tokens"
 import { DEFAULT_CONFIG } from "../constants/config"
 import {
   DEFAULT_BATCH_TRANSLATE_PROMPT,
@@ -116,6 +117,8 @@ export function getTranslatePromptFromConfig(
     systemParts.push(`## Webpage context\n${background.join("\n")}`)
   if (options?.isBatch)
     systemParts.push(DEFAULT_BATCH_TRANSLATE_PROMPT)
+  if (hasInlineAtomTokens(input))
+    systemParts.push(INLINE_ATOM_TOKEN_SYSTEM_PROMPT)
 
   return { systemPrompt: systemParts.filter(Boolean).join("\n\n"), prompt: renderedPrompt.text }
 }

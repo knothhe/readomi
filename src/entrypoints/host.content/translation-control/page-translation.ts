@@ -9,6 +9,7 @@ import { walkAndLabelElement } from "@/utils/host/dom/traversal"
 import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
 import { translateTextForPageTitle } from "@/utils/host/translate/translate-variants"
+import { retainPageSiteRuleStyles } from "@/utils/host/translate/ui/site-rule-styles"
 import { resetTranslationProgress } from "@/utils/host/translate/ui/translation-progress"
 import { getOrCreateWebPageContext } from "@/utils/host/translate/webpage-context"
 import { logger } from "@/utils/logger"
@@ -62,6 +63,7 @@ export class PageTranslationManager implements IPageTranslationManager {
   private lastSourceTitle: string | null = null
   private lastAppliedTranslatedTitle: string | null = null
   private titleRequestVersion = 0
+  private releaseSiteRuleStyles: (() => void) | undefined
   private disposed = false
   private startVersion = 0
 
@@ -141,6 +143,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       return
 
     this.isPageTranslating = true
+    this.releaseSiteRuleStyles = retainPageSiteRuleStyles(config)
     const walkController = new AbortController()
     this.walkController = walkController
     resetTranslationProgress()
@@ -183,7 +186,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     }, this.intersectionOptions)
 
     // Initialize walkability state for existing elements
-    this.addWalkBlockedElements(document.body)
+    this.addWalkBlockedElements(document.body, config)
     await this.observeTopLevelParagraphs(document.body, config)
     if (!isCurrent())
       return
@@ -237,6 +240,8 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     if (restoreContent)
       removeAllTranslatedWrapperNodes()
+    this.releaseSiteRuleStyles?.()
+    this.releaseSiteRuleStyles = undefined
   }
 
   private shouldManageDocumentTitle(): boolean {
@@ -377,7 +382,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     }
 
     // Skip if container has an ancestor that should not be walked into
-    if (hasNoWalkAncestor(container))
+    if (hasNoWalkAncestor(container, config))
       return
 
     walkAndLabelElement(container, this.walkId, config)
@@ -436,18 +441,18 @@ export class PageTranslationManager implements IPageTranslationManager {
    * Track the same blocked states that the traversal skips, so hidden accordion
    * panels can be re-walked when the site reveals an existing subtree.
    */
-  private isWalkBlockedElement(element: HTMLElement): boolean {
-    return isDontWalkIntoButTranslateAsChildElement(element)
-      || isDontWalkIntoAndDontTranslateAsChildElement(element)
+  private isWalkBlockedElement(element: HTMLElement, config: Config): boolean {
+    return isDontWalkIntoButTranslateAsChildElement(element, config)
+      || isDontWalkIntoAndDontTranslateAsChildElement(element, config)
   }
 
   /**
    * Handle attribute changes and only trigger observation
    * when element transitions from blocked to walkable.
    */
-  private didChangeToWalkable(element: HTMLElement): boolean {
+  private didChangeToWalkable(element: HTMLElement, config: Config): boolean {
     const wasWalkBlocked = this.walkBlockedElementsCache.has(element)
-    const isWalkBlockedNow = this.isWalkBlockedElement(element)
+    const isWalkBlockedNow = this.isWalkBlockedElement(element, config)
 
     // Update cache with current state
     if (isWalkBlockedNow) {
@@ -463,8 +468,8 @@ export class PageTranslationManager implements IPageTranslationManager {
   /**
    * Initialize walkability state for an element and its descendants
    */
-  private addWalkBlockedElements(element: HTMLElement): void {
-    const walkBlockedElements = deepQueryTopLevelSelector(element, el => this.isWalkBlockedElement(el))
+  private addWalkBlockedElements(element: HTMLElement, config: Config): void {
+    const walkBlockedElements = deepQueryTopLevelSelector(element, el => this.isWalkBlockedElement(el, config))
     walkBlockedElements.forEach(el => this.walkBlockedElementsCache.add(el))
   }
 
@@ -502,7 +507,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       if (rec.type === "childList") {
         rec.addedNodes.forEach((node) => {
           if (isHTMLElement(node)) {
-            this.addWalkBlockedElements(node)
+            this.addWalkBlockedElements(node, config)
             void this.observeTopLevelParagraphs(node, config).catch(error => this.reportError("Failed to observe new paragraphs:", error))
             this.observeIsolatedDescendantsMutations(node)
           }
@@ -510,7 +515,7 @@ export class PageTranslationManager implements IPageTranslationManager {
       }
       else if (this.isWalkabilityAttributeMutation(rec)) {
         const el = rec.target
-        if (isHTMLElement(el) && this.didChangeToWalkable(el)) {
+        if (isHTMLElement(el) && this.didChangeToWalkable(el, config)) {
           void this.observeTopLevelParagraphs(el, config).catch(error => this.reportError("Failed to observe changed paragraph:", error))
         }
       }

@@ -1,5 +1,8 @@
+import type { Config } from "@/types/config/config"
 import type { TranslationNodeStyleConfig } from "@/types/config/translate"
 import type { TransNode } from "@/types/dom"
+import { DEFAULT_CONFIG } from "@/utils/constants/config"
+import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
 import {
   BLOCK_CONTENT_CLASS,
   FLOAT_WRAP_ATTRIBUTE,
@@ -7,8 +10,9 @@ import {
   NOTRANSLATE_CLASS,
   PARAGRAPH_ATTRIBUTE,
 } from "../../../constants/dom-labels"
-import { isBlockTransNode, isCustomForceBlockTranslation, isHTMLElement, isInlineTransNode } from "../../dom/filter"
+import { isHTMLElement, isNaturalBlockTransNode, isNaturalInlineTransNode } from "../../dom/filter"
 import { getOwnerDocument } from "../../dom/node"
+import { matchesSiteRuleSelector } from "../../dom/site-rule-matching"
 import { decorateTranslationNode } from "../ui/decorate-translation"
 import { isForceInlineTranslation } from "../ui/translation-utils"
 
@@ -80,16 +84,28 @@ export async function insertTranslatedNodeIntoWrapper(
   translatedText: string,
   translationNodeStyle: TranslationNodeStyleConfig,
   forceBlockTranslation: boolean = false,
+  config: Config = DEFAULT_CONFIG,
+  styleSources: readonly TransNode[] = [targetNode],
+  renderTranslatedContent?: (node: HTMLElement, text: string) => void,
 ): Promise<void> {
   // Use the wrapper's owner document
   const ownerDoc = getOwnerDocument(translatedWrapperNode)
   const translatedNode = ownerDoc.createElement("span")
-  const forceInlineTranslation = isForceInlineTranslation(targetNode)
-  const customForceBlock = isHTMLElement(targetNode) && isCustomForceBlockTranslation(targetNode)
+  const forceInlineTranslation = isForceInlineTranslation(targetNode, config)
+  const rule = getEffectiveSiteRule(config, window.location.href)
+  const sourceMatches = (selector: string | null) => selector !== null && styleSources.some((source) => {
+    const element = isHTMLElement(source) ? source : source.parentElement
+    return element ? matchesSiteRuleSelector(element, selector) : false
+  })
+  const customForceBlock = sourceMatches(rule.forceBlockStyleSelector)
+  const customForceInline = sourceMatches(rule.forceInlineStyleSelector)
 
-  // priority: customForceBlock > forceInlineTranslation > forceBlockTranslation > isInlineTransNode > isBlockTransNode
+  // Rule style overrides are independent of paragraph segmentation labels.
   if (customForceBlock) {
     addBlockTranslation(ownerDoc, translatedWrapperNode, translatedNode)
+  }
+  else if (customForceInline) {
+    addInlineTranslation(ownerDoc, translatedWrapperNode, translatedNode)
   }
   else if (forceInlineTranslation) {
     addInlineTranslation(ownerDoc, translatedWrapperNode, translatedNode)
@@ -97,10 +113,10 @@ export async function insertTranslatedNodeIntoWrapper(
   else if (forceBlockTranslation) {
     addBlockTranslation(ownerDoc, translatedWrapperNode, translatedNode)
   }
-  else if (isInlineTransNode(targetNode)) {
+  else if (isNaturalInlineTransNode(targetNode)) {
     addInlineTranslation(ownerDoc, translatedWrapperNode, translatedNode)
   }
-  else if (isBlockTransNode(targetNode)) {
+  else if (isNaturalBlockTransNode(targetNode)) {
     addBlockTranslation(ownerDoc, translatedWrapperNode, translatedNode)
   }
   else {
@@ -108,7 +124,10 @@ export async function insertTranslatedNodeIntoWrapper(
     return
   }
 
-  translatedNode.textContent = translatedText
+  if (renderTranslatedContent)
+    renderTranslatedContent(translatedNode, translatedText)
+  else
+    translatedNode.textContent = translatedText
   translatedWrapperNode.appendChild(translatedNode)
   await decorateTranslationNode(translatedNode, translationNodeStyle)
 

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import type { MouseEvent } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
 import { AppearanceSection } from "./sections/appearance"
@@ -9,6 +10,7 @@ import { QualitySection } from "./sections/quality"
 import { ReadingSection } from "./sections/reading"
 import { ServiceSection } from "./sections/service"
 import { ShortcutSection } from "./sections/shortcut"
+import { SiteRulesSection } from "./sections/site-rules"
 
 const SECTIONS = [
   { id: "service", title: "options.service.title", Component: ServiceSection },
@@ -19,6 +21,19 @@ const SECTIONS = [
   { id: "appearance", title: "options.appearance.title", Component: AppearanceSection },
   { id: "backup", title: "configBackup.title", Component: BackupSection },
 ] as const
+
+type SectionId = typeof SECTIONS[number]["id"]
+type SettingsPage = SectionId | "reading/site-rules"
+const SITE_RULES_PAGE = "reading/site-rules"
+
+function isPlainLeftClick(event: MouseEvent<HTMLAnchorElement>) {
+  return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
+}
+
+function historyState(): Record<string, unknown> {
+  const state: unknown = window.history.state
+  return typeof state === "object" && state !== null ? state as Record<string, unknown> : {}
+}
 
 function NavigationIcon({ section }: { section: typeof SECTIONS[number]["id"] }) {
   const shapes = {
@@ -54,15 +69,31 @@ function NavigationIcon({ section }: { section: typeof SECTIONS[number]["id"] })
   return <svg className="options-nav-icon" viewBox="0 0 24 24" aria-hidden="true">{shapes[section]}</svg>
 }
 
-function sectionFromHash() {
+function pageFromHash(): SettingsPage {
   const hash = window.location.hash.slice(1)
+  if (hash === "site-rules" || hash === SITE_RULES_PAGE)
+    return SITE_RULES_PAGE
   return SECTIONS.find(section => section.id === hash)?.id ?? "service"
 }
 
 export default function App() {
-  const [active, setActive] = useState(sectionFromHash)
+  const [active, setActive] = useState(pageFromHash)
+  const pendingScrollRef = useRef<number | null>(null)
+  const activeSection = active === SITE_RULES_PAGE ? "reading" : active
   useEffect(() => {
-    const update = () => setActive(sectionFromHash())
+    const update = () => {
+      const page = pageFromHash()
+      // Keep links saved before rules became a reading subpage usable.
+      if (window.location.hash === "#site-rules")
+        window.history.replaceState(window.history.state, "", `#${SITE_RULES_PAGE}`)
+      const savedScroll = historyState().readomiReadingScroll
+      pendingScrollRef.current = page === "reading" && typeof savedScroll === "number" && Number.isFinite(savedScroll)
+        ? Math.max(0, savedScroll)
+        : 0
+      setActive(page)
+    }
+    if (window.location.hash === "#site-rules")
+      window.history.replaceState(window.history.state, "", `#${SITE_RULES_PAGE}`)
     window.addEventListener("hashchange", update)
     window.addEventListener("popstate", update)
     return () => {
@@ -70,9 +101,15 @@ export default function App() {
       window.removeEventListener("popstate", update)
     }
   }, [])
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current === null)
+      return
+    window.scrollTo?.({ top: pendingScrollRef.current })
+    pendingScrollRef.current = null
+  })
   useEffect(() => {
     const keepActiveVisible = () => {
-      const link = document.querySelector<HTMLElement>(`.options-navigation a[href="#${active}"]`)
+      const link = document.querySelector<HTMLElement>(`.options-navigation a[href="#${activeSection}"]`)
       const navigation = link?.parentElement
       if (!link || !navigation)
         return
@@ -86,7 +123,34 @@ export default function App() {
     keepActiveVisible()
     window.addEventListener("resize", keepActiveVisible)
     return () => window.removeEventListener("resize", keepActiveVisible)
-  }, [active])
+  }, [activeSection])
+
+  const navigate = (page: SettingsPage, state: Record<string, unknown> | null = null) => {
+    if (active === page)
+      return
+    window.history.pushState(state, "", `#${page}`)
+    pendingScrollRef.current = 0
+    setActive(page)
+  }
+
+  const openSiteRules = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainLeftClick(event))
+      return
+    event.preventDefault()
+    // The parent entry stores the clicked row's position for both Back controls.
+    window.history.replaceState({ ...historyState(), readomiReadingScroll: window.scrollY }, "")
+    navigate(SITE_RULES_PAGE, { readomiSiteRulesDrillIn: true })
+  }
+
+  const backToReading = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainLeftClick(event))
+      return
+    event.preventDefault()
+    if (historyState().readomiSiteRulesDrillIn === true)
+      window.history.back()
+    else
+      navigate("reading")
+  }
 
   return (
     <div className="options-shell">
@@ -97,15 +161,13 @@ export default function App() {
             <a
               key={id}
               href={`#${id}`}
-              aria-current={active === id ? "page" : undefined}
+              aria-current={activeSection === id ? "page" : undefined}
               className="options-nav-link"
               onClick={(event) => {
-                event.preventDefault()
-                if (active === id)
+                if (!isPlainLeftClick(event))
                   return
-                window.history.pushState(null, "", `#${id}`)
-                setActive(id)
-                window.scrollTo?.({ top: 0 })
+                event.preventDefault()
+                navigate(id)
               }}
             >
               <NavigationIcon section={id} />
@@ -117,7 +179,12 @@ export default function App() {
       </aside>
       <main className="options-main">
         {/* Keep drafts mounted while the reader switches sections. */}
-        {SECTIONS.map(({ id, Component }) => <div key={id} hidden={active !== id}><Component /></div>)}
+        {SECTIONS.map(({ id, Component }) => (
+          <div key={id} hidden={active !== id}>
+            {id === "reading" ? <ReadingSection onOpenSiteRules={openSiteRules} /> : <Component />}
+          </div>
+        ))}
+        <div hidden={active !== SITE_RULES_PAGE}><SiteRulesSection onBackToReading={backToReading} /></div>
       </main>
     </div>
   )

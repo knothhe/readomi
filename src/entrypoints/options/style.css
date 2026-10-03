@@ -184,6 +184,46 @@ body {
   padding: 20px 23px;
 }
 
+.settings-nav-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 140ms;
+}
+
+.settings-nav-row:hover {
+  background: var(--rf-primary-tint, color-mix(in srgb, var(--rf-primary) 11%, var(--options-surface)));
+}
+
+.settings-nav-row:focus-visible {
+  outline: 3px solid var(--rf-ring);
+  outline-offset: -3px;
+}
+
+.settings-nav-row > div {
+  min-width: 0;
+}
+
+.settings-nav-row p {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.settings-nav-row svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  color: var(--rf-muted-foreground);
+}
+
 .settings-row-heading {
   display: flex;
   align-items: center;

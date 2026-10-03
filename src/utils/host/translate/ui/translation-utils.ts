@@ -1,6 +1,6 @@
+import type { Config } from "@/types/config/config"
 import type { TransNode } from "@/types/dom"
-import { FORCE_INLINE_TRANSLATION_TAGS } from "../../../constants/dom-rules"
-import { isHTMLElement } from "../../dom/filter"
+import { getEffectiveTagSet, isHTMLElement } from "../../dom/filter"
 
 // Pattern matches numbers with optional thousand separators and decimal points
 // Examples: "123", "1,234", "1,234.56", "1 234", "1.234,56" (European format)
@@ -22,10 +22,10 @@ export function isNumericContent(text: string): boolean {
   return CONTAINS_DIGIT_RE.test(cleanedText)
 }
 
-export function isForceInlineTranslation(targetNode: TransNode): boolean {
+export function isForceInlineTranslation(targetNode: TransNode, config?: Config): boolean {
   if (isHTMLElement(targetNode)) {
     const computedStyle = window.getComputedStyle(targetNode)
-    return FORCE_INLINE_TRANSLATION_TAGS.has(targetNode.tagName) || computedStyle.display.includes("flex")
+    return getEffectiveTagSet(config, "forceInlineTranslationTags").has(targetNode.tagName) || computedStyle.display.includes("flex")
   }
   return false
 }

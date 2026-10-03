@@ -74,4 +74,25 @@ describe("isCustomForceBlockTranslation", () => {
 
     expect(isCustomForceBlockTranslation(taskLists)).toBe(false)
   })
+
+  it.each(["x.com", "twitter.com"])("matches the tweet paragraph without splitting its inline children on %s", (host) => {
+    setHost(host)
+    const tweet = document.createElement("div")
+    tweet.dataset.testid = "tweetText"
+    tweet.innerHTML = "<span>A tweet with <a href='/linked'>a link</a>.</span>"
+    document.body.appendChild(tweet)
+
+    expect(isCustomForceBlockTranslation(tweet)).toBe(true)
+    expect(isCustomForceBlockTranslation(tweet.querySelector("span")!)).toBe(false)
+    expect(isCustomForceBlockTranslation(tweet.querySelector("a")!)).toBe(false)
+    expect(isCustomForceBlockTranslation(document.createElement("span"))).toBe(false)
+  })
+
+  it("does not force a tweet-shaped paragraph on another site", () => {
+    setHost("example.com")
+    const tweet = document.createElement("div")
+    tweet.dataset.testid = "tweetText"
+
+    expect(isCustomForceBlockTranslation(tweet)).toBe(false)
+  })
 })

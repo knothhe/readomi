@@ -7,10 +7,12 @@ import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { hasNoWalkAncestor, isHTMLElement } from "@/utils/host/dom/filter"
 import { findNearestAncestorBlockNodeFor } from "@/utils/host/dom/find"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
-import { translateWalkedElement } from "@/utils/host/translate/node-manipulation"
+import { containsInlineAtomOutsideWrappers } from "@/utils/host/translate/dom/inline-atoms"
+import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
 import { translateTextForPage } from "@/utils/host/translate/translate-variants"
 import { createInlineHoverStreamPreview } from "@/utils/host/translate/ui/inline-hover-stream-preview"
+import { beginSiteRuleStyleOperation } from "@/utils/host/translate/ui/site-rule-styles"
 import { isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 
@@ -42,8 +44,8 @@ export function bindHoverTranslation(target: Document = document) {
     hovered = candidate instanceof Element ? candidate : null
   }
   const translate = async (element: Element, config: Config) => {
-    const block = findNearestAncestorBlockNodeFor(element)
-    if (!isHTMLElement(block) || block === target.body || block === target.documentElement || hasNoWalkAncestor(block)
+    const block = findNearestAncestorBlockNodeFor(element, config)
+    if (!isHTMLElement(block) || block === target.body || block === target.documentElement || hasNoWalkAncestor(block, config)
       || block.closest("input,textarea,[contenteditable]:not([contenteditable='false']),video,[data-readomi-subtitles]") || !block.textContent?.trim()) {
       return
     }
@@ -57,8 +59,14 @@ export function bindHoverTranslation(target: Document = document) {
     let preview: ReturnType<typeof createInlineHoverStreamPreview>
     const disposePreview = () => preview?.dispose()
     signal.addEventListener("abort", disposePreview, { once: true })
+    const styleRoot = block.getRootNode()
+    const releaseStyles = beginSiteRuleStyleOperation(styleRoot instanceof ShadowRoot ? styleRoot : block.ownerDocument, config)
     try {
-      preview = config.features.hoverStream ? createInlineHoverStreamPreview(block, config, () => request.abort()) : undefined
+      // Formula placeholders are internal to the translation request. Wait for
+      // the complete renderer so a streaming preview never exposes them.
+      preview = config.features.hoverStream && !containsInlineAtomOutsideWrappers(block, config)
+        ? createInlineHoverStreamPreview(block, config, () => request.abort())
+        : undefined
       const walkId = getRandomUUID()
       walkAndLabelElement(block, walkId, config)
       const requests: { result: Promise<string>, resolve: (text: string) => void, reject: (error: unknown) => void }[] = []
@@ -107,6 +115,7 @@ export function bindHoverTranslation(target: Document = document) {
     finally {
       signal.removeEventListener("abort", disposePreview)
       preview?.dispose()
+      releaseStyles()
       if (activeTranslation === request) {
         activeTranslation = undefined
         busy = false
@@ -197,7 +206,10 @@ export function bindHoverTranslation(target: Document = document) {
     start("clickAndHold", element)
   }
   const unwatch = watchLocalConfig((next, previous) => {
-    if (!next?.features.hoverTranslation || (previous && (
+    const rulesChanged = previous && JSON.stringify(next?.siteRules) !== JSON.stringify(previous.siteRules)
+    if (rulesChanged)
+      removeAllTranslatedWrapperNodes(target)
+    if (!next?.features.hoverTranslation || rulesChanged || (previous && (
       next.features.hoverStream !== previous.features.hoverStream
       || next.translate.mode !== previous.translate.mode
       || next.translate.providerId !== previous.translate.providerId
@@ -209,6 +221,12 @@ export function bindHoverTranslation(target: Document = document) {
       activeTranslation?.abort()
     }
   })
+  const handleRouteChange = () => {
+    reset()
+    activeTranslation?.abort()
+    removeAllTranslatedWrapperNodes(target)
+  }
+  target.defaultView?.addEventListener("extension:URLChange", handleRouteChange)
   target.addEventListener("mouseover", move, true)
   target.addEventListener("mousemove", move, true)
   target.addEventListener("keydown", keydown, true)
@@ -224,6 +242,7 @@ export function bindHoverTranslation(target: Document = document) {
     reset()
     activeTranslation?.abort()
     controller.abort()
+    target.defaultView?.removeEventListener("extension:URLChange", handleRouteChange)
     target.removeEventListener("mouseover", move, true)
     target.removeEventListener("mousemove", move, true)
     target.removeEventListener("keydown", keydown, true)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { DEFAULT_BATCH_TRANSLATE_PROMPT, DEFAULT_TRANSLATE_SYSTEM_PROMPT } from "@/utils/constants/prompt"
+import { INLINE_ATOM_TOKEN_SYSTEM_PROMPT } from "@/utils/host/translate/inline-atom-tokens"
 import { getTranslatePromptFromConfig } from "./translate"
 
 const defaults = { customPromptsConfig: { promptId: null, patterns: [] } }
@@ -8,6 +9,14 @@ function custom(systemPrompt: string, prompt = "Translate to {{targetLanguage}}:
 }
 
 describe("translation prompts", () => {
+  it("protects inline formula tokens even with a custom prompt and batch input", () => {
+    const input = "The result is {{0}}.\n\n%%\n\nUse {{1}}."
+    const result = getTranslatePromptFromConfig(custom("Translate naturally."), "Chinese", input, { isBatch: true })
+    expect(result.systemPrompt).toContain(INLINE_ATOM_TOKEN_SYSTEM_PROMPT)
+    expect(result.systemPrompt).toContain(DEFAULT_BATCH_TRANSLATE_PROMPT)
+    expect(result.prompt).toContain(input)
+    expect(getTranslatePromptFromConfig(custom("Translate naturally."), "Chinese", "Hello").systemPrompt).not.toContain(INLINE_ATOM_TOKEN_SYSTEM_PROMPT)
+  })
   it("sends only translation rules and input for subtitles without page context", () => {
     const result = getTranslatePromptFromConfig(defaults, "Chinese", "Hello")
     expect(result.systemPrompt).toBe(DEFAULT_TRANSLATE_SYSTEM_PROMPT.replaceAll("{{targetLanguage}}", "Chinese"))

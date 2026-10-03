@@ -97,12 +97,12 @@ describe("settings page", () => {
   })
 
   it("previews subtitle presets, preserves a dragged position and restores the defaults", async () => {
-    const custom: Config = { ...configured, features: { ...configured.features, subtitleMode: "translationOnly", subtitleStyle: { preset: "clear", fontSize: 30, position: { x: 60, y: 65 } } } }
+    const custom: Config = { ...configured, features: { ...configured.features, subtitleMode: "translationOnly", subtitleStyle: { preset: "clear", fontSize: 30, fontSizeMode: "fixed", position: { x: 60, y: 65 } } } }
     const { store } = await renderSettings(custom, "features")
     expect(screen.queryByText("subtitleStyle.previewOriginal")).toBeNull()
     expect(screen.getByText("subtitleStyle.positions.custom")).toBeInTheDocument()
     fireEvent.click(within(screen.getByRole("group", { name: "subtitleStyle.preset" })).getByRole("button", { name: "subtitleStyle.presets.compact" }))
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ preset: "compact", fontSize: 20, position: { x: 60, y: 65 } }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ preset: "compact", fontSize: 20, fontSizeMode: "fixed", position: { x: 60, y: 65 } }))
     const fontSizeSlider = screen.getByRole("slider", { name: "subtitleStyle.fontSize" })
     expect(fontSizeSlider).toHaveAttribute("min", "14")
     expect(fontSizeSlider).toHaveAttribute("max", "80")
@@ -116,10 +116,52 @@ describe("settings page", () => {
     expect(store.get(configAtom).translate.mode).toBe(custom.translate.mode)
   })
 
+  it("saves the subtitle sizing mode and previews video-relative and fixed pixels at the actual card width", async () => {
+    let width = 320
+    let resizePreview = () => {}
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback: () => void) {
+        resizePreview = callback
+      }
+
+      observe() {}
+      disconnect() {}
+    })
+    const originalRect = HTMLElement.prototype.getBoundingClientRect
+    const measure = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      return this.classList.contains("subtitle-preview-scene") ? new DOMRect(0, 0, width, width * 9 / 16) : originalRect.call(this)
+    })
+    try {
+      const { store } = await renderSettings(configured, "features")
+      const caption = screen.getByText("subtitleStyle.previewTranslation").parentElement!
+      const modes = within(screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" }))
+      expect(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.video" })).toHaveAttribute("aria-pressed", "true")
+      expect(screen.getByText("subtitleStyle.relativeFontDescription")).toBeInTheDocument()
+      expect(caption.style.fontSize).toBe("12px")
+      width = 640
+      act(() => resizePreview())
+      expect(caption.style.fontSize).toBe("24px")
+      fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.fixed" }))
+      await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.fontSizeMode).toBe("fixed"))
+      expect(screen.getByText("subtitleStyle.fontDescription")).toBeInTheDocument()
+      width = 320
+      act(() => resizePreview())
+      expect(caption.style.fontSize).toBe("24px")
+      expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(24)
+      expect(store.get(configAtom).features.subtitleStyle.position).toEqual(configured.features.subtitleStyle.position)
+      fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.video" }))
+      await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSizeMode).toBe("video"))
+      expect(caption.style.fontSize).toBe("12px")
+    }
+    finally {
+      measure.mockRestore()
+    }
+  })
+
   it("has translation settings and a separate appearance section", async () => {
     const { container } = await renderSettings(configured)
 
-    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "features", "quality", "shortcut", "appearance", "backup"])
+    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "features", "quality", "shortcut", "appearance", "backup", "site-rules"])
     const navigation = within(screen.getByRole("navigation", { name: "settingsNavigation.label" }))
     expect(navigation.queryAllByRole("group")).toHaveLength(0)
     expect(navigation.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["#service", "#reading", "#features", "#quality", "#shortcut", "#appearance", "#backup"])
@@ -130,6 +172,101 @@ describe("settings page", () => {
     fireEvent.click(screen.getByRole("link", { name: "options.shortcut.title" }))
     // The shortcut is named after the action it runs.
     expect(screen.getByLabelText("options.shortcut.togglePage")).toBeInTheDocument()
+  })
+
+  it("keeps site rules behind a reading entry and preserves a rule draft through Back and Forward", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+    const scrollY = Object.getOwnPropertyDescriptor(window, "scrollY")!
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 428 })
+    try {
+      await renderSettings(configured, "reading")
+      const navigation = within(screen.getByRole("navigation", { name: "settingsNavigation.label" }))
+      expect(navigation.queryByRole("link", { name: "siteRules.title" })).toBeNull()
+      expect(screen.getByRole("heading", { name: "options.reading.title" })).toBeInTheDocument()
+      expect(screen.queryByRole("searchbox")).toBeNull()
+      const entry = screen.getByRole("link", { name: "siteRules.title" })
+      expect(entry).toHaveAttribute("href", "#reading/site-rules")
+      fireEvent.click(entry)
+      expect(window.location.hash).toBe("#reading/site-rules")
+      expect(navigation.getByRole("link", { name: "options.reading.title" })).toHaveAttribute("aria-current", "page")
+      expect(screen.queryByRole("heading", { name: "options.reading.title" })).toBeNull()
+      expect(screen.getByRole("heading", { name: "siteRules.title" })).toBeInTheDocument()
+      expect(screen.queryByRole("textbox", { name: "siteRules.editorLabel" })).toBeNull()
+      fireEvent.click(screen.getByRole("tab", { name: "siteRules.custom" }))
+      fireEvent.click(screen.getByRole("button", { name: "siteRules.add" }))
+      const draft = "[{\"id\":\"unfinished\",\"matches\":\"example.com\"}]"
+      fireEvent.change(screen.getByRole("textbox", { name: "siteRules.editorLabel" }), { target: { value: draft } })
+      fireEvent.click(screen.getByRole("link", { name: "siteRules.backToReading" }))
+      await waitFor(() => expect(screen.getByRole("heading", { name: "options.reading.title" })).toBeInTheDocument())
+      expect(window.location.hash).toBe("#reading")
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 428 })
+      expect(screen.queryByRole("textbox", { name: "siteRules.editorLabel" })).toBeNull()
+      act(() => window.history.forward())
+      await waitFor(() => expect(screen.getByRole("textbox", { name: "siteRules.editorLabel" })).toHaveValue(draft))
+      expect(window.location.hash).toBe("#reading/site-rules")
+      fireEvent.click(navigation.getByRole("link", { name: "options.service.title" }))
+      fireEvent.click(navigation.getByRole("link", { name: "options.reading.title" }))
+      fireEvent.click(screen.getByRole("link", { name: "siteRules.title" }))
+      expect(screen.getByRole("textbox", { name: "siteRules.editorLabel" })).toHaveValue(draft)
+    }
+    finally {
+      scrollTo.mockRestore()
+      Object.defineProperty(window, "scrollY", scrollY)
+    }
+  })
+
+  it.each(["site-rules", "reading/site-rules"])("opens the %s deep link and returns to reading without a parent entry", async (hash) => {
+    await renderSettings(configured, hash)
+    expect(window.location.hash).toBe("#reading/site-rules")
+    expect(screen.getByRole("heading", { name: "siteRules.title" })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "options.reading.title" })).toHaveAttribute("aria-current", "page")
+    const back = screen.getByRole("link", { name: "siteRules.backToReading" })
+    expect(back).toHaveAttribute("href", "#reading")
+    fireEvent.click(back)
+    expect(window.location.hash).toBe("#reading")
+    expect(screen.getByRole("heading", { name: "options.reading.title" })).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: "siteRules.title" })).toBeNull()
+  })
+
+  it("follows old rule hash changes and parent history navigation", async () => {
+    await renderSettings(configured, "reading")
+    act(() => {
+      window.history.replaceState(null, "", "#site-rules")
+      window.dispatchEvent(new HashChangeEvent("hashchange"))
+    })
+    expect(window.location.hash).toBe("#reading/site-rules")
+    expect(screen.getByRole("heading", { name: "siteRules.title" })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "options.reading.title" })).toHaveAttribute("aria-current", "page")
+    act(() => {
+      window.history.replaceState(null, "", "#reading")
+      window.dispatchEvent(new PopStateEvent("popstate"))
+    })
+    expect(screen.getByRole("heading", { name: "options.reading.title" })).toBeInTheDocument()
+    expect(screen.queryByRole("searchbox")).toBeNull()
+  })
+
+  it("leaves modified and non-left link clicks to the browser", async () => {
+    await renderSettings(configured, "reading")
+    const entry = screen.getByRole("link", { name: "siteRules.title" })
+    const browserClick = (link: HTMLElement, modifier: MouseEventInit) => {
+      let preventedByApp = false
+      window.addEventListener("click", (event) => {
+        preventedByApp = event.defaultPrevented
+        // JSDOM otherwise schedules native navigation after the test has ended.
+        event.preventDefault()
+      }, { once: true })
+      fireEvent.click(link, modifier)
+      expect(preventedByApp).toBe(false)
+    }
+    for (const modifier of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+      browserClick(entry, modifier)
+      expect(window.location.hash).toBe("#reading")
+    }
+    browserClick(screen.getByRole("link", { name: "options.service.title" }), { metaKey: true })
+    expect(window.location.hash).toBe("#reading")
+    fireEvent.click(entry)
+    browserClick(screen.getByRole("link", { name: "siteRules.backToReading" }), { metaKey: true })
+    expect(window.location.hash).toBe("#reading/site-rules")
   })
 
   it("stores hover and additional shortcuts, rejects conflicts and supports clearing", async () => {

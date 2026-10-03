@@ -90,6 +90,47 @@ describe("translation queue helpers", () => {
     translationCachePutMock.mockResolvedValue(undefined)
   })
 
+  it("does not cache a translation that drops formula placeholders", async () => {
+    executeTranslateMock.mockResolvedValue("公式的译文")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const result = await handler({ data: {
+      text: "The formula {{0}} is useful.", langConfig: DEFAULT_CONFIG.language,
+      providerConfig: llmProvider, scheduleAt: Date.now(), hash: "formula-missing",
+    } })
+    expect(result).toBe("公式的译文")
+    expect(translationCachePutMock).not.toHaveBeenCalled()
+  })
+
+  it("ignores a cached result with broken placeholders and stores a complete replacement", async () => {
+    translationCacheGetMock.mockResolvedValue({ translation: "旧的残缺译文" })
+    executeTranslateMock.mockResolvedValue("公式 {{0}} 很有用。")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    await expect(handler({ data: {
+      text: "The formula {{0}} is useful.", langConfig: DEFAULT_CONFIG.language,
+      providerConfig: llmProvider, scheduleAt: Date.now(), hash: "formula-repaired",
+    } })).resolves.toBe("公式 {{0}} 很有用。")
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ key: "formula-repaired", translation: "公式 {{0}} 很有用。" }))
+  })
+
+  it("does not cache a streamed translation with duplicated formula placeholders", async () => {
+    requestTextStreamMock.mockResolvedValueOnce("公式 {{0}} {{0}}。")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const port = {
+      name: "readomi-hover-translation",
+      onMessage: { addListener: vi.fn() }, onDisconnect: { addListener: vi.fn() }, postMessage: vi.fn(),
+    }
+    const connect = vi.mocked(browser.runtime.onConnect.addListener).mock.calls[0][0]
+    connect(port as unknown as Parameters<typeof connect>[0])
+    port.onMessage.addListener.mock.calls[0][0]({ text: "The formula {{0}}.", langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, hash: "formula-stream-duplicate" })
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", text: "公式 {{0}} {{0}}。" }))
+    expect(translationCachePutMock).not.toHaveBeenCalled()
+  })
+
   it("settles a hover port even if the service returns an empty result", async () => {
     requestTextStreamMock.mockResolvedValueOnce("")
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
