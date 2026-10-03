@@ -1,6 +1,6 @@
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
 import { storage } from "#imports"
-import { subtitleStyleSchema } from "@/types/config/subtitle-style"
+import { SUBTITLE_PRESET_FONT_SIZES, subtitleStyleSchema } from "@/types/config/subtitle-style"
 import { getLocalConfigForWrite } from "@/utils/config/storage"
 import { CONFIG_STORAGE_KEY } from "@/utils/constants/config"
 
@@ -10,8 +10,8 @@ export const SUBTITLE_POSITIONS = {
   bottom: { x: 50, y: 88 },
 } as const
 
-export function subtitlePresetPatch(preset: SubtitleStyle["preset"]): Pick<SubtitleStyle, "preset" | "fontSize"> {
-  return { preset, fontSize: { clear: 24, compact: 20, study: 40 }[preset] }
+export function subtitlePresetPatch(preset: SubtitleStyle["preset"], fontSizeMode: SubtitleStyle["fontSizeMode"]): Pick<SubtitleStyle, "preset" | "fontSize"> {
+  return { preset, fontSize: SUBTITLE_PRESET_FONT_SIZES[fontSizeMode][preset] }
 }
 
 export function subtitlePositionName(position: SubtitlePosition): keyof typeof SUBTITLE_POSITIONS | "custom" {

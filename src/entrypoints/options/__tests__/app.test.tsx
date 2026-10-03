@@ -116,6 +116,30 @@ describe("settings page", () => {
     expect(store.get(configAtom).translate.mode).toBe(custom.translate.mode)
   })
 
+  it.each(["video", "fixed"] as const)("uses each %s preset in settings and preserves custom position and manually adjusted size across mode changes", async (fontSizeMode) => {
+    const position = { x: 60, y: 65 }
+    const custom: Config = { ...configured, features: { ...configured.features, subtitleStyle: { preset: "study", fontSize: 38, fontSizeMode, position } } }
+    const { store } = await renderSettings(custom, "features")
+    const caption = screen.getByText("subtitleStyle.previewTranslation").parentElement!
+    const presets = fontSizeMode === "video" ? { clear: 20, compact: 16, study: 24 } : { clear: 24, compact: 20, study: 24 }
+    const presetControl = within(screen.getByRole("group", { name: "subtitleStyle.preset" }))
+    for (const [preset, fontSize] of Object.entries(presets)) {
+      fireEvent.click(presetControl.getByRole("button", { name: `subtitleStyle.presets.${preset}` }))
+      const expectedStyle = { preset, fontSize, fontSizeMode, position }
+      await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(expectedStyle))
+      await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toEqual(expectedStyle))
+      expect(screen.getByText("subtitleStyle.previewTranslation").parentElement).toBe(caption)
+      expect(caption.style.fontSize).toBe(`${fontSize}px`)
+    }
+    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "38" } })
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(38))
+    const nextMode = fontSizeMode === "video" ? "fixed" : "video"
+    fireEvent.click(within(screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" })).getByRole("button", { name: `subtitleStyle.fontSizeModes.${nextMode}` }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ preset: "study", fontSize: 38, fontSizeMode: nextMode, position }))
+    expect(screen.getByText("subtitleStyle.previewTranslation").parentElement).toBe(caption)
+    expect(caption.style.fontSize).toBe("38px")
+  })
+
   it("saves the subtitle sizing mode and previews video-relative and fixed pixels at the actual card width", async () => {
     let width = 320
     let resizePreview = () => {}
@@ -137,21 +161,21 @@ describe("settings page", () => {
       const modes = within(screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" }))
       expect(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.video" })).toHaveAttribute("aria-pressed", "true")
       expect(screen.getByText("subtitleStyle.relativeFontDescription")).toBeInTheDocument()
-      expect(caption.style.fontSize).toBe("12px")
+      expect(caption.style.fontSize).toBe("10px")
       width = 640
       act(() => resizePreview())
-      expect(caption.style.fontSize).toBe("24px")
+      expect(caption.style.fontSize).toBe("20px")
       fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.fixed" }))
       await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.fontSizeMode).toBe("fixed"))
       expect(screen.getByText("subtitleStyle.fontDescription")).toBeInTheDocument()
       width = 320
       act(() => resizePreview())
-      expect(caption.style.fontSize).toBe("24px")
-      expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(24)
+      expect(caption.style.fontSize).toBe("20px")
+      expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(20)
       expect(store.get(configAtom).features.subtitleStyle.position).toEqual(configured.features.subtitleStyle.position)
       fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.video" }))
       await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSizeMode).toBe("video"))
-      expect(caption.style.fontSize).toBe("12px")
+      expect(caption.style.fontSize).toBe("10px")
     }
     finally {
       measure.mockRestore()

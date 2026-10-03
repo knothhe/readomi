@@ -157,7 +157,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config): Player {
   smaller.addEventListener("click", () => persist({ fontSize: Math.max(SUBTITLE_FONT_SIZE_MIN, appearance.fontSize - 1) }))
   larger.addEventListener("click", () => persist({ fontSize: Math.min(SUBTITLE_FONT_SIZE_MAX, appearance.fontSize + 1) }))
   resetPosition.addEventListener("click", () => persist({ position: SUBTITLE_POSITIONS.bottom }))
-  presetSelect.addEventListener("change", () => persist(subtitlePresetPatch(presetSelect.value as typeof appearance.preset)))
+  presetSelect.addEventListener("change", () => persist(subtitlePresetPatch(presetSelect.value as typeof appearance.preset, appearance.fontSizeMode)))
   tools.append(presetSelect, smaller, sizeLabel, larger, resetPosition)
   box.prepend(tools)
   renderAppearance()

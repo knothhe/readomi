@@ -161,7 +161,7 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     await page.mouse.move((initial.left + initial.right) / 2, (initial.top + initial.bottom) / 2)
     const plus = await controlBounds("Increase subtitle size")
     await page.mouse.click((plus.left + plus.right) / 2, (plus.top + plus.bottom) / 2)
-    await waitForStoredStyle(style => style.fontSize === 25)
+    await waitForStoredStyle(style => style.fontSize === 21)
     const beforeDrag = (await snapshot()).bounds
     const x = (beforeDrag.left + beforeDrag.right) / 2
     const y = (beforeDrag.top + beforeDrag.bottom) / 2

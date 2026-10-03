@@ -32,7 +32,7 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
     fontSize: Number.parseFloat(getComputedStyle(scene.lastElementChild).fontSize),
   }))
   const desktopPreview = await previewSize()
-  assert.ok(Math.abs(desktopPreview.fontSize - 24 * desktopPreview.width / 640) < 0.05, "settings preview uses the video window size")
+  assert.ok(Math.abs(desktopPreview.fontSize - 20 * desktopPreview.width / 640) < 0.05, "settings preview uses the video window size")
 
   // Match X's post container, complete source and partial clone rendering track.
   // A stationary media clock isolates sizing from playback and translation timing.
@@ -75,7 +75,8 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
       return {}
     const model = await cdp.send("DOM.getBoxModel", { nodeId: box.nodeId }).catch(() => null)
     const { computedStyle } = computed
-    return { fontSize: Number.parseFloat(computedStyle.find(p => p.name === "font-size").value), original: text(original), translation: text(translation), bottom: model?.model.border[5], hidden: attr(box, "class")?.split(" ").includes("empty") }
+    const quad = model?.model.border
+    return { fontSize: Number.parseFloat(computedStyle.find(p => p.name === "font-size").value), original: text(original), translation: text(translation), bottom: quad?.[5], bounds: quad && { left: quad[0], top: quad[1], right: quad[2], bottom: quad[5] }, hidden: attr(box, "class")?.split(" ").includes("empty") }
   }
   const waitFor = async (predicate) => {
     const deadline = Date.now() + 15000
@@ -90,7 +91,7 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
   }
   await cdp.send("DOM.enable")
   await cdp.send("CSS.enable")
-  const ready = await waitFor(state => !state.hidden && state.fontSize === 24 && state.translation?.includes("【译】"))
+  const ready = await waitFor(state => !state.hidden && state.fontSize === 20 && state.translation?.includes("【译】"))
   assert.equal(ready.original, "A new idea.", "the complete X source wins over its showing clone")
   await page.waitForFunction(() => Object.values(window.e2eSubtitleTracks).every(track => track.mode === "hidden"))
   const videoBounds = await page.locator("#player video").boundingBox()
@@ -110,13 +111,13 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
       player.style.width = `${width}px`
       player.style.height = `${width * 9 / 16}px`
     }, width)
-    await waitFor(state => state.fontSize === 24 * width / 640 && state.translation === ready.translation)
+    await waitFor(state => state.fontSize === 20 * width / 640 && state.translation === ready.translation)
   }
   await page.locator("#player").evaluate(player => player.requestFullscreen())
   const fullscreenWidth = (await page.locator("#player video").boundingBox()).width
-  await waitFor(state => Math.abs(state.fontSize - 24 * fullscreenWidth / 640) < 0.05 && state.translation === ready.translation)
+  await waitFor(state => Math.abs(state.fontSize - 20 * fullscreenWidth / 640) < 0.05 && state.translation === ready.translation)
   await page.evaluate(() => document.exitFullscreen())
-  await waitFor(state => state.fontSize === 24)
+  await waitFor(state => state.fontSize === 20)
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, initialStyle, "window changes do not rewrite the saved baseline")
   await page.screenshot({ path: "/tmp/readomi-x-subtitle-responsive.png" })
 
@@ -126,21 +127,76 @@ it("X HTML5 subtitles scale with the video window and support live fixed sizing 
     player.style.width = "320px"
     player.style.height = "180px"
   })
-  await waitFor(state => state.fontSize === 24 && state.translation === ready.translation)
+  await waitFor(state => state.fontSize === 20 && state.translation === ready.translation)
   await settings.reload()
   assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Fixed size", exact: true }).getAttribute("aria-pressed"), "true")
   await settings.setViewportSize({ width: 390, height: 900 })
   assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Fixed size", exact: true }).isVisible(), true)
-  assert.equal((await previewSize()).fontSize, 24, "fixed preview keeps real pixels on narrow screens")
+  assert.equal((await previewSize()).fontSize, 20, "fixed preview keeps real pixels on narrow screens")
   await settings.screenshot({ path: "/tmp/readomi-subtitle-fixed-mobile.png", fullPage: true })
   await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Scale with video", exact: true }).click()
   await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.subtitleStyle.fontSizeMode === "video")
-  await waitFor(state => state.fontSize === 12 && state.translation === ready.translation)
+  await waitFor(state => state.fontSize === 10 && state.translation === ready.translation)
   const mobilePreview = await previewSize()
-  assert.ok(Math.abs(mobilePreview.fontSize - 24 * mobilePreview.width / 640) < 0.05, "relative preview matches narrow video windows")
+  assert.ok(Math.abs(mobilePreview.fontSize - 20 * mobilePreview.width / 640) < 0.05, "relative preview matches narrow video windows")
   await settings.screenshot({ path: "/tmp/readomi-subtitle-video-mobile.png", fullPage: true })
   assert.equal(service.completions().length, requests, "resizing and changing sizing mode reuse the current translation")
   assert.equal(service.translationRequests().some(messages => messages.at(-1).content.includes("Partial rendering clone")), false)
+
+  const waitForStyle = async (preset, fontSize, fontSizeMode) => {
+    const deadline = Date.now() + 15000
+    let style
+    while (Date.now() < deadline) {
+      style = (await storedConfig(context)).features.subtitleStyle
+      if (style.preset === preset && style.fontSize === fontSize && style.fontSizeMode === fontSizeMode)
+        return style
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    throw new Error(`Subtitle preset was not saved: ${JSON.stringify(style)}`)
+  }
+  const presets = settings.getByRole("group", { name: "Subtitle preset", exact: true })
+  await presets.getByRole("button", { name: "Prominent", exact: true }).click()
+  await waitForStyle("study", 24, "video")
+  await waitFor(state => state.fontSize === 12 && state.translation === ready.translation)
+  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
+  await waitForStyle("study", 24, "fixed")
+  await presets.getByRole("button", { name: "Prominent", exact: true }).click()
+  await waitForStyle("study", 24, "fixed")
+  await waitFor(state => state.fontSize === 24 && state.translation === ready.translation)
+  await settings.screenshot({ path: "/tmp/readomi-subtitle-preset-fixed-study.png", fullPage: true })
+
+  // Playwright locators cannot reach the closed shadow root. Use CDP to
+  // select its native control with the same input/change events as selectOption;
+  // persistence and rendering still run through the built extension.
+  const selectFloatingPreset = async (preset) => {
+    const { root } = await cdp.send("DOM.getDocument", { depth: -1, pierce: true })
+    const select = find(root, node => attr(node, "aria-label") === "Subtitle preset")
+    const { object } = await cdp.send("DOM.resolveNode", { nodeId: select.nodeId })
+    try {
+      const result = await cdp.send("Runtime.callFunctionOn", {
+        objectId: object.objectId,
+        functionDeclaration: "function(preset) { this.value = preset; this.dispatchEvent(new Event('input', { bubbles: true })); this.dispatchEvent(new Event('change', { bubbles: true })); return this.value; }",
+        arguments: [{ value: preset }],
+        returnByValue: true,
+      })
+      assert.equal(result.exceptionDetails, undefined)
+      assert.equal(result.result.value, preset)
+    }
+    finally {
+      await cdp.send("Runtime.releaseObject", { objectId: object.objectId })
+    }
+  }
+  await selectFloatingPreset("compact")
+  await waitForStyle("compact", 20, "fixed")
+  await waitFor(state => state.fontSize === 20 && state.translation === ready.translation)
+  await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
+  await waitForStyle("compact", 20, "video")
+  await selectFloatingPreset("study")
+  await waitForStyle("study", 24, "video")
+  await waitFor(state => state.fontSize === 12 && state.translation === ready.translation)
+  assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, initialStyle.position, "both preset controls preserve the saved position")
+  assert.equal(service.completions().length, requests, "both preset controls reuse the current translation")
+  await page.screenshot({ path: "/tmp/readomi-subtitle-preset-video-study.png" })
 
   await page.evaluate(() => {
     const reply = document.createElement("article")

@@ -51,7 +51,7 @@ export function SubtitleStyleEditor({ children }: { children: ReactNode }) {
                 size="sm"
                 value={style.preset}
                 options={SUBTITLE_PRESETS.map(value => ({ value, label: i18n.t(`subtitleStyle.presets.${value}`) }))}
-                onChange={preset => void setFeatures({ subtitleStyle: { ...style, ...subtitlePresetPatch(preset) } })}
+                onChange={preset => void setFeatures({ subtitleStyle: { ...style, ...subtitlePresetPatch(preset, style.fontSizeMode) } })}
               />
             )}
           />
