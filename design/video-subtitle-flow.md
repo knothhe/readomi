@@ -24,7 +24,7 @@
 
 字号方式默认「随视频窗口」，以 640 像素宽的视频窗口为基准，实际字号 = 基准字号 × 当前视频窗口宽度 / 640。例如默认清晰基准 20 px 在 320、640、960 像素宽的窗口中分别显示为 10、20、30 px（Video-Window-Scale.html）。窗口大小变化、全屏及竖屏均按当前显示宽度计算，不使用视频文件的原始分辨率，不改变保存的字号或字幕位置。「固定字号」直接使用保存的像素值（Settings-Subtitle-Fixed.html）。两种方式的设置预览与实际播放器采用同样的规则；旧配置缺少字号方式时默认随视频窗口缩放，保留已有字号和位置。
 
-位置以视频内部的相对坐标保存，默认底部居中。「底部」是自适应边缘预设：基础底边距为播放器高度的 2%。YouTube 播放条显示时，再加原生字幕样式当前的 margin-bottom，隐藏时该值归零；窗口与全屏跟随播放器自己的样式规则，播放条的显示与隐藏不改写用户配置（Video-Bottom-Hidden.html、Video-Bottom-Controls.html、Video-Bottom-Fullscreen-Hidden.html、Video-Bottom-Fullscreen-Controls.html）。YouTube 自动底部位置以整个播放器为基准，包括全屏黑边（Video-Bottom-Fullscreen-Letterbox.html）；自定义位置仍相对于视频保存。开始拖动时将当前屏幕锚点转换到视频坐标，拖动期间可以从黑边连续进入画面（Video-Drag-Fullscreen-Letterbox.html）；释放时按原有视频边界约束保存，若仍停在黑边则移回画面内。设置预览和普通 HTML5 视频采用 2% 的基础边距。已有底部预设自动获得这一行为；拖动后的自定义位置保留相对坐标。顶部、居中、底部均可一键选取；在视频上拖动字幕可设置自定义位置。自动 YouTube 底部字幕框保持在播放器范围内，自定义位置的字幕框保持在视频范围内；全屏和窗口大小变化时使用各自的相对位置。悬停或键盘聚焦时显示预设、减小 / 增大字号和位置复位按钮；按方向键也能移动字幕。按 Esc 取消拖动，拖动字幕不会触发播放器的点击或进度控制。设置页显示实时样式预览；恢复默认还原清晰预设、随视频窗口、20 px 与底部居中。已保存手调 24 px 的自定义位置画板与固定 24 px 的全屏位置画板保留，用来说明旧字号和位置不会被新的预设值覆盖。
+位置以视频内部的相对坐标保存，默认底部居中。「底部」是自适应边缘预设：基础底边距为播放器高度的 2%。YouTube 播放条显示时，再加原生字幕样式当前的 margin-bottom，隐藏时该值归零；窗口与全屏跟随播放器自己的样式规则，播放条的显示与隐藏不改写用户配置（Video-Bottom-Hidden.html、Video-Bottom-Controls.html、Video-Bottom-Fullscreen-Hidden.html、Video-Bottom-Fullscreen-Controls.html）。YouTube 自动底部位置以整个播放器为基准，包括全屏黑边（Video-Bottom-Fullscreen-Letterbox.html）；自定义位置仍相对于视频保存。开始拖动时将当前屏幕锚点转换到视频坐标，拖动期间可以从黑边连续进入画面（Video-Drag-Fullscreen-Letterbox.html）；释放时按原有视频边界约束保存，若仍停在黑边则移回画面内。设置预览和普通 HTML5 视频采用 2% 的基础边距。已有底部预设自动获得这一行为；拖动后的自定义位置保留相对坐标。顶部、居中、底部均可一键选取；在视频上拖动字幕可设置自定义位置。自动 YouTube 底部字幕框保持在播放器范围内，自定义位置的字幕框保持在视频范围内；全屏和窗口大小变化时使用各自的相对位置。点击播放器工具栏中的 Readomi 图标可显示清晰 / 轻量 / 醒目、减小 / 增大字号和字幕位置复位按钮；按方向键也能移动字幕。按 Esc 取消拖动，拖动字幕不会触发播放器的点击或进度控制。设置页显示实时样式预览；恢复默认还原清晰预设、随视频窗口、20 px 与底部居中。已保存手调 24 px 的自定义位置画板与固定 24 px 的全屏位置画板保留，用来说明旧字号和位置不会被新的预设值覆盖。
 
 修改显示模式、样式或位置只更新字幕外观，保留字幕时间轴、已缓存译文及进行中的请求。
 
@@ -47,3 +47,51 @@ X 沿用 Read Frog 的来源轨道与播放器选择策略：读取真实字幕�
 [当前官方播放器 CSS](https://www.youtube.com/s/player/8ab5c328/www-player.css)中，普通样式的控件留白是 61 px，嵌入模式为 53 px，大尺寸模式为 70 px；现代播放器通过底部控件高度变量加 14 px 计算，隐藏控件时归零。当前页面变量普通值为 56 px、全屏大尺寸值为 72 px，因此设计画板分别画出 70 px 和 86 px 的额外留白。全屏额外信息、预览网格和样式切换还可能改变该值；实现应读取播放器计算后的样式，避免固化这些像素值。全屏画板按源码规则绘制，未在实测视频中取得全屏测量。
 
 实际底部距离 = 播放器高度 × 2% + 当前原生字幕 `margin-bottom`。Readomi 隐藏原生字幕仅使用 `visibility:hidden`，其布局与计算样式仍可读取；字幕空档也须保留相同的默认锚点。
+
+
+## 视频排除规则与播放器入口（2026-10-03）
+
+视频字幕设置新增「不翻译的网站」，它只影响视频翻译，网页翻译与网页站点规则保持独立。每条规则包含 `type: domain | pattern | regex` 与 `value`。
+
+| 类型 | 输入说明 | 匹配范围 |
+| --- | --- | --- |
+| 域名（含子域名） | 填写 example.com，将同时排除该域名及所有子域名。 | 域名边界匹配，example.com 与任意层级子域名；不匹配 otherexample.com |
+| 网址通配符 | 例如 *.example.com/watch/*，可限定域名和路径。 | 按网址匹配，可限制域名与路径 |
+| 正则表达式 | 匹配完整网址，忽略大小写。例如 ^https://([^.]+\.)?example\.com/ | 对完整网址应用忽略大小写的正则；保存前检查正则是否合法 |
+
+默认无规则时仅显示表单，不显示「已保存」或额外空列表说明（Settings-Video-Excluded-Empty.html）。添加与删除立即保存。保存成功才更新已保存列表并清空输入；保存失败显示「保存失败，请重试。」，保留输入、类型和原列表，可再次点击「添加网站」重试。无效输入显示「请输入有效的网站规则。」；重复输入显示「这条规则已存在。」。设计状态为 Settings-Video-Excluded-Saved.html、Settings-Video-Excluded-Invalid.html、Settings-Video-Excluded-Duplicate.html、Settings-Video-Excluded-Save-Failed.html 和 Settings-Video-Excluded-Mobile.html；页面主说明为「匹配的网站不会启动视频翻译；不影响网页翻译。」。
+
+## 右侧工具组前端的图标与独立开关（2026-10-03）
+
+播放器控件使用站点白名单，只支持 YouTube、youtube-nocookie、X 和 Twitter。YouTube（含 youtube-nocookie 嵌入域名）只在真实 watch / live / embed / shorts 播放器页面显示。支持的播放器将 Readomi 入口放在原生播放工具栏右侧工具组最前端，位于设置、画中画或全屏按钮之前；播放与时间保持原生位置。默认只显示可点击的 Readomi 图标和独立视频翻译开关，不显示当前预设名、下拉箭头或分隔线（Video-Player-Enabled.html、Video-Player-Disabled.html、Video-Player-X-Toolbar.html）。图标按钮的可访问名称沿用「调整字幕预设」，开关分别为「开启视频翻译」与「关闭视频翻译」，`aria-pressed` 对应当前状态，整个控件组的帮助为「仅对当前视频生效」。
+
+开关不改写设置页的全局开关，只对当前视频生效；切换视频后使用全局设置和排除规则。匹配排除规则时开关处于关闭、禁用状态，按钮 title 为「此网站已排除」（Video-Player-Excluded.html）；默认工具栏仍仅显示图标与开关，不添加行内状态文案。Readomi 图标仍可打开字幕设置，面板在「字幕预设」标题下方显示轻量的「此网站已排除」状态提示，预设、字号和复位仍可调整（Video-Player-Excluded-Open.html）。关闭时还原播放器字幕及来源轨状态，控件可以在有字幕的视频上再次开启。
+
+点击 Readomi 图标从入口向上、右对齐打开约 240 px 宽的细节面板，包含「字幕预设」、清晰 / 轻量 / 醒目、字号 − / 20 px / + 与「字幕位置复位」（Video-Player-Preset-Open.html）。开关保持独立，不因打开菜单或修改外观而启动翻译。菜单面板呈现在字幕之上，避免字幕遮住按钮或文字；全屏时保留在全屏元素内（Video-Player-Fullscreen.html）。Esc、点击外部或再次点击图标关闭菜单。
+
+窄屏先收紧同排布局。Readomi 图标与独立开关一同显示，缩小间距、内边距与开关宽度，继续放在右侧设置 / 全屏等工具按钮之前；仍无法安全容纳时隐藏整个 Readomi 控件组，不使用悬浮回退（Video-Player-Mobile.html、Video-Player-X-Toolbar-Mobile.html、Video-Player-Toolbar-Crowded.html）。面板限制在播放器边界内、向上右对齐，收紧间距；极矮播放器内部滚动，让全部操作可达。面板顶边与播放器保持至少 8 px，底边与入口保持约 9 px；优先右对齐入口，接近窗口边界时钳制在播放器右边界内。
+
+站点白名单只限制播放器工具栏，不删除或限制现有通用 HTML5 字幕翻译特性。其他网站包括 Bilibili 搜索预览与 Bilibili 主播放器都不显示 Readomi 图标、开关或预设面板（Video-Bilibili-Search-No-Controls.html、Video-Bilibili-Player-No-Controls.html）。有真实 HTML5 字幕轨道时仍可根据全局视频字幕设置自动翻译（Video-Player-HTML5-Toolbar.html）；没有字幕轨道时保留原生播放器，不注入字幕或控件。不增加按网站隐藏工具栏的弹窗开关或隐藏列表；视频翻译排除快捷开关单独说明如下。
+
+所有支持的播放器都必须使用其原生工具栏位置；没有可用原生工具栏或原生工具组无法安全容纳时不显示 Readomi 入口，禁止回退到视频右下角（Video-Player-Toolbar-Unavailable.html、Video-Player-Toolbar-Crowded.html）。原生工具栏恢复后，在原右侧工具组最前端恢复图标和开关（Video-Player-Enabled.html、Video-Player-X-Toolbar.html）；无栏期间自动字幕翻译继续正常工作。
+
+修改预设、字号或位置自动保存，保留译文缓存和进行中的请求。保存失败时在细节面板底部以 `role=status` 显示「保存失败，请重试。」（Video-Player-Save-Failed.html）；字幕保持上次已保存外观，点击预设或字号按钮可重试，不关闭面板。字幕框继续支持直接拖动、方向键移动与 Esc 取消拖动。
+
+设置页帮助文案统一为「在视频上拖动字幕调整位置；点击播放器工具栏中的 Readomi 图标可调整样式和字号。调整会自动保存。」。历史字幕画板保留此前定位和字号案例；当前控件入口以本次 Video-Player-* 画板为准。
+
+## 播放器控件自然隐藏（2026-10-03）
+
+Readomi 图标和开关与原生播放工具栏一起自然隐藏，不因功能开启而在播放中常驻。YouTube 和 X 有可读取的网页控制栏时跟随其显隐状态；鼠标移动使进度条重新出现时，Readomi 入口一起显示（Video-Player-Enabled.html、Video-Player-X-Toolbar.html）。播放条隐藏后字幕继续显示，自动底部字幕释放控件留白（Video-Player-Playing-Hidden.html）。
+
+原生工具栏的显隐始终优先：即使预设菜单处于打开状态或有键盘焦点，原生栏进入隐藏、透明或不可见状态时，Readomi 入口与菜单也一起隐藏（Video-Player-Menu-Hidden.html）。菜单可放在顶层避免字幕遮挡，但定位仍来自原生入口锚点，不能独立脱离播放条显示。原生栏恢复时入口回到同一工具组位置，菜单随入口恢复可见。鼠标点击留下的普通焦点同样不阻止控件隐藏。
+
+不在控件白名单中的通用 HTML5 播放器不显示 Readomi 入口，也不启用回退控件。字幕自动翻译、已缓存译文与进行中的请求继续按现有视频字幕设置工作；用户在弹窗或设置页调整其全局行为。
+
+
+## 弹窗当前网站的视频翻译排除（2026-10-04）
+
+弹窗视频字幕模块在样式摘要下增加「此网站不翻译视频」开关，平时和已保存排除时只有左侧标签、右侧开关的一行，不增加内部边线，也不常驻域名、说明或管理入口。标签和开关的 title 包含完整 hostname 与「含子域名，仅影响视频翻译。」；相同内容保留在 sr-only 描述中，由开关的 aria-describedby 关联，使键盘和读屏操作可获得完整范围。长域名不占用可见行宽。模块与网页翻译及视频字幕全局开关独立，不隐藏播放器工具栏（Popup-Video.html、Popup-Video-Site-Excluded.html、Popup-Video-Site-Long-Hostname.html、Popup-Video-Site-Dark.html）。
+
+开关开启时将规范化的当前 hostname 添加为现有 `videoExcludedSites` 的域名规则，匹配该域名和其全部子域名；不限于播放器控件的站点白名单。开关选中状态来自当前完整 URL 是否被任意现有域名、通配符或正则规则排除。关闭只移除规范化后与当前 hostname 完全相等的域名规则，不自动删除更宽的域名或任何通配符、正则规则（Popup-Video-Site-Excluded.html）。
+
+若除当前域名规则外还有其他规则匹配当前 URL，开关选中且禁用，在下一行按需显示完整「此网站由其他规则排除，请在设置中调整。」及小号「管理规则」入口。入口随提示在空间不足时换行，保持操作可见；平时不显示入口。「管理规则」打开 features 视频设置中的排除规则入口，保留其他规则（Popup-Video-Site-Managed.html）。保存时开关禁用并标记 `aria-busy`，下一行只显示「正在保存…」，保留已保存的选中状态；成功后回到一行开关，不增加成功提示。保存失败下一行只显示「保存失败，请重试。」，恢复开关并保持先前配置，可再次切换重试（Popup-Video-Site-Saving.html、Popup-Video-Site-Failed.html）。非 HTTP(S) 页面开关禁用，下一行只显示「当前页面不可用」（Popup-Video-Site-Unavailable.html）。
