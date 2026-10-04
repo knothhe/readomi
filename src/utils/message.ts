@@ -35,6 +35,7 @@ interface ProtocolMap {
   getTranslationProgressByTabId: (data: { tabId: number }) => TranslationProgress | null
   translationProgressChanged: (data: { tabId: number, progress: TranslationProgress }) => void
   // request
+  clearTranslationCache: () => Promise<void>
   enqueueTranslateRequest: (data: { text: string, langConfig: LanguagePolicyConfig, providerConfig: ProviderConfig, scheduleAt: number, hash: string, customPromptsConfig?: Config["translate"]["customPromptsConfig"], webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<TranslationResult>
   getOrGenerateWebPageSummary: (data: { webTitle: string, webContent: string, providerConfig: ProviderConfig }) => Promise<string | null>
   backgroundGenerateText: (data: BackgroundGenerateTextPayload) => Promise<BackgroundGenerateTextResponse>

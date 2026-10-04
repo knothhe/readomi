@@ -11,9 +11,11 @@ const requestTextStreamMock = vi.fn()
 const generateArticleSummaryMock = vi.fn()
 const articleSummaryCacheGetMock = vi.fn()
 const articleSummaryCachePutMock = vi.fn()
+const articleSummaryCacheClearMock = vi.fn()
 const translationCacheGetMock = vi.fn()
 const translationCachePutMock = vi.fn()
 const translationCacheDeleteMock = vi.fn()
+const translationCacheClearMock = vi.fn()
 const logErrorMock = vi.fn()
 const logInfoMock = vi.fn()
 
@@ -44,11 +46,13 @@ vi.mock("@/utils/db/cache-db", () => ({
     articleSummaryCache: {
       get: articleSummaryCacheGetMock,
       put: articleSummaryCachePutMock,
+      clear: articleSummaryCacheClearMock,
     },
     translationCache: {
       get: translationCacheGetMock,
       put: translationCachePutMock,
       delete: translationCacheDeleteMock,
+      clear: translationCacheClearMock,
     },
   },
 }))
@@ -78,6 +82,27 @@ function translated(text: string, targetCode = "cmn") {
   return { action: "translate", text, targetCode }
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (error: Error) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
+function hoverPort() {
+  const port = { name: "readomi-hover-translation", onMessage: { addListener: vi.fn() }, onDisconnect: { addListener: vi.fn() }, postMessage: vi.fn() }
+  const connect = vi.mocked(browser.runtime.onConnect.addListener).mock.calls[0][0]
+  connect(port as unknown as Parameters<typeof connect>[0])
+  return port
+}
+
+function translationData(hash: string) {
+  return { text: "Hello", langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, scheduleAt: Date.now(), hash }
+}
+
 describe("translation queue helpers", () => {
   beforeEach(() => {
     vi.resetModules()
@@ -100,6 +125,7 @@ describe("translation queue helpers", () => {
     translationCacheGetMock.mockResolvedValue(undefined)
     translationCachePutMock.mockResolvedValue(undefined)
     translationCacheDeleteMock.mockResolvedValue(undefined)
+    translationCacheClearMock.mockResolvedValue(undefined)
   })
 
   it("does not cache a translation that drops formula placeholders", async () => {
@@ -449,5 +475,120 @@ describe("translation queue helpers", () => {
     finally {
       vi.useRealTimers()
     }
+  })
+
+  it("clears translation cache without clearing article summaries", async () => {
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    await expect(clear({ data: {} })).resolves.toBeUndefined()
+    expect(translationCacheClearMock).toHaveBeenCalledOnce()
+    expect(articleSummaryCacheClearMock).not.toHaveBeenCalled()
+  })
+
+  it("does not cache a pre-clear request or deduplicate a new identical request against it", async () => {
+    const old = deferred<string>()
+    executeTranslateMock.mockReturnValueOnce(old.promise).mockResolvedValueOnce(response("新的译文"))
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    const first = handler({ data: translationData("same-cache-key") })
+    await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledOnce())
+    await clear({ data: {} })
+    const second = handler({ data: translationData("same-cache-key") })
+    await expect(second).resolves.toEqual(translated("新的译文"))
+    expect(executeTranslateMock).toHaveBeenCalledTimes(2)
+    old.resolve(response("清空前的译文"))
+    await expect(first).resolves.toEqual(translated("清空前的译文"))
+    expect(translationCachePutMock).toHaveBeenCalledOnce()
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ key: "same-cache-key", translation: "新的译文" }))
+  })
+
+  it("finishes a pre-clear hover request without writing its result back", async () => {
+    const old = deferred<string>()
+    requestTextStreamMock.mockReturnValueOnce(old.promise).mockResolvedValueOnce(response("新的悬停译文"))
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    const first = hoverPort()
+    first.onMessage.addListener.mock.calls[0][0](translationData("same-hover-key"))
+    await vi.waitFor(() => expect(requestTextStreamMock).toHaveBeenCalledOnce())
+    await clear({ data: {} })
+    const second = hoverPort()
+    second.onMessage.addListener.mock.calls[0][0](translationData("same-hover-key"))
+    await vi.waitFor(() => expect(second.postMessage).toHaveBeenCalledWith({ type: "done", result: translated("新的悬停译文") }))
+    old.resolve(response("旧的悬停译文"))
+    await vi.waitFor(() => expect(first.postMessage).toHaveBeenCalledWith({ type: "done", result: translated("旧的悬停译文") }))
+    expect(translationCachePutMock).toHaveBeenCalledOnce()
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ key: "same-hover-key", translation: "新的悬停译文" }))
+  })
+
+  it("waits for an active cache write before clearing and waits for the clear before new reads", async () => {
+    const write = deferred<void>()
+    const clearing = deferred<void>()
+    translationCachePutMock.mockReturnValueOnce(write.promise)
+    translationCacheClearMock.mockReturnValueOnce(clearing.promise)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    const first = handler({ data: translationData("writing-before-clear") })
+    await vi.waitFor(() => expect(translationCachePutMock).toHaveBeenCalledOnce())
+    const pendingClear = clear({ data: {} })
+    const second = handler({ data: translationData("reading-after-clear") })
+    await Promise.resolve()
+    expect(translationCacheClearMock).not.toHaveBeenCalled()
+    expect(translationCacheGetMock).toHaveBeenCalledOnce()
+    write.resolve(undefined)
+    await first
+    await vi.waitFor(() => expect(translationCacheClearMock).toHaveBeenCalledOnce())
+    expect(translationCacheGetMock).toHaveBeenCalledOnce()
+    clearing.resolve(undefined)
+    await pendingClear
+    await second
+    expect(translationCacheGetMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("does not let a stale cache audit delete a new same-key result after a clear", async () => {
+    const oldRead = deferred<{ translation: string, protocolVersion: string }>()
+    translationCacheGetMock.mockReturnValueOnce(oldRead.promise)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    const first = handler({ data: translationData("stale-audit") })
+    await vi.waitFor(() => expect(translationCacheGetMock).toHaveBeenCalledOnce())
+    await clear({ data: {} })
+    await handler({ data: translationData("stale-audit") })
+    oldRead.resolve({ translation: "旧缓存", protocolVersion: "automatic-language-v1" })
+    await first
+    expect(translationCacheDeleteMock).not.toHaveBeenCalled()
+    expect(translationCachePutMock).toHaveBeenCalledOnce()
+  })
+
+  it("reports a clear failure and permits a later clear and cache write", async () => {
+    translationCacheClearMock.mockRejectedValueOnce(new Error("Storage unavailable"))
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    await expect(clear({ data: {} })).rejects.toThrow("Storage unavailable")
+    await expect(clear({ data: {} })).resolves.toBeUndefined()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    await expect(handler({ data: translationData("after-clear-retry") })).resolves.toEqual(translated("translated text"))
+    expect(translationCacheClearMock).toHaveBeenCalledTimes(2)
+    expect(translationCachePutMock).toHaveBeenCalledOnce()
+  })
+
+  it("reports a cache write failure without poisoning a later clear", async () => {
+    translationCachePutMock.mockRejectedValueOnce(new Error("Write failed"))
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    await expect(handler({ data: translationData("failed-write") })).rejects.toThrow("Write failed")
+    const clear = getRegisteredMessageHandler("clearTranslationCache")
+    await expect(clear({ data: {} })).resolves.toBeUndefined()
+    await expect(handler({ data: translationData("successful-write") })).resolves.toEqual(translated("translated text"))
+    expect(translationCachePutMock).toHaveBeenCalledTimes(2)
   })
 })

@@ -11,6 +11,7 @@ import { PROVIDER_ITEMS } from "@/utils/constants/providers"
 import { openOptionsPage } from "@/utils/navigation"
 import { isProviderReady } from "@/utils/service-management"
 import { cn } from "@/utils/styles/utils"
+import { ClearTranslationCacheButton } from "./clear-translation-cache-button"
 import { WordPrefixEmphasisToggle } from "./word-prefix-emphasis-toggle"
 
 function describeProvider(provider: ProviderConfig): string {
@@ -180,6 +181,7 @@ export function PopupFooter() {
           <span className="truncate">{serviceLabel}</span>
           <IconChevronDown aria-hidden="true" className={cn("size-3 shrink-0 transition-transform", open && "rotate-180")} stroke={1.75} />
         </button>
+        <ClearTranslationCacheButton />
         <div className="flex shrink-0 items-center gap-0.5">
           <WordPrefixEmphasisToggle />
           <button

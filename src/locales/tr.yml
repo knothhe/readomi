@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: Dil ara…
   noLanguagesFound: Dil bulunamadı
 popup:
+  clearTranslationCache:
+    label: Önbelleği temizle
+    description: Tüm sayfaların kayıtlı çevirilerini temizler. Sonraki çeviri yeni bir istek gönderir.
+    clearing: Temizleniyor…
+    cleared: Çeviri önbelleği temizlendi
+    failed: Temizlenemedi. Tekrar dene.
   serviceSwitch:
     switchLabel: "Geçerli hizmet: $1. Hizmeti değiştir"
     title: Hizmeti değiştir

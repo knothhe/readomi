@@ -89,7 +89,14 @@ class CacheTable<T extends { key: string, createdAt: Date }> {
   }
 
   async clear(): Promise<void> {
-    await request((await this.store("readwrite")).clear())
+    const store = await this.store("readwrite")
+    await new Promise<void>((resolve, reject) => {
+      const transaction = store.transaction
+      transaction.oncomplete = () => resolve()
+      transaction.onabort = () => reject(transaction.error ?? new Error("Cache clear transaction was aborted"))
+      transaction.onerror = () => reject(transaction.error ?? new Error("Cache clear transaction failed"))
+      store.clear()
+    })
   }
 
   /** Removes records created before `cutoff` and returns how many. */

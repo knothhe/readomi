@@ -31,6 +31,29 @@ import { RequestQueue } from "@/utils/request/request-queue"
 import { attachRequestErrorMeta } from "@/utils/request/retry-policy"
 import { serviceLimitsKey, ServiceLimitsStore } from "@/utils/request/service-limits"
 
+// The background is the only translation-cache writer. Keep mutations in one
+// order so a pre-clear result cannot finish writing after the clear commits.
+let translationCacheGeneration = 0
+let translationCacheMutationTail: Promise<void> = Promise.resolve()
+let translationCacheClearBarrier: Promise<void> = Promise.resolve()
+
+function mutateTranslationCache(operation: () => Promise<void>): Promise<void> {
+  const pending = translationCacheMutationTail.then(operation)
+  // Keep later mutations usable while returning this operation's failure to
+  // its caller, including a failed clear that the reader may retry.
+  translationCacheMutationTail = pending.catch(() => {})
+  return pending
+}
+
+function clearTranslationCache(): Promise<void> {
+  translationCacheGeneration++
+  const clearing = mutateTranslationCache(() => cacheDb.translationCache.clear())
+  // New reads wait for the clear attempt; a failed attempt must not disable
+  // unrelated future translation requests.
+  translationCacheClearBarrier = clearing.catch(() => {})
+  return clearing
+}
+
 export function parseBatchResult(result: string): string[] {
   return result.trim().split(BATCH_SEPARATOR_LINE_PATTERN).map(t => t.trim())
 }
@@ -55,19 +78,27 @@ function cachedTranslation(cached: TranslationCacheRecord): TranslationResult {
     : { action: "translate", text: cached.translation, targetCode: cached.targetCode }
 }
 
-function cacheTranslation(key: string, result: TranslationResult): Promise<void> {
-  return cacheDb.translationCache.put({ key, translation: result.text, action: result.action, targetCode: result.targetCode, protocolVersion: TRANSLATION_PROTOCOL_VERSION, createdAt: new Date() })
+function cacheTranslation(key: string, result: TranslationResult, generation: number): Promise<void> {
+  return mutateTranslationCache(async () => {
+    if (generation !== translationCacheGeneration)
+      return
+    await cacheDb.translationCache.put({ key, translation: result.text, action: result.action, targetCode: result.targetCode, protocolVersion: TRANSLATION_PROTOCOL_VERSION, createdAt: new Date() })
+  })
 }
 
-async function getCachedTranslation(key: string, source: string, language: LanguagePolicyConfig): Promise<TranslationResult | undefined> {
+async function getCachedTranslation(key: string, source: string, language: LanguagePolicyConfig, generation: number): Promise<TranslationResult | undefined> {
+  await translationCacheClearBarrier
   const cached = await cacheDb.translationCache.get(key)
-  if (!cached)
+  if (!cached || generation !== translationCacheGeneration)
     return undefined
   const result = cachedTranslation(cached)
   if (cached.protocolVersion === TRANSLATION_PROTOCOL_VERSION && hasCacheableTranslation(source, result, language))
     return result
   // Retire only the unusable entry; summaries and other valid translations stay intact.
-  await cacheDb.translationCache.delete(key)
+  await mutateTranslationCache(async () => {
+    if (generation === translationCacheGeneration)
+      await cacheDb.translationCache.delete(key)
+  })
   return undefined
 }
 
@@ -146,6 +177,8 @@ export interface TranslateBatchData<TContext = unknown> {
   scheduleAt: number
   context?: TContext
   customPromptsConfig?: Config["translate"]["customPromptsConfig"]
+  /** Temporary queue identity; persistent cache keys remain unchanged. */
+  cacheGeneration?: number
 }
 
 /**
@@ -186,6 +219,7 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
     enableFallbackToIndividual: true,
     getBatchKey: (data) => {
       return stringHash(
+        String(data.cacheGeneration ?? 0),
         TRANSLATION_PROTOCOL_VERSION,
         JSON.stringify([data.langConfig.targetCode, getSecondaryLanguage(data.langConfig)]),
         JSON.stringify(data.providerConfig),
@@ -199,7 +233,7 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
     onLimitsLearned: (key, batch) => limits.update(key, { batch }),
     getCharacters: data => data.text.length,
     executeBatch: async (dataList) => {
-      const hash = await sha256Hex(...dataList.map(d => d.hash))
+      const hash = `translation:${dataList[0].cacheGeneration ?? 0}:${await sha256Hex(...dataList.map(d => d.hash))}`
       const earliestScheduleAt = Math.min(...dataList.map(d => d.scheduleAt))
 
       let qualityRetry = false
@@ -230,7 +264,7 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
           throw error
         }
       }
-      return requestQueueFor(providerConfig).enqueue(thunk, scheduleAt, hash)
+      return requestQueueFor(providerConfig).enqueue(thunk, scheduleAt, `translation:${data.cacheGeneration ?? 0}:${hash}`)
     },
     onError: (error, context) => {
       if (context.willRetry) {
@@ -252,6 +286,8 @@ export function setUpWebPageTranslationQueue() {
   const limits = new ServiceLimitsStore()
   const { requestQueueFor, batchQueue } = createTranslationQueues(getTranslatePrompt, limits)
 
+  onMessage("clearTranslationCache", clearTranslationCache)
+
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== HOVER_STREAM_PORT)
       return
@@ -266,9 +302,10 @@ export function setUpWebPageTranslationQueue() {
       if (started || controller.signal.aborted)
         return
       started = true
+      const cacheGeneration = translationCacheGeneration
       void (async () => {
         try {
-          const cached = await getCachedTranslation(data.hash, data.text, data.langConfig)
+          const cached = await getCachedTranslation(data.hash, data.text, data.langConfig, cacheGeneration)
           controller.signal.throwIfAborted()
           if (cached) {
             if (cached.targetCode)
@@ -319,10 +356,10 @@ export function setUpWebPageTranslationQueue() {
             finally {
               clearTimeout(timeout)
             }
-          }, Date.now(), `hover:${data.hash}:${getRandomUUID()}`, 120_000)
+          }, Date.now(), `hover:${cacheGeneration}:${data.hash}:${getRandomUUID()}`, 120_000)
           controller.signal.throwIfAborted()
           if (hasCacheableTranslation(data.text, result, data.langConfig))
-            await cacheTranslation(data.hash, result)
+            await cacheTranslation(data.hash, result, cacheGeneration)
           reply({ type: "done", result })
         }
         catch (error) {
@@ -333,11 +370,12 @@ export function setUpWebPageTranslationQueue() {
   })
 
   onMessage("enqueueTranslateRequest", async (message) => {
+    const cacheGeneration = translationCacheGeneration
     const { data: { text, langConfig, providerConfig, scheduleAt, hash, customPromptsConfig, webTitle, webDescription, webContent, webSummary } } = message
 
     // Check cache first
     if (hash) {
-      const cached = await getCachedTranslation(hash, text, langConfig)
+      const cached = await getCachedTranslation(hash, text, langConfig, cacheGeneration)
       if (cached)
         return cached
     }
@@ -351,12 +389,12 @@ export function setUpWebPageTranslationQueue() {
 
     // Learned limits decide the first batch size and pace, so they must be read before the first request.
     await limits.load()
-    const data = { text, langConfig, providerConfig, hash, scheduleAt, context, customPromptsConfig: customPromptsConfig ?? DEFAULT_CONFIG.translate.customPromptsConfig }
+    const data = { text, langConfig, providerConfig, hash, scheduleAt, context, customPromptsConfig: customPromptsConfig ?? DEFAULT_CONFIG.translate.customPromptsConfig, cacheGeneration }
     const result = await batchQueue.enqueue(data)
 
     // Cache the translation result if successful
     if (hash && hasCacheableTranslation(text, result, langConfig))
-      await cacheTranslation(hash, result)
+      await cacheTranslation(hash, result, cacheGeneration)
 
     return result
   })

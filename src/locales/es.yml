@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: Buscar idiomas…
   noLanguagesFound: No se encontraron idiomas
 popup:
+  clearTranslationCache:
+    label: Vaciar caché
+    description: Elimina las traducciones guardadas de todas las páginas. La próxima traducción enviará una nueva solicitud.
+    clearing: Vaciando…
+    cleared: Caché de traducción vaciada
+    failed: Error al vaciar. Reintentar.
   serviceSwitch:
     switchLabel: "Servicio actual: $1. Cambiar servicio"
     title: Cambiar servicio

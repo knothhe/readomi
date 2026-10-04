@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: 搜索语言…
   noLanguagesFound: 没有找到语言
 popup:
+  clearTranslationCache:
+    label: 清空缓存
+    description: 清空所有页面已保存的译文，下次翻译会重新请求。
+    clearing: 清空中…
+    cleared: 翻译缓存已清空
+    failed: 清空失败，请重试。
   serviceSwitch:
     switchLabel: 当前服务：$1，切换服务
     title: 切换服务

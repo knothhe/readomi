@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: Поиск языков…
   noLanguagesFound: Языки не найдены
 popup:
+  clearTranslationCache:
+    label: Очистить кэш
+    description: Удаляет сохранённые переводы всех страниц. Следующий перевод отправит новый запрос.
+    clearing: Очистка…
+    cleared: Кэш переводов очищен
+    failed: Не очищено. Повторить.
   serviceSwitch:
     switchLabel: "Текущий сервис: $1. Сменить сервис"
     title: Сменить сервис

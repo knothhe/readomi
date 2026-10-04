@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: Tìm ngôn ngữ…
   noLanguagesFound: Không tìm thấy ngôn ngữ
 popup:
+  clearTranslationCache:
+    label: Xóa bộ nhớ đệm
+    description: Xóa bản dịch đã lưu cho tất cả các trang. Lần dịch tiếp theo sẽ gửi yêu cầu mới.
+    clearing: Đang xóa…
+    cleared: Đã xóa bộ nhớ đệm bản dịch
+    failed: Không thể xóa. Thử lại.
   serviceSwitch:
     switchLabel: "Dịch vụ hiện tại: $1. Chuyển dịch vụ"
     title: Chuyển dịch vụ

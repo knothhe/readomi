@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: Search languages…
   noLanguagesFound: No languages found
 popup:
+  clearTranslationCache:
+    label: Clear cache
+    description: Clear saved translations for all pages. The next translation will make a fresh request.
+    clearing: Clearing…
+    cleared: Translation cache cleared
+    failed: Could not clear. Retry.
   serviceSwitch:
     switchLabel: "Current service: $1. Switch service"
     title: Switch service

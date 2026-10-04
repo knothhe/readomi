@@ -5,6 +5,12 @@ languageCombobox:
   searchLanguages: 搜尋語言…
   noLanguagesFound: 找不到語言
 popup:
+  clearTranslationCache:
+    label: 清空快取
+    description: 清空所有頁面已儲存的譯文，下次翻譯會重新請求。
+    clearing: 清空中…
+    cleared: 翻譯快取已清空
+    failed: 清空失敗，請重試。
   serviceSwitch:
     switchLabel: 目前服務：$1，切換服務
     title: 切換服務
