@@ -672,7 +672,7 @@ siteRules:
     duplicateIds: 每條自訂規則必須使用不同的 id。
     saveFailed: 規則未儲存，請重試。
 siteRuleAgent:
-  entry: 讓 agent 適配此網站
+  entry: 用 Agent 適配此網站
   title: 適配此網站
   problem: 哪裡翻譯不合適？
   problemPlaceholder: 可選，例如首頁 hover 無效，或譯文沒有使用豎線。
@@ -719,7 +719,7 @@ siteRuleAgent:
   openFailed: 無法開啟面板，請重新整理網頁後重試。
   unsupported: 請先開啟一個一般網頁，再適配此網站。
   manage: 管理網站規則
-  settingsHelp: 在要適配的網站開啟 Readomi 彈出視窗，選擇「讓 agent 適配此網站」。
+  settingsHelp: 在要適配的網站開啟 Readomi 彈出視窗，選擇「用 Agent 適配此網站」。
   advanced: 進階 JSON 編輯
   delete: 刪除規則
   enabled: 已啟用

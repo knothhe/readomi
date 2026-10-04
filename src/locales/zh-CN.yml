@@ -672,7 +672,7 @@ siteRules:
     duplicateIds: 每条自定义规则必须使用不同的 id。
     saveFailed: 规则没有保存，请重试。
 siteRuleAgent:
-  entry: 让 agent 适配此网站
+  entry: 用 Agent 适配此网站
   title: 适配此网站
   problem: 哪里翻译不合适？
   problemPlaceholder: 可选，例如首页 hover 无效，或译文没有使用竖线。
@@ -719,7 +719,7 @@ siteRuleAgent:
   openFailed: 无法打开面板，请刷新网页后重试。
   unsupported: 请先打开一个普通网页，再适配此网站。
   manage: 管理站点规则
-  settingsHelp: 在要适配的网站打开 Readomi 弹窗，选择“让 agent 适配此网站”。
+  settingsHelp: 在要适配的网站打开 Readomi 弹窗，选择“用 Agent 适配此网站”。
   advanced: 高级 JSON 编辑
   delete: 删除规则
   enabled: 已启用
