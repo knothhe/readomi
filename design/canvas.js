@@ -6,6 +6,8 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Video-Player-X-Ad-Toolbar.html", title: "X · 广告顶部栏与底部播放栏，入口在全屏前", x: 0, y: 90500, w: 720, h: 520 },
+    { file: "Video-Player-X-Ad-Toolbar-Unavailable.html", title: "X · 仅广告操作栏可用，无 Readomi 入口", x: 800, y: 90500, w: 720, h: 520 },
     { file: "Video-Player-Toolbar-Unavailable.html", title: "播放器 · 原生工具栏不可用，无入口", x: 0, y: 89100, w: 720, h: 520 },
     { file: "Video-Player-Toolbar-Crowded.html", title: "播放器 · 320 px 空间不足，无入口", x: 800, y: 89100, w: 320, h: 320 },
     { file: "Video-Player-Menu-Hidden.html", title: "播放器 · 菜单与原生播放条一同隐藏", x: 1200, y: 89100, w: 720, h: 520 },
@@ -212,6 +214,7 @@ window.READOMI_CANVAS = {
     { file: "Quality-Prompt-Default.html", title: "译文质量 · 恢复默认待应用", x: 0, y: 40600, w: 1120, h: 1460 },
   ],
   notes: [
+    { text: "X 广告：访问 CTA、广告选项和跳过按钮均不作为播放工具栏。入口仅在真实底部播放栏的右侧工具组、全屏按钮前；仅广告操作栏可用时无入口。", x: 0, y: 90320, maxW: 1520 },
     { text: "弹窗网站排除：平时仅一行标签与开关。完整域名及影响范围在悬停提示与读屏描述中；保存中、失败和不可用按需显示状态，只有其他规则托管时显示管理入口。行为保持独立。", x: 0, y: 89620, maxW: 3200 },
     { text: "控件站点白名单：YouTube / youtube-nocookie / X / Twitter。Bilibili 搜索和主播放器均保留原生工具栏；通用 HTML5 字幕自动翻译仍可使用，但不注入 Readomi 控件。不增加按网站隐藏工具栏的弹窗开关。", x: 0, y: 88120, maxW: 2400 },
     { text: "播放器控件只位于原生工具栏：播放条隐藏时入口与菜单一同隐藏，鼠标移动使原生栏恢复后回到同一位置。菜单和键盘焦点不覆盖原生显隐；无栏或空间不足时无入口，禁止右下角回退。字幕继续正常显示。", x: 0, y: 87120, maxW: 2200 },
