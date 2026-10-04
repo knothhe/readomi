@@ -6,6 +6,11 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    {"file": "Page-Threads-Multi-Paragraph-Streaming.html", "title": "Threads · 多段原文与保留分段的流式译文", "x": 0, "y": 146400, "w": 960, "h": 820},
+    {"file": "Page-Threads-Multi-Paragraph-Ready.html", "title": "Threads · 完成后保留原文段落与竖线样式", "x": 1040, "y": 146400, "w": 960, "h": 820},
+    {"file": "Page-Reddit-Reading-Streaming.html", "title": "Reddit · 首页整帖译文与详情竖线 · 流式", "x": 0, "y": 147450, "w": 1200, "h": 900},
+    {"file": "Page-Reddit-Reading-Ready.html", "title": "Reddit · 首页整帖译文与详情竖线 · 完成", "x": 1280, "y": 147450, "w": 1200, "h": 900},
+    {"file": "Page-Reddit-Reading-Waiting.html", "title": "Reddit · 原文后图片前 · 等待位置与流式/完成一致", "x": 0, "y": 148550, "w": 1200, "h": 900},
     { file: "Page-Hover-Chat-Ready.html", title: "悬停 · 聊天正文翻译 · 输入框保持空白", x: 0, y: 150050, w: 960, h: 620 },
     { file: "Page-Hover-Chat-Typing.html", title: "悬停 · 已聚焦输入框 · 反引号正常输入", x: 1040, y: 150050, w: 960, h: 620 },
     { file: "Popup-Clear-Translation-Cache-Default.html", title: "弹窗 · 全局清空缓存 · 默认", x: 0, y: 129000, w: 320, h: 556 },
@@ -252,6 +257,7 @@ window.READOMI_CANVAS = {
     { file: "Quality-Prompt-Default.html", title: "译文质量 · 恢复默认待应用", x: 0, y: 40600, w: 1120, h: 1460 },
   ],
   notes: [
+    {"text": "Threads / Reddit 内置适配展示目标：首页 hover 与网页翻译同效果；Threads 整帖一次请求、同一译文容器保留多段结构。Reddit 首页保留完整标题与摘录/正文，原文之后、媒体之前，通过 text-body named slot 只显示一个竖线译文容器包含翻译标题与正文，等待/流式/完成位置一致，每帖一次请求，不把图片、点赞、分享元数据纳入译文；详情保持原设计。本次撤回首页标题/摘录分别插入译文的旧稿目标，流式与完成均按整帖展示，实际行为待用户确认。", "x": 0, "y": 146220, "maxW": 2600},
     { text: "反引号悬停键冲突：开启悬停翻译并选择反引号，鼠标指向可翻译正文且当前不在编辑或输入法组合上下文时，捕获阶段认领反引号直到松开，阻止网站抢走字符并聚焦消息框。点按或长按仍只翻译一次；已聚焦输入框时保留正常输入。其他触发方式沿用现有行为，无需域名判断、新设置或新文案。", x: 0, y: 149840, maxW: 2000 },
     { text: "弹窗清空缓存：底部服务名、词首强调与设置保持原位，以次级文字入口清空所有页面已保存的译文。等待时按钮禁用；成功或失败文案原位显示，3秒后回到默认，失败也可直接重试。当前页面与已有译文保留，下次翻译重新请求；不清网页摘要、设置或密钥。", x: 0, y: 128840, maxW: 1520 },
     { text: "译文校验：检测到语言方向或内容不符合要求时自动重试，原文保留并继续显示现有等待标记；重试仍失败时，复用内联失败原因与重试按钮。有效译文通过校验后才替换等待标记；不增加设置项。", x: 0, y: 127890, maxW: 3040 },

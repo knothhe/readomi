@@ -48,12 +48,70 @@
 避免临时展示内部占位符。对应 `Page-Inline-Math-Waiting.html` 与
 `Page-Inline-Math-Ready.html`；普通文字继续跟随流式设置。
 
+### 显式翻译组
+
+站点规则可用 `translationGroups: [{ containerSelector, sourceSelectors, placement?, slot? }]`
+把多个指定正文片段作为一组。`containerSelector` 识别组容器；每个容器只负责一组。
+`sourceSelectors` 相对该容器查询后代，支持 `:scope`，只提取 light DOM 正文并保留段落，
+不因整帖分组而纳入图片、操作按钮或其他元数据，也不穿透 Shadow DOM。
+先按 `sourceSelectors` 声明顺序收集，每个选择器的命中按 DOM 顺序；节点去重，嵌套源仅保留最外层。
+最终保留来源列表顺序，不全局重新按 DOM 排序。
+每组一次请求、同一个译文容器，hover 与网页翻译使用相同分组和渲染。
+
+Hover 目标认领既可使用当前 include 正文段落，也可使用有允许 source 正文的已声明 group。
+反引号的同步捕获判断必须识别 group，不能仅用 owner 是否命中 include 来决定可翻译性。
+组必须至少有一项允许翻译、非空且可见的 source；空、已排除、隐藏、editable 或停止的组
+不消费反引号。识别组只决定正文来源与请求归属，不能把 owner 整体扩入 include 或整块提取，
+也不重新开启被排除的区域。输入框焦点、编辑区事件来源及输入法组合继续保留打字。
+仅译文模式中，可见的组译文仍可认领按键以恢复被扩展隐藏的原文。
+交互契约详见 `hover-shortcut-flow.md`。
+
+多个匹配规则按先后应用时，相同 `containerSelector` 的后定义覆盖前定义，
+`sourceSelectors` 不做集合合并；`sourceSelectors: []` 可停止对应组。
+`placement` 默认 `append`：把译文追加为容器子节点，宿主必须可以显示新增节点，
+Shadow DOM 宿主未指定 `slot` 时需有可见 default slot；可通过 `slot` 指定宿主已有的 named slot。
+`slot` 为非空白字符串，且只用于 `append`；`after` 在组容器之后插入译文，不能同时提供 `slot`。
+插入位置只决定译文位置，译文样式继续遵循读者设置。
+
 ## X
 
 采用陪读蛙细分的正文范围、用户名／侧栏／视频排除、链接保留和解除正文截断。
 Readomi 的整条 tweetText 保持一个块级段落并独立展示译文；引用条等样式继续
 跟随「网页阅读」设置。流式与完成状态沿用 `Page-X-Tweet-Streaming.html`
 和 `Page-X-Tweet-Ready.html`，避免流式结束后与正文混排。
+
+## Threads 与 Reddit
+
+Threads 的本地兼容处理沿用「适配 Threads 首页翻译」会话的最终规则：
+只解除包住帖子正文的误排除，保留导航与操作区域过滤，识别整帖正文容器。
+正文中的多段 `div` 按一个帖子发起一次请求，但提取时保留真实块级段落边界；
+译文在原文末尾的同一个块中保留对应段落，继续使用读者选择的竖线等样式。
+流式输出与完成态都保留换行，不在完成时增加额外一行空白。
+对应 `Page-Threads-Multi-Paragraph-Streaming.html` 和
+`Page-Threads-Multi-Paragraph-Ready.html`；图内文字为原创结构示例。
+
+Reddit 首页普通帖子 `shreddit-post` 与广告帖 `shreddit-ad-post` 均可声明自己的整帖分组。
+普通帖来源仍限于标题与摘录/正文；广告帖来源限于直属 `div[slot="title"]`
+和可选的 `delegated-link[slot="text-body"] > .md` 正文，不提取广告 owner 的整体文本。
+普通帖透明覆盖链接与广告帖直属 `delegated-link[slot="full-post-link"]`
+只作为卡片命中入口，不作为正文提取对象。
+键盘 hover 从标题、正文或该覆盖链接均进入同一 card group；同步按键认领按该组允许的 source 判断，
+无需把整个卡片纳入 include 或正文提取。标题与摘录/正文在一组内保留原有段落，
+每帖一次请求，完整原文之后只显示同一个竖线等样式的译文容器，
+不再对标题和段落分别插入译文。文字帖顺序为原文→整帖译文→操作栏；
+图片帖为原文→整帖译文→媒体→操作栏；Reddit 分组指定 `slot: "text-body"`，
+通过现有正文 named slot 展示译文。等待、流式和完成统一位于原文末尾、图片之前，
+不在不同阶段使用媒体后的 default slot 导致位置跳动。
+普通帖与广告帖均使用 `text-body` named slot，标题图片广告没有正文时也在标题后、媒体前显示译文。
+图片、投票、分享、品牌/用户名、`Ad` 标识、`Learn More` 广告 CTA 和其他元数据不参与正文提取；
+Ad 与 CTA 保持原文，CTA 位于媒体后，原链接行为保留。
+详情本轮保持原设计：标题、正文与实际段落的译文另起并遵循当前竖线等样式。
+对应 `Page-Reddit-Reading-Waiting.html`、`Page-Reddit-Reading-Streaming.html`
+与 `Page-Reddit-Reading-Ready.html`；三板第一帖为普通帖，第二帖为虚构 QuietNotes 图片广告。
+
+这两项兼容规则随对应内置规则开关停用，用户规则仍最后叠加。
+本轮基于引用会话、只读 DOM 和源码实现，实际翻译测试由用户完成；
+链接上的鼠标长按仍沿用当前事件限制。
 
 原生视频字幕的来源轨、视频选择、播放器切换和控件避让详见
 `video-subtitle-flow.md`。字号默认随视频窗口宽度缩放，保留固定字号可选。
