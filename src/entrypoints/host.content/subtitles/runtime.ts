@@ -44,6 +44,9 @@ interface SubtitleRenderer {
 }
 
 function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, onStyleChange: (patch: Partial<SubtitleStyle>) => void): SubtitleRenderer {
+  const view = video.ownerDocument.defaultView
+  let disposed = false
+  let positionFrame: number | undefined
   let config = initialConfig
   let appearance = config.features.subtitleStyle
   let renderedPosition = appearance.position
@@ -109,6 +112,19 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     host.style.left = `${rect.left + centre}px`
     host.style.top = `${rect.top + rect.height * renderedPosition.y / 100}px`
   }
+  // Fixed captions need to follow viewport geometry at scroll speed, separate
+  // from the slower caption and translation polling.
+  const schedulePosition = () => {
+    if (disposed || positionFrame !== undefined || !view)
+      return
+    positionFrame = view.requestAnimationFrame(() => {
+      positionFrame = undefined
+      if (!disposed && video.isConnected && host.isConnected)
+        positionCaption()
+    })
+  }
+  view?.addEventListener("scroll", schedulePosition, { capture: true, passive: true })
+  view?.addEventListener("resize", schedulePosition)
   const renderAppearance = () => {
     box.setAttribute("aria-label", i18n.t("subtitleStyle.dragHint"))
     box.title = i18n.t("subtitleStyle.dragHint")
@@ -221,6 +237,11 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
       tick()
     },
     dispose: () => {
+      disposed = true
+      view?.removeEventListener("scroll", schedulePosition, true)
+      view?.removeEventListener("resize", schedulePosition)
+      if (positionFrame !== undefined)
+        view?.cancelAnimationFrame(positionFrame)
       disposeDrag()
       timeline?.dispose()
       translations.dispose()
