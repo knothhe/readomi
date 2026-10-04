@@ -26,7 +26,11 @@ export type HoverStreamReply
  * Typography comes from the final text container. Streaming renderers call
  * hideSpinner when the first text becomes visible, before the request finishes.
  */
-export type PageTranslationRequest = ((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void, onTargetLanguage?: (targetCode: LangCodeISO6393) => void) => Promise<string>) & { showSpinner?: boolean }
+export type PageTranslationRequest = ((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void, onTargetLanguage?: (targetCode: LangCodeISO6393) => void) => Promise<string>) & {
+  showSpinner?: boolean
+  /** A source group can invalidate the owning hover session and its network request. */
+  cancel?: () => void
+}
 
 export interface PageTranslationRequestOptions {
   onPartial?: (text: string) => void

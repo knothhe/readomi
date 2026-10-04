@@ -44,13 +44,21 @@ describe("imported Read Frog site rules", () => {
 
   it("accepts every imported pattern and selector", () => {
     const probe = document.createDocumentFragment()
-    for (const rule of BUILT_IN_SITE_RULES) {
+    for (const rule of [...BUILT_IN_SITE_RULES, ...READOMI_SITE_RULES]) {
       const patterns = [...(Array.isArray(rule.matches) ? rule.matches : [rule.matches]), ...(rule.excludeMatches ?? [])]
       for (const pattern of patterns) expect(normalizeUrlPattern(pattern), `${rule.id}: ${pattern}`).not.toBeNull()
       for (const [key, value] of Object.entries(rule)) {
         if (key.toLowerCase().includes("selectors") && Array.isArray(value)) {
-          for (const selector of value) expect(() => probe.querySelector(selector), `${rule.id}: ${selector}`).not.toThrow()
+          for (const selector of value) {
+            if (typeof selector !== "string")
+              throw new Error(`${rule.id}: ${key} contains a non-string selector`)
+            expect(() => probe.querySelector(selector), `${rule.id}: ${selector}`).not.toThrow()
+          }
         }
+      }
+      for (const group of rule.translationGroups ?? []) {
+        for (const selector of [group.containerSelector, ...group.sourceSelectors])
+          expect(() => probe.querySelector(selector), `${rule.id}: ${selector}`).not.toThrow()
       }
     }
   })

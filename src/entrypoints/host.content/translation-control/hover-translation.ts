@@ -89,7 +89,7 @@ export function bindHoverTranslation(target: Document = document) {
           void translateTextForPage(text, { onPartial, onTargetLanguage: onTarget, signal }).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort))
         })
         return new Promise<string>((resolve, reject) => requests.push({ result, resolve, reject }))
-      }, { showSpinner: true })
+      }, { showSpinner: true, cancel: () => request.abort() })
       const finished = translateWalkedElement(block, walkId, config, true, signal, translateGroup)
       // The walker registers every group synchronously. Release their finished
       // results together so a paragraph with several groups settles at once.

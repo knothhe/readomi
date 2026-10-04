@@ -3,9 +3,12 @@ import { getLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
+import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { hasNoWalkAncestor, isDontWalkIntoAndDontTranslateAsChildElement, isDontWalkIntoButTranslateAsChildElement, isHTMLElement } from "@/utils/host/dom/filter"
 import { deepQueryTopLevelSelector } from "@/utils/host/dom/find"
+import { findTranslationGroup } from "@/utils/host/dom/translation-group"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
+import { invalidateTranslationGroupIfChanged } from "@/utils/host/translate/core/translation-group"
 import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
 import { translateTextForPageTitle } from "@/utils/host/translate/translate-variants"
@@ -380,6 +383,13 @@ export class PageTranslationManager implements IPageTranslationManager {
       return
     }
 
+    if (container.closest(`.${CONTENT_WRAPPER_CLASS}`))
+      return
+
+    // A new paragraph inside a feed post belongs to its existing group, rather
+    // than becoming a second translation inserted into the excerpt.
+    container = findTranslationGroup(container, config)?.container ?? container
+
     // Skip if container has an ancestor that should not be walked into
     if (hasNoWalkAncestor(container, config))
       return
@@ -483,6 +493,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     mutationObserver.observe(container, {
       childList: true,
       subtree: true,
+      characterData: true,
       attributes: true,
       attributeFilter: ["style", "class", "hidden", "aria-hidden"],
     })
@@ -502,7 +513,17 @@ export class PageTranslationManager implements IPageTranslationManager {
       return
     }
 
+    const changedGroups = new Set<HTMLElement>()
     for (const rec of records) {
+      const target = isHTMLElement(rec.target) ? rec.target : rec.target.parentElement
+      if (target && !target.closest(`.${CONTENT_WRAPPER_CLASS}`)) {
+        const group = findTranslationGroup(target, config)
+        if (group && !changedGroups.has(group.container) && invalidateTranslationGroupIfChanged(group)) {
+          changedGroups.add(group.container)
+          flushBatchedOperations()
+          void this.observeTopLevelParagraphs(group.container, config).catch(error => this.reportError("Failed to observe changed post:", error))
+        }
+      }
       if (rec.type === "childList") {
         rec.addedNodes.forEach((node) => {
           if (isHTMLElement(node)) {

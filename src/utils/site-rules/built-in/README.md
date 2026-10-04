@@ -44,12 +44,51 @@ It validates selectors separately and rejects CSS fragments that load external
 resources, use legacy executable declarations, or exceed the existing 8 KB CSS
 limit. The imported JSON retains every original field and its original bytes.
 
-`READOMI_SITE_RULES` in `index.ts` holds two compatibility fixes independently
-of the imported data: X tweet translations remain separate paragraphs using
-the selected translation style, and Engoo keeps Readomi's existing exercise
-block handling. Disabling the corresponding upstream rule (`twitter` or
-`autoHeight`) also disables its compatibility fix. User rules apply last, so
-their selector removals and threshold choices still take precedence.
+`READOMI_SITE_RULES` in `index.ts` holds compatibility fixes independently of
+the imported data: X tweet translations remain separate paragraphs using the
+selected translation style; Engoo keeps Readomi's exercise block handling;
+Threads recognizes a whole post, narrows its ancestor exclusions, and keeps
+multi-paragraph posts in one translation; Reddit resolves feed card overlay
+links to their posts, translates feed titles and text bodies as one block, and
+keeps the selected paragraph style in post details. Disabling the corresponding upstream rule (`twitter`,
+`autoHeight`, `threads`, or `reddit`) also disables its compatibility fix.
+User rules apply last, so their selector removals and threshold choices still
+take precedence.
+
+`translationGroups` separates a group's owner from its ordered light-DOM
+sources. Each entry declares `containerSelector`, `sourceSelectors`, and an
+optional `placement` (`append` by default, or `after`) and `slot`. An append
+group may name an existing light-DOM slot for both its stream and final
+translation; `after` does not use a slot. Agent documents reject `after` with
+`slot`; the lenient stored-rule resolver ignores that slot. A later matching rule
+replaces the entry with the same container selector; `sourceSelectors: []`
+disables that group without changing other groups. The source list is the
+extraction boundary: ordinary `includeSelectors` only gate paragraph selection
+and do not filter a container's extracted text.
+
+Reddit's feed group is limited to `shreddit-post` or `shreddit-ad-post` with a
+direct `a[slot='full-post-link']` or `delegated-link[slot='full-post-link']`.
+The delegated link's shadow anchor can locate the same card group without
+supplying its hidden advertisement copy as source text. It reads the title
+followed by the light-DOM `.md` text body, with a text-body fallback when `.md`
+is absent. Credit bars, menus, flair, Ad labels, call-to-action buttons, media,
+actions and hidden copies remain outside the source list. The translation is
+appended through the card's `text-body` slot, after readable
+source text and before images or other media. Image-only posts use that same
+slot for their title translation, so stream and final results have one position.
+The card owns cancellation and cleanup; translation-only mode
+replaces the declared readable sources rather than the whole card. Detail
+pages retain their title and paragraph rules. The card DOM and slot placement
+were inspected read-only; translation behavior remains for the user to verify.
+
+`readomi-threads.ts` is based on the final rule document from the local
+“适配 Threads 首页翻译” task (2026-10-05), including its whole-post grouping
+and stream/final spacing adjustment. The new extraction/rendering change
+preserves natural paragraph boundaries inside that one group. The DOM of
+`https://www.threads.com/@justjummy/post/DeC6GygIC8T` and Reddit's card feed
+was inspected read-only; this integration has not been run through translation
+tests or browser verification. It does not install, overwrite, or remove an
+existing user rule.
 
 To update the data, replace `rules.json` with the upstream file, update the
 source commit and hash above, and run the site-rules tests. Do not mechanically

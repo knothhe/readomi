@@ -1,7 +1,8 @@
 import type { Config } from "@/types/config/config"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
-import { getEffectiveTagSet, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isShallowInlineHTMLElement, isSiteRuleForceBlockNodeElement, isSiteRuleForceInlineNodeElement, isTranslatedContentNode, isTranslatedWrapperNode } from "./filter"
+import { getEffectiveTagSet, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isShallowInlineHTMLElement, isSiteRuleForceBlockNodeElement, isSiteRuleForceInlineNodeElement, isTranslatedContentNode, isTranslatedWrapperNode, isWalkBlockedElement } from "./filter"
 import { smashTruncationStyle } from "./style"
+import { findTranslationGroup, getTranslationGroupOwner } from "./translation-group"
 
 function isInlineTraversalElement(element: HTMLElement, config?: Config): boolean {
   if (config) {
@@ -14,6 +15,27 @@ function isInlineTraversalElement(element: HTMLElement, config?: Config): boolea
 }
 
 export function findNearestAncestorBlockNodeFor(element: Element, config?: Config) {
+  if (config) {
+    const group = findTranslationGroup(element, config)
+    if (group) {
+      if (getTranslationGroupOwner(element))
+        return group.container
+      let current: Element | null = element
+      let blocked = false
+      while (current && current !== group.container) {
+        // A site's explicitly inline overlay can locate its readable siblings;
+        // excluded metadata, media and action subtrees remain hover boundaries.
+        if (isHTMLElement(current) && isWalkBlockedElement(current, config) && !isSiteRuleForceInlineNodeElement(current, config)) {
+          blocked = true
+          break
+        }
+        const root = current.getRootNode()
+        current = current.parentElement ?? (root instanceof ShadowRoot ? root.host : null)
+      }
+      if (!blocked)
+        return group.container
+    }
+  }
   const startElement = element.closest(`.${CONTENT_WRAPPER_CLASS}`)?.parentElement || element
   let currentNode = startElement
   while (currentNode && currentNode.parentElement && isHTMLElement(currentNode) && isInlineTraversalElement(currentNode, config)) {

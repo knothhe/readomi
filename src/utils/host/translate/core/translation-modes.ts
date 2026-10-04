@@ -5,23 +5,28 @@ import type { TransNode } from "@/types/dom"
 import {
   CONTENT_WRAPPER_CLASS,
   NOTRANSLATE_CLASS,
+  TRANSLATION_ERROR_CONTAINER_CLASS,
   TRANSLATION_MODE_ATTRIBUTE,
   WALKED_ATTRIBUTE,
 } from "../../../constants/dom-labels"
-import { batchDOMOperation } from "../../dom/batch-dom"
+import { batchDOMOperation, flushBatchedOperations } from "../../dom/batch-dom"
 import { isBlockTransNode, isCustomForceBlockTranslation, isHTMLElement, isNaturalBlockTransNode, isTextNode, isTransNode } from "../../dom/filter"
 import { unwrapDeepestOnlyHTMLChild } from "../../dom/find"
 import { getOwnerDocument } from "../../dom/node"
+import { getTranslationGroup } from "../../dom/translation-group"
 import { extractTextContent } from "../../dom/traversal"
 import { extractInlineAtomText, renderInlineAtomTranslation } from "../dom/inline-atoms"
-import { removeTranslatedWrapperWithRestore } from "../dom/translation-cleanup"
+import { canReplaceOriginalNodes, markOriginalNodesReplaced, rememberOriginalNodes } from "../dom/original-nodes"
+import { removeShadowHostInTranslatedWrapper, removeTranslatedWrapperWithRestore } from "../dom/translation-cleanup"
 import { insertTranslatedNodeIntoWrapper } from "../dom/translation-insertion"
 import { findPreviousTranslatedWrapperInside } from "../dom/translation-wrapper"
 import { shouldFilterSmallParagraph } from "../filter-small-paragraph"
 import { prepareTranslationText } from "../text-preparation"
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { createSpinnerInside, getTranslatedTextAndRemoveSpinner } from "../ui/spinner"
+import { resolveTranslationLayout, setPendingTranslationLayout } from "../ui/translation-layout"
 import { isNumericContent } from "../ui/translation-utils"
+import { translateTranslationGroup } from "./translation-group"
 import { isTranslatingInWalk, MARK_ATTRIBUTES_REGEX, markTranslatingInWalk, originalContentMap, unmarkTranslatingInWalk } from "./translation-state"
 
 const HTML_COMMENT_RE = /<!--[\s\S]*?-->/g
@@ -67,6 +72,11 @@ export async function translateNodesBilingualMode(
   signal?: AbortSignal,
   translateRequest?: PageTranslationRequest,
 ): Promise<void> {
+  const group = nodes.length === 1 && isHTMLElement(nodes[0]) ? getTranslationGroup(nodes[0], config) : undefined
+  if (group) {
+    await translateTranslationGroup(group, walkId, config, toggle, signal, translateRequest)
+    return
+  }
   const transNodes = nodes.filter(node => isTransNode(node))
   if (transNodes.length === 0 || signal?.aborted) {
     return
@@ -95,8 +105,11 @@ export async function translateNodesBilingualMode(
         return
       }
       else {
+        // The next attempt must see the old wrapper removed, rather than
+        // recursively finding the same pending DOM operation.
+        flushBatchedOperations()
         unmarkTranslatingInWalk(nodes, walkId)
-        void translateNodesBilingualMode(nodes, walkId, config, toggle, false, signal, translateRequest)
+        await translateNodesBilingualMode(nodes, walkId, config, toggle, false, signal, translateRequest)
         return
       }
     }
@@ -137,6 +150,8 @@ export async function translateNodesBilingualMode(
     batchDOMOperation(insertOperation)
 
     const typographyElement = isTextNode(targetNode) || transNodes.length > 1 ? targetNode.parentElement ?? undefined : targetNode
+    const layout = resolveTranslationLayout(targetNode, forceBlockTranslation, config, transNodes)
+    setPendingTranslationLayout(typographyElement, layout)
     const realTranslatedText = await getTranslatedTextAndRemoveSpinner(nodes, requestText, spinner, translatedWrapperNode, signal, translateRequest, typographyElement)
     if (signal?.aborted) {
       batchDOMOperation(() => translatedWrapperNode.remove())
@@ -164,6 +179,7 @@ export async function translateNodesBilingualMode(
       config,
       transNodes,
       atomExtraction.atoms.length ? (node, text) => renderInlineAtomTranslation(node, text, atomExtraction) : undefined,
+      layout,
     )
   }
   finally {
@@ -179,6 +195,11 @@ export async function translateNodeTranslationOnlyMode(
   signal?: AbortSignal,
   translateRequest?: PageTranslationRequest,
 ): Promise<void> {
+  const group = nodes.length === 1 && isHTMLElement(nodes[0]) ? getTranslationGroup(nodes[0], config) : undefined
+  if (group) {
+    await translateTranslationGroup(group, walkId, config, toggle, signal, translateRequest)
+    return
+  }
   const isTransNodeAndNotTranslatedWrapper = (node: Node): node is TransNode => {
     if (isHTMLElement(node) && node.classList.contains(CONTENT_WRAPPER_CLASS))
       return false
@@ -244,19 +265,22 @@ export async function translateNodeTranslationOnlyMode(
 
     const finalTranslatedWrapper = existedTranslatedWrapperOutside ?? existedTranslatedWrapper
     if (finalTranslatedWrapper && isHTMLElement(finalTranslatedWrapper)) {
-      removeTranslatedWrapperWithRestore(finalTranslatedWrapper)
+      if (finalTranslatedWrapper.querySelector(`.${TRANSLATION_ERROR_CONTAINER_CLASS}`)) {
+        // A failed attempt has not replaced its source nodes. Keep those live
+        // nodes for Retry instead of recreating them from an HTML snapshot.
+        removeShadowHostInTranslatedWrapper(finalTranslatedWrapper)
+        batchDOMOperation(() => finalTranslatedWrapper.remove())
+      }
+      else {
+        removeTranslatedWrapperWithRestore(finalTranslatedWrapper)
+      }
       if (toggle) {
         return
       }
       else {
-        // In translationOnly mode, removeTranslatedWrapperWithRestore uses innerHTML to restore content,
-        // which destroys the original DOM nodes and creates new ones. The 'nodes' array still references
-        // the old detached nodes, and targetNode can't reference to the new dom added by innerHTML anymore.
-        // Therefore, by recursively calling translateNodeTranslationOnlyMode here with the
-        // same nodes array, we ensure the translation uses the newly created DOM elements since the
-        // function will re-query and find the correct parent and child nodes from the restored DOM.
+        flushBatchedOperations()
         unmarkTranslatingInWalk(nodes, walkId)
-        void translateNodeTranslationOnlyMode(nodes, walkId, config, toggle, signal, translateRequest)
+        await translateNodeTranslationOnlyMode(nodes, walkId, config, toggle, signal, translateRequest)
         return
       }
     }
@@ -302,6 +326,7 @@ export async function translateNodeTranslationOnlyMode(
     translatedWrapperNode.setAttribute(TRANSLATION_MODE_ATTRIBUTE, "translationOnly" satisfies TranslationMode)
     translatedWrapperNode.setAttribute(WALKED_ATTRIBUTE, walkId)
     translatedWrapperNode.style.display = "contents"
+    rememberOriginalNodes(translatedWrapperNode, parentNode, allChildNodes)
     setTranslationDirAndLang(translatedWrapperNode, config)
     const spinner = createSpinnerInside(translatedWrapperNode)
     if (translateRequest && !translateRequest.showSpinner)
@@ -354,11 +379,16 @@ export async function translateNodeTranslationOnlyMode(
     batchDOMOperation(() => {
       if (signal?.aborted)
         return
+      if (!canReplaceOriginalNodes(translatedWrapperNode)) {
+        translatedWrapperNode.remove()
+        return
+      }
       // Insert translated content after the last node
       const lastChildNode = allChildNodes.at(-1)!
       lastChildNode.parentNode?.insertBefore(translatedWrapperNode, lastChildNode.nextSibling)
 
       // Remove all original nodes
+      markOriginalNodesReplaced(translatedWrapperNode)
       allChildNodes.forEach(childNode => childNode.remove())
     })
   }

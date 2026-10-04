@@ -1,5 +1,7 @@
 import type { SiteRule } from "@/types/config/site-rules"
 import { toReadomiSiteRule } from "../branding"
+import { READOMI_REDDIT_RULE } from "./readomi-reddit"
+import { READOMI_THREADS_RULE } from "./readomi-threads"
 import rules from "./rules.json"
 
 /**
@@ -29,10 +31,14 @@ export const READOMI_SITE_RULES: SiteRule[] = [
     forceBlockNodeSelectors: ["#windowexercise-2 > div > div > div.css-ep7xq6 > div > div > div.css-19m2fbm *"],
     forceBlockStyleSelectors: ["#windowexercise-2 > div > div > div.css-ep7xq6 > div > div > div.css-19m2fbm *"],
   },
+  READOMI_THREADS_RULE,
+  READOMI_REDDIT_RULE,
 ]
 
 /** Disabling the associated upstream rule also disables its compatibility fix. */
 export const READOMI_RULE_DEPENDENCIES: Record<string, string> = {
   "readomi-twitter-quote": "twitter",
   "readomi-engoo": "autoHeight",
+  "readomi-threads-post-body": "threads",
+  "readomi-reddit-reading": "reddit",
 }

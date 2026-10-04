@@ -3,6 +3,7 @@ import { act } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { createInlineHoverStreamPreview } from "../inline-hover-stream-preview"
+import { setPendingTranslationLayout } from "../translation-layout"
 
 type Preview = NonNullable<ReturnType<typeof createInlineHoverStreamPreview>>
 
@@ -15,9 +16,17 @@ function createPreview() {
   anchor.textContent = "The original paragraph stays readable while translation is pending."
   anchor.style.cssText = "display:block;font-size:16px;line-height:24px;box-sizing:border-box"
   document.body.append(anchor)
+  setPendingTranslationLayout(anchor, "block")
   const preview = createInlineHoverStreamPreview(anchor, DEFAULT_CONFIG, vi.fn())!
   previews.push(preview)
   return { anchor, preview }
+}
+
+function registerBlock(preview: Preview, anchor: HTMLElement, onTextVisible?: () => void) {
+  const update = preview.register(anchor, onTextVisible)
+  if (!update)
+    throw new Error("A resolved block translation must register a streaming preview")
+  return update
 }
 
 function advanceFrame() {
@@ -64,13 +73,13 @@ afterEach(() => {
 describe("inline hover preview visibility", () => {
   it("keeps preserved output unmounted and applies target direction independently per group", async () => {
     const { anchor, preview } = createPreview()
-    const kept = preview.register(anchor)
+    const kept = registerBlock(preview, anchor)
     act(() => kept(""))
     advanceFrame()
     expect(anchor.querySelector("[data-readomi-inline-preview]")).toBeNull()
 
-    const arabic = preview.register(anchor)
-    const english = preview.register(anchor)
+    const arabic = registerBlock(preview, anchor)
+    const english = registerBlock(preview, anchor)
     act(() => {
       arabic.setTargetLanguage("arb")
       english.setTargetLanguage("eng")
@@ -99,7 +108,7 @@ describe("inline hover preview visibility", () => {
   ])("keeps waiting for visible text after %s", (_description, partial) => {
     const { anchor, preview } = createPreview()
     const onTextVisible = vi.fn()
-    const update = preview.register(anchor, onTextVisible)
+    const update = registerBlock(preview, anchor, onTextVisible)
 
     act(() => update(partial))
     advanceFrame()
@@ -115,7 +124,7 @@ describe("inline hover preview visibility", () => {
       const host = anchor.querySelector("[data-readomi-inline-preview]")!
       expect(host.shadowRoot!.querySelector(".group")!.textContent).toBe("首段译文")
     })
-    const update = preview.register(anchor, onTextVisible)
+    const update = registerBlock(preview, anchor, onTextVisible)
 
     act(() => update("<span>&nbsp;首段译文</span>"))
     expect(onTextVisible).not.toHaveBeenCalled()
@@ -134,8 +143,8 @@ describe("inline hover preview visibility", () => {
     const { anchor, preview } = createPreview()
     const firstVisible = vi.fn()
     const secondVisible = vi.fn()
-    const updateFirst = preview.register(anchor, firstVisible)
-    const updateSecond = preview.register(anchor, secondVisible)
+    const updateFirst = registerBlock(preview, anchor, firstVisible)
+    const updateSecond = registerBlock(preview, anchor, secondVisible)
 
     act(() => {
       updateFirst("&amp")
@@ -154,7 +163,7 @@ describe("inline hover preview visibility", () => {
   it("does not report visibility when canceled before the queued reveal", () => {
     const { anchor, preview } = createPreview()
     const onTextVisible = vi.fn()
-    const update = preview.register(anchor, onTextVisible)
+    const update = registerBlock(preview, anchor, onTextVisible)
     act(() => update("即将显示的译文"))
     const dispatchedFrames = [...frames.values()]
 
@@ -171,11 +180,25 @@ describe("inline hover preview visibility", () => {
   it("allows a final result without partials to commit without claiming a preview was visible", async () => {
     const { anchor, preview } = createPreview()
     const onTextVisible = vi.fn()
-    preview.register(anchor, onTextVisible)
+    registerBlock(preview, anchor, onTextVisible)
 
     expect(await preview.finish(["完整译文"])).toBe(true)
     advanceFrame()
     expect(onTextVisible).not.toHaveBeenCalled()
     expect(anchor.querySelector("[data-readomi-inline-preview]")).toBeNull()
+  })
+
+  it("defers an inline translation until the final result without reserving a block preview", async () => {
+    const { anchor, preview } = createPreview()
+    setPendingTranslationLayout(anchor, "inline")
+    const onTextVisible = vi.fn()
+
+    expect(preview.register(anchor, onTextVisible)).toBeUndefined()
+    expect(await preview.finish(["行内译文"])).toBe(true)
+    advanceFrame()
+
+    expect(anchor.textContent).toBe("The original paragraph stays readable while translation is pending.")
+    expect(anchor.querySelector("[data-readomi-inline-preview]")).toBeNull()
+    expect(onTextVisible).not.toHaveBeenCalled()
   })
 })

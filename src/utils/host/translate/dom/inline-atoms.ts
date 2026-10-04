@@ -9,7 +9,7 @@ import { logger } from "@/utils/logger"
 import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
 import { isDontWalkIntoAndDontTranslateAsChildElement, isInlineAtomElement } from "../../dom/filter"
 import { isInsideSiteRuleSelector, querySiteRuleSelector } from "../../dom/site-rule-matching"
-import { extractTextContent } from "../../dom/traversal"
+import { extractTextContentFromNodes } from "../../dom/traversal"
 import {
   decodeInlineAtomTokens,
   encodeInlineAtomToken,
@@ -27,10 +27,11 @@ import {
  * (`requestText`) while the prose-only string every existing filter already
  * sees is kept alongside (`filterText`). After translation the placeholders
  * are located again and sanitized clones of the original elements are put in
- * their place. Paragraphs without atoms are byte-identical to the legacy path.
+ * their place. Visual block boundaries stay in the text even when traversal
+ * rules group several source paragraphs into this one request.
  */
 export interface InlineAtomExtraction {
-  /** Legacy extraction: atoms contribute "". Feeds the numeric/small-paragraph/language filters. */
+  /** Prose extraction: atoms contribute "". Feeds the numeric/small-paragraph/language filters. */
   filterText: string
   /** Prose with one `{{n}}` per renderable atom. Sent to the provider. */
   requestText: string
@@ -89,7 +90,7 @@ export function extractInlineAtomText(
     return ATOM_SENTINEL
   }
 
-  const raw = nodes.map(node => extractTextContent(node, config, { replaceElement })).join("")
+  const raw = extractTextContentFromNodes(nodes, config, { replaceElement, preserveBlockBoundaries: true })
   if (atoms.length === 0) {
     return { filterText: raw, requestText: raw, atoms, baseIndex: 0, hasProse: PROSE_RE.test(raw) }
   }
@@ -98,7 +99,7 @@ export function extractInlineAtomText(
   if (sentinelCount !== atoms.length) {
     // The page text itself contains U+FFFC, so atoms cannot be told apart from
     // it. Fall back to the legacy string rather than guess.
-    const legacy = nodes.map(node => extractTextContent(node, config)).join("")
+    const legacy = extractTextContentFromNodes(nodes, config, { preserveBlockBoundaries: true })
     return {
       filterText: legacy,
       requestText: legacy,

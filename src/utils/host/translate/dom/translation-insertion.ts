@@ -1,8 +1,8 @@
+import type { TranslationLayout } from "../ui/translation-layout"
 import type { Config } from "@/types/config/config"
 import type { TranslationNodeStyleConfig } from "@/types/config/translate"
 import type { TransNode } from "@/types/dom"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
-import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
 import {
   BLOCK_CONTENT_CLASS,
   FLOAT_WRAP_ATTRIBUTE,
@@ -10,11 +10,10 @@ import {
   NOTRANSLATE_CLASS,
   PARAGRAPH_ATTRIBUTE,
 } from "../../../constants/dom-labels"
-import { isHTMLElement, isNaturalBlockTransNode, isNaturalInlineTransNode } from "../../dom/filter"
+import { isHTMLElement } from "../../dom/filter"
 import { getOwnerDocument } from "../../dom/node"
-import { matchesSiteRuleSelector } from "../../dom/site-rule-matching"
 import { decorateTranslationNode } from "../ui/decorate-translation"
-import { isForceInlineTranslation } from "../ui/translation-utils"
+import { resolveTranslationLayout } from "../ui/translation-layout"
 
 function isFloatedElement(element: HTMLElement): boolean {
   const floatValue = window.getComputedStyle(element).float
@@ -76,6 +75,9 @@ export function addBlockTranslation(ownerDoc: Document, translatedWrapperNode: H
   const brNode = ownerDoc.createElement("br")
   translatedWrapperNode.appendChild(brNode)
   translatedNode.className = `${NOTRANSLATE_CLASS} ${BLOCK_CONTENT_CLASS}`
+  // Match the streaming renderer and keep paragraph breaks in plain-text
+  // responses, including when host styles reset every span's white-space.
+  translatedNode.style.whiteSpace = "pre-wrap"
 }
 
 export async function insertTranslatedNodeIntoWrapper(
@@ -87,37 +89,19 @@ export async function insertTranslatedNodeIntoWrapper(
   config: Config = DEFAULT_CONFIG,
   styleSources: readonly TransNode[] = [targetNode],
   renderTranslatedContent?: (node: HTMLElement, text: string) => void,
+  resolvedLayout?: TranslationLayout | null,
 ): Promise<void> {
   // Use the wrapper's owner document
   const ownerDoc = getOwnerDocument(translatedWrapperNode)
   const translatedNode = ownerDoc.createElement("span")
-  const forceInlineTranslation = isForceInlineTranslation(targetNode, config)
-  const rule = getEffectiveSiteRule(config, window.location.href)
-  const sourceMatches = (selector: string | null) => selector !== null && styleSources.some((source) => {
-    const element = isHTMLElement(source) ? source : source.parentElement
-    return element ? matchesSiteRuleSelector(element, selector) : false
-  })
-  const customForceBlock = sourceMatches(rule.forceBlockStyleSelector)
-  const customForceInline = sourceMatches(rule.forceInlineStyleSelector)
-
-  // Rule style overrides are independent of paragraph segmentation labels.
-  if (customForceBlock) {
+  const layout = resolvedLayout === undefined
+    ? resolveTranslationLayout(targetNode, forceBlockTranslation, config, styleSources)
+    : resolvedLayout
+  if (layout === "block") {
     addBlockTranslation(ownerDoc, translatedWrapperNode, translatedNode)
   }
-  else if (customForceInline) {
+  else if (layout === "inline") {
     addInlineTranslation(ownerDoc, translatedWrapperNode, translatedNode)
-  }
-  else if (forceInlineTranslation) {
-    addInlineTranslation(ownerDoc, translatedWrapperNode, translatedNode)
-  }
-  else if (forceBlockTranslation) {
-    addBlockTranslation(ownerDoc, translatedWrapperNode, translatedNode)
-  }
-  else if (isNaturalInlineTransNode(targetNode)) {
-    addInlineTranslation(ownerDoc, translatedWrapperNode, translatedNode)
-  }
-  else if (isNaturalBlockTransNode(targetNode)) {
-    addBlockTranslation(ownerDoc, translatedWrapperNode, translatedNode)
   }
   else {
     // not inline or block, maybe notranslate

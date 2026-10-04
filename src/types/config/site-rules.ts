@@ -1,11 +1,22 @@
 import { z } from "zod"
 import { MAX_CUSTOM_CSS_LENGTH } from "./translate"
 
+/** One owner, an ordered light-DOM source list, and an independent insertion position. */
+export const translationGroupSchema = z.object({
+  containerSelector: z.string(),
+  sourceSelectors: z.array(z.string()),
+  placement: z.enum(["append", "after"]).optional(),
+  slot: z.string().min(1).max(128).optional(),
+})
+
+export type TranslationGroup = z.infer<typeof translationGroupSchema>
+
 /**
  * A per-site translation rule. Built-in rules ship with the extension and user
  * rules live in config; every rule whose `matches` hits the current URL applies.
- * Array fields are unioned across matching rules; scalar fields are last-wins
- * (user rules come after built-in rules, so user values take precedence).
+ * Selector arrays are unioned across matching rules; scalar fields are last-wins.
+ * Translation groups replace by container selector. User rules come after
+ * built-in rules, so user values take precedence.
  *
  * URL patterns accept bare hostnames ("github.com"), subdomain wildcards
  * ("*.example.com"), path wildcards (e.g. "github.com/<user>/settings"), and
@@ -51,6 +62,9 @@ export const siteRuleSchema = z.object({
   "atomSelectors": z.array(z.string()).optional(),
   "atomSelectors.add": z.array(z.string()).optional(),
   "atomSelectors.remove": z.array(z.string()).optional(),
+  // Later rules replace a group with the same container selector; an empty
+  // source list disables it. These sources do not include container metadata.
+  "translationGroups": z.array(translationGroupSchema).optional(),
   // Tag-NAME lists (not CSS selectors) that patch the built-in DOM tag sets
   // (see DEFAULT_TAG_SETS in utils/constants/dom-rules). Delta-only by design:
   // there is deliberately no bare base key, so a rule can never be misread as

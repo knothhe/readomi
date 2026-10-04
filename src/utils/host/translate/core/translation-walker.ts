@@ -8,7 +8,9 @@ import {
 } from "../../../constants/dom-labels"
 import { isBlockTransNode, isHTMLElement, isNaturalBlockTransNode, isSiteRuleForceBlockStyleElement, isTextNode, isTranslatedWrapperNode, isTransNode } from "../../dom/filter"
 import { deepQueryTopLevelSelector } from "../../dom/find"
+import { getTranslationGroup } from "../../dom/translation-group"
 import { removeTranslatedWrapperWithRestore } from "../dom/translation-cleanup"
+import { translateTranslationGroup } from "./translation-group"
 import { translateNodes } from "./translation-modes"
 
 /**
@@ -25,6 +27,15 @@ export async function translateWalkedElement(
 ): Promise<void> {
   if (signal?.aborted)
     return
+
+  if (element.getAttribute(WALKED_ATTRIBUTE) !== walkId)
+    return
+
+  const group = getTranslationGroup(element, config)
+  if (group) {
+    await translateTranslationGroup(group, walkId, config, toggle, signal, translateRequest)
+    return
+  }
 
   if (!toggle && element.querySelector(`.${CONTENT_WRAPPER_CLASS}`))
     return

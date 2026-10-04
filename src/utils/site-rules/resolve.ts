@@ -1,4 +1,4 @@
-import type { SiteRule } from "@/types/config/site-rules"
+import type { SiteRule, TranslationGroup } from "@/types/config/site-rules"
 import { DEFAULT_TAG_SETS } from "@/utils/constants/dom-rules"
 import { logger } from "@/utils/logger"
 import { normalizeDisabledBuiltInRuleIds, toReadomiSiteRule } from "./branding"
@@ -45,6 +45,8 @@ export interface ResolvedSiteRule {
   preserveTextSelector: string | null
   /** Inline atoms only (formula renderers); consumed by bilingual extraction. */
   atomSelector: string | null
+  /** Ordered groups; later matching declarations take precedence. Empty sources disable a group. */
+  translationGroups: TranslationGroup[]
   /**
    * Tag-set families: `null` means no matched rule touched the family, so
    * consumers fall back to the shipped constant Set (hot path unchanged).
@@ -79,6 +81,7 @@ export const EMPTY_RESOLVED_SITE_RULE: ResolvedSiteRule = {
   forceInlineStyleSelector: null,
   preserveTextSelector: null,
   atomSelector: null,
+  translationGroups: [],
   dontWalkTags: null,
   dontWalkTagsExplicitAdds: null,
   dontWalkButTranslateTags: null,
@@ -190,6 +193,27 @@ function mergeSelectorDelta(
   return joinSelectors(mergeSelectorDeltaSet(matched, baseKey, addKey, removeKey))
 }
 
+function mergeTranslationGroups(matched: SiteRule[]): TranslationGroup[] {
+  const groups = new Map<string, TranslationGroup>()
+  for (const rule of matched) {
+    for (const group of rule.translationGroups ?? []) {
+      const containerSelector = group.containerSelector.trim()
+      const sourceSelectors = group.sourceSelectors.map(selector => selector.trim())
+      if (!containerSelector || !isValidSiteRuleSelector(containerSelector)
+        || sourceSelectors.some(selector => !selector || !isValidSiteRuleSelector(selector))) {
+        continue
+      }
+      // Move replacements to the end too: matching overlapping containers
+      // follows declaration order, including a user's replacement or disable.
+      groups.delete(containerSelector)
+      const placement = group.placement ?? "append"
+      const slot = placement === "append" ? group.slot?.trim() : undefined
+      groups.set(containerSelector, { containerSelector, sourceSelectors, placement, ...(slot ? { slot } : {}) })
+    }
+  }
+  return [...groups.values()]
+}
+
 const TAG_NAME_RE = /^[a-z][a-z0-9-]*$/i
 
 /**
@@ -267,6 +291,7 @@ function mergeTagSetDelta(
  *
  * Ordering: built-in rules (array order) first, then user rules (array order).
  * - Selector arrays are unioned across all matching rules.
+ * - Translation groups replace by container selector, retaining last declaration order.
  * - `injectedCss` is concatenated (later rules append; disabling the built-in
  *   rule is the way to replace its CSS entirely).
  * - Remaining scalars are last-wins, so user rules override built-in ones.
@@ -361,6 +386,7 @@ export function resolveSiteRule(
     ),
     preserveTextSelector: joinSelectors([...preserveTextSelectors, ...atomSelectors]),
     atomSelector: joinSelectors(atomSelectors),
+    translationGroups: mergeTranslationGroups(matched),
     dontWalkTags: mergeTagSetDelta(
       matched,
       "dontWalkTags.add",

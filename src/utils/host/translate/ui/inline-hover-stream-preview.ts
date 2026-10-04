@@ -7,33 +7,46 @@ import customTranslationNodeCss from "@/assets/styles/custom-translation-node.cs
 import translationNodePresetCss from "@/assets/styles/translation-node-preset.css?raw"
 import { BLOCK_CONTENT_CLASS, CONTENT_WRAPPER_CLASS, NOTRANSLATE_CLASS } from "@/utils/constants/dom-labels"
 import { getLanguageDirectionAndLang } from "@/utils/content/language-direction"
+import { findTranslationGroup, getTranslationGroup, registerTranslationGroupWrapper } from "../../dom/translation-group"
+import { hideGroupOriginalNodes, rememberGroupOriginalNodes, restoreGroupOriginalNodes } from "../dom/group-original-nodes"
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { SmoothPreviewText } from "./smooth-preview-text"
+import { getPendingTranslationLayout } from "./translation-layout"
 
 /** Reveal in the paragraph, reserving space in line groups. */
 export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Config, cancel: () => void) {
+  const group = getTranslationGroup(anchor, config) ?? findTranslationGroup(anchor, config)
+  if (group)
+    anchor = group.container
   const doc = anchor.ownerDocument
   const view = doc.defaultView!
   const computed = view.getComputedStyle(anchor)
   // A box with no independent block layout cannot safely reserve its own height.
-  if (!["block", "list-item", "flow-root"].includes(computed.display))
+  if (!group && !["block", "list-item", "flow-root"].includes(computed.display))
     return undefined
   const only = config.translate.mode === "translationOnly"
   const reducedMotion = view.matchMedia("(prefers-reduced-motion: reduce)").matches
   let lineHeight = Number.parseFloat(computed.lineHeight) || Number.parseFloat(computed.fontSize) * 1.65
   const inset = computed.boxSizing === "border-box" ? 0 : Number.parseFloat(computed.paddingTop) + Number.parseFloat(computed.paddingBottom) + Number.parseFloat(computed.borderTopWidth) + Number.parseFloat(computed.borderBottomWidth)
-  const originalHeight = anchor.getBoundingClientRect().height
-  const sourceText = anchor.textContent
+  const originalHeight = group ? 0 : anchor.getBoundingClientRect().height
+  const sourceText = group ? group.sources.map(source => source.textContent) : anchor.textContent
   const host = doc.createElement("span")
   host.className = `${NOTRANSLATE_CLASS} ${CONTENT_WRAPPER_CLASS}`
   host.dataset.readomiInlinePreview = "true"
-  host.style.cssText = `all:initial!important;display:block!important;position:${only ? "absolute" : "relative"}!important;visibility:visible!important;font:inherit!important;color:inherit!important;overflow:hidden!important;box-sizing:border-box!important;height:0px!important;transition:height ${reducedMotion ? 0 : 280}ms cubic-bezier(.2,.7,.2,1)!important;`
-  if (only) {
+  host.style.cssText = `all:initial!important;display:block!important;position:${only && !group ? "absolute" : "relative"}!important;visibility:visible!important;font:inherit!important;color:inherit!important;overflow:hidden!important;box-sizing:border-box!important;height:0px!important;transition:height ${reducedMotion ? 0 : 280}ms cubic-bezier(.2,.7,.2,1)!important;`
+  if (group) {
+    registerTranslationGroupWrapper(host, group.container)
+    if (group.placement === "append" && group.slot)
+      host.setAttribute("slot", group.slot)
+    if (only)
+      rememberGroupOriginalNodes(host, group.sources, () => {})
+  }
+  if (only && !group) {
     host.style.setProperty("left", computed.paddingLeft, "important")
     host.style.setProperty("right", computed.paddingRight, "important")
     host.style.setProperty("top", computed.paddingTop, "important")
   }
-  else {
+  if (!only) {
     host.style.setProperty("margin", "8px 0", "important")
   }
   setTranslationDirAndLang(host, config)
@@ -51,6 +64,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
   const groupTypography = new Map<number, CSSProperties>()
   const groupLanguages = new Map<number, ReturnType<typeof getLanguageDirectionAndLang>>()
   const completedGroups = new Set<number>()
+  const inlineGroups = new Set<number>()
   const progressCallbacks = new Map<number, (length: number) => void>()
   const completionCallbacks = new Map<number, () => void>()
   const ownedStyles = new Map<HTMLElement, Map<string, { value: string, priority: string, owned: string }>>()
@@ -100,7 +114,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       return
     reserved = next
     host.style.setProperty("height", `${reserved}px`, "important")
-    if (only) {
+    if (only && !group) {
       // Animate the paragraph's flow box as well as the overlay containing text.
       setAnchorStyle("transition", `height ${reducedMotion ? 0 : 280}ms cubic-bezier(.2,.7,.2,1)`)
       setAnchorStyle("height", `${Math.max(0, reserved - inset)}px`)
@@ -116,7 +130,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
     frame = 0
     if (disposed)
       return
-    root.render([...groups.entries()].map(([key, partial]) => {
+    root.render([...groups.entries()].filter(([key]) => !inlineGroups.has(key)).map(([key, partial]) => {
       const template = doc.createElement("template")
       template.innerHTML = partial.replace(/&(?:#x?[\da-f]*|[a-z]*)$/i, "").trimStart()
       const text = (template.content.textContent ?? "").trimStart()
@@ -137,9 +151,12 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
     if (mounted || disposed)
       return
     mounted = true
-    if (only && computed.position === "static")
+    if (only && !group && computed.position === "static")
       setAnchorStyle("position", "relative")
-    anchor.append(host)
+    if (group?.placement === "after")
+      anchor.parentNode?.insertBefore(host, anchor.nextSibling)
+    else
+      anchor.append(host)
     scheduleHeight()
   }
   const escape = (event: KeyboardEvent) => {
@@ -147,10 +164,18 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       cancel()
   }
   const observer = new view.MutationObserver(() => {
-    if (!anchor.isConnected || (!committing && anchor.textContent !== sourceText) || (mounted && !host.isConnected && !committing))
+    const latest = group ? getTranslationGroup(anchor, config) : undefined
+    const sourceChanged = group
+      ? !latest || latest.sources.length !== group.sources.length
+      || latest.sources.some((source, index) => source !== group.sources[index] || source.textContent !== (sourceText as (string | null)[])[index])
+      : anchor.textContent !== sourceText
+    if (!anchor.isConnected || (!committing && sourceChanged) || (mounted && !host.isConnected && !committing))
       cancel()
   })
   observer.observe(doc.documentElement, { childList: true, characterData: true, subtree: true })
+  const anchorRoot = anchor.getRootNode()
+  if (anchorRoot instanceof ShadowRoot)
+    observer.observe(anchorRoot, { childList: true, characterData: true, subtree: true })
   doc.addEventListener("keydown", escape, true)
   view.addEventListener("resize", scheduleHeight)
   return {
@@ -158,6 +183,14 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       const key = groups.size
       let revealed = false
       groups.set(key, "")
+      // A block preview cannot reserve an inline result's flow without changing
+      // its presentation. Keep the normal waiting indicator for these groups,
+      // then commit with the exact same layout decision as the final renderer.
+      if (!only && getPendingTranslationLayout(typographyElement) !== "block") {
+        inlineGroups.add(key)
+        completedGroups.add(key)
+        return undefined
+      }
       // Keep the flow box on the anchor, but inherit each group's typography
       // from the final renderer's insertion container. Sites such as YouTube
       // give that inner text container a different size from the outer block.
@@ -185,6 +218,10 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
         }
         if (length && only && !disposed && !committing && !sourceHidden) {
           sourceHidden = true
+          if (group) {
+            hideGroupOriginalNodes(host)
+            return
+          }
           setAnchorStyle("visibility", "hidden")
           // Explicitly visible descendants override inherited visibility.
           for (const child of anchor.querySelectorAll<HTMLElement>("*")) {
@@ -238,8 +275,10 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       // the original during replacement.
       host.remove()
       await commit()
+      if (group && only)
+        restoreGroupOriginalNodes(host)
       restoreAnchorStyles()
-      if (disposed || !mounted || reducedMotion)
+      if (group || disposed || !mounted || reducedMotion)
         return
       const after = anchor.getBoundingClientRect().height
       if (Math.abs(before - after) > 1) {
@@ -264,6 +303,8 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       view.cancelAnimationFrame(frame)
       view.cancelAnimationFrame(resizeFrame)
       host.remove()
+      if (group && only)
+        restoreGroupOriginalNodes(host)
       restoreAnchorStyles()
     },
   }

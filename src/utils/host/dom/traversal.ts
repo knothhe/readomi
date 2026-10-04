@@ -22,11 +22,61 @@ import {
   isWithinIncludeScope,
   setNaturalTransNodeKind,
 } from "./filter"
+import { getTranslationGroup } from "./translation-group"
 
 const NON_NEWLINE_WHITESPACE_RE = /[^\S\n]/
 
 export interface ExtractTextContentOptions {
   replaceElement?: (element: HTMLElement) => string | undefined
+  /** Keep visual paragraph boundaries when site rules group block children into one request. */
+  preserveBlockBoundaries?: boolean
+}
+
+function hasBlockTextLayout(element: HTMLElement): boolean {
+  // Inline atom replacement can include native MathML, whose computed style
+  // is unavailable in some DOM environments and is not an HTML block.
+  if (element.namespaceURI && element.namespaceURI !== "http://www.w3.org/1999/xhtml")
+    return false
+  const style = element.ownerDocument.defaultView?.getComputedStyle(element)
+  const display = style?.display.trim().toLowerCase() ?? ""
+  // These are visual boundaries, independent of the walk's inline/block
+  // markers. A forced-inline div still starts a paragraph on the page.
+  return !!display && display !== "none" && display !== "contents"
+    && !display.startsWith("inline") && !display.startsWith("ruby")
+    && style?.float !== "left" && style?.float !== "right"
+}
+
+export function extractTextContentFromNodes(
+  nodes: readonly Node[],
+  config: Config,
+  options: ExtractTextContentOptions = {},
+): string {
+  let text = ""
+  let previousBlock = false
+  for (const child of nodes) {
+    // TODO: support SVGElement in the future
+    if (!isTextNode(child) && !isHTMLElement(child))
+      continue
+    const childText = extractTextContent(child, config, options)
+    const hasContent = childText.trim() !== ""
+    const block = !!options.preserveBlockBoundaries && hasContent
+      && isHTMLElement(child) && child.tagName !== "BR" && hasBlockTextLayout(child)
+    if (hasContent && (block || previousBlock) && text.trim()) {
+      const before = text.trimEnd()
+      const after = childText.trimStart()
+      const boundary = text.slice(before.length) + childText.slice(0, childText.length - after.length)
+      // Nested single-child blocks do not add breaks of their own. Join only
+      // neighboring content, retaining any authored extra blank lines.
+      const lineBreaks = Math.max(2, boundary.split("\n").length - 1)
+      text = `${before}${"\n".repeat(lineBreaks)}${after}`
+    }
+    else {
+      text += childText
+    }
+    if (hasContent)
+      previousBlock = block
+  }
+  return text
 }
 
 export function extractTextContent(node: TransNode, config: Config, options: ExtractTextContentOptions = {}): string {
@@ -66,14 +116,7 @@ export function extractTextContent(node: TransNode, config: Config, options: Ext
     return ""
   }
 
-  const childNodes = [...node.childNodes]
-  return childNodes.reduce((text: string, child: Node): string => {
-    // TODO: support SVGElement in the future
-    if (isTextNode(child) || isHTMLElement(child)) {
-      return text + extractTextContent(child, config, options)
-    }
-    return text
-  }, "")
+  return extractTextContentFromNodes([...node.childNodes], config, options)
 }
 
 export function walkAndLabelElement(
@@ -100,6 +143,26 @@ export function walkAndLabelElement(
   ensureSiteRuleStyles(root instanceof ShadowRoot ? root : element.ownerDocument, config)
 
   element.setAttribute(WALKED_ATTRIBUTE, walkId)
+
+  // A declared group bypasses descendant block propagation. Its selected
+  // sources can contain headings, lists and paragraphs without splitting the
+  // post or walking the custom element's metadata/action shadow tree.
+  if (getTranslationGroup(element, config)) {
+    for (const child of element.children) {
+      if (isHTMLElement(child))
+        clearWalkLabels(child)
+    }
+    if (element.shadowRoot) {
+      for (const child of element.shadowRoot.children) {
+        if (isHTMLElement(child))
+          clearWalkLabels(child)
+      }
+    }
+    element.setAttribute(PARAGRAPH_ATTRIBUTE, "")
+    element.setAttribute(BLOCK_ATTRIBUTE, "")
+    setNaturalTransNodeKind(element, "block")
+    return { forceBlock: false, isInlineNode: false }
+  }
 
   if (element.shadowRoot) {
     for (const child of element.shadowRoot.children) {

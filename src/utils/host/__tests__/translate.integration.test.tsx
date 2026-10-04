@@ -16,7 +16,8 @@ import {
 } from "@/utils/constants/dom-labels"
 import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
-import { translateWalkedElement } from "@/utils/host/translate/node-manipulation"
+import { removeTranslatedWrapperWithRestore } from "@/utils/host/translate/dom/translation-cleanup"
+import { translateNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { translateTextForPage } from "@/utils/host/translate/translate-variants"
 import { expectNodeLabels, expectTranslatedContent, expectTranslationWrapper, MOCK_ORIGINAL_TEXT, MOCK_TRANSLATION } from "./utils"
 
@@ -188,6 +189,50 @@ describe("translate", () => {
     expect(screen.getByTestId("updated-units").querySelectorAll("br")).toHaveLength(1)
   })
 
+  it("restores the same live source nodes and event handlers after translation-only replacement", async () => {
+    render(
+      <p data-testid="live-source">
+        Read the
+        <a href="https://example.com/">linked source</a>
+        {" "}
+        before continuing.
+      </p>,
+    )
+    const paragraph = screen.getByTestId("live-source")
+    const originals = [...paragraph.childNodes]
+    const link = paragraph.querySelector("a")!
+    const click = vi.fn((event: Event) => event.preventDefault())
+    link.addEventListener("click", click)
+
+    await removeOrShowPageTranslation("translationOnly", true)
+    expect(link.isConnected).toBe(false)
+    expect(paragraph.textContent).toBe(MOCK_TRANSLATION)
+    await removeOrShowPageTranslation("translationOnly", true)
+
+    expect([...paragraph.childNodes]).toEqual(originals)
+    expect(paragraph.querySelector("a")).toBe(link)
+    link.dispatchEvent(new MouseEvent("click", { cancelable: true }))
+    expect(click).toHaveBeenCalledOnce()
+  })
+
+  it("keeps a host's new source instead of restoring stale nodes over it", async () => {
+    render(<p data-testid="replaced-source">The original source is awaiting translation.</p>)
+    const paragraph = screen.getByTestId("replaced-source")
+    const original = paragraph.firstChild!
+    await removeOrShowPageTranslation("translationOnly", true)
+    const wrapper = paragraph.querySelector<HTMLElement>(`.${CONTENT_WRAPPER_CLASS}`)!
+    const replacement = document.createElement("strong")
+    replacement.textContent = "The host supplied updated source."
+    paragraph.insertBefore(replacement, wrapper)
+
+    removeTranslatedWrapperWithRestore(wrapper)
+    flushBatchedOperations()
+
+    expect([...paragraph.childNodes]).toEqual([replacement])
+    expect(original.isConnected).toBe(false)
+    expect(paragraph.textContent).toBe("The host supplied updated source.")
+  })
+
   describe("block node with single child node", () => {
     describe("text node", () => {
       it("bilingual mode: should insert translation wrapper after original text node", async () => {
@@ -219,7 +264,7 @@ describe("translate", () => {
 
         expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0])
+        expect(wrapper).toBe(node.children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -262,7 +307,7 @@ describe("translate", () => {
         expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0].childNodes[0])
+        expect(wrapper).toBe(node.children[0].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -301,7 +346,7 @@ describe("translate", () => {
         expectNodeLabels(node, [BLOCK_ATTRIBUTE])
         expectNodeLabels(node.children[0], [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0].childNodes[0])
+        expect(wrapper).toBe(node.children[0].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -342,7 +387,7 @@ describe("translate", () => {
         expectNodeLabels(node.children[0], [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         expectNodeLabels(node.children[0].children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0].childNodes[0].childNodes[0])
+        expect(wrapper).toBe(node.children[0].children[0].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -383,7 +428,7 @@ describe("translate", () => {
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE])
         expectNodeLabels(node.children[0].children[0], [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0].childNodes[0].childNodes[0])
+        expect(wrapper).toBe(node.children[0].children[0].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -424,7 +469,7 @@ describe("translate", () => {
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         expectNodeLabels(node.children[0].children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0].childNodes[0].childNodes[0])
+        expect(wrapper).toBe(node.children[0].children[0].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -470,7 +515,7 @@ describe("translate", () => {
         expectNodeLabels(node, [BLOCK_ATTRIBUTE])
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0].childNodes[0])
+        expect(wrapper).toBe(node.children[0].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
 
@@ -521,7 +566,7 @@ describe("translate", () => {
         expectNodeLabels(node, [BLOCK_ATTRIBUTE])
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node.children[0], "translationOnly")
-        expect(wrapper).toBe(node.children[0].firstChild)
+        expect(wrapper).toBe(node.children[0].firstElementChild)
         expect(node.children[0].children).toHaveLength(1)
 
         await removeOrShowPageTranslation("translationOnly", true)
@@ -571,7 +616,7 @@ describe("translate", () => {
         expectNodeLabels(node, [BLOCK_ATTRIBUTE])
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node.children[0], "translationOnly")
-        expect(wrapper).toBe(node.children[0].firstChild)
+        expect(wrapper).toBe(node.children[0].firstElementChild)
         expect(node.children[0].children).toHaveLength(1)
 
         await removeOrShowPageTranslation("translationOnly", true)
@@ -620,7 +665,7 @@ describe("translate", () => {
 
         expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0])
+        expect(wrapper).toBe(node.children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -691,7 +736,7 @@ describe("translate", () => {
 
         expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0])
+        expect(wrapper).toBe(node.children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -741,10 +786,10 @@ describe("translate", () => {
 
         expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper1 = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper1).toBe(node.childNodes[0])
+        expect(wrapper1).toBe(node.children[0])
         const wrapper2 = expectTranslationWrapper(node.children[1], "translationOnly")
-        expect(wrapper2).toBe(node.childNodes[1].childNodes[0])
-        const wrapper3 = node.lastChild
+        expect(wrapper2).toBe(node.children[1].children[0])
+        const wrapper3 = node.lastElementChild
         expect(wrapper3).toHaveClass(CONTENT_WRAPPER_CLASS)
 
         await removeOrShowPageTranslation("translationOnly", true)
@@ -787,7 +832,7 @@ describe("translate", () => {
 
           expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
           const wrapper = expectTranslationWrapper(node, "translationOnly")
-          expect(wrapper).toBe(node.childNodes[0])
+          expect(wrapper).toBe(node.children[0])
 
           await removeOrShowPageTranslation("translationOnly", true)
           expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -1021,11 +1066,11 @@ describe("translate", () => {
         expectNodeLabels(node, [BLOCK_ATTRIBUTE])
         expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper1 = expectTranslationWrapper(node.children[0], "translationOnly")
-        expect(wrapper1).toBe(node.childNodes[0].childNodes[0])
-        const wrapper2 = node.childNodes[2]
+        expect(wrapper1).toBe(node.children[0].children[0])
+        const wrapper2 = node.children[2]
         expect(wrapper2).toHaveClass(CONTENT_WRAPPER_CLASS)
         const wrapper3 = expectTranslationWrapper(node.children[4], "translationOnly")
-        expect(wrapper3).toBe(node.childNodes[4].childNodes[0])
+        expect(wrapper3).toBe(node.children[4].children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -1068,7 +1113,7 @@ describe("translate", () => {
 
         expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
         const wrapper = expectTranslationWrapper(node, "translationOnly")
-        expect(wrapper).toBe(node.childNodes[0])
+        expect(wrapper).toBe(node.children[0])
 
         await removeOrShowPageTranslation("translationOnly", true)
         expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -1245,7 +1290,7 @@ describe("translate", () => {
       expectNodeLabels(node, [BLOCK_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
       expectNodeLabels(node.children[2], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
       const wrapper = expectTranslationWrapper(node.children[2], "translationOnly")
-      expect(wrapper).toBe(node.children[2].childNodes[0])
+      expect(wrapper).toBe(node.children[2].children[0])
 
       await removeOrShowPageTranslation("translationOnly", true)
       expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -1310,7 +1355,7 @@ describe("translate", () => {
 
       expectNodeLabels(node.children[0], [INLINE_ATTRIBUTE, PARAGRAPH_ATTRIBUTE])
       const wrapper = expectTranslationWrapper(node.children[0], "translationOnly")
-      expect(wrapper).toBe(node.children[0].childNodes[0])
+      expect(wrapper).toBe(node.children[0].children[0])
 
       await removeOrShowPageTranslation("translationOnly", true)
       expect(node.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeFalsy()
@@ -1413,6 +1458,46 @@ describe("translate", () => {
   })
 
   describe("translation errors", () => {
+    it.each([
+      ["bilingual", BILINGUAL_CONFIG],
+      ["translationOnly", TRANSLATION_ONLY_CONFIG],
+    ] as const)("%s mode: retrying a failed wrapper clears it before reusing connected source nodes", async (mode, config) => {
+      vi.mocked(translateTextForPage).mockRejectedValueOnce(new Error("Translation failed"))
+      render(
+        <p data-testid="retry-source">
+          The original
+          <em>inline source</em>
+          {" "}
+          is still readable.
+        </p>,
+      )
+      const paragraph = screen.getByTestId("retry-source")
+      const walkId = crypto.randomUUID()
+      walkAndLabelElement(paragraph, walkId, config)
+      const nodes = mode === "bilingual" ? [paragraph] : [...paragraph.childNodes]
+      await act(async () => {
+        await translateNodes(nodes, walkId, false, config)
+        flushBatchedOperations()
+      })
+      const failedWrapper = paragraph.querySelector(`.${CONTENT_WRAPPER_CLASS}`)
+      await waitForTranslationError(failedWrapper)
+
+      vi.mocked(translateTextForPage).mockImplementationOnce(async () => {
+        expect(nodes.every(node => node.isConnected)).toBe(true)
+        expect(failedWrapper?.isConnected).toBe(false)
+        return MOCK_TRANSLATION
+      })
+      await act(async () => {
+        await translateNodes(nodes, crypto.randomUUID(), false, config)
+        flushBatchedOperations()
+      })
+
+      expect(paragraph.querySelector(`.${TRANSLATION_ERROR_CONTAINER_CLASS}`)).toBeNull()
+      expect(paragraph.querySelectorAll(`.${CONTENT_WRAPPER_CLASS}`)).toHaveLength(1)
+      expect(paragraph.textContent).toContain(MOCK_TRANSLATION)
+      expect(paragraph.textContent?.includes("The original")).toBe(mode === "bilingual")
+    })
+
     it("bilingual mode: should keep original text and show inline error UI when translation fails", async () => {
       vi.mocked(translateTextForPage).mockRejectedValueOnce(new Error("Translation failed"))
 
