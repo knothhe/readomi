@@ -37,7 +37,7 @@ function player(youtube = true) {
   const onToggle = vi.fn()
   const onStyleChange = vi.fn()
   const create = () => {
-    const instance = createVideoTranslationControls(video, { enabled: true, excluded: false, appearance: DEFAULT_SUBTITLE_STYLE, onToggle, onStyleChange })
+    const instance = createVideoTranslationControls(video, { enabled: true, appearance: DEFAULT_SUBTITLE_STYLE, onToggle, onStyleChange })
     live.add(instance)
     const host = document.querySelector<HTMLElement>("[data-readomi-video-controls]")!
     const shadow = roots.get(host)!
@@ -98,20 +98,23 @@ describe("video translation controls", () => {
     expect(fixture.native.isConnected).toBe(true)
   })
 
-  it("prevents excluded sites from being enabled and updates from runtime state", () => {
+  it("keeps the current video's entry and presets available while translation is off", () => {
     const fixture = player()
-    const { instance, button, shadow } = fixture.create()
-    instance.update({ excluded: true })
-    expect(button(".toggle")).toBeDisabled()
-    expect(button(".toggle")).toHaveAttribute("aria-pressed", "false")
-    expect(shadow.querySelector(".excluded")).not.toHaveAttribute("hidden")
-    button(".toggle").click()
-    expect(fixture.onToggle).not.toHaveBeenCalled()
-    instance.update({ excluded: false, enabled: false })
+    const { instance, host, button, shadow } = fixture.create()
+    instance.update({ enabled: false })
+    expect(host.isConnected).toBe(true)
     expect(button(".toggle")).not.toBeDisabled()
+    expect(button(".toggle")).toHaveAttribute("aria-pressed", "false")
     expect(button(".toggle")).toHaveAttribute("aria-label", "videoTranslationControls.enable")
+    button(".trigger").click()
+    expect(shadow.querySelector(".panel")).not.toHaveAttribute("hidden")
+    expect(fixture.onToggle).not.toHaveBeenCalled()
     button(".toggle").click()
     expect(fixture.onToggle).toHaveBeenCalledWith(true)
+    instance.update({ enabled: true })
+    expect(button(".toggle")).toHaveAttribute("aria-pressed", "true")
+    expect(button(".toggle")).toHaveAttribute("aria-label", "videoTranslationControls.disable")
+    expect(button(".trigger")).toHaveAttribute("aria-expanded", "true")
   })
 
   it("sends preset and size changes through runtime without drifting from its committed state", () => {
@@ -210,7 +213,7 @@ describe("video translation controls", () => {
     vi.spyOn(anchor, "getBoundingClientRect").mockReturnValue(rect(460, 346, 148, 40))
     instance.tick()
     expect(host.style.left).toBe("460px")
-    expect(host.style.top).toBe("349px")
+    expect(host.style.top).toBe("351px")
     fixture.container.classList.remove("ytp-autohide")
     instance.tick()
     expect(host).not.toHaveAttribute("data-idle")
@@ -410,7 +413,7 @@ describe("video translation controls", () => {
     document.body.append(video)
     Object.defineProperty(video, "paused", { value: false, configurable: true })
     vi.spyOn(video, "getBoundingClientRect").mockReturnValue(rect())
-    const instance = createVideoTranslationControls(video, { enabled: true, excluded: false, appearance: DEFAULT_SUBTITLE_STYLE, onToggle: vi.fn(), onStyleChange: vi.fn() })
+    const instance = createVideoTranslationControls(video, { enabled: true, appearance: DEFAULT_SUBTITLE_STYLE, onToggle: vi.fn(), onStyleChange: vi.fn() })
     live.add(instance)
     const host = document.querySelector<HTMLElement>("[data-readomi-video-controls]")!
     expect(host.parentElement).toBe(document.documentElement)
@@ -455,7 +458,7 @@ describe("video translation controls", () => {
     vi.spyOn(fixture.native, "getBoundingClientRect").mockReturnValue(rect(20, 190, 90, 32))
     vi.spyOn(leftControls, "getBoundingClientRect").mockReturnValue(rect(20, 190, 192, 32))
     vi.spyOn(playback, "getBoundingClientRect").mockReturnValue(rect(20, 190, 192, 32))
-    fixture.geometry(rect(20, 30, 358, 201))
+    fixture.geometry(rect(20, 30, 353, 201))
     const { instance, host } = fixture.create()
     expect(host.dataset.placement).toBe("inline")
     expect(host.parentElement).toBe(fixture.controls)
@@ -521,10 +524,10 @@ describe("video translation controls", () => {
     expect(host.nextElementSibling).toBe(leftTools)
     // Only rendered native items consume space, even when a hidden previous
     // button retains a margin in the page's stylesheet.
-    vi.mocked(chrome.getBoundingClientRect).mockReturnValue(rect(32, 961, 724, 59))
+    vi.mocked(chrome.getBoundingClientRect).mockReturnValue(rect(32, 961, 708, 59))
     instance.tick()
     expect(host).not.toHaveAttribute("data-hidden")
-    vi.mocked(chrome.getBoundingClientRect).mockReturnValue(rect(32, 961, 723, 59))
+    vi.mocked(chrome.getBoundingClientRect).mockReturnValue(rect(32, 961, 707, 59))
     instance.tick()
     expect(host).toHaveAttribute("data-hidden")
     expect(host.parentElement).toBe(fixture.controls)

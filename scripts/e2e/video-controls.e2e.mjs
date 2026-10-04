@@ -46,6 +46,8 @@ it("video exclusion settings validate, normalize and persist independent domain,
   const settings = launched.page
   await settings.setViewportSize({ width: 1280, height: 1380 })
   await settings.goto(`chrome-extension://${launched.extensionId}/options.html#features`)
+  const moreOptions = settings.locator("#features").getByText("More options", { exact: true })
+  await moreOptions.click()
   const section = settings.locator("#features").getByRole("region", { name: "Sites without video translation", exact: true })
   await section.getByRole("heading", { name: "Sites without video translation", exact: true }).waitFor()
   const input = section.getByRole("textbox", { name: "Site rule", exact: true })
@@ -96,6 +98,7 @@ it("video exclusion settings validate, normalize and persist independent domain,
   await section.locator("li").filter({ has: settings.getByText("example.com", { exact: true }) }).getByRole("button", { name: "Remove rule", exact: true }).click()
   await waitFor(rules, rules => rules.length === 2, "deleting a domain rule did not save")
   await settings.reload()
+  await moreOptions.click()
   await section.getByRole("heading", { name: "Sites without video translation", exact: true }).waitFor()
   assert.deepEqual(await rules(), [{ type: "pattern", value: "*://*.example.net/watch/*" }, { type: "regex", value: regex }])
   assert.equal(await section.getByText("example.com", { exact: true }).count(), 0)
@@ -326,9 +329,13 @@ it("player controls stop translation, retain per-video scope and preserve cached
   await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "navigation to another video retained the old session switch")
 
   await patchFeatures({ videoSubtitles: true })
-  await waitFor(read, state => state.controls.every(control => control.enabled) && state.captions.length === 2, "global enable did not restore video defaults")
+  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => control.enabled) && state.captions.length === 2, "global enable did not restore video defaults")
+  await inspector.click(0, "label", "Adjust subtitle preset")
+  await waitFor(read, state => state.controls[0]?.expanded, "the menu did not open before the site was excluded")
+  assert.equal(await page.locator("[data-readomi-controls-anchor]").count(), 1, "an open menu owns a native toolbar anchor before exclusion")
   await patchFeatures({ videoExcludedSites: [{ type: "domain", value: "youtube.com" }] })
-  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => !control.enabled && control.disabled) && state.captions.length === 0, "dynamic domain exclusion did not stop the subdomain's videos")
+  await waitFor(read, state => state.controls.length === 0 && state.captions.length === 0, "dynamic domain exclusion did not remove the subdomain's controls and captions")
+  assert.equal(await page.locator("[data-readomi-video-controls],[data-readomi-controls-anchor]").count(), 0, "exclusion removes the open menu host and native toolbar anchor")
   assert.deepEqual(await page.evaluate(() => window.e2eTracks.map(track => track.mode)), ["showing", "showing"])
   const excludedRequests = service.translationRequests().length
   await page.evaluate(() => {
@@ -340,7 +347,9 @@ it("player controls stop translation, retain per-video scope and preserve cached
   await page.waitForTimeout(650)
   assert.equal(service.translationRequests().length, excludedRequests, "an excluded site cannot issue new caption requests")
   await patchFeatures({ videoExcludedSites: [] })
-  await waitFor(read, state => state.controls.every(control => control.enabled && !control.disabled) && state.captions.some(text => text.includes("【译】Excluded cue sentence.")), "removing the exclusion did not resume the current global default")
+  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => control.enabled && !control.expanded) && state.captions.some(text => text.includes("【译】Excluded cue sentence.")), "removing the exclusion did not restore each video entry and its global default")
+  assert.equal(await page.locator(".ytp-right-controls [data-readomi-video-controls]").count(), 2, "removing exclusion restores one closed entry in each native tools group")
+  assert.equal(await page.locator("[data-readomi-controls-anchor]").count(), 0, "restoring an excluded site's entry does not resurrect its old menu")
 })
 
 const genericFixture = `<!doctype html><html lang="en"><meta charset="utf-8"><title>HTML5 video translation fixture</title>

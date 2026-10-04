@@ -6,7 +6,6 @@ import { xVideoContainer, xVideoControls, xVideoToolsStart } from "./x-player"
 
 export interface VideoTranslationControlsState {
   enabled: boolean
-  excluded: boolean
   appearance: SubtitleStyle
   saveFailed?: boolean
 }
@@ -33,13 +32,15 @@ const CONTROL_CSS = `
 :host([data-idle]) .dock,:host([data-idle]) .panel{opacity:0;visibility:hidden;pointer-events:none!important;transition:opacity 180ms ease,visibility 0s linear 180ms}
 @media(prefers-reduced-motion:reduce){.dock,.panel,:host([data-idle]) .dock,:host([data-idle]) .panel{transition:none}}
 *{box-sizing:border-box}button{font:inherit;cursor:pointer}button:focus-visible{outline:2px solid #e8b29b;outline-offset:3px}button:disabled{opacity:.45;cursor:default}[hidden]{display:none!important}
-.dock{display:flex;align-items:center;gap:8px;min-height:34px;padding:5px 8px;border:1px solid #ffffff21;border-radius:8px;background:#181a20e6;color:white;box-shadow:0 3px 12px #0003;pointer-events:auto;white-space:nowrap}
-.logo{width:18px;height:18px;display:block;flex-shrink:0}.toggle{display:grid;place-items:center;width:32px;height:20px;padding:3px;border:0;border-radius:12px;background:#ffffff38}.toggle span{width:14px;height:14px;border-radius:50%;background:#fff;justify-self:start;box-shadow:0 1px 2px #0003}.toggle[aria-pressed=true]{background:#b6533e}.toggle[aria-pressed=true] span{justify-self:end}
-.trigger{display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:4px;background:transparent;padding:2px;color:#fff}.trigger:hover,.trigger[aria-expanded=true]{background:#ffffff14}.excluded{display:block;margin:0 0 10px;font-size:11px;color:#d5d3d1;line-height:1.5}
+.dock{--tool-height:30px;--action-width:32px;--logo-size:19px;--track-width:26px;--track-height:14px;--thumb-size:10px;position:relative;display:flex;align-items:center;gap:0;height:var(--tool-height);padding:0;border:0;border-radius:4px;background:#ffffff08;color:white;box-shadow:none;pointer-events:auto;white-space:nowrap}
+:host([data-toolbar=x]) .dock{--tool-height:28px;--action-width:30px;--logo-size:18px;--track-width:24px;--track-height:13px;--thumb-size:9px}
+.dock:hover{background:#ffffff12}.dock::before{content:"";position:absolute;left:var(--action-width);top:50%;width:1px;height:12px;transform:translateY(-50%);background:#ffffff18;pointer-events:none}
+.trigger,.toggle{display:grid;place-items:center;flex:0 0 var(--action-width);width:var(--action-width);height:100%;padding:0;border:0;border-radius:4px;background:transparent;color:#fff}.trigger:hover,.trigger[aria-expanded=true],.toggle:hover{background:#ffffff12}
+.trigger:focus-visible,.toggle:focus-visible{outline-offset:-2px}
+.logo{width:var(--logo-size);height:var(--logo-size);display:block;flex-shrink:0}.toggle-track{position:relative;display:block;width:var(--track-width);height:var(--track-height);border-radius:999px;background:#ffffff1c;box-shadow:inset 0 0 0 1px #ffffff28}.toggle-thumb{position:absolute;left:2px;top:2px;width:var(--thumb-size);height:var(--thumb-size);border-radius:50%;background:#ffffffb3}.toggle[aria-pressed=true] .toggle-track{background:#b6533e;box-shadow:none}.toggle[aria-pressed=true] .toggle-thumb{transform:translateX(calc(var(--track-width) - var(--thumb-size) - 4px));background:#fff8ec}
 .panel{position:fixed;width:240px;background:#1a1d24f7;border:1px solid #ffffff26;border-radius:10px;padding:14px;color:white;box-shadow:0 6px 24px #0005;pointer-events:auto;overflow:auto;overscroll-behavior:contain}.panel h2{font-size:12px;font-weight:550;margin:0 0 12px}.presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.presets button{min-width:0;background:#ffffff12;border:1px solid #ffffff20;border-radius:6px;color:#dfdfdf;font-size:12px;line-height:1.35;padding:8px 6px;white-space:normal;overflow-wrap:anywhere}.presets button[aria-pressed=true]{border-color:#cc8a6d;background:#b6533e45;color:#ffe5d8}
 .size-row{display:flex;align-items:center;margin:14px 0;padding-top:12px;border-top:1px solid #ffffff20;gap:9px}.size-label{font-size:11px;margin-right:auto;color:#d1d0ce}.size-row button{width:25px;height:25px;background:#ffffff12;border:1px solid #ffffff24;border-radius:5px;color:white;font-size:15px;line-height:1}.size-row output{font-size:12px;min-width:40px;font-variant-numeric:tabular-nums;text-align:center}.reset{width:100%;background:transparent;border:0;border-top:1px solid #ffffff20;padding:12px 0 0;text-align:left;color:#dbd8d6;font-size:11px}.error{margin:12px 0 0;font-size:11px;line-height:1.5;color:#f4bcaa}
-:host([data-narrow]) .dock{gap:6px;padding:5px 6px;min-height:31px}
-:host([data-narrow]) .trigger{width:20px;height:20px;padding:1px}:host([data-narrow]) .toggle{width:28px;height:18px;padding:2px}
+:host([data-narrow]) .dock{--tool-height:26px;--action-width:28px;--logo-size:18px;--track-width:23px;--track-height:13px;--thumb-size:9px}
 :host([data-narrow]) .panel{padding:8px}:host([data-narrow]) .panel h2{display:none}:host([data-narrow]) .presets button{padding:5px 6px}:host([data-narrow]) .size-row{margin:6px 0;padding-top:6px}:host([data-narrow]) .reset{padding-top:6px}
 `
 
@@ -78,9 +79,10 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
   logo.alt = ""
   logo.src = browser.runtime.getURL("/icon/terra/32.png")
   const toggle = element("button", "toggle")
-  toggle.append(element("span"))
-  const excluded = element("span", "excluded")
-  excluded.setAttribute("role", "status")
+  const toggleTrack = element("span", "toggle-track")
+  toggleTrack.setAttribute("aria-hidden", "true")
+  toggleTrack.append(element("span", "toggle-thumb"))
+  toggle.append(toggleTrack)
   const trigger = element("button", "trigger")
   trigger.setAttribute("aria-controls", "readomi-preset-panel")
   trigger.setAttribute("aria-haspopup", "dialog")
@@ -103,7 +105,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
   const reset = element("button", "reset")
   const error = element("p", "error")
   error.setAttribute("role", "status")
-  panel.append(heading, excluded, presets, sizeRow, reset, error)
+  panel.append(heading, presets, sizeRow, reset, error)
   shadow.append(style, dock, panel)
   const presetButtons = SUBTITLE_PRESETS.map((preset) => {
     const button = owner.createElement("button")
@@ -115,15 +117,11 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
   })
 
   const render = () => {
-    const action = i18n.t(state.enabled && !state.excluded ? "videoTranslationControls.disable" : "videoTranslationControls.enable")
+    const action = i18n.t(state.enabled ? "videoTranslationControls.disable" : "videoTranslationControls.enable")
     dock.setAttribute("aria-label", i18n.t("videoTranslationControls.title"))
-    dock.title = i18n.t("videoTranslationControls.scope")
     toggle.setAttribute("aria-label", action)
-    toggle.title = state.excluded ? i18n.t("videoTranslationControls.excluded") : action
-    toggle.setAttribute("aria-pressed", String(state.enabled && !state.excluded))
-    toggle.disabled = state.excluded
-    excluded.hidden = !state.excluded
-    excluded.textContent = i18n.t("videoTranslationControls.excluded")
+    toggle.title = `${action} · ${i18n.t("videoTranslationControls.scope")}`
+    toggle.setAttribute("aria-pressed", String(state.enabled))
     trigger.setAttribute("aria-label", i18n.t("videoTranslationControls.presetButton"))
     trigger.title = i18n.t("videoTranslationControls.presetButton")
     trigger.setAttribute("aria-expanded", String(menuOpen))
@@ -220,7 +218,8 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     const chrome = youtubePlayer?.querySelector<HTMLElement>(".ytp-chrome-bottom")
     const chromeRect = chrome?.getBoundingClientRect()
     host.dataset.toolbar = xControls ? "x" : youtubePlayer ? "youtube" : "generic"
-    host.toggleAttribute("data-narrow", rect.width < 420)
+    const narrow = rect.width < 420
+    host.toggleAttribute("data-narrow", narrow)
     // Measure native children rather than the group that also contains this host.
     // Removing the dock then leaves the same decision, so narrow players do not oscillate.
     const nativeWidth = (group: Element | null | undefined) => Array.from(group?.children ?? []).reduce((width, child) => {
@@ -256,7 +255,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     // YouTube's left group can flex across all space before the right tools.
     // Its empty allocation is available to this dock, not native occupancy.
     const nativeYouTubeWidth = nativeWidth(leftControls) + groupPadding(leftControls) + occupiedWidth(rightControls)
-    const dockWidth = dock.getBoundingClientRect().width || (rect.width < 420 ? 68 : 80)
+    const dockWidth = dock.getBoundingClientRect().width || (narrow ? 56 : xControls ? 60 : 64)
     const toolbarStyle = !youtubePlayer && controls ? view.getComputedStyle(controls) : null
     const rowPadding = toolbarStyle ? (Number.parseFloat(toolbarStyle.paddingLeft) || 0) + (Number.parseFloat(toolbarStyle.paddingRight) || 0) : 0
     const rowGap = toolbarStyle ? (Number.parseFloat(toolbarStyle.columnGap) || 0) * Array.from(controls!.children).filter(child => child !== host && child !== anchor && view.getComputedStyle(child).position !== "absolute").length + 8 : 16
@@ -304,7 +303,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     }
     if (portal) {
       const anchorRect = anchor.getBoundingClientRect()
-      const dockHeight = dock.getBoundingClientRect().height || 34
+      const dockHeight = dock.getBoundingClientRect().height || (narrow ? 26 : xControls ? 28 : 30)
       // The portal only escapes native stacking contexts; its dock remains at
       // the native slot. It never derives a separate video-corner position.
       const top = (anchorRect.height > 0 ? anchorRect.top + anchorRect.height / 2 : controlsRect!.top + controlsRect!.height / 2) - dockHeight / 2
@@ -338,8 +337,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
       trigger.focus({ preventScroll: true })
   }
   toggle.addEventListener("click", () => {
-    if (!state.excluded)
-      options.onToggle(!state.enabled)
+    options.onToggle(!state.enabled)
   })
   trigger.addEventListener("click", () => setMenu(!menuOpen))
   trigger.addEventListener("keydown", (event) => {

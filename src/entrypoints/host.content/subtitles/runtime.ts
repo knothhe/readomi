@@ -295,7 +295,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   }
 }
 
-/** Controls remain available while the caption session is off or between cues. */
+/** Allowed sites keep controls while the caption session is off or between cues. */
 function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnabled: boolean, initialExcluded: boolean, onToggle: (enabled: boolean) => void): Player {
   let config = initialConfig
   let lastStoredConfig = initialConfig
@@ -308,10 +308,9 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
   const pendingAppearance = new Map<number, Partial<SubtitleStyle>>()
   let controls: VideoTranslationControls | null = null
   const syncControls = () => {
-    if (shouldShowVideoControls(video)) {
+    if (!excluded && shouldShowVideoControls(video)) {
       controls ??= createVideoTranslationControls(video, {
         enabled,
-        excluded,
         appearance: config.features.subtitleStyle,
         onToggle,
         onStyleChange: persist,
@@ -324,7 +323,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
   }
   const render = () => {
     syncControls()
-    controls?.update({ enabled, excluded, appearance: config.features.subtitleStyle })
+    controls?.update({ enabled, appearance: config.features.subtitleStyle })
     if (enabled && !excluded) {
       renderer ??= mountSubtitleRenderer(video, config, persist)
       renderer.updateConfig(config)
@@ -441,6 +440,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     if (disposed || isContextInvalid() || !config)
       return
     const excluded = isVideoTranslationExcluded(location.href, config.features.videoExcludedSites)
+    if (excluded)
+      overrides = new WeakMap()
     const xVideo = isXHost() ? currentXVideo() : null
     const videos = isXHost() ? (xVideo ? [xVideo] : []) : Array.from(document.querySelectorAll("video"))
     for (const [video, player] of players) {
