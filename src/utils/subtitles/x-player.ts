@@ -51,21 +51,54 @@ export function xVideoIdentity(video: HTMLVideoElement): string {
   return own ?? linked ?? xStatusId(location.href) ?? location.pathname
 }
 
-function controlsGroup(container: HTMLElement): HTMLElement | null {
+const READOMI_CONTROLS_SELECTOR = "[data-readomi-video-controls],[data-readomi-controls-anchor]"
+
+function nativeButtons(container: HTMLElement): HTMLElement[] {
+  return Array.from(container.querySelectorAll<HTMLElement>("button,[role='button']")).filter(button => !button.closest(READOMI_CONTROLS_SELECTOR))
+}
+
+function controlsGroup(container: HTMLElement, video: HTMLVideoElement): HTMLElement | null {
   const explicit = container.querySelector<HTMLElement>("[data-testid='videoControls']")
-  const icon = container.querySelector("button[role='button'] > div > svg")
-  return explicit ?? icon?.parentElement?.parentElement?.parentElement?.parentElement ?? null
+  if (explicit)
+    return explicit
+  const videoRect = video.getBoundingClientRect()
+  const view = video.ownerDocument.defaultView
+  if (!view || videoRect.width <= 0 || videoRect.height <= 0)
+    return null
+  // Ads put their More button before playback controls, and idle players can
+  // leave just a floating mute button. Neither identifies a playback row.
+  const checked = new Set<HTMLElement>()
+  for (const button of nativeButtons(container)) {
+    if (!button.querySelector("svg") || button.getAttribute("aria-haspopup") === "menu")
+      continue
+    for (let group = button.parentElement; group && group !== container; group = group.parentElement) {
+      if (checked.has(group) || group.contains(video))
+        continue
+      checked.add(group)
+      const style = view.getComputedStyle(group)
+      if (!["flex", "inline-flex"].includes(style.display) || !["row", "row-reverse", ""].includes(style.flexDirection))
+        continue
+      const rect = group.getBoundingClientRect()
+      if (rect.width < videoRect.width * 0.75 || rect.height <= 0 || rect.height > Math.max(48, videoRect.height * 0.35)
+        || rect.top < videoRect.top + videoRect.height / 2 || Math.abs(rect.bottom - videoRect.bottom) > 24) {
+        continue
+      }
+      if (nativeButtons(group).filter(native => native.getAttribute("aria-haspopup") !== "menu").length >= 2)
+        return group
+    }
+  }
+  return null
 }
 
 /** The page's control group supplies its own visibility and idle timing. */
 export function xVideoControls(video: HTMLVideoElement): HTMLElement | null {
   const container = video.closest<HTMLElement>("[data-testid='videoComponent']") ?? xVideoContainer(video)
-  return container && container !== video.ownerDocument.body && container !== video.ownerDocument.documentElement ? controlsGroup(container) : null
+  return container && container !== video.ownerDocument.body && container !== video.ownerDocument.documentElement ? controlsGroup(container, video) : null
 }
 
 /** X has no stable right-group class. Its last native button is the right edge. */
 export function xVideoToolsStart(controls: HTMLElement): HTMLElement | null {
-  const buttons = Array.from(controls.querySelectorAll<HTMLElement>("button,[role='button']")).filter(button => !button.closest("[data-readomi-video-controls],[data-readomi-controls-anchor]"))
+  const buttons = nativeButtons(controls)
   if (buttons.length < 2)
     return null
   let before: HTMLElement | null = buttons.at(-1)!
@@ -79,7 +112,9 @@ export function xCaptionBottom(video: HTMLVideoElement, rect: { height: number }
   const container = video.closest<HTMLElement>("[data-testid='videoComponent']") ?? xVideoContainer(video)
   if (!container || rect.height <= 0)
     return undefined
-  const controls = controlsGroup(container)
+  const controls = controlsGroup(container, video)
+  if (!controls)
+    return rect.height * 0.98
   let visible = container.matches(":hover, :focus-within") || video.paused || captionInteracting
   if (controls) {
     for (let element: HTMLElement | null = controls; element && container.contains(element); element = element.parentElement) {
