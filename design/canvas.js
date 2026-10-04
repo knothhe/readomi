@@ -82,6 +82,7 @@ window.READOMI_CANVAS = {
     { file: "Video-X-Controls-Hidden.html", title: "X 视频 · 控件隐藏", x: 0, y: 73600, w: 720, h: 490 },
     { file: "Video-X-Controls-Visible.html", title: "X 视频 · 避让播放器控件", x: 800, y: 73600, w: 720, h: 490 },
     { file: "Video-X-Switch-Prefetching.html", title: "X 视频 · 切换后提前翻译", x: 1600, y: 73600, w: 720, h: 490 },
+    { file: "Video-X-Scrolling.html", title: "X 视频 · 滚动时字幕跟随", x: 2400, y: 73600, w: 720, h: 490 },
     { file: "Settings-Site-Rules.html", title: "站点规则 · 内置与自定义规则", x: 0, y: 74200, w: 1280, h: 1000 },
     { file: "Settings-Site-Rules-Disabled.html", title: "站点规则 · 停用 X 内置规则", x: 1360, y: 74200, w: 1280, h: 1000 },
     { file: "Settings-Site-Rules-Invalid.html", title: "站点规则 · 自定义字段错误", x: 2720, y: 74200, w: 1280, h: 1000 },
