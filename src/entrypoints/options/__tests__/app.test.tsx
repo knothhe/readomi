@@ -357,7 +357,11 @@ describe("settings page", () => {
       expect(screen.getByRole("heading", { name: "siteRules.title" })).toBeInTheDocument()
       expect(screen.queryByRole("textbox", { name: "siteRules.editorLabel" })).toBeNull()
       fireEvent.click(screen.getByRole("tab", { name: "siteRules.custom" }))
-      fireEvent.click(screen.getByRole("button", { name: "siteRules.add" }))
+      const rulesPanel = screen.getByRole("tabpanel", { name: "siteRules.custom" })
+      const more = within(rulesPanel).getByText("siteRuleAgent.more", { selector: "summary" })
+      fireEvent.click(more)
+      expect(more.closest("details")).toHaveAttribute("open")
+      fireEvent.click(within(rulesPanel).getByRole("button", { name: "siteRuleAgent.advanced" }))
       const draft = "[{\"id\":\"unfinished\",\"matches\":\"example.com\"}]"
       fireEvent.change(screen.getByRole("textbox", { name: "siteRules.editorLabel" }), { target: { value: draft } })
       fireEvent.click(screen.getByRole("link", { name: "siteRules.backToReading" }))

@@ -1,8 +1,6 @@
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
-import { storage } from "#imports"
-import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESET_STYLES, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP, subtitleStyleSchema } from "@/types/config/subtitle-style"
-import { getLocalConfigForWrite } from "@/utils/config/storage"
-import { CONFIG_STORAGE_KEY } from "@/utils/constants/config"
+import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESET_STYLES, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP } from "@/types/config/subtitle-style"
+import { sendMessage } from "@/utils/message"
 
 export const SUBTITLE_POSITIONS = {
   top: { x: 50, y: 18 },
@@ -101,11 +99,7 @@ export function resolveSubtitlePosition(position: SubtitlePosition, video: { wid
 let writeQueue = Promise.resolve()
 /** One storage write at the end of a drag, merging with the latest configuration. */
 export function saveSubtitleStyle(patch: Partial<SubtitleStyle>): Promise<void> {
-  const task = writeQueue.then(async () => {
-    const latest = await getLocalConfigForWrite()
-    const subtitleStyle = subtitleStyleSchema.parse({ ...latest.features.subtitleStyle, ...patch })
-    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, { ...latest, features: { ...latest.features, subtitleStyle } })
-  })
+  const task = writeQueue.then(() => sendMessage("saveSubtitleStylePatch", { patch }))
   writeQueue = task.catch(() => {})
   return task
 }

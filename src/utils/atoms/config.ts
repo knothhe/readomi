@@ -5,6 +5,7 @@ import { atom } from "jotai"
 import { selectAtom } from "jotai/utils"
 import { configSchema } from "@/types/config/config"
 import { getLocalConfigForWrite } from "../config/storage"
+import { withConfigWriteLock } from "../config/write-lock"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "../constants/config"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "../extension-context"
 import { logger } from "../logger"
@@ -73,13 +74,14 @@ function queueConfigWrite(
       // Always read fresh from storage to capture any writes that completed before us.
       // This ensures we don't lose concurrent field updates:
       //   write({x:1}) then write({y:2}) → storage ends up with {x:1, y:2}
-      planned = await plan((stored) => {
-        storedBeforeMutation = stored
+      const nextToPersist = await withConfigWriteLock(async () => {
+        planned = await plan((stored) => {
+          storedBeforeMutation = stored
+        })
+        // Keep read, pure mutation and write under the cross-context lock.
+        await storageAdapter.set(CONFIG_STORAGE_KEY, planned.next, configSchema)
+        return planned.next
       })
-      const nextToPersist = planned.next
-
-      // Storage write always executes (not affected by version check)
-      await storageAdapter.set(CONFIG_STORAGE_KEY, nextToPersist, configSchema)
 
       // ───────────────────────────────────────────────────────────────────
       // STEP 3: Reconcile atom with persisted value (stale-write check)

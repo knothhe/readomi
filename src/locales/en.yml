@@ -671,3 +671,61 @@ siteRules:
     schema: Invalid rule fields. Check the details below.
     duplicateIds: Each custom rule must have a unique id.
     saveFailed: Rules could not be saved. Try again.
+siteRuleAgent:
+  entry: Adapt this site with an agent
+  title: Adapt this site
+  problem: What needs adjusting?
+  problemPlaceholder: Optional, such as hover translation not working or a missing vertical line.
+  copyInstructions: Copy agent instructions
+  paste: Have rules already? Paste configuration
+  candidate: Candidate rules received
+  ready: Preview the rules, then save after reviewing the result.
+  preview: Preview rules
+  previewing: Previewing · Not saved
+  starting: Starting preview
+  restoring: Restoring preview
+  paused: Preview paused
+  pausedHelp: Return to $1 to continue. This site uses its saved configuration.
+  invalid: Invalid candidate rules
+  previewFailed: Could not start preview
+  noContent: No readable content matched
+  conflict: Rules for this site changed elsewhere
+  reload: Reload rules
+  more: More
+  document: Rule document
+  documentPlaceholder: Paste the single-site JSON configuration returned by your agent.
+  diagnostics: Diagnostics
+  copyDocument: Copy rule document
+  copyDiagnostics: Copy diagnostics for agent
+  repreview: Preview again
+  stop: Stop preview
+  save: Save rules
+  saving: Saving
+  saved: Site rules saved
+  saveFailed: Save failed; your preview is still available
+  retrySave: Retry save
+  undo: Undo
+  undoConflict: Rules changed again and cannot be undone directly
+  undone: Changes undone
+  close: Close
+  collapse: Collapse
+  expand: Expand adaptation panel
+  temporary: Preview affects this tab only. Saved rules apply to their matching pages.
+  summary: Add or update $1 user rules; pause $2.
+  contentCount: $1 readable regions matched on this page.
+  copied: Copied
+  copyFailed: Could not copy. Select the text and copy it manually.
+  operationFailed: Could not complete the action. Your configuration is kept; try again.
+  openFailed: Could not open the panel. Refresh the webpage and try again.
+  unsupported: Open a regular webpage before adapting a site.
+  manage: Manage site rules
+  settingsHelp: Open the Readomi popup on the website and choose “Adapt this site with an agent”.
+  advanced: Advanced JSON editing
+  delete: Delete rule
+  enabled: Enabled
+  disabled: Paused
+  userAction: Review the preview on the webpage, then click Save rules yourself.
+  hoverTriggerHelp: Mouse hold on links is not supported yet. Choose a keyboard hover trigger in the popup.
+  scopeHelp: This page is outside the rule scope. Return to a matching page.
+  requestFailed: The translation request failed. Its result remains unconfirmed.
+  modify: Edit configuration

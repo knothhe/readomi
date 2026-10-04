@@ -8,6 +8,7 @@ import { ensureInitializedConfig } from "./config"
 import { setUpDatabaseCleanup } from "./db-cleanup"
 import { setupIframeInjection } from "./iframe-injection"
 import { setupLLMGenerateTextMessageHandlers } from "./llm-generate-text"
+import { setupSiteRuleSessions } from "./site-rule-sessions"
 import { setupTranslationProgress } from "./translation-progress"
 import { setUpWebPageTranslationQueue } from "./translation-queues"
 import { translationMessage } from "./translation-signal"
@@ -38,6 +39,7 @@ export default defineBackground({
     void setUpDatabaseCleanup()
 
     setupLLMGenerateTextMessageHandlers()
+    setupSiteRuleSessions()
 
     // Setup on-demand iframe injection after page translation is enabled.
     setupIframeInjection()

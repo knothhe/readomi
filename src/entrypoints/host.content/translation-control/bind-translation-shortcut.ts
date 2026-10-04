@@ -1,20 +1,20 @@
 import type { PageTranslationManager } from "./page-translation"
 import { getDefaultStore } from "jotai"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 import { isPageTranslationShortcutEmpty, isValidConfiguredPageTranslationShortcut } from "@/utils/page-translation-shortcut"
+import { getHostConfig, watchHostConfig } from "@/utils/site-rules/preview-config"
 
 /**
  * Toggles page translation on the configured shortcut. Typing into a field
  * never triggers it, and a matched press does not reach the page.
  */
 export async function bindTranslationShortcutKey(pageTranslationManager: PageTranslationManager, target: Document = document, isContextInvalid: () => boolean = () => false) {
-  let config = await getLocalConfig()
+  let config = await getHostConfig()
   if (isContextInvalid())
     return () => {}
-  const unwatch = watchLocalConfig(next => config = next)
+  const unwatch = watchHostConfig(next => config = next)
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (isContextInvalid())

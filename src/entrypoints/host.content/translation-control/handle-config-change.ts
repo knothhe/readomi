@@ -1,6 +1,6 @@
 import type { PageTranslationManager } from "./page-translation"
 import type { Config } from "@/types/config/config"
-import { watchLocalConfig } from "@/utils/config/storage"
+import { watchHostConfig } from "@/utils/site-rules/preview-config"
 
 /**
  * Apply display, language and prompt changes to an active translation session.
@@ -26,7 +26,7 @@ export function handleTranslationModeChange(
  * Returns the function that stops the watch.
  */
 export function watchConfigChanges(manager: PageTranslationManager): () => void {
-  return watchLocalConfig((newConfig, oldConfig) => {
+  return watchHostConfig((newConfig, oldConfig) => {
     handleTranslationModeChange(newConfig, oldConfig, manager)
   })
 }

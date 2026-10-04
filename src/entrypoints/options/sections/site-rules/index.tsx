@@ -1,13 +1,13 @@
 import type { KeyboardEvent, MouseEvent } from "react"
 import type { SiteRule } from "@/types/config/site-rules"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { MAX_SITE_RULES_JSON_LENGTH } from "@/types/config/site-rules"
-import { configFieldsAtomMap } from "@/utils/atoms/config"
+import { configFieldsAtomMap, mutateConfigAtom } from "@/utils/atoms/config"
 import { copyText } from "@/utils/clipboard"
 import { normalizeDisabledBuiltInRuleIds } from "@/utils/site-rules/branding"
 import { BUILT_IN_SITE_RULES } from "@/utils/site-rules/built-in"
@@ -36,11 +36,12 @@ function PatternBadge({ pattern, expanded = false }: { pattern: string, expanded
   )
 }
 
-function RuleRow({ rule, enabled, pending, onToggle }: {
+function RuleRow({ rule, enabled, pending, onToggle, onDelete }: {
   rule: SiteRule
   enabled?: boolean
   pending?: boolean
   onToggle?: (enabled: boolean) => void
+  onDelete?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle")
@@ -76,8 +77,16 @@ function RuleRow({ rule, enabled, pending, onToggle }: {
         >
           <span className="site-rule-chevron" aria-hidden="true">{expanded ? "⌄" : "›"}</span>
           <span className="site-rule-labels">
-            <code className="site-rule-name" title={rule.id}>{rule.id}</code>
-            {rule.description && <span className="site-rule-description" title={rule.description}>{rule.description}</span>}
+            {onDelete
+              ? (
+                  <span className="site-rule-name" title={rule.id}>
+                    {rule.description || rule.id}
+                    {" "}
+                    <span className="site-rule-badge">{i18n.t(enabled ? "siteRuleAgent.enabled" : "siteRuleAgent.disabled")}</span>
+                  </span>
+                )
+              : <code className="site-rule-name" title={rule.id}>{rule.id}</code>}
+            {!onDelete && rule.description && <span className="site-rule-description" title={rule.description}>{rule.description}</span>}
           </span>
           <span className="site-rule-patterns">
             {patterns.slice(0, 2).map(pattern => <PatternBadge key={pattern} pattern={pattern} />)}
@@ -102,6 +111,7 @@ function RuleRow({ rule, enabled, pending, onToggle }: {
             <Button variant="outline" size="sm" onClick={() => void copy()}>
               {i18n.t(copyStatus === "copied" ? "siteRules.copied" : "siteRules.copy")}
             </Button>
+            {onDelete && <Button variant="destructive" size="sm" disabled={pending} onClick={onDelete}>{i18n.t("siteRuleAgent.delete")}</Button>}
           </div>
           {copyStatus === "failed" && <p className="site-rules-error" role="alert">{i18n.t("siteRules.copyFailed")}</p>}
           <pre className="site-rule-json"><code>{json}</code></pre>
@@ -113,6 +123,7 @@ function RuleRow({ rule, enabled, pending, onToggle }: {
 
 export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event: MouseEvent<HTMLAnchorElement>) => void }) {
   const [rulesConfig, setRulesConfig] = useAtom(configFieldsAtomMap.siteRules)
+  const mutateConfig = useSetAtom(mutateConfigAtom)
   const [tab, setTab] = useState<RulesTab>("builtin")
   const [search, setSearch] = useState("")
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -158,6 +169,30 @@ export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event
       next.add(id)
     try {
       await setRulesConfig({ disabledBuiltInRules: [...next] })
+    }
+    catch {
+      setToggleError(true)
+    }
+    finally {
+      setToggling(false)
+    }
+  }
+
+  const changeUserRule = async (rule: SiteRule, enabled: boolean | null) => {
+    if (toggling)
+      return
+    setToggling(true)
+    setToggleError(false)
+    try {
+      await mutateConfig((latest) => {
+        const current = latest.siteRules.userRules.find(item => item.id === rule.id)
+        if (!current || JSON.stringify(current) !== JSON.stringify(rule))
+          throw new Error("The rule changed while it was being edited")
+        const userRules = enabled === null
+          ? latest.siteRules.userRules.filter(item => item.id !== rule.id)
+          : latest.siteRules.userRules.map(item => item.id === rule.id ? { ...item, enabled } : item)
+        return { ...latest, siteRules: { ...latest.siteRules, userRules } }
+      })
     }
     catch {
       setToggleError(true)
@@ -219,6 +254,7 @@ export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event
         {i18n.t("options.reading.title")}
       </a>
       <h1 className="settings-page-title">{i18n.t("siteRules.title")}</h1>
+      <p className="site-rules-agent-help">{i18n.t("siteRuleAgent.settingsHelp")}</p>
       <div className="site-rules-tabs" role="tablist" aria-label={i18n.t("siteRules.tabsLabel")}>
         {TABS.map((value, index) => (
           <button
@@ -282,6 +318,7 @@ export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event
         <p className="site-rules-note">{i18n.t("siteRules.immediate")}</p>
       </div>
       <div role="tabpanel" className="site-rules-pane" id={`${tabId}-custom-panel`} aria-labelledby={`${tabId}-custom-tab`} hidden={tab !== "custom"}>
+        {toggleError && <p role="alert" className="site-rules-error site-rules-write-error">{i18n.t("siteRuleAgent.conflict")}</p>}
         {editing
           ? (
               <div className="site-rules-editor">
@@ -344,10 +381,13 @@ export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event
                       <>
                         <div className="site-rules-custom-header">
                           <span className="site-rules-count">{i18n.t("siteRules.customCount", [rulesConfig.userRules.length])}</span>
-                          <Button variant="outline" size="sm" onClick={openEditor}>{i18n.t("siteRules.edit")}</Button>
+                          <details className="site-rules-more">
+                            <summary>{i18n.t("siteRuleAgent.more")}</summary>
+                            <Button variant="outline" size="sm" onClick={openEditor}>{i18n.t("siteRuleAgent.advanced")}</Button>
+                          </details>
                         </div>
                         <div className="site-rules-list">
-                          {rulesConfig.userRules.map(rule => <RuleRow key={rule.id} rule={rule} />)}
+                          {rulesConfig.userRules.map(rule => <RuleRow key={rule.id} rule={rule} enabled={rule.enabled !== false} pending={toggling} onToggle={enabled => void changeUserRule(rule, enabled)} onDelete={() => void changeUserRule(rule, null)} />)}
                         </div>
                       </>
                     )
@@ -355,7 +395,10 @@ export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event
                       <div className="site-rules-list site-rules-empty">
                         <h2>{i18n.t("siteRules.emptyTitle")}</h2>
                         <p>{i18n.t("siteRules.emptyDescription")}</p>
-                        <Button size="sm" onClick={openEditor}>{i18n.t("siteRules.add")}</Button>
+                        <details className="site-rules-more">
+                          <summary>{i18n.t("siteRuleAgent.more")}</summary>
+                          <Button variant="outline" size="sm" onClick={openEditor}>{i18n.t("siteRuleAgent.advanced")}</Button>
+                        </details>
                       </div>
                     )}
               </>

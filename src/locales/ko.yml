@@ -671,3 +671,61 @@ siteRules:
     schema: Invalid rule fields. Check the details below.
     duplicateIds: Each custom rule must have a unique id.
     saveFailed: Rules could not be saved. Try again.
+siteRuleAgent:
+  entry: agent로 이 사이트 조정
+  title: 이 사이트 조정
+  problem: 어떤 부분을 조정할까요?
+  problemPlaceholder: "선택 사항. 예: 호버 번역이 작동하지 않거나 번역문에 세로선이 없음."
+  copyInstructions: agent 지침 복사
+  paste: 규칙이 있나요? 설정 붙여넣기
+  candidate: 후보 규칙을 받았습니다
+  ready: 규칙을 미리 보고 결과를 확인한 후 저장하세요.
+  preview: 규칙 미리 보기
+  previewing: 미리 보는 중 · 저장되지 않음
+  starting: 미리 보기 시작 중
+  restoring: 미리 보기 복원 중
+  paused: 미리 보기 일시 중지됨
+  pausedHelp: $1로 돌아가면 계속할 수 있습니다. 이 사이트에는 저장된 설정이 적용됩니다.
+  invalid: 유효하지 않은 후보 규칙
+  previewFailed: 미리 보기를 시작할 수 없습니다
+  noContent: 일치하는 본문이 없습니다
+  conflict: 이 사이트의 규칙이 다른 곳에서 변경되었습니다
+  reload: 규칙 다시 불러오기
+  more: 더 보기
+  document: 규칙 문서
+  documentPlaceholder: agent가 반환한 단일 사이트 JSON 설정을 붙여넣으세요.
+  diagnostics: 진단 정보
+  copyDocument: 규칙 문서 복사
+  copyDiagnostics: agent용 진단 정보 복사
+  repreview: 다시 미리 보기
+  stop: 미리 보기 중지
+  save: 규칙 저장
+  saving: 저장 중
+  saved: 사이트 규칙을 저장했습니다
+  saveFailed: 저장 실패. 미리 보기는 유지됩니다
+  retrySave: 저장 재시도
+  undo: 실행 취소
+  undoConflict: 규칙이 다시 변경되어 바로 실행 취소할 수 없습니다
+  undone: 변경을 취소했습니다
+  close: 닫기
+  collapse: 접기
+  expand: 조정 패널 펼치기
+  temporary: 미리 보기는 이 탭에만 적용됩니다. 저장한 규칙은 일치하는 페이지에 적용됩니다.
+  summary: "사용자 규칙 $1개 추가 또는 업데이트, $2개 일시 중지."
+  contentCount: 이 페이지에서 본문 영역 $1개가 일치했습니다.
+  copied: 복사됨
+  copyFailed: 복사할 수 없습니다. 텍스트를 선택하여 직접 복사하세요.
+  operationFailed: 작업을 완료할 수 없습니다. 설정은 유지됩니다. 다시 시도하세요.
+  openFailed: 패널을 열 수 없습니다. 페이지를 새로고침하고 다시 시도하세요.
+  unsupported: 일반 웹페이지를 연 후 사이트를 조정하세요.
+  manage: 사이트 규칙 관리
+  settingsHelp: 대상 사이트에서 Readomi 팝업을 열고 “agent로 이 사이트 조정”을 선택하세요.
+  advanced: 고급 JSON 편집
+  delete: 규칙 삭제
+  enabled: 활성화됨
+  disabled: 일시 중지됨
+  userAction: 웹페이지에서 미리 보기를 확인한 후 직접 규칙 저장을 클릭하세요.
+  hoverTriggerHelp: 링크에서 마우스 길게 누르기는 아직 지원하지 않습니다. 팝업에서 키보드 호버 트리거를 선택하세요.
+  scopeHelp: 이 페이지는 규칙 범위 밖에 있습니다. 일치하는 페이지로 돌아가세요.
+  requestFailed: 번역 요청이 실패했습니다. 결과는 아직 확인되지 않았습니다.
+  modify: 설정 편집

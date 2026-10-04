@@ -18,6 +18,26 @@
   line-height: 1.5;
 }
 
+.site-rules-agent-help {
+  margin: -12px 0 24px;
+  color: var(--rf-muted-foreground);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.site-rules-more {
+  color: var(--rf-muted-foreground);
+  font-size: 12px;
+}
+
+.site-rules-more summary {
+  cursor: pointer;
+}
+
+.site-rules-more[open] > button {
+  margin-top: 10px;
+}
+
 .site-rules-back:hover {
   color: var(--rf-primary);
 }

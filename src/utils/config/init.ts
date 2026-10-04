@@ -4,6 +4,7 @@ import { configSchema } from "@/types/config/config"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "../constants/config"
 import { logger } from "../logger"
 import { describeConfigIssues } from "./storage"
+import { withConfigWriteLock } from "./write-lock"
 
 const CONFIG_KEY = `local:${CONFIG_STORAGE_KEY}` as const
 
@@ -13,6 +14,10 @@ const CONFIG_KEY = `local:${CONFIG_STORAGE_KEY}` as const
  * left untouched so it can be replaced through import or an explicit reset.
  */
 export async function initializeConfig() {
+  await withConfigWriteLock(initializeConfigUnderLock)
+}
+
+async function initializeConfigUnderLock() {
   const storedConfig = await storage.getItem<unknown>(CONFIG_KEY)
 
   let config: Config

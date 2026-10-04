@@ -1,14 +1,15 @@
-import { useAtomValue } from "jotai"
 import { i18n } from "#imports"
-import { configAtom } from "@/utils/atoms/config"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { translateNodesBilingualMode, translateNodeTranslationOnlyMode } from "@/utils/host/translate/node-manipulation"
+import { getHostConfig } from "@/utils/site-rules/preview-config"
 
 export function RetryButton({ nodes }: { nodes: ChildNode[] }) {
-  const config = useAtomValue(configAtom)
-  const translationMode = config.translate.mode
-
   const handleRetry = async () => {
+    const pageUrl = window.location.href
+    const config = await getHostConfig()
+    if (!config || window.location.href !== pageUrl || !nodes.length || nodes.some(node => !node.isConnected))
+      return
+    const translationMode = config.translate.mode
     const walkId = getRandomUUID()
     if (translationMode === "bilingual") {
       await translateNodesBilingualMode(nodes, walkId, config)

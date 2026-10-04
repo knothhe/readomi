@@ -6,9 +6,11 @@ import type {
 } from "@/types/background-generate-text"
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
+import type { SubtitleStyle } from "@/types/config/subtitle-style"
 import type { TranslationProgress } from "@/types/translation-progress"
 import type { TranslationResult } from "@/utils/host/translate/translation-result"
 import type { LanguagePolicyConfig } from "@/utils/language-policy"
+import type { SiteRuleSession, SiteRuleSessionResult } from "@/utils/site-rules/document"
 import { browser } from "#imports"
 import { isExtensionContextInvalidatedError, isExtensionContextValid, isMessageConnectionLostError } from "./extension-context"
 import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-policy"
@@ -16,6 +18,16 @@ import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-pol
 interface ProtocolMap {
   // navigation
   openOptionsPage: (data?: { section?: string }) => void
+  openSiteRulePanel: () => void
+  getSiteRuleSession: () => Promise<SiteRuleSessionResult>
+  setSiteRuleDraft: (data: { text: string }) => Promise<SiteRuleSessionResult>
+  previewSiteRuleDraft: (data: { revision: number }) => Promise<SiteRuleSessionResult>
+  ackSiteRulePreview: (data: { revision: number, draftHash: string, readableBodyCount: number, url: string }) => Promise<SiteRuleSessionResult>
+  saveSiteRuleDraft: (data: { revision: number }) => Promise<SiteRuleSessionResult>
+  stopSiteRulePreview: () => Promise<SiteRuleSessionResult>
+  undoSiteRuleSave: () => Promise<SiteRuleSessionResult>
+  siteRuleSessionChanged: (data: { session: SiteRuleSession | null }) => void
+  saveSubtitleStylePatch: (data: { patch: Partial<SubtitleStyle> }) => Promise<void>
   // translation state
   getEnablePageTranslationByTabId: (data: { tabId: number }) => boolean | undefined
   getEnablePageTranslationFromContentScript: () => Promise<boolean>

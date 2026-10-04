@@ -1,14 +1,14 @@
 import type { PageTranslationRequestOptions } from "./stream-request"
 import type { Config } from "@/types/config/config"
 import { resolveProviderConfig } from "@/utils/constants/feature-providers"
-import { getLocalConfig } from "../../config/storage"
+import { getHostConfig } from "@/utils/site-rules/preview-config"
 import { prepareTranslationText } from "./text-preparation"
 import { translateTextCore } from "./translate-text"
 import { getOrCreateWebPageContext } from "./webpage-context"
 import { getOrGenerateWebPageSummary } from "./webpage-summary"
 
 async function getConfigOrThrow(): Promise<Config> {
-  const config = await getLocalConfig()
+  const config = await getHostConfig()
   if (!config) {
     throw new Error("No global config when translate text")
   }

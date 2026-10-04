@@ -1,5 +1,4 @@
 import type { Config } from "@/types/config/config"
-import { getLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
@@ -17,6 +16,7 @@ import { resetTranslationProgress } from "@/utils/host/translate/ui/translation-
 import { getOrCreateWebPageContext } from "@/utils/host/translate/webpage-context"
 import { logger } from "@/utils/logger"
 import { sendMessage } from "@/utils/message"
+import { getHostConfig } from "@/utils/site-rules/preview-config"
 
 type SimpleIntersectionOptions = Omit<IntersectionObserverInit, "threshold"> & {
   threshold?: number
@@ -112,6 +112,11 @@ export class PageTranslationManager implements IPageTranslationManager {
     this.stopInternal({ notify: false, restoreContent: false })
   }
 
+  /** Restore this frame without disabling the tab's page-translation setting. */
+  suspend(): void {
+    this.stopInternal({ notify: false })
+  }
+
   private async startInternal(): Promise<void> {
     if (!this.canRun())
       return
@@ -122,7 +127,7 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     const version = ++this.startVersion
     const isCurrent = () => this.canRun() && version === this.startVersion
-    const config = await getLocalConfig()
+    const config = await getHostConfig()
     if (!isCurrent())
       return
     if (!config) {
@@ -168,7 +173,7 @@ export class PageTranslationManager implements IPageTranslationManager {
           if (entry.isIntersecting) {
             if (isHTMLElement(entry.target)) {
               if (!entry.target.closest(`.${CONTENT_WRAPPER_CLASS}`)) {
-                const currentConfig = await getLocalConfig()
+                const currentConfig = await getHostConfig()
                 if (!isCurrent() || walkController.signal.aborted)
                   return
                 if (!currentConfig) {
@@ -375,7 +380,7 @@ export class PageTranslationManager implements IPageTranslationManager {
     if (!this.canRun() || !this.walkId || !observer)
       return
 
-    const config = existingConfig ?? await getLocalConfig()
+    const config = existingConfig ?? await getHostConfig()
     if (!this.canRun() || observer !== this.intersectionObserver)
       return
     if (!config) {
@@ -505,7 +510,7 @@ export class PageTranslationManager implements IPageTranslationManager {
   private async handleMutationRecords(records: MutationRecord[]): Promise<void> {
     if (!this.canRun() || !this.isPageTranslating)
       return
-    const config = await getLocalConfig()
+    const config = await getHostConfig()
     if (!this.canRun() || !this.isPageTranslating)
       return
     if (!config) {

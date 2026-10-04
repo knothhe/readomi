@@ -110,11 +110,16 @@ describe("bootstrapHostContent URL changes", () => {
     mockBindTranslationShortcutKey.mockResolvedValue(vi.fn())
     mockOnMessage.mockImplementation((name: string, handler: (msg?: any) => any) => {
       messageHandlers.set(name, handler)
-      return vi.fn()
+      return vi.fn(() => {
+        if (messageHandlers.get(name) === handler)
+          messageHandlers.delete(name)
+      })
     })
     mockSendMessage.mockImplementation((name: string) => {
       if (name === "getEnablePageTranslationFromContentScript")
         return Promise.resolve(false)
+      if (name === "getSiteRuleSession")
+        return Promise.resolve({ ok: true, session: null })
 
       return Promise.resolve(undefined)
     })
@@ -124,6 +129,8 @@ describe("bootstrapHostContent URL changes", () => {
     mockSendMessage.mockImplementation((name: string) => {
       if (name === "getEnablePageTranslationFromContentScript")
         return Promise.resolve(true)
+      if (name === "getSiteRuleSession")
+        return Promise.resolve({ ok: true, session: null })
 
       return Promise.resolve(undefined)
     })
@@ -198,6 +205,9 @@ describe("bootstrapHostContent URL changes", () => {
     mockBindTranslationShortcutKey.mockReturnValue(new Promise(resolve => finishShortcut = resolve))
     const { ctx, invalidate } = createContentScriptContext()
     const startup = bootstrapHostContent(ctx)
+    await flushAsyncWork()
+    expect(mockBindTranslationShortcutKey).toHaveBeenCalledOnce()
+    mockSendMessage.mockClear()
     invalidate()
     expect(removeUrlListener).toHaveBeenCalledOnce()
     finishShortcut(removeShortcut)

@@ -1,19 +1,23 @@
 import type { ContentScriptContext } from "#imports"
 import type { ColorTheme } from "@/utils/color-theme"
 import type { ThemeMode } from "@/utils/theme"
-import { subscribeLocalConfig } from "@/utils/config/storage"
 import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translate"
 import { setHostColorTheme } from "@/utils/host-color-theme"
+import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
+import { removeAllTranslatedWrapperNodes } from "@/utils/host/translate/node-manipulation"
 import { clearSiteRuleStyles, refreshSiteRuleStyles } from "@/utils/host/translate/ui/site-rule-styles"
 import { ensurePresetStyles } from "@/utils/host/translate/ui/style-injector"
 import { createWordPrefixEmphasisController } from "@/utils/host/word-prefix-emphasis"
 import { logger } from "@/utils/logger"
 import { onMessage, sendMessage } from "@/utils/message"
+import { setHostPreviewConfig, subscribeHostConfig } from "@/utils/site-rules/preview-config"
+import { createSiteRulePreviewController } from "@/utils/site-rules/preview-controller"
 import { resolveTheme } from "@/utils/theme"
 import { setUILanguage } from "@/utils/ui-language"
 import { areSamePageTranslationOrigin } from "@/utils/url"
 import { setupUrlChangeListener } from "./listen"
 import { mountHostToast } from "./mount-host-toast"
+import { mountSiteRulePanel } from "./site-rule-panel/mount"
 import { bootstrapVideoSubtitles } from "./subtitles/runtime"
 import { bindTranslationShortcutKey } from "./translation-control/bind-translation-shortcut"
 import { watchConfigChanges } from "./translation-control/handle-config-change"
@@ -66,7 +70,7 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   track(clearSiteRuleStyles)
   let colorTheme: ColorTheme = "terra"
   let appearanceMode: ThemeMode = "system"
-  const unsubscribeColorTheme = subscribeLocalConfig((config) => {
+  const unsubscribeColorTheme = subscribeHostConfig((config) => {
     if (config)
       refreshSiteRuleStyles(config)
     setUILanguage(config?.ui.language ?? "browser")
@@ -79,8 +83,9 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   track(unsubscribeColorTheme)
   appearanceQuery?.addEventListener("change", updateAppearance)
   track(() => appearanceQuery?.removeEventListener("change", updateAppearance))
-  const cleanupHoverTranslation = bindHoverTranslation()
-  track(cleanupHoverTranslation)
+  let cleanupHoverTranslation = () => {}
+  let hoverBound = false
+  track(() => cleanupHoverTranslation())
   const cleanupVideoSubtitles = bootstrapVideoSubtitles(() => ctx.isInvalid)
   track(cleanupVideoSubtitles)
 
@@ -97,6 +102,36 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   })
   track(() => manager.dispose())
 
+  let previewRestoring = false
+  let pageTranslationWanted = false
+  const previewController = createSiteRulePreviewController({
+    async resetTranslation(config, _generation, isCurrent) {
+      if (!previewRestoring)
+        pageTranslationWanted = manager.isActive
+      previewRestoring = true
+      cleanupHoverTranslation()
+      manager.suspend()
+      removeAllTranslatedWrapperNodes(document)
+      flushBatchedOperations()
+      clearSiteRuleStyles()
+      await setHostPreviewConfig(config)
+      if (ctx.isInvalid || !isCurrent())
+        return
+      cleanupHoverTranslation = bindHoverTranslation()
+      hoverBound = true
+      if (pageTranslationWanted)
+        await manager.start()
+      if (isCurrent())
+        previewRestoring = false
+    },
+  })
+  track(() => previewController.dispose())
+  track(() => {
+    void setHostPreviewConfig(null)
+  })
+  if (window === window.top)
+    track(mountSiteRulePanel(previewController))
+
   // Translate the page again when the popup or the options page changes the translation mode.
   // A change before this point needs no action: page translation starts later and reads the current config.
   const unwatchConfig = watchConfigChanges(manager)
@@ -104,10 +139,18 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
 
   // Turn the word-prefix emphasis on and off when the reader changes the setting.
   const wordPrefixEmphasis = createWordPrefixEmphasisController(document)
-  const unsubscribeWordPrefixEmphasis = subscribeLocalConfig(config => wordPrefixEmphasis.setEnabled(config?.reading.wordPrefixEmphasis === true))
+  const unsubscribeWordPrefixEmphasis = subscribeHostConfig(config => wordPrefixEmphasis.setEnabled(config?.reading.wordPrefixEmphasis === true))
 
   track(unsubscribeWordPrefixEmphasis)
   track(() => wordPrefixEmphasis.setEnabled(false))
+
+  await previewController.reload()
+  if (ctx.isInvalid)
+    return
+  if (!hoverBound) {
+    cleanupHoverTranslation = bindHoverTranslation()
+    hoverBound = true
+  }
 
   const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager, document, () => ctx.isInvalid)
   track(cleanupTranslationShortcut)
@@ -126,12 +169,15 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   if (ctx.isInvalid)
     return
   if (translationEnabled) {
-    void manager.start()
+    pageTranslationWanted = true
+    await manager.start()
   }
 
   const handleUrlChange = async (from: string, to: string) => {
     if (!ctx.isInvalid && from !== to) {
       logger.info("URL changed from", from, "to", to)
+      if (previewController.getReport().session?.status === "previewing")
+        return
       if (manager.isActive) {
         if (areSamePageTranslationOrigin(from, to)) {
           await manager.restart()
@@ -156,6 +202,9 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   // Listen for translation state changes from background
   const cleanupTranslationStateListener = onMessage("askManagerToTogglePageTranslation", (msg) => {
     const { enabled } = msg.data
+    pageTranslationWanted = enabled
+    if (previewRestoring)
+      return
     if (enabled === manager.isActive)
       return
     enabled ? void manager.start() : manager.stop()
@@ -165,6 +214,9 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
     ? () => {}
     : onMessage("notifyTranslationStateChanged", (msg) => {
         const { enabled } = msg.data
+        pageTranslationWanted = enabled
+        if (previewRestoring)
+          return
         if (enabled === manager.isActive)
           return
         enabled ? void manager.start() : manager.stop()

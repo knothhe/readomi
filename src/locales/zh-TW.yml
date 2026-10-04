@@ -671,3 +671,61 @@ siteRules:
     schema: 規則欄位無效，請檢查標出的內容。
     duplicateIds: 每條自訂規則必須使用不同的 id。
     saveFailed: 規則未儲存，請重試。
+siteRuleAgent:
+  entry: 讓 agent 適配此網站
+  title: 適配此網站
+  problem: 哪裡翻譯不合適？
+  problemPlaceholder: 可選，例如首頁 hover 無效，或譯文沒有使用豎線。
+  copyInstructions: 複製 agent 指令
+  paste: 已有規則？貼上設定
+  candidate: 候選規則已收到
+  ready: 預覽規則，確認效果後儲存。
+  preview: 預覽規則
+  previewing: 預覽中 · 尚未儲存
+  starting: 正在預覽
+  restoring: 正在恢復預覽
+  paused: 預覽已暫停
+  pausedHelp: 返回 $1 後繼續預覽。目前網站使用原有設定。
+  invalid: 候選規則無效
+  previewFailed: 預覽未能啟動
+  noContent: 目前未匹配到正文
+  conflict: 此網站的規則已在別處更新
+  reload: 重新讀取規則
+  more: 更多
+  document: 規則文件
+  documentPlaceholder: 貼上 agent 返回的單一網站 JSON 設定。
+  diagnostics: 診斷資訊
+  copyDocument: 複製規則文件
+  copyDiagnostics: 複製診斷給 agent
+  repreview: 重新預覽
+  stop: 停止預覽
+  save: 儲存規則
+  saving: 正在儲存
+  saved: 網站規則已儲存
+  saveFailed: 儲存失敗，預覽仍然保留
+  retrySave: 重試儲存
+  undo: 復原
+  undoConflict: 規則已再次修改，無法直接復原
+  undone: 已復原本次修改
+  close: 關閉
+  collapse: 收起
+  expand: 展開適配面板
+  temporary: 預覽僅用於目前分頁。儲存後按規則範圍套用。
+  summary: 將新增或更新 $1 條使用者規則，暫停 $2 條。
+  contentCount: 目前匹配到 $1 個正文區域。
+  copied: 已複製
+  copyFailed: 無法複製，請選取文字手動複製。
+  operationFailed: 操作未完成，設定已保留，請重試。
+  openFailed: 無法開啟面板，請重新整理網頁後重試。
+  unsupported: 請先開啟一個一般網頁，再適配此網站。
+  manage: 管理網站規則
+  settingsHelp: 在要適配的網站開啟 Readomi 彈出視窗，選擇「讓 agent 適配此網站」。
+  advanced: 進階 JSON 編輯
+  delete: 刪除規則
+  enabled: 已啟用
+  disabled: 已停用
+  userAction: 請在網頁預覽效果後，由你點擊儲存規則。
+  hoverTriggerHelp: 連結上的滑鼠長按暫不支援，請在彈出視窗選擇鍵盤 hover 觸發方式。
+  scopeHelp: 目前頁面不在規則範圍內，請返回適用頁面。
+  requestFailed: 翻譯請求失敗，譯文效果仍待確認。
+  modify: 修改設定

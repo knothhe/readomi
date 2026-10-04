@@ -671,3 +671,61 @@ siteRules:
     schema: Invalid rule fields. Check the details below.
     duplicateIds: Each custom rule must have a unique id.
     saveFailed: Rules could not be saved. Try again.
+siteRuleAgent:
+  entry: Bu siteyi bir agent ile uyarlayın
+  title: Bu siteyi uyarlayın
+  problem: Neyin düzeltilmesi gerekiyor?
+  problemPlaceholder: "İsteğe bağlı, örneğin üzerine gelince çevirinin çalışmaması veya dikey çizginin eksik olması."
+  copyInstructions: Agent talimatlarını kopyala
+  paste: Kurallarınız var mı? Yapılandırmayı yapıştırın
+  candidate: Aday kurallar alındı
+  ready: "Kuralları önizleyin, sonucu inceledikten sonra kaydedin."
+  preview: Kuralları önizle
+  previewing: Önizleniyor · Kaydedilmedi
+  starting: Önizleme başlatılıyor
+  restoring: Önizleme geri yükleniyor
+  paused: Önizleme duraklatıldı
+  pausedHelp: Devam etmek için $1 sitesine dönün. Bu site kayıtlı yapılandırmasını kullanır.
+  invalid: Geçersiz aday kurallar
+  previewFailed: Önizleme başlatılamadı
+  noContent: Eşleşen okunabilir içerik yok
+  conflict: Bu sitenin kuralları başka bir yerde değiştirildi
+  reload: Kuralları yeniden yükle
+  more: Daha fazla
+  document: Kural belgesi
+  documentPlaceholder: Agent tarafından döndürülen tek siteye ait JSON yapılandırmasını yapıştırın.
+  diagnostics: Tanılama
+  copyDocument: Kural belgesini kopyala
+  copyDiagnostics: Agent için tanılamayı kopyala
+  repreview: Yeniden önizle
+  stop: Önizlemeyi durdur
+  save: Kuralları kaydet
+  saving: Kaydediliyor
+  saved: Site kuralları kaydedildi
+  saveFailed: Kayıt başarısız; önizlemeniz hâlâ kullanılabilir
+  retrySave: Kaydetmeyi yeniden dene
+  undo: Geri al
+  undoConflict: Kurallar yeniden değişti ve doğrudan geri alınamaz
+  undone: Değişiklikler geri alındı
+  close: Kapat
+  collapse: Daralt
+  expand: Uyarlama panelini genişlet
+  temporary: Önizleme yalnızca bu sekmeyi etkiler. Kaydedilen kurallar eşleşen sayfalara uygulanır.
+  summary: $1 kullanıcı kuralı ekle veya güncelle; $2 kuralı duraklat.
+  contentCount: Bu sayfada $1 okunabilir bölge eşleşti.
+  copied: Kopyalandı
+  copyFailed: Kopyalanamadı. Metni seçip elle kopyalayın.
+  operationFailed: İşlem tamamlanamadı. Yapılandırmanız korunuyor; yeniden deneyin.
+  openFailed: Panel açılamadı. Web sayfasını yenileyip yeniden deneyin.
+  unsupported: Siteyi uyarlamadan önce normal bir web sayfası açın.
+  manage: Site kurallarını yönet
+  settingsHelp: Web sitesinde Readomi açılır penceresini açıp “Bu siteyi bir agent ile uyarlayın” seçeneğini seçin.
+  advanced: Gelişmiş JSON düzenleme
+  delete: Kuralı sil
+  enabled: Etkin
+  disabled: Duraklatıldı
+  userAction: Web sayfasındaki önizlemeyi inceleyin ve Kuralları kaydet düğmesine kendiniz tıklayın.
+  hoverTriggerHelp: Bağlantılarda fareyi basılı tutma henüz desteklenmiyor. Açılır pencereden klavyeyle üzerine gelme tetikleyicisi seçin.
+  scopeHelp: Bu sayfa kural kapsamının dışında. Eşleşen bir sayfaya dönün.
+  requestFailed: Çeviri isteği başarısız oldu. Sonuç henüz doğrulanmadı.
+  modify: Yapılandırmayı düzenle

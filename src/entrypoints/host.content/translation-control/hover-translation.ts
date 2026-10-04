@@ -1,12 +1,12 @@
 import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
-import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { hasNoWalkAncestor, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isWalkBlockedElement, isWithinIncludeScope } from "@/utils/host/dom/filter"
 import { findNearestAncestorBlockNodeFor } from "@/utils/host/dom/find"
+import { matchesSiteRuleSelector } from "@/utils/host/dom/site-rule-matching"
 import { getTranslationGroup, getTranslationGroupOwner } from "@/utils/host/dom/translation-group"
 import { extractTextContent, walkAndLabelElement } from "@/utils/host/dom/traversal"
 import { containsInlineAtomOutsideWrappers } from "@/utils/host/translate/dom/inline-atoms"
@@ -17,6 +17,9 @@ import { createInlineHoverStreamPreview } from "@/utils/host/translate/ui/inline
 import { beginSiteRuleStyleOperation } from "@/utils/host/translate/ui/site-rule-styles"
 import { isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
+import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
+import { getHostConfig, getHostPreviewContext, watchHostConfig } from "@/utils/site-rules/preview-config"
+import { describePreviewElement, recordSiteRulePreview } from "@/utils/site-rules/preview-observations"
 
 const KEYBOARD_TRIGGERS = { "Alt": "alt", "Control": "control", "Shift": "shift", "`": "backtick" } as const
 
@@ -50,9 +53,29 @@ export function bindHoverTranslation(target: Document = document) {
     hovered = candidate instanceof Element ? candidate : null
   }
   const translate = async (element: Element, config: Config) => {
+    const context = getHostPreviewContext()
+    const record = (event: Parameters<typeof recordSiteRulePreview>[0]) => recordSiteRulePreview({ ...event, ...context })
     const block = findNearestAncestorBlockNodeFor(element, config)
+    const hit = {
+      target: describePreviewElement(element), block: describePreviewElement(block),
+      targetDisplay: element.ownerDocument.defaultView?.getComputedStyle(element).display,
+      blockDisplay: block.ownerDocument.defaultView?.getComputedStyle(block).display,
+      root: block.getRootNode() instanceof ShadowRoot ? "shadow" as const : "document" as const,
+    }
+    record({ event: "hover-target", ...hit })
     if (!isHTMLElement(block) || block === target.body || block === target.documentElement || hasNoWalkAncestor(block, config)
       || block.closest("input,textarea,[contenteditable]:not([contenteditable='false']),video,[data-readomi-subtitles]") || !block.textContent?.trim()) {
+      const rule = getEffectiveSiteRule(config, window.location.href)
+      let ancestor: HTMLElement | null = isHTMLElement(block) ? block.parentElement : null
+      while (ancestor && !isWalkBlockedElement(ancestor, config))
+        ancestor = ancestor.parentElement
+      record({ event: "hover-blocked", ...hit,
+        target: ancestor ? describePreviewElement(ancestor) : hit.target,
+        selector: ancestor && matchesSiteRuleSelector(ancestor, rule.excludeSelector)
+          ? rule.excludeSelector
+          : ancestor && matchesSiteRuleSelector(ancestor, rule.preserveTextSelector) ? rule.preserveTextSelector : null,
+        reason: ancestor ? "blocked ancestor" : "empty, editable, media or document target",
+      })
       return
     }
     if (!validateTranslationConfigAndToast(config))
@@ -77,8 +100,15 @@ export function bindHoverTranslation(target: Document = document) {
       walkAndLabelElement(block, walkId, config)
       const requests: { result: Promise<string>, resolve: (text: string) => void, reject: (error: unknown) => void }[] = []
       const translateGroup = Object.assign((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void, onTargetLanguage?: (code: LangCodeISO6393) => void) => {
+        const requestTarget = typographyElement ? describePreviewElement(typographyElement) : hit.block
+        record({ event: "request-started", target: requestTarget })
         const update = preview?.register(typographyElement, hideSpinner)
+        let streamed = false
         const onPartial = update && ((partial: string) => {
+          if (partial && !streamed) {
+            streamed = true
+            record({ event: "stream-started", target: requestTarget })
+          }
           // A replacement preview spans the whole paragraph. If that paragraph
           // has several language units, keep it intact until all units settle.
           if (config.translate.mode !== "translationOnly" || requests.length <= 1)
@@ -89,13 +119,28 @@ export function bindHoverTranslation(target: Document = document) {
           onTargetLanguage?.(code)
         }
         const result = new Promise<string>((resolve, reject) => {
-          const abort = () => reject(new DOMException("Translation cancelled", "AbortError"))
+          const abort = () => {
+            record({ event: "request-cancelled", target: requestTarget })
+            reject(new DOMException("Translation cancelled", "AbortError"))
+          }
           signal.addEventListener("abort", abort, { once: true })
-          void translateTextForPage(text, { onPartial, onTargetLanguage: onTarget, signal }).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort))
+          void translateTextForPage(text, { onPartial, onTargetLanguage: onTarget, signal }).then((value) => {
+            if (!signal.aborted)
+              record({ event: "request-completed", target: requestTarget, reason: value ? "translated" : "preserved or empty" })
+            resolve(value)
+          }, (error) => {
+            if (!signal.aborted)
+              record({ event: "request-failed", target: requestTarget, reason: error instanceof Error ? error.name : "translation error" })
+            reject(error)
+          }).finally(() => signal.removeEventListener("abort", abort))
         })
         return new Promise<string>((resolve, reject) => requests.push({ result, resolve, reject }))
       }, { showSpinner: true, cancel: () => request.abort() })
       const finished = translateWalkedElement(block, walkId, config, true, signal, translateGroup)
+      if (!requests.length) {
+        const rule = getEffectiveSiteRule(config, window.location.href)
+        record({ event: "hover-no-content", ...hit, selector: rule.includeSelector, reason: "No translation group survived include/exclude, preserved-text or length filtering." })
+      }
       // The walker registers every group synchronously. Release their finished
       // results together so a paragraph with several groups settles at once.
       const results = await Promise.allSettled(requests.map(request => request.result))
@@ -149,7 +194,7 @@ export function bindHoverTranslation(target: Document = document) {
         return
       triggered = true
       const candidate = hotkey === "clickAndHold" ? element : hovered ?? element
-      void getLocalConfig().then(async (config) => {
+      void getHostConfig().then(async (config) => {
         if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !busy && !controller.signal.aborted && candidate.isConnected) {
           // Finish restoring the previous paragraph before walking another one.
           // This matters when a completed replacement preview is dismissed by
@@ -279,7 +324,7 @@ export function bindHoverTranslation(target: Document = document) {
     mouseStart = { x: event.clientX, y: event.clientY }
     start("clickAndHold", element)
   }
-  const unwatch = watchLocalConfig((next, previous) => {
+  const unwatch = watchHostConfig((next, previous) => {
     currentConfig = next
     configChanged = true
     const rulesChanged = previous && JSON.stringify(next?.siteRules) !== JSON.stringify(previous.siteRules)
@@ -298,7 +343,7 @@ export function bindHoverTranslation(target: Document = document) {
     }
   })
   // Watch first: a delayed initial read must not overwrite a newer setting.
-  void getLocalConfig().then((config) => {
+  void getHostConfig().then((config) => {
     if (!configChanged && !controller.signal.aborted && isExtensionContextValid())
       currentConfig = config
   }).catch((error) => {

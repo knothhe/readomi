@@ -1,11 +1,21 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { fakeBrowser } from "wxt/testing/fake-browser"
 import { storage } from "#imports"
+import { setupSiteRuleSessions } from "@/entrypoints/background/site-rule-sessions"
 import { configSchema } from "@/types/config/config"
 import { subtitleStyleSchema } from "@/types/config/subtitle-style"
+import { withConfigWriteLock } from "@/utils/config/write-lock"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
+import { sendMessage } from "@/utils/message"
 import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitleBackgroundPatch, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings, subtitleTextStyle } from "../appearance"
 
 describe("subtitle appearance configuration", () => {
+  beforeEach(() => {
+    fakeBrowser.reset()
+    setupSiteRuleSessions()
+  })
+  afterEach(() => vi.restoreAllMocks())
+
   it("scales the saved size to the video window and keeps fixed pixels independent of its width", () => {
     const style = DEFAULT_CONFIG.features.subtitleStyle
     expect(resolveSubtitleFontSize(style, 320)).toBe(9.6)
@@ -131,6 +141,35 @@ describe("subtitle appearance configuration", () => {
     await saveSubtitleStyle({ backgroundEnabled: false, backgroundOpacity: 0 })
     const saved = await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)
     expect(saved).toEqual({ ...old, features: { ...old.features, subtitleStyle: { ...old.features.subtitleStyle, relativeFontSize: 5.9375, fontSizeMode: "video", backgroundEnabled: false, backgroundOpacity: 0 } } })
+  })
+  it("serializes background style patches with other configuration writes and merges each into the latest value", async () => {
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)
+    let release!: () => void
+    let started!: () => void
+    const held = new Promise<void>(resolve => release = resolve)
+    const writing = new Promise<void>(resolve => started = resolve)
+    const updated = { ...DEFAULT_CONFIG, reading: { ...DEFAULT_CONFIG.reading, wordPrefixEmphasis: true } }
+    const otherWrite = withConfigWriteLock(async () => {
+      started()
+      await held
+      await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, updated)
+    })
+    await writing
+    const messages = vi.spyOn(fakeBrowser.runtime, "sendMessage")
+    const a = sendMessage("saveSubtitleStylePatch", { patch: { position: { x: 60, y: 70 } } })
+    const b = sendMessage("saveSubtitleStylePatch", { patch: { fontSize: 80, fontSizeMode: "fixed" } })
+    await vi.waitFor(() => expect(messages).toHaveBeenCalledTimes(2))
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(DEFAULT_CONFIG)
+    release()
+    await Promise.all([otherWrite, a, b])
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual({ ...updated, features: { ...updated.features, subtitleStyle: { ...updated.features.subtitleStyle, fontSize: 80, fontSizeMode: "fixed", position: { x: 60, y: 70 } } } })
+  })
+  it("reports an invalid patch without saving and permits a later valid update", async () => {
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)
+    await expect(saveSubtitleStyle({ fontSize: 81 })).rejects.toThrow("字幕样式参数无效")
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(DEFAULT_CONFIG)
+    await saveSubtitleStyle({ fontSize: 40 })
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, subtitleStyle: { ...DEFAULT_CONFIG.features.subtitleStyle, fontSize: 40 } } })
   })
   it("accepts the new minimum fixed size and maximum relative size", () => {
     expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, fontSize: 8, relativeFontSize: 12.5 }).success).toBe(true)

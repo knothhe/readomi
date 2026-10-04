@@ -671,3 +671,61 @@ siteRules:
     schema: Invalid rule fields. Check the details below.
     duplicateIds: Each custom rule must have a unique id.
     saveFailed: Rules could not be saved. Try again.
+siteRuleAgent:
+  entry: agent でこのサイトを調整
+  title: このサイトを調整
+  problem: どこを調整しますか？
+  problemPlaceholder: 任意。例：ホバー翻訳が動かない、訳文の縦線が表示されない。
+  copyInstructions: agent 向け指示をコピー
+  paste: ルールがある場合は設定を貼り付け
+  candidate: 候補ルールを受信しました
+  ready: ルールをプレビューし、結果を確認して保存してください。
+  preview: ルールをプレビュー
+  previewing: プレビュー中 · 未保存
+  starting: プレビューを開始中
+  restoring: プレビューを復元中
+  paused: プレビューを一時停止しました
+  pausedHelp: $1 に戻ると続行できます。このサイトには保存済みの設定が適用されます。
+  invalid: 候補ルールが無効です
+  previewFailed: プレビューを開始できませんでした
+  noContent: 一致する本文がありません
+  conflict: このサイトのルールが別の場所で変更されました
+  reload: ルールを再読み込み
+  more: その他
+  document: ルール文書
+  documentPlaceholder: agent が返した単一サイトの JSON 設定を貼り付けてください。
+  diagnostics: 診断情報
+  copyDocument: ルール文書をコピー
+  copyDiagnostics: agent 向け診断情報をコピー
+  repreview: 再プレビュー
+  stop: プレビューを停止
+  save: ルールを保存
+  saving: 保存中
+  saved: サイトルールを保存しました
+  saveFailed: 保存できませんでした。プレビューは保持されています
+  retrySave: 保存を再試行
+  undo: 元に戻す
+  undoConflict: ルールが再度変更されたため、そのまま元に戻すことはできません
+  undone: 変更を元に戻しました
+  close: 閉じる
+  collapse: 折りたたむ
+  expand: 調整パネルを展開
+  temporary: プレビューはこのタブだけに適用されます。保存したルールは対象ページに適用されます。
+  summary: ユーザールール $1 件を追加または更新し、$2 件を一時停止します。
+  contentCount: このページで $1 件の本文領域が一致しました。
+  copied: コピーしました
+  copyFailed: コピーできませんでした。テキストを選択して手動でコピーしてください。
+  operationFailed: 操作を完了できませんでした。設定は保持されています。再試行してください。
+  openFailed: パネルを開けませんでした。ページを再読み込みして再試行してください。
+  unsupported: 通常のウェブページを開いてからサイトを調整してください。
+  manage: サイトルールを管理
+  settingsHelp: 対象サイトで Readomi のポップアップを開き、「agent でこのサイトを調整」を選択してください。
+  advanced: 高度な JSON 編集
+  delete: ルールを削除
+  enabled: 有効
+  disabled: 一時停止中
+  userAction: ページ上のプレビューを確認し、ご自身で「ルールを保存」をクリックしてください。
+  hoverTriggerHelp: リンク上でのマウス長押しは未対応です。ポップアップでキーボードのホバートリガーを選んでください。
+  scopeHelp: このページはルールの対象外です。対象ページに戻ってください。
+  requestFailed: 翻訳リクエストに失敗しました。結果はまだ確認できていません。
+  modify: 設定を編集

@@ -671,3 +671,61 @@ siteRules:
     schema: Invalid rule fields. Check the details below.
     duplicateIds: Each custom rule must have a unique id.
     saveFailed: Rules could not be saved. Try again.
+siteRuleAgent:
+  entry: Adaptar este sitio con un agente
+  title: Adaptar este sitio
+  problem: ¿Qué necesita ajustarse?
+  problemPlaceholder: "Opcional, por ejemplo, la traducción al pasar el cursor no funciona o falta la línea vertical."
+  copyInstructions: Copiar instrucciones para el agente
+  paste: ¿Ya tienes reglas? Pega la configuración
+  candidate: Reglas propuestas recibidas
+  ready: Previsualiza las reglas y guarda después de revisar el resultado.
+  preview: Previsualizar reglas
+  previewing: Vista previa · Sin guardar
+  starting: Iniciando vista previa
+  restoring: Restaurando vista previa
+  paused: Vista previa pausada
+  pausedHelp: Vuelve a $1 para continuar. Este sitio usa su configuración guardada.
+  invalid: Reglas propuestas no válidas
+  previewFailed: No se pudo iniciar la vista previa
+  noContent: No se encontró contenido legible
+  conflict: Las reglas de este sitio cambiaron en otro lugar
+  reload: Volver a cargar las reglas
+  more: Más
+  document: Documento de reglas
+  documentPlaceholder: Pega la configuración JSON de un solo sitio que devolvió tu agente.
+  diagnostics: Diagnóstico
+  copyDocument: Copiar documento de reglas
+  copyDiagnostics: Copiar diagnóstico para el agente
+  repreview: Previsualizar de nuevo
+  stop: Detener vista previa
+  save: Guardar reglas
+  saving: Guardando
+  saved: Reglas del sitio guardadas
+  saveFailed: Error al guardar; la vista previa sigue disponible
+  retrySave: Reintentar guardado
+  undo: Deshacer
+  undoConflict: Las reglas volvieron a cambiar y no se pueden deshacer directamente
+  undone: Cambios deshechos
+  close: Cerrar
+  collapse: Contraer
+  expand: Expandir panel de adaptación
+  temporary: La vista previa solo afecta a esta pestaña. Las reglas guardadas se aplican a las páginas que coincidan.
+  summary: Añadir o actualizar $1 reglas de usuario; pausar $2.
+  contentCount: Se encontraron $1 áreas legibles en esta página.
+  copied: Copiado
+  copyFailed: No se pudo copiar. Selecciona el texto y cópialo manualmente.
+  operationFailed: No se pudo completar la acción. La configuración se conserva; inténtalo de nuevo.
+  openFailed: No se pudo abrir el panel. Actualiza la página e inténtalo de nuevo.
+  unsupported: Abre una página web normal antes de adaptar un sitio.
+  manage: Administrar reglas del sitio
+  settingsHelp: Abre el menú de Readomi en el sitio web y elige «Adaptar este sitio con un agente».
+  advanced: Edición avanzada de JSON
+  delete: Eliminar regla
+  enabled: Activada
+  disabled: Pausada
+  userAction: Revisa la vista previa en la página y haz clic en Guardar reglas.
+  hoverTriggerHelp: Mantener pulsado el ratón sobre enlaces aún no es compatible. Elige un activador de teclado en el menú.
+  scopeHelp: Esta página queda fuera del alcance de la regla. Vuelve a una página que coincida.
+  requestFailed: La solicitud de traducción falló. El resultado sigue sin confirmar.
+  modify: Editar configuración

@@ -671,3 +671,61 @@ siteRules:
     schema: Invalid rule fields. Check the details below.
     duplicateIds: Each custom rule must have a unique id.
     saveFailed: Rules could not be saved. Try again.
+siteRuleAgent:
+  entry: Điều chỉnh trang này bằng agent
+  title: Điều chỉnh trang này
+  problem: Cần điều chỉnh chỗ nào?
+  problemPlaceholder: "Không bắt buộc, ví dụ bản dịch khi di chuột không hoạt động hoặc thiếu đường dọc."
+  copyInstructions: Sao chép hướng dẫn cho agent
+  paste: Đã có quy tắc? Dán cấu hình
+  candidate: Đã nhận quy tắc đề xuất
+  ready: Xem trước quy tắc rồi lưu sau khi kiểm tra kết quả.
+  preview: Xem trước quy tắc
+  previewing: Đang xem trước · Chưa lưu
+  starting: Đang bắt đầu xem trước
+  restoring: Đang khôi phục bản xem trước
+  paused: Đã tạm dừng xem trước
+  pausedHelp: Quay lại $1 để tiếp tục. Trang này dùng cấu hình đã lưu.
+  invalid: Quy tắc đề xuất không hợp lệ
+  previewFailed: Không thể bắt đầu xem trước
+  noContent: Không tìm thấy nội dung đọc phù hợp
+  conflict: Quy tắc của trang này đã thay đổi ở nơi khác
+  reload: Tải lại quy tắc
+  more: Thêm
+  document: Tài liệu quy tắc
+  documentPlaceholder: Dán cấu hình JSON cho một trang do agent trả về.
+  diagnostics: Thông tin chẩn đoán
+  copyDocument: Sao chép tài liệu quy tắc
+  copyDiagnostics: Sao chép chẩn đoán cho agent
+  repreview: Xem trước lại
+  stop: Dừng xem trước
+  save: Lưu quy tắc
+  saving: Đang lưu
+  saved: Đã lưu quy tắc trang
+  saveFailed: Lưu thất bại; bản xem trước vẫn được giữ
+  retrySave: Thử lưu lại
+  undo: Hoàn tác
+  undoConflict: Quy tắc lại thay đổi nên không thể hoàn tác trực tiếp
+  undone: Đã hoàn tác thay đổi
+  close: Đóng
+  collapse: Thu gọn
+  expand: Mở rộng bảng điều chỉnh
+  temporary: Bản xem trước chỉ áp dụng cho tab này. Quy tắc đã lưu áp dụng cho các trang phù hợp.
+  summary: Thêm hoặc cập nhật $1 quy tắc người dùng; tạm dừng $2.
+  contentCount: Có $1 vùng nội dung đọc phù hợp trên trang này.
+  copied: Đã sao chép
+  copyFailed: Không thể sao chép. Hãy chọn văn bản và sao chép thủ công.
+  operationFailed: Không thể hoàn tất thao tác. Cấu hình vẫn được giữ; hãy thử lại.
+  openFailed: Không thể mở bảng. Hãy tải lại trang và thử lại.
+  unsupported: Hãy mở một trang web thông thường trước khi điều chỉnh trang.
+  manage: Quản lý quy tắc trang
+  settingsHelp: Mở cửa sổ Readomi trên trang web và chọn “Điều chỉnh trang này bằng agent”.
+  advanced: Chỉnh sửa JSON nâng cao
+  delete: Xóa quy tắc
+  enabled: Đã bật
+  disabled: Đã tạm dừng
+  userAction: Kiểm tra bản xem trước trên trang rồi tự nhấn Lưu quy tắc.
+  hoverTriggerHelp: Chưa hỗ trợ giữ chuột trên liên kết. Hãy chọn phím kích hoạt dịch khi di chuột trong cửa sổ bật lên.
+  scopeHelp: Trang này nằm ngoài phạm vi quy tắc. Hãy quay lại trang phù hợp.
+  requestFailed: Yêu cầu dịch thất bại. Kết quả vẫn chưa được xác nhận.
+  modify: Chỉnh sửa cấu hình

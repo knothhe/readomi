@@ -7,6 +7,7 @@ import customTranslationNodeCss from "@/assets/styles/custom-translation-node.cs
 import translationNodePresetCss from "@/assets/styles/translation-node-preset.css?raw"
 import { BLOCK_CONTENT_CLASS, CONTENT_WRAPPER_CLASS, NOTRANSLATE_CLASS } from "@/utils/constants/dom-labels"
 import { getLanguageDirectionAndLang } from "@/utils/content/language-direction"
+import { describePreviewElement, recordSiteRulePreview } from "@/utils/site-rules/preview-observations"
 import { findTranslationGroup, getTranslationGroup, registerTranslationGroupWrapper } from "../../dom/translation-group"
 import { hideGroupOriginalNodes, rememberGroupOriginalNodes, restoreGroupOriginalNodes } from "../dom/group-original-nodes"
 import { setTranslationDirAndLang } from "../translation-attributes"
@@ -187,10 +188,12 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       // its presentation. Keep the normal waiting indicator for these groups,
       // then commit with the exact same layout decision as the final renderer.
       if (!only && getPendingTranslationLayout(typographyElement) !== "block") {
+        recordSiteRulePreview({ event: "layout-preview", target: describePreviewElement(typographyElement), layout: "deferred-inline" })
         inlineGroups.add(key)
         completedGroups.add(key)
         return undefined
       }
+      recordSiteRulePreview({ event: "layout-preview", target: describePreviewElement(typographyElement), layout: "block" })
       // Keep the flow box on the anchor, but inherit each group's typography
       // from the final renderer's insertion container. Sites such as YouTube
       // give that inner text container a different size from the outer block.

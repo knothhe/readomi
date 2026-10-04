@@ -3,6 +3,8 @@ import type { Config } from "@/types/config/config"
 import type { TranslationNodeStyleConfig } from "@/types/config/translate"
 import type { TransNode } from "@/types/dom"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
+import { getHostPreviewContext } from "@/utils/site-rules/preview-config"
+import { describePreviewElement, recordSiteRulePreview } from "@/utils/site-rules/preview-observations"
 import {
   BLOCK_CONTENT_CLASS,
   FLOAT_WRAP_ATTRIBUTE,
@@ -93,6 +95,7 @@ export async function insertTranslatedNodeIntoWrapper(
 ): Promise<void> {
   // Use the wrapper's owner document
   const ownerDoc = getOwnerDocument(translatedWrapperNode)
+  const previewContext = getHostPreviewContext()
   const translatedNode = ownerDoc.createElement("span")
   const layout = resolvedLayout === undefined
     ? resolveTranslationLayout(targetNode, forceBlockTranslation, config, styleSources)
@@ -114,6 +117,7 @@ export async function insertTranslatedNodeIntoWrapper(
     translatedNode.textContent = translatedText
   translatedWrapperNode.appendChild(translatedNode)
   await decorateTranslationNode(translatedNode, translationNodeStyle)
+  recordSiteRulePreview({ event: "layout-final", target: describePreviewElement(isHTMLElement(targetNode) ? targetNode : targetNode.parentElement ?? translatedWrapperNode), layout, ...previewContext })
 
   if (translatedNode.classList.contains(BLOCK_CONTENT_CLASS) && shouldWrapInsideFloatFlow(targetNode)) {
     translatedNode.setAttribute(FLOAT_WRAP_ATTRIBUTE, "true")

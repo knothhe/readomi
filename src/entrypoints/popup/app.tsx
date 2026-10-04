@@ -8,6 +8,7 @@ import { LanguageRow } from "./components/language-row"
 import { PageContextControl } from "./components/page-context-control"
 import { PopupFooter } from "./components/popup-footer"
 import { SetupPromptCard } from "./components/setup-prompt-card"
+import { SiteRuleAgentEntry } from "./components/site-rule-agent-entry"
 import { TranslateButton } from "./components/translate-button"
 import { VideoTranslationControl } from "./components/video-translation-control"
 import { usePopupSync } from "./use-popup-sync"
@@ -35,6 +36,7 @@ export default function App() {
           <PageContextControl />
         </section>
         <VideoTranslationControl />
+        <SiteRuleAgentEntry />
       </div>
       <PopupFooter />
     </div>

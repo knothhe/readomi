@@ -31,10 +31,19 @@ async function renderRules(siteRules = DEFAULT_CONFIG.siteRules) {
   return store
 }
 
+function openAdvancedEditor() {
+  const panel = screen.getByRole("tabpanel", { name: "siteRules.custom" })
+  const summary = within(panel).getByText("siteRuleAgent.more", { selector: "summary" })
+  if (!summary.closest("details")?.open)
+    fireEvent.click(summary)
+  expect(summary.closest("details")).toHaveAttribute("open")
+  fireEvent.click(within(panel).getByRole("button", { name: "siteRuleAgent.advanced" }))
+  return screen.getByRole("textbox", { name: "siteRules.editorLabel" })
+}
+
 function openEditor() {
   fireEvent.click(screen.getByRole("tab", { name: "siteRules.custom" }))
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.add" }))
-  return screen.getByRole("textbox", { name: "siteRules.editorLabel" })
+  return openAdvancedEditor()
 }
 
 it("opens with the built-in list, loads fifty more rules and resets pagination after a search", async () => {
@@ -108,8 +117,7 @@ it("supports keyboard tab navigation and preserves an active draft when switchin
   fireEvent.keyDown(builtinTab, { key: "ArrowRight" })
   expect(screen.getByRole("tab", { name: "siteRules.custom" })).toHaveFocus()
   expect(screen.getByText("siteRules.emptyTitle")).toBeInTheDocument()
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.add" }))
-  const editor = screen.getByRole("textbox", { name: "siteRules.editorLabel" })
+  const editor = openAdvancedEditor()
   const draft = "[{\"id\":\"draft\",\"matches\":\"example.com\"}]"
   fireEvent.change(editor, { target: { value: draft } })
   fireEvent.click(builtinTab)
@@ -135,7 +143,7 @@ it("validates a custom draft before save and returns to the overview after persi
   await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.siteRules.userRules).toEqual(rules))
   await waitFor(() => expect(screen.queryByRole("textbox", { name: "siteRules.editorLabel" })).not.toBeInTheDocument())
   expect(screen.getByText("example")).toBeInTheDocument()
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.edit" }))
+  openAdvancedEditor()
   expect(screen.getByRole("textbox", { name: "siteRules.editorLabel" })).toHaveValue(JSON.stringify(rules, null, 2))
 })
 
@@ -145,12 +153,12 @@ it("cancels unsaved changes and opens existing rules in the compact overview", a
   fireEvent.click(screen.getByRole("tab", { name: "siteRules.custom" }))
   expect(screen.getByText("existing")).toBeInTheDocument()
   expect(screen.queryByRole("textbox", { name: "siteRules.editorLabel" })).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.edit" }))
+  openAdvancedEditor()
   fireEvent.change(screen.getByRole("textbox", { name: "siteRules.editorLabel" }), { target: { value: "[]" } })
   fireEvent.click(screen.getByRole("button", { name: "siteRules.cancel" }))
   expect(screen.queryByRole("textbox", { name: "siteRules.editorLabel" })).not.toBeInTheDocument()
   expect(store.get(configAtom).siteRules.userRules).toEqual(rules)
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.edit" }))
+  openAdvancedEditor()
   expect(screen.getByRole("textbox", { name: "siteRules.editorLabel" })).toHaveValue(JSON.stringify(rules, null, 2))
 })
 
@@ -187,7 +195,7 @@ it("follows external rules after reverting the input but preserves an unfinished
   const rules = [{ id: "existing", matches: "example.com" }]
   const store = await renderRules({ userRules: rules, disabledBuiltInRules: [] })
   fireEvent.click(screen.getByRole("tab", { name: "siteRules.custom" }))
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.edit" }))
+  openAdvancedEditor()
   const editor = screen.getByRole("textbox", { name: "siteRules.editorLabel" })
   fireEvent.change(editor, { target: { value: "[]" } })
   fireEvent.change(editor, { target: { value: JSON.stringify(rules, null, 2) } })
@@ -199,6 +207,6 @@ it("follows external rules after reverting the input but preserves an unfinished
   act(() => store.set(configAtom, { ...store.get(configAtom), siteRules: { ...store.get(configAtom).siteRules, userRules: rules } }))
   expect(editor).toHaveValue(draft)
   fireEvent.click(screen.getByRole("button", { name: "siteRules.cancel" }))
-  fireEvent.click(screen.getByRole("button", { name: "siteRules.edit" }))
+  openAdvancedEditor()
   expect(screen.getByRole("textbox", { name: "siteRules.editorLabel" })).toHaveValue(JSON.stringify(rules, null, 2))
 })
