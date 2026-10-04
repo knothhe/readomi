@@ -90,12 +90,12 @@ async function startDemoService() {
         const json = JSON.parse(body)
         const system = json.messages.find(message => message.role === "system")?.content ?? ""
         const user = json.messages.findLast(message => message.role === "user")?.content ?? ""
-        const content = system.startsWith("You are a language detection assistant")
-          ? JSON.stringify({ reason: "English sample", code: "eng" })
-          : user.split(/\r?\n[ \t]*%%[ \t]*\r?\n/).map((part) => {
-              const sample = examples.find(([text]) => part.includes(text))
-              return sample?.[1] ?? "你好"
-            }).join("\n%%\n")
+        // Demo fixtures are English and use the default Chinese primary target.
+        const header = /^Primary language: /m.test(system) ? "[[readomi:primary]]\n" : ""
+        const content = user.split(/\r?\n[ \t]*%%[ \t]*\r?\n/).map((part) => {
+          const sample = examples.find(([text]) => part.includes(text))
+          return `${header}${sample?.[1] ?? "你好"}`
+        }).join("\n%%\n")
         response.setHeader("Content-Type", "application/json")
         response.end(JSON.stringify({ choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: "stop" }] }))
         return

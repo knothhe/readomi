@@ -47,6 +47,16 @@ describe("tap-or-hold hover translation", () => {
     expect(removeAllTranslatedWrapperNodes).toHaveBeenCalledTimes(2)
   })
 
+  it.each([
+    { targetCode: "jpn" as const },
+    { secondaryCode: "original" as const },
+  ])("clears completed paragraphs after language rules change: %s", (patch) => {
+    const previous = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true } }
+    const next = { ...previous, language: { ...previous.language, ...patch } }
+    vi.mocked(watchLocalConfig).mock.calls[0][0](next, previous)
+    expect(removeAllTranslatedWrapperNodes).toHaveBeenCalledWith(document)
+  })
+
   it("keeps completed paragraphs and reads the selected service on the next hover", async () => {
     const nextProvider = { ...DEFAULT_CONFIG.providersConfig[0], id: "second-service", name: "Second service" }
     const previous = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true }, providersConfig: [...DEFAULT_CONFIG.providersConfig, nextProvider] }

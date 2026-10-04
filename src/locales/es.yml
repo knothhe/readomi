@@ -63,6 +63,32 @@ errorRecovery:
     confirm: Restablecer
     cancel: Cancelar
 options:
+  language:
+    popupKeepDescription: "El contenido en $1 muestra el original una vez, sin duplicarlo."
+    title: Idiomas de traducción
+    description: Elige la dirección de traducción según el idioma del original.
+    rules: Reglas de traducción
+    primary: Idioma principal
+    secondary: Segundo idioma
+    other: Otros idiomas
+    auto: Detectar original automáticamente
+    automaticSource: Detección automática del idioma original
+    autoDescription: El modelo identifica el idioma de cada párrafo o segmento de subtítulos.
+    scope: Traducción de páginas · Traducción al pasar el cursor · Subtítulos de vídeo
+    toPrimary: "Si el original está en otro idioma, tradúcelo a $1."
+    toSecondary: "Si el original está en $1, tradúcelo a $2."
+    keepPrimary: "Si el original está en $1, conservarlo."
+    keepOriginal: Conservar original
+    keepDescription: "El modo bilingüe muestra el original una vez, sin duplicarlo."
+    sameLanguages: El idioma principal y el segundo son iguales. El contenido en ese idioma conserva el original.
+    previewMode: Modo de vista previa
+    previewNote: La dirección de traducción cambia según el idioma original.
+    previewKeepNote: "El contenido conservado se muestra una vez, sin ocupar espacio de traducción adicional."
+    previewOnlyKeepNote: El contenido conservado también se muestra en el modo de solo traducción.
+    shownOnce: Se muestra una vez
+    applied: Estas reglas se aplican a todas las funciones de traducción.
+    sampleUnavailable: No hay texto de ejemplo para este idioma. Las traducciones usarán el idioma seleccionado.
+    saveFailed: No se pudieron guardar los idiomas de traducción. Inténtalo de nuevo.
   version: Versión
   title: Configuración
   preview: Vista previa
@@ -199,7 +225,7 @@ options:
       edit: Editar
       system: Prompt del sistema
       template: Plantilla del prompt
-      tokens: "{{input}} es el texto que se traducirá y debe conservarse.\n{{targetLanguage}} es el idioma de destino elegido."
+      tokens: "{{input}} es el texto que se traducirá y debe conservarse.\n{{targetLanguage}} es el idioma de destino de este segmento, determinado por tus reglas de idiomas de traducción."
       missingInput: "Conserva {{input}} en la plantilla para insertar el texto que se traducirá."
       restore: Restablecer el predeterminado
       cancel: Cancelar

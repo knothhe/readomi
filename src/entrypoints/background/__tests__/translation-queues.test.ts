@@ -67,6 +67,14 @@ const llmProvider: ProviderConfig = {
   model: "gpt-5-mini",
 }
 
+function response(text: string, route = "primary") {
+  return `[[readomi:${route}]]\n${text}`
+}
+
+function translated(text: string, targetCode = "cmn") {
+  return { action: "translate", text, targetCode }
+}
+
 describe("translation queue helpers", () => {
   beforeEach(() => {
     vi.resetModules()
@@ -81,8 +89,8 @@ describe("translation queue helpers", () => {
       },
     })
 
-    executeTranslateMock.mockResolvedValue("translated text")
-    requestTextStreamMock.mockResolvedValue("translated text")
+    executeTranslateMock.mockResolvedValue(response("translated text"))
+    requestTextStreamMock.mockResolvedValue(response("translated text"))
     generateArticleSummaryMock.mockResolvedValue("Generated summary")
     articleSummaryCacheGetMock.mockResolvedValue(undefined)
     articleSummaryCachePutMock.mockResolvedValue(undefined)
@@ -91,7 +99,7 @@ describe("translation queue helpers", () => {
   })
 
   it("does not cache a translation that drops formula placeholders", async () => {
-    executeTranslateMock.mockResolvedValue("公式的译文")
+    executeTranslateMock.mockResolvedValue(response("公式的译文"))
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
@@ -99,25 +107,25 @@ describe("translation queue helpers", () => {
       text: "The formula {{0}} is useful.", langConfig: DEFAULT_CONFIG.language,
       providerConfig: llmProvider, scheduleAt: Date.now(), hash: "formula-missing",
     } })
-    expect(result).toBe("公式的译文")
+    expect(result).toEqual(translated("公式的译文"))
     expect(translationCachePutMock).not.toHaveBeenCalled()
   })
 
   it("ignores a cached result with broken placeholders and stores a complete replacement", async () => {
     translationCacheGetMock.mockResolvedValue({ translation: "旧的残缺译文" })
-    executeTranslateMock.mockResolvedValue("公式 {{0}} 很有用。")
+    executeTranslateMock.mockResolvedValue(response("公式 {{0}} 很有用。"))
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
     await expect(handler({ data: {
       text: "The formula {{0}} is useful.", langConfig: DEFAULT_CONFIG.language,
       providerConfig: llmProvider, scheduleAt: Date.now(), hash: "formula-repaired",
-    } })).resolves.toBe("公式 {{0}} 很有用。")
+    } })).resolves.toEqual(translated("公式 {{0}} 很有用。"))
     expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ key: "formula-repaired", translation: "公式 {{0}} 很有用。" }))
   })
 
   it("does not cache a streamed translation with duplicated formula placeholders", async () => {
-    requestTextStreamMock.mockResolvedValueOnce("公式 {{0}} {{0}}。")
+    requestTextStreamMock.mockResolvedValueOnce(response("公式 {{0}} {{0}}。"))
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const port = {
@@ -127,12 +135,12 @@ describe("translation queue helpers", () => {
     const connect = vi.mocked(browser.runtime.onConnect.addListener).mock.calls[0][0]
     connect(port as unknown as Parameters<typeof connect>[0])
     port.onMessage.addListener.mock.calls[0][0]({ text: "The formula {{0}}.", langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, hash: "formula-stream-duplicate" })
-    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", text: "公式 {{0}} {{0}}。" }))
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", result: translated("公式 {{0}} {{0}}。") }))
     expect(translationCachePutMock).not.toHaveBeenCalled()
   })
 
-  it("settles a hover port even if the service returns an empty result", async () => {
-    requestTextStreamMock.mockResolvedValueOnce("")
+  it("settles a hover port and caches the preserve result without repeating the original", async () => {
+    requestTextStreamMock.mockResolvedValueOnce("[[readomi:preserve]]")
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const port = {
@@ -145,14 +153,79 @@ describe("translation queue helpers", () => {
     connect(port as unknown as Parameters<typeof connect>[0])
     port.onMessage.addListener.mock.calls[0][0]({
       text: "A paragraph",
-      langConfig: DEFAULT_CONFIG.language,
+      langConfig: { ...DEFAULT_CONFIG.language, secondaryCode: "original" },
       providerConfig: llmProvider,
       hash: "hover-empty-result",
     })
 
-    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", text: "" }))
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", result: { action: "preserve", text: "" } }))
     expect(requestTextStreamMock).toHaveBeenCalledOnce()
-    expect(translationCachePutMock).not.toHaveBeenCalled()
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ action: "preserve", translation: "" }))
+  })
+
+  it("sends the actual target before streamed text and hides a split protocol header", async () => {
+    requestTextStreamMock.mockImplementationOnce(async (_provider, _request, onPartial) => {
+      onPartial("[[readomi:sec")
+      onPartial("[[readomi:secondary]]\nEnglish")
+      return response("English translation", "secondary")
+    })
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const port = {
+      name: "readomi-hover-translation",
+      onMessage: { addListener: vi.fn() }, onDisconnect: { addListener: vi.fn() }, postMessage: vi.fn(),
+    }
+    const connect = vi.mocked(browser.runtime.onConnect.addListener).mock.calls[0][0]
+    connect(port as unknown as Parameters<typeof connect>[0])
+    port.onMessage.addListener.mock.calls[0][0]({ text: "中文段落", langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, hash: "stream-secondary" })
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledWith({ type: "done", result: translated("English translation", "eng") }))
+    const messages = port.postMessage.mock.calls.map(([message]) => message)
+    expect(messages).toEqual([
+      { type: "partial", text: "" },
+      { type: "target", targetCode: "eng" },
+      { type: "partial", text: "English" },
+      { type: "done", result: translated("English translation", "eng") },
+    ])
+  })
+
+  it("keeps mixed-language batch results aligned when the middle paragraph is preserved", async () => {
+    executeTranslateMock.mockResolvedValueOnce(`${response("中文译文")}\n\n%%\n\n[[readomi:preserve]]\n\n%%\n\n${response("另一个译文")}`)
+    const { executeBatchTranslation } = await import("../translation-queues")
+    const customPromptsConfig = { promptId: "tone", patterns: [{ id: "tone", name: "Tone", systemPrompt: "Use precise terms", prompt: "{{input}}" }] }
+    const data = ["English paragraph", "中文原文", "日本語の段落"].map((text, index) => ({
+      text, langConfig: { ...DEFAULT_CONFIG.language, secondaryCode: "original" as const }, providerConfig: llmProvider,
+      hash: `mixed-${index}`, scheduleAt: Date.now(), customPromptsConfig,
+    }))
+    const promptResolver = vi.fn()
+    await expect(executeBatchTranslation(data, promptResolver)).resolves.toEqual([
+      translated("中文译文"), { action: "preserve", text: "" }, translated("另一个译文"),
+    ])
+    expect(executeTranslateMock).toHaveBeenCalledWith(expect.stringContaining("English paragraph\n\n%%\n\n中文原文"), data[0].langConfig, llmProvider, promptResolver, expect.objectContaining({ customPromptsConfig }))
+  })
+
+  it("reuses a cached preserved paragraph without losing its empty result", async () => {
+    translationCacheGetMock.mockResolvedValueOnce({ action: "preserve", translation: "" })
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    await expect(handler({ data: {
+      text: "保留链接和原文", langConfig: { ...DEFAULT_CONFIG.language, secondaryCode: "original" },
+      providerConfig: llmProvider, scheduleAt: Date.now(), hash: "cached-original",
+    } })).resolves.toEqual({ action: "preserve", text: "" })
+    expect(executeTranslateMock).not.toHaveBeenCalled()
+  })
+
+  it("retries a missing language header instead of interpreting it as preserved text", async () => {
+    executeTranslateMock.mockResolvedValueOnce("An unmarked translation").mockResolvedValueOnce(response("正确译文"))
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
+    await expect(handler({ data: {
+      text: "A paragraph", langConfig: DEFAULT_CONFIG.language,
+      providerConfig: { ...llmProvider, id: "protocol-retry" }, scheduleAt: Date.now(), hash: "protocol-retry",
+    } })).resolves.toEqual(translated("正确译文"))
+    expect(executeTranslateMock).toHaveBeenCalledTimes(2)
+    expect(translationCachePutMock).toHaveBeenCalledTimes(1)
   })
 
   it("passes webpage context through the translation queue without generating a new summary", async () => {
@@ -174,7 +247,7 @@ describe("translation queue helpers", () => {
       },
     })
 
-    expect(result).toBe("translated text")
+    expect(result).toEqual(translated("translated text"))
     expect(generateArticleSummaryMock).not.toHaveBeenCalled()
     expect(executeTranslateMock).toHaveBeenCalledWith(
       "hello",
@@ -212,7 +285,7 @@ describe("translation queue helpers", () => {
       },
     })
 
-    expect(result).toBe("L&#39;Iran chiama &quot;Dichiarazione&quot; &lt;span&gt;")
+    expect(result).toEqual(translated("L&#39;Iran chiama &quot;Dichiarazione&quot; &lt;span&gt;"))
     expect(executeTranslateMock).not.toHaveBeenCalled()
     expect(translationCachePutMock).not.toHaveBeenCalled()
   })
@@ -239,7 +312,7 @@ describe("translation queue helpers", () => {
   })
 
   it("recovers missing batch translations in order without reporting a failed request", async () => {
-    executeTranslateMock.mockImplementation(async (text: string) => text.includes("\n%%\n") ? "incomplete response" : `translated-${text}`)
+    executeTranslateMock.mockImplementation(async (text: string) => text.includes("\n%%\n") ? response("incomplete response") : response(`translated-${text}`))
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const handler = getRegisteredMessageHandler("enqueueTranslateRequest")
@@ -251,7 +324,7 @@ describe("translation queue helpers", () => {
       scheduleAt: Date.now(),
       hash: `partial-${text}`,
     } })))
-    expect(results).toEqual(texts.map(text => `translated-${text}`))
+    expect(results).toEqual(texts.map(text => translated(`translated-${text}`)))
     expect(logInfoMock).toHaveBeenCalledWith("Batch response could not be aligned; retrying smaller requests", expect.any(Object))
     expect(logErrorMock).not.toHaveBeenCalled()
     for (const text of texts)

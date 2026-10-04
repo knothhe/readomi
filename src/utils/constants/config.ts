@@ -7,13 +7,12 @@ import { TRANSLATION_NODE_STYLE_ON_INSTALLED } from "./translation-node-style"
 
 export const CONFIG_STORAGE_KEY = "config"
 
-export const DEFAULT_DETECTED_CODE = "eng" as const
-
 export const DEFAULT_CONFIG: Config = {
   ui: { language: "browser" },
   language: {
     sourceCode: "auto",
     targetCode: "cmn",
+    secondaryCode: "eng",
     level: "intermediate",
   },
   providersConfig: DEFAULT_PROVIDER_CONFIG_LIST,

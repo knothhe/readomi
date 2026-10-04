@@ -70,4 +70,24 @@ describe("handleTranslationModeChange", () => {
     handleTranslationModeChange(next, previous, manager)
     expect(manager.restart).toHaveBeenCalledOnce()
   })
+
+  it.each([
+    { targetCode: "jpn" as const },
+    { secondaryCode: "original" as const },
+  ])("restarts an active page after a language rule changes: %s", (patch) => {
+    const manager = createMockManager(true)
+    const next = { ...DEFAULT_CONFIG, language: { ...DEFAULT_CONFIG.language, ...patch } }
+    handleTranslationModeChange(next, DEFAULT_CONFIG, manager)
+    expect(manager.restart).toHaveBeenCalledOnce()
+  })
+
+  it("restarts an active page when the translation prompt changes", () => {
+    const manager = createMockManager(true)
+    const next = {
+      ...DEFAULT_CONFIG,
+      translate: { ...DEFAULT_CONFIG.translate, customPromptsConfig: { ...DEFAULT_CONFIG.translate.customPromptsConfig, promptId: "changed-prompt" } },
+    }
+    handleTranslationModeChange(next, DEFAULT_CONFIG, manager)
+    expect(manager.restart).toHaveBeenCalledOnce()
+  })
 })

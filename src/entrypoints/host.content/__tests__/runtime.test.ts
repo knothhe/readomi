@@ -9,7 +9,6 @@ const {
   messageHandlers,
   managerInstances,
   mockBindTranslationShortcutKey,
-  mockDetectPageLanguageLightweight,
   mockEnsurePresetStyles,
   mockMountHostToast,
   mockOnMessage,
@@ -25,16 +24,11 @@ const {
     dispose: ReturnType<typeof vi.fn>
   }>,
   mockBindTranslationShortcutKey: vi.fn(),
-  mockDetectPageLanguageLightweight: vi.fn(),
   mockEnsurePresetStyles: vi.fn(),
   mockMountHostToast: vi.fn(),
   mockOnMessage: vi.fn(),
   mockSendMessage: vi.fn(),
   mockSetupUrlChangeListener: vi.fn(),
-}))
-
-vi.mock("@/utils/content/page-language", () => ({
-  detectPageLanguageLightweight: mockDetectPageLanguageLightweight,
 }))
 
 vi.mock("@/utils/host/translate/ui/style-injector", () => ({
@@ -118,7 +112,6 @@ describe("bootstrapHostContent URL changes", () => {
       messageHandlers.set(name, handler)
       return vi.fn()
     })
-    mockDetectPageLanguageLightweight.mockResolvedValue({ detectedCodeOrUnd: "fra" })
     mockSendMessage.mockImplementation((name: string) => {
       if (name === "getEnablePageTranslationFromContentScript")
         return Promise.resolve(false)
@@ -150,16 +143,13 @@ describe("bootstrapHostContent URL changes", () => {
     expect(manager.start).toHaveBeenCalledTimes(1)
     expect(manager.restart).toHaveBeenCalledTimes(1)
     expect(manager.stop).not.toHaveBeenCalled()
-    expect(mockSendMessage).toHaveBeenCalledWith("reportDetectedPageLanguage", {
-      url: "https://example.com/articles/2?ref=nav#comments",
-      detectedCodeOrUnd: "fra",
-    })
+    expect(mockSendMessage).not.toHaveBeenCalledWith("reportDetectedPageLanguage", expect.anything())
 
     invalidate()
     expect(manager.dispose).toHaveBeenCalledOnce()
   })
 
-  it("keeps inactive page translation inactive and only asks auto-translation on SPA navigation", async () => {
+  it("keeps inactive page translation inactive without a separate language detection request", async () => {
     const { ctx, invalidate } = createContentScriptContext()
     await bootstrapHostContent(ctx)
     const manager = managerInstances[0]
@@ -175,22 +165,17 @@ describe("bootstrapHostContent URL changes", () => {
     expect(manager.start).not.toHaveBeenCalled()
     expect(manager.restart).not.toHaveBeenCalled()
     expect(manager.stop).not.toHaveBeenCalled()
-    expect(mockSendMessage).toHaveBeenCalledWith("reportDetectedPageLanguage", {
-      url: "https://example.com/articles/2",
-      detectedCodeOrUnd: "fra",
-    })
+    expect(mockSendMessage).not.toHaveBeenCalledWith("reportDetectedPageLanguage", expect.anything())
 
     invalidate()
   })
 
-  it("refreshes and reports detected language when background requests active-tab refresh", async () => {
+  it("accepts legacy refresh messages without extra model language detection", async () => {
     const { ctx, invalidate } = createContentScriptContext()
     await bootstrapHostContent(ctx)
     await flushAsyncWork()
 
     mockSendMessage.mockClear()
-    mockDetectPageLanguageLightweight.mockClear()
-    mockDetectPageLanguageLightweight.mockResolvedValueOnce({ detectedCodeOrUnd: "jpn" })
 
     const refreshHandler = messageHandlers.get("refreshDetectedPageLanguage")
     if (!refreshHandler) {
@@ -200,11 +185,7 @@ describe("bootstrapHostContent URL changes", () => {
     refreshHandler()
     await flushAsyncWork()
 
-    expect(mockDetectPageLanguageLightweight).toHaveBeenCalledOnce()
-    expect(mockSendMessage).toHaveBeenCalledWith("reportDetectedPageLanguage", {
-      url: window.location.href,
-      detectedCodeOrUnd: "jpn",
-    })
+    expect(mockSendMessage).not.toHaveBeenCalled()
 
     invalidate()
   })
@@ -226,15 +207,10 @@ describe("bootstrapHostContent URL changes", () => {
     expect(messageHandlers.size).toBe(0)
   })
 
-  it("does not report a language detection result after invalidation", async () => {
-    let finishDetection!: (result: { detectedCodeOrUnd: string }) => void
-    mockDetectPageLanguageLightweight.mockReturnValue(new Promise(resolve => finishDetection = resolve))
+  it("starts without a separate language detection request", async () => {
     const { ctx, invalidate } = createContentScriptContext()
-    const startup = bootstrapHostContent(ctx)
-    await flushAsyncWork()
-    invalidate()
-    finishDetection({ detectedCodeOrUnd: "fra" })
-    await startup
+    await bootstrapHostContent(ctx)
     expect(mockSendMessage).not.toHaveBeenCalledWith("reportDetectedPageLanguage", expect.anything())
+    invalidate()
   })
 })

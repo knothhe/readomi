@@ -2,11 +2,11 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
+import { handleTranslationModeChange } from "../handle-config-change"
 import { PageTranslationManager } from "../page-translation"
 
 const {
   mockDeepQueryTopLevelSelector,
-  mockGetDetectedCodeFromStorage,
   mockGetLocalConfig,
   mockGetOrCreateWebPageContext,
   mockRemoveAllTranslatedWrapperNodes,
@@ -16,7 +16,6 @@ const {
   mockValidateTranslationConfigAndToast,
   mockWalkAndLabelElement,
 } = vi.hoisted(() => ({
-  mockGetDetectedCodeFromStorage: vi.fn(),
   mockGetLocalConfig: vi.fn(),
   mockDeepQueryTopLevelSelector: vi.fn(),
   mockWalkAndLabelElement: vi.fn(),
@@ -26,10 +25,6 @@ const {
   mockGetOrCreateWebPageContext: vi.fn(),
   mockValidateTranslationConfigAndToast: vi.fn(),
   mockSendMessage: vi.fn(),
-}))
-
-vi.mock("@/utils/config/languages", () => ({
-  getDetectedCodeFromStorage: mockGetDetectedCodeFromStorage,
 }))
 
 vi.mock("@/utils/config/storage", () => ({
@@ -113,7 +108,6 @@ describe("pageTranslationManager title handling", () => {
 
     vi.stubGlobal("IntersectionObserver", MockIntersectionObserver)
 
-    mockGetDetectedCodeFromStorage.mockResolvedValue("eng")
     mockGetLocalConfig.mockResolvedValue(DEFAULT_CONFIG)
     mockDeepQueryTopLevelSelector.mockReturnValue([])
     mockGetOrCreateWebPageContext.mockResolvedValue({
@@ -233,6 +227,35 @@ describe("pageTranslationManager title handling", () => {
 
     manager.stop()
     expect(document.title).toBe("Updated Source Title")
+  })
+
+  it("ignores a previous language rule's title response after the new response finishes", async () => {
+    const oldTranslation = createDeferred<string>()
+    const newTranslation = createDeferred<string>()
+    mockTranslateTextForPageTitle
+      .mockImplementationOnce(() => oldTranslation.promise)
+      .mockImplementationOnce(() => newTranslation.promise)
+    document.title = "中文原始标题"
+    const manager = new PageTranslationManager()
+    await manager.start()
+    await flushDomUpdates()
+
+    const nextConfig = { ...DEFAULT_CONFIG, language: { ...DEFAULT_CONFIG.language, secondaryCode: "jpn" as const } }
+    mockGetLocalConfig.mockResolvedValue(nextConfig)
+    handleTranslationModeChange(nextConfig, DEFAULT_CONFIG, manager)
+    await flushDomUpdates()
+    expect(mockTranslateTextForPageTitle).toHaveBeenCalledTimes(2)
+    expect(mockTranslateTextForPageTitle).toHaveBeenLastCalledWith("中文原始标题")
+
+    newTranslation.resolve("新しい翻訳タイトル")
+    await flushDomUpdates()
+    expect(document.title).toBe("新しい翻訳タイトル")
+    oldTranslation.resolve("Old English title")
+    await flushDomUpdates()
+    expect(document.title).toBe("新しい翻訳タイトル")
+
+    manager.stop()
+    expect(document.title).toBe("中文原始标题")
   })
 
   it("disposes while startup is awaiting config without enabling the page or installing observers", async () => {

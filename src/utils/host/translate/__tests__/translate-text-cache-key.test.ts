@@ -40,7 +40,7 @@ async function captureCacheKey(translate: () => Promise<string>): Promise<string
   let cacheKey = ""
   const removeListener = onMessage("enqueueTranslateRequest", async (message) => {
     cacheKey = message.data.hash
-    return "translated"
+    return { action: "translate", text: "translated", targetCode: "cmn" }
   })
   try {
     await translate()
@@ -79,6 +79,25 @@ describe("translation cache key", () => {
   beforeEach(async () => {
     fakeBrowser.reset()
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)
+  })
+
+  it("isolates both language targets while ignoring the legacy manually selected source", async () => {
+    const forLanguage = (language: typeof langConfig & { secondaryCode?: "eng" | "original" }) => captureCacheKey(() => translateTextCore({ text: "中文原文", langConfig: language, providerConfig }))
+    const automatic = await forLanguage({ ...langConfig, secondaryCode: "eng" })
+    const preserved = await forLanguage({ ...langConfig, secondaryCode: "original" })
+    expect(preserved).not.toBe(automatic)
+    const legacySource = await captureCacheKey(() => translateTextCore({ text: "中文原文", langConfig: { ...langConfig, sourceCode: "cmn", secondaryCode: "eng" }, providerConfig }))
+    expect(legacySource).toBe(automatic)
+    const otherPrimary = await captureCacheKey(() => translateTextCore({ text: "中文原文", langConfig: { ...langConfig, targetCode: "jpn", secondaryCode: "eng" }, providerConfig }))
+    expect(otherPrimary).not.toBe(automatic)
+  })
+
+  it("keeps the supplied prompt snapshot even after the stored prompt changes", async () => {
+    const customPromptsConfig = { promptId: "snapshot", patterns: [{ id: "snapshot", name: "Snapshot", systemPrompt: "Use earlier wording", prompt: "{{input}}" }] }
+    const run = () => captureCacheKey(() => translateTextCore({ text: "A paragraph", langConfig, providerConfig, customPromptsConfig }))
+    const firstKey = await run()
+    await saveTranslatePrompt("Use newly saved wording: {{input}}")
+    expect(await run()).toBe(firstKey)
   })
 
   it("user gets a cached translation: Given the default prompt, which does not use {{webDescription}} or {{webContent}}, and the AI content aware setting is on, When the user translates the same paragraph on two pages with different descriptions and content, Then both translations use one cache entry", async () => {

@@ -1,10 +1,12 @@
 import type { CSSProperties } from "react"
+import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import { createElement } from "react"
 import { createRoot } from "react-dom/client"
 import customTranslationNodeCss from "@/assets/styles/custom-translation-node.css?raw"
 import translationNodePresetCss from "@/assets/styles/translation-node-preset.css?raw"
 import { BLOCK_CONTENT_CLASS, CONTENT_WRAPPER_CLASS, NOTRANSLATE_CLASS } from "@/utils/constants/dom-labels"
+import { getLanguageDirectionAndLang } from "@/utils/content/language-direction"
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { SmoothPreviewText } from "./smooth-preview-text"
 
@@ -47,6 +49,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
   const root = createRoot(content)
   const groups = new Map<number, string>()
   const groupTypography = new Map<number, CSSProperties>()
+  const groupLanguages = new Map<number, ReturnType<typeof getLanguageDirectionAndLang>>()
   const completedGroups = new Set<number>()
   const progressCallbacks = new Map<number, (length: number) => void>()
   const completionCallbacks = new Map<number, () => void>()
@@ -120,8 +123,8 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       return createElement("div", { key, className: "preview-group", style: { ...groupTypography.get(key), display: text ? "block" : "none" } },
         createElement("div", {
           "className": `preview-translation ${CONTENT_WRAPPER_CLASS} ${only ? "" : BLOCK_CONTENT_CLASS}`,
-          "lang": content.lang,
-          "dir": content.dir,
+          "lang": groupLanguages.get(key)?.lang ?? content.lang,
+          "dir": groupLanguages.get(key)?.dir ?? content.dir,
           "data-readomi-custom-translation-style": only ? undefined : styleConfig?.isCustom ? "custom" : styleConfig?.preset ?? "line",
         }, createElement(SmoothPreviewText, { content: text, done, onProgress: progressCallbacks.get(key), onComplete: completionCallbacks.get(key) })))
     }))
@@ -197,7 +200,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
           resolveFinished = undefined
         }
       })
-      return (partial: string) => {
+      const update = (partial: string) => {
         if (disposed)
           return
         groups.set(key, partial)
@@ -205,6 +208,14 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
           mount()
         schedule()
       }
+      return Object.assign(update, {
+        setTargetLanguage(code: LangCodeISO6393) {
+          if (disposed)
+            return
+          groupLanguages.set(key, getLanguageDirectionAndLang(code))
+          schedule()
+        },
+      })
     },
     finish(finalTexts: string[]): Promise<boolean> {
       if (disposed)

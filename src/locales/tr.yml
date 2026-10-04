@@ -63,6 +63,32 @@ errorRecovery:
     confirm: Sıfırla
     cancel: İptal
 options:
+  language:
+    popupKeepDescription: $1 dilindeki içerik özgün metni tekrarlamadan bir kez gösterir.
+    title: Çeviri dilleri
+    description: Kaynak diline göre çeviri yönünüzü seçin.
+    rules: Çeviri kuralları
+    primary: Birincil dil
+    secondary: İkinci dil
+    other: Diğer diller
+    auto: Kaynağı otomatik algıla
+    automaticSource: Kaynak dilini otomatik algılama
+    autoDescription: Model her paragrafın veya altyazı bölümünün dilini belirler.
+    scope: Sayfa çevirisi · Üzerine gelince çeviri · Video altyazıları
+    toPrimary: Kaynak başka bir dildeyse $1 diline çevir.
+    toSecondary: Kaynak $1 dilindeyse $2 diline çevir.
+    keepPrimary: Kaynak $1 dilindeyse özgün metni koru.
+    keepOriginal: Özgün metni koru
+    keepDescription: İki dilli modda özgün metin tekrarlanmadan yalnızca bir kez gösterilir.
+    sameLanguages: Birincil dil ile ikinci dil aynı. Bu dildeki içerik özgün hâliyle kalır.
+    previewMode: Önizleme görüntüleme modu
+    previewNote: Çeviri yönü kaynak diline göre değişir.
+    previewKeepNote: Korunan içerik ek çeviri alanı olmadan bir kez gösterilir.
+    previewOnlyKeepNote: Yalnızca çeviri modunda da korunan özgün metin gösterilir.
+    shownOnce: Bir kez gösterilir
+    applied: Bu kurallar tüm çeviri özellikleri için geçerlidir.
+    sampleUnavailable: Bu dil için örnek metin yok. Gerçek çeviriler seçtiğiniz dili kullanır.
+    saveFailed: Çeviri dilleri kaydedilemedi. Lütfen tekrar deneyin.
   version: Sürüm
   title: Ayarlar
   preview: Önizleme
@@ -199,7 +225,7 @@ options:
       edit: Düzenle
       system: Sistem promptu
       template: Prompt şablonu
-      tokens: "{{input}} çevrilecek metindir ve korunmalıdır.\n{{targetLanguage}} seçtiğiniz hedef dildir."
+      tokens: "{{input}} çevrilecek metindir ve korunmalıdır.\n{{targetLanguage}} bu bölüm için çeviri dili kurallarınızın belirlediği hedef dildir."
       missingInput: "Çevrilecek metni eklemek için şablonda {{input}} alanını koruyun."
       restore: Varsayılana döndür
       cancel: İptal

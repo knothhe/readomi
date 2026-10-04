@@ -70,7 +70,7 @@ describe("translate-text", () => {
 
   describe("translateTextForPage", () => {
     it("should send message with correct parameters", async () => {
-      mockSendMessage.mockResolvedValue("translated text")
+      mockSendMessage.mockResolvedValue({ action: "translate", text: "translated text", targetCode: "cmn" })
 
       const result = await translateTextForPage("test text")
 
@@ -101,7 +101,7 @@ describe("translate-text", () => {
       mockGetConfigFromStorage.mockResolvedValue(llmConfig)
       mockSendMessage.mockImplementation(async (type: string) => {
         if (type === "enqueueTranslateRequest") {
-          return "translated page title"
+          return { action: "translate", text: "translated page title", targetCode: "cmn" }
         }
         return undefined
       })
@@ -132,7 +132,7 @@ describe("translate-text", () => {
       mockGetConfigFromStorage.mockResolvedValue(llmConfig)
       mockSendMessage.mockImplementation(async (type: string) => {
         if (type === "enqueueTranslateRequest") {
-          return "translated page title"
+          return { action: "translate", text: "translated page title", targetCode: "cmn" }
         }
         return undefined
       })
@@ -163,7 +163,7 @@ describe("translate-text", () => {
       mockGetConfigFromStorage.mockResolvedValue(llmConfig)
       mockSendMessage.mockImplementation(async (type: string) => {
         if (type === "enqueueTranslateRequest") {
-          return "translated body text"
+          return { action: "translate", text: "translated body text", targetCode: "cmn" }
         }
         return undefined
       })
@@ -216,7 +216,7 @@ describe("translate-text", () => {
       const result = await executeTranslate("\u200B hello \u200B", langConfig, providerConfig, getTranslatePrompt)
       expect(result).toBe("你好")
       // Shared translation core should send minimally prepared text to the provider
-      expect(mockAITranslate).toHaveBeenCalledWith("hello", expect.any(String), providerConfig, getTranslatePrompt, undefined)
+      expect(mockAITranslate).toHaveBeenCalledWith("hello", expect.any(String), providerConfig, getTranslatePrompt, { languagePolicy: langConfig })
     })
 
     it("should trim translation result", async () => {

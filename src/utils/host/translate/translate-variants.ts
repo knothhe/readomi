@@ -59,6 +59,8 @@ async function translateTextUsingPageConfig(
     extraHashTags: options.extraHashTags,
     webPageContext: options.webPageContext,
     onPartial: options.onPartial,
+    onTargetLanguage: options.onTargetLanguage,
+    customPromptsConfig: config.translate.customPromptsConfig,
     signal: options.signal,
   })
 }

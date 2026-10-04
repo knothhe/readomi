@@ -8,6 +8,7 @@ import { createReactShadowHost } from "@/utils/react-shadow-host/create-shadow-h
 import { TRANSLATION_ERROR_CONTAINER_CLASS } from "../../../constants/dom-labels"
 import { getContainingShadowRoot, getOwnerDocument } from "../../dom/node"
 import { translateTextForPage } from "../translate-variants"
+import { setTranslationDirAndLang } from "../translation-attributes"
 import { ensurePresetStyles } from "./style-injector"
 import { trackTranslationFinished, trackTranslationStarted } from "./translation-progress"
 
@@ -96,7 +97,13 @@ export async function getTranslatedTextAndRemoveSpinner(
   try {
     if (signal?.aborted || !isExtensionContextValid())
       return undefined
-    translatedText = await (translateRequest ? translateRequest(textContent, typographyElement, () => spinner.remove()) : translateTextForPage(textContent))
+    const onTargetLanguage = (code: Parameters<typeof setTranslationDirAndLang>[1]) => {
+      if (!signal?.aborted)
+        setTranslationDirAndLang(translatedWrapperNode, code)
+    }
+    translatedText = await (translateRequest
+      ? translateRequest(textContent, typographyElement, () => spinner.remove(), onTargetLanguage)
+      : translateTextForPage(textContent, { signal, onTargetLanguage }))
     succeeded = true
   }
   catch (error) {

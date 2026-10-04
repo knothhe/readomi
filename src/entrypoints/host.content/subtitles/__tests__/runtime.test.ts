@@ -73,6 +73,45 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it.each(["bilingual", "translationOnly"] as const)("shows preserved original once in %s mode", async (subtitleMode) => {
+    track.activeCues = [{ text: "原文保持可读。" }]
+    vi.mocked(translateTextCore).mockResolvedValue("")
+    update({ ...config, language: { ...config.language, secondaryCode: "original" }, features: { ...config.features, subtitleMode } })
+    await vi.advanceTimersByTimeAsync(1000)
+    const original = shadow.querySelector<HTMLElement>(".original")!
+    const translated = shadow.querySelector<HTMLElement>(".translated")!
+    expect(original.hidden).toBe(false)
+    expect(original.textContent).toBe("原文保持可读。")
+    expect(translated.hidden).toBe(true)
+    expect(translated.textContent).toBe("")
+    expect(shadow.querySelector(".box")!.textContent).toBe("原文保持可读。")
+    expect(translateTextCore).toHaveBeenCalledOnce()
+  })
+
+  it("uses each cue's actual target language and re-translates after language rules change", async () => {
+    track.activeCues = [{ text: "简体中文句段。" }]
+    vi.mocked(translateTextCore).mockImplementation(async ({ onTargetLanguage }) => {
+      onTargetLanguage?.("arb")
+      return "جملة مترجمة."
+    })
+    update({ ...config, language: { ...config.language, secondaryCode: "arb" } })
+    await vi.advanceTimersByTimeAsync(1000)
+    const translated = () => shadow.querySelector<HTMLElement>(".translated")!
+    expect(translated().dir).toBe("rtl")
+    expect(translated().lang).toBe("ar")
+
+    vi.mocked(translateTextCore).mockImplementation(async ({ onTargetLanguage }) => {
+      onTargetLanguage?.("eng")
+      return "A translated sentence."
+    })
+    update(config)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translated().textContent).toBe("A translated sentence.")
+    expect(translated().dir).toBe("ltr")
+    expect(translated().lang).toBe("en")
+    expect(translateTextCore).toHaveBeenCalledTimes(2)
+  })
+
   it("offers a session switch even when disabled globally and restores native captions on off", async () => {
     attachYouTubePlayer()
     update(DEFAULT_CONFIG)

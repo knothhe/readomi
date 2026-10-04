@@ -1,3 +1,5 @@
+import type { LangCodeISO6393 } from "@/definitions"
+
 /**
  * The translation and summary caches in IndexedDB. The version continues
  * the one Plainly 1.0 created through Dexie (which stores its schema version
@@ -7,6 +9,8 @@
 export interface TranslationCacheRecord {
   key: string
   translation: string
+  action?: "translate" | "preserve"
+  targetCode?: LangCodeISO6393
   createdAt: Date
 }
 

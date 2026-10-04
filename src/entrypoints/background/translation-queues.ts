@@ -1,10 +1,13 @@
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { WebPagePromptContext } from "@/types/content"
+import type { TranslationCacheRecord } from "@/utils/db/cache-db"
 import type { PromptResolver } from "@/utils/host/translate/api/ai"
 import type { HoverStreamReply, HoverStreamRequest } from "@/utils/host/translate/stream-request"
+import type { TranslationResult } from "@/utils/host/translate/translation-result"
+import type { LanguagePolicyConfig } from "@/utils/language-policy"
 import { browser } from "#imports"
-import { LANG_CODE_TO_EN_NAME } from "@/definitions"
+import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { BATCH_SEPARATOR, BATCH_SEPARATOR_LINE_PATTERN } from "@/utils/constants/prompt"
 import { DEFAULT_MAX_CHARACTER_PER_BATCH, DEFAULT_MAX_ITEMS_PER_BATCH, INITIAL_REQUEST_RATE, MAX_REQUEST_RATE, MIN_REQUEST_RATE, REQUEST_BURST_SECONDS } from "@/utils/constants/translate"
 import { generateArticleSummary } from "@/utils/content/summary"
@@ -16,11 +19,13 @@ import { executeTranslate } from "@/utils/host/translate/execute-translate"
 import { auditInlineAtomTokens, hasInlineAtomTokens } from "@/utils/host/translate/inline-atom-tokens"
 import { HOVER_STREAM_PORT } from "@/utils/host/translate/stream-request"
 import { normalizePromptContextValue } from "@/utils/host/translate/translate-text"
+import { AUTOMATIC_TARGET_LANGUAGE, parseTranslationPartial, parseTranslationResult, TRANSLATION_PROTOCOL_VERSION } from "@/utils/host/translate/translation-result"
+import { getSecondaryLanguage } from "@/utils/language-policy"
 import { logger } from "@/utils/logger"
 import { onMessage } from "@/utils/message"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
 import { requestTextStream } from "@/utils/providers/stream"
-import { BatchQueue } from "@/utils/request/batch-queue"
+import { BatchCountMismatchError, BatchQueue } from "@/utils/request/batch-queue"
 import { Pace } from "@/utils/request/pace"
 import { RequestQueue } from "@/utils/request/request-queue"
 import { attachRequestErrorMeta } from "@/utils/request/retry-policy"
@@ -34,16 +39,33 @@ function hasIntactInlineAtoms(source: string, translated: string): boolean {
   return !hasInlineAtomTokens(source) || auditInlineAtomTokens(source, translated).ok
 }
 
+function hasCacheableTranslation(source: string, result: TranslationResult): boolean {
+  return result.action === "preserve" || (result.text !== "" && hasIntactInlineAtoms(source, result.text))
+}
+
+function cachedTranslation(cached: TranslationCacheRecord, language: LanguagePolicyConfig): TranslationResult {
+  return cached.action === "preserve"
+    ? { action: "preserve", text: "" }
+    : { action: "translate", text: cached.translation, targetCode: cached.targetCode ?? language.targetCode }
+}
+
+function cacheTranslation(key: string, result: TranslationResult): Promise<void> {
+  return cacheDb.translationCache.put({ key, translation: result.text, action: result.action, targetCode: result.targetCode, createdAt: new Date() })
+}
+
 export async function executeBatchTranslation<TContext>(
   dataList: TranslateBatchData<TContext>[],
   promptResolver: PromptResolver<TContext>,
-): Promise<string[]> {
-  const { langConfig, providerConfig, context } = dataList[0]
+): Promise<TranslationResult[]> {
+  const { langConfig, providerConfig, context, customPromptsConfig } = dataList[0]
   const texts = dataList.map(d => d.text)
 
   const batchText = texts.join(`\n\n${BATCH_SEPARATOR}\n\n`)
-  const result = await executeTranslate(batchText, langConfig, providerConfig, promptResolver, { isBatch: true, context })
-  return parseBatchResult(result)
+  const result = await executeTranslate(batchText, langConfig, providerConfig, promptResolver, { isBatch: true, context, customPromptsConfig })
+  const segments = parseBatchResult(result)
+  if (segments.length !== dataList.length)
+    throw attachRequestErrorMeta(new BatchCountMismatchError(dataList.length, segments.length, segments), { isRetryable: false })
+  return segments.map(segment => parseTranslationResult(segment, langConfig))
 }
 
 async function getOrGenerateWebPageSummary(
@@ -99,11 +121,12 @@ async function getOrGenerateWebPageSummary(
 
 export interface TranslateBatchData<TContext = unknown> {
   text: string
-  langConfig: Config["language"]
+  langConfig: LanguagePolicyConfig
   providerConfig: ProviderConfig
   hash: string
   scheduleAt: number
   context?: TContext
+  customPromptsConfig?: Config["translate"]["customPromptsConfig"]
 }
 
 /**
@@ -137,14 +160,17 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
     return queue
   }
 
-  const batchQueue = new BatchQueue<TranslateBatchData<TContext>, string>({
+  const batchQueue = new BatchQueue<TranslateBatchData<TContext>, TranslationResult>({
     maxCharactersPerBatch: DEFAULT_MAX_CHARACTER_PER_BATCH,
     maxItemsPerBatch: DEFAULT_MAX_ITEMS_PER_BATCH,
     batchDelay: 100,
     enableFallbackToIndividual: true,
     getBatchKey: (data) => {
       return stringHash(
-        `${data.langConfig.sourceCode}-${data.langConfig.targetCode}-${data.providerConfig.id}`,
+        TRANSLATION_PROTOCOL_VERSION,
+        JSON.stringify([data.langConfig.targetCode, getSecondaryLanguage(data.langConfig)]),
+        JSON.stringify(data.providerConfig),
+        JSON.stringify(data.customPromptsConfig ?? DEFAULT_CONFIG.translate.customPromptsConfig),
         data.context ? JSON.stringify(data.context) : "",
       )
     },
@@ -157,16 +183,17 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
       const hash = await sha256Hex(...dataList.map(d => d.hash))
       const earliestScheduleAt = Math.min(...dataList.map(d => d.scheduleAt))
 
-      const batchThunk = async (): Promise<string[]> => {
+      const batchThunk = async (): Promise<TranslationResult[]> => {
         return await executeBatchTranslation(dataList, promptResolver)
       }
 
       return requestQueueFor(dataList[0].providerConfig).enqueue(batchThunk, earliestScheduleAt, hash)
     },
     executeIndividual: async (data) => {
-      const { text, langConfig, providerConfig, hash, scheduleAt, context } = data
+      const { text, langConfig, providerConfig, hash, scheduleAt, context, customPromptsConfig } = data
       const thunk = async () => {
-        return executeTranslate(text, langConfig, providerConfig, promptResolver, { context })
+        const result = await executeTranslate(text, langConfig, providerConfig, promptResolver, { context, customPromptsConfig })
+        return parseTranslationResult(result, langConfig)
       }
       return requestQueueFor(providerConfig).enqueue(thunk, scheduleAt, hash)
     },
@@ -208,8 +235,11 @@ export function setUpWebPageTranslationQueue() {
         try {
           const cached = await cacheDb.translationCache.get(data.hash)
           controller.signal.throwIfAborted()
-          if (cached && hasIntactInlineAtoms(data.text, cached.translation)) {
-            reply({ type: "done", text: cached.translation })
+          if (cached && hasCacheableTranslation(data.text, cachedTranslation(cached, data.langConfig))) {
+            const result = cachedTranslation(cached, data.langConfig)
+            if (result.targetCode)
+              reply({ type: "target", targetCode: result.targetCode })
+            reply({ type: "done", result })
             return
           }
           await limits.load()
@@ -222,22 +252,35 @@ export function setUpWebPageTranslationQueue() {
             const timeout = setTimeout(() => attempt.abort(), 110_000)
             try {
               reply({ type: "partial", text: "" })
-              const { systemPrompt, prompt } = await getTranslatePrompt(LANG_CODE_TO_EN_NAME[data.langConfig.targetCode], data.text, { context: data.context })
-              return await requestTextStream(data.providerConfig, {
+              const { systemPrompt, prompt } = await getTranslatePrompt(AUTOMATIC_TARGET_LANGUAGE, data.text, { context: data.context, languagePolicy: data.langConfig, customPromptsConfig: data.customPromptsConfig ?? DEFAULT_CONFIG.translate.customPromptsConfig })
+              let targetReported = false
+              const raw = await requestTextStream(data.providerConfig, {
                 system: systemPrompt,
                 prompt,
                 temperature: data.providerConfig.temperature,
-              }, text => reply({ type: "partial", text }), AbortSignal.any([controller.signal, attempt.signal]))
+              }, (text) => {
+                const partial = parseTranslationPartial(text, data.langConfig)
+                if (!partial || partial.action === "preserve")
+                  return
+                if (!targetReported && partial.targetCode) {
+                  reply({ type: "target", targetCode: partial.targetCode })
+                  targetReported = true
+                }
+                reply({ type: "partial", text: partial.text })
+              }, AbortSignal.any([controller.signal, attempt.signal]))
+              const result = parseTranslationResult(raw, data.langConfig)
+              if (!targetReported && result.targetCode)
+                reply({ type: "target", targetCode: result.targetCode })
+              return result
             }
             finally {
               clearTimeout(timeout)
             }
           }, Date.now(), `hover:${data.hash}:${getRandomUUID()}`, 120_000)
           controller.signal.throwIfAborted()
-          if (result && hasIntactInlineAtoms(data.text, result)) {
-            await cacheDb.translationCache.put({ key: data.hash, translation: result, createdAt: new Date() })
-          }
-          reply({ type: "done", text: result })
+          if (hasCacheableTranslation(data.text, result))
+            await cacheTranslation(data.hash, result)
+          reply({ type: "done", result })
         }
         catch (error) {
           reply({ type: "error", message: error instanceof Error ? error.message : String(error) })
@@ -247,17 +290,16 @@ export function setUpWebPageTranslationQueue() {
   })
 
   onMessage("enqueueTranslateRequest", async (message) => {
-    const { data: { text, langConfig, providerConfig, scheduleAt, hash, webTitle, webDescription, webContent, webSummary } } = message
+    const { data: { text, langConfig, providerConfig, scheduleAt, hash, customPromptsConfig, webTitle, webDescription, webContent, webSummary } } = message
 
     // Check cache first
     if (hash) {
       const cached = await cacheDb.translationCache.get(hash)
-      if (cached && hasIntactInlineAtoms(text, cached.translation)) {
-        return cached.translation
+      if (cached && hasCacheableTranslation(text, cachedTranslation(cached, langConfig))) {
+        return cachedTranslation(cached, langConfig)
       }
     }
 
-    let result = ""
     const context: WebPagePromptContext = {
       webTitle: normalizePromptContextValue(webTitle),
       webDescription: normalizePromptContextValue(webDescription),
@@ -267,17 +309,12 @@ export function setUpWebPageTranslationQueue() {
 
     // Learned limits decide the first batch size and pace, so they must be read before the first request.
     await limits.load()
-    const data = { text, langConfig, providerConfig, hash, scheduleAt, context }
-    result = await batchQueue.enqueue(data)
+    const data = { text, langConfig, providerConfig, hash, scheduleAt, context, customPromptsConfig: customPromptsConfig ?? DEFAULT_CONFIG.translate.customPromptsConfig }
+    const result = await batchQueue.enqueue(data)
 
     // Cache the translation result if successful
-    if (result && hash && hasIntactInlineAtoms(text, result)) {
-      await cacheDb.translationCache.put({
-        key: hash,
-        translation: result,
-        createdAt: new Date(),
-      })
-    }
+    if (hash && hasCacheableTranslation(text, result))
+      await cacheTranslation(hash, result)
 
     return result
   })

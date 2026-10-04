@@ -1,3 +1,4 @@
+import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
 import type { VideoTranslationControls } from "@/utils/subtitles/translation-controls"
@@ -5,7 +6,9 @@ import { i18n } from "#imports"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
+import { prepareTranslationText } from "@/utils/host/translate/text-preparation"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
+import { setTranslationDirAndLang } from "@/utils/host/translate/translation-attributes"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle } from "@/utils/subtitles/appearance"
@@ -85,12 +88,37 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   const xPlayer = isXHost()
   const tracks = createTextTrackSession(video, track => !xPlayer || track.label !== "clone")
   const timeline = youtubePlayer ? createYouTubeTimeline() : null
+  const targets = new Map<string, LangCodeISO6393>()
+  let translationGeneration = 0
+  let requestController = new AbortController()
   const translations = new SubtitleTranslationWindow(async (input) => {
     const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
     if (!provider?.apiKey?.trim())
       throw new Error("Translation service is not configured")
-    return translateTextCore({ text: input, langConfig: config.language, providerConfig: provider, extraHashTags: ["video-subtitles"] })
+    const generation = translationGeneration
+    return translateTextCore({
+      text: input,
+      langConfig: config.language,
+      providerConfig: provider,
+      extraHashTags: ["video-subtitles"],
+      customPromptsConfig: config.translate.customPromptsConfig,
+      signal: requestController.signal,
+      onTargetLanguage: (code) => {
+        if (disposed || generation !== translationGeneration)
+          return
+        if (targets.size >= 1000)
+          targets.delete(targets.keys().next().value!)
+        targets.set(input, code)
+      },
+    })
   })
+  const resetTranslations = () => {
+    translationGeneration++
+    requestController.abort()
+    requestController = new AbortController()
+    targets.clear()
+    translations.reset()
+  }
   let timelineKey = ""
   let nativeCues = [] as ReturnType<typeof readTrackCues>
   let cueCount = -1
@@ -174,7 +202,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     if (currentSource !== source) {
       source = currentSource
       text = ""
-      translations.reset()
+      resetTranslations()
       timelineKey = ""
       nativeCues = []
       cueCount = -1
@@ -187,7 +215,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     if (selected !== track || selectedKey !== trackKey) {
       track = selected
       trackKey = selectedKey
-      translations.reset()
+      resetTranslations()
       nativeCues = []
       cueCount = -1
       text = ""
@@ -195,7 +223,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     const youtube = timeline?.tick()
     if (youtube && youtube.key !== timelineKey) {
       timelineKey = youtube.key
-      translations.reset()
+      resetTranslations()
     }
     if (track && (track.cues?.length ?? 0) !== cueCount) {
       nativeCues = readTrackCues(track)
@@ -217,9 +245,15 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     }
     const visible = !!text && rect.width > 0 && rect.height > 0 && !video.ended
     box.classList.toggle("empty", !visible)
-    original.textContent = config.features.subtitleMode === "bilingual" ? text : ""
-    original.hidden = config.features.subtitleMode !== "bilingual"
-    translated.textContent = translations.get(text) ?? (translations.hasFailed(text) ? i18n.t("subtitleTranslation.failed") : i18n.t(cues.length ? "subtitleTranslation.prefetching" : "subtitleTranslation.pending"))
+    const result = translations.get(text)
+    const preserved = result !== undefined && (result.trim() === "" || prepareTranslationText(result) === prepareTranslationText(text))
+    const showOriginal = config.features.subtitleMode === "bilingual" || preserved
+    original.textContent = showOriginal ? text : ""
+    original.hidden = !showOriginal
+    original.style.marginBottom = preserved ? "0" : ""
+    translated.hidden = preserved
+    translated.textContent = preserved ? "" : result ?? (translations.hasFailed(text) ? i18n.t("subtitleTranslation.failed") : i18n.t(cues.length ? "subtitleTranslation.prefetching" : "subtitleTranslation.pending"))
+    setTranslationDirAndLang(translated, targets.get(text) ?? config.language.targetCode)
     positionCaption()
     if (adPlaying || video.ended || youtube?.enabled === false) {
       translations.update([], video.currentTime, video.playbackRate, "")
@@ -240,6 +274,8 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     },
     dispose: () => {
       disposed = true
+      requestController.abort()
+      targets.clear()
       view?.removeEventListener("scroll", schedulePosition, true)
       view?.removeEventListener("resize", schedulePosition)
       if (positionFrame !== undefined)

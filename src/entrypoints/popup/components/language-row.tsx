@@ -1,94 +1,41 @@
-import type { PickerItem } from "@/components/language-picker"
 import type { LangCodeISO6393 } from "@/definitions"
-import { useAtom, useAtomValue } from "jotai"
+import type { Config } from "@/types/config/config"
+import { useAtom } from "jotai"
 import { i18n } from "#imports"
 import { IconArrowRight } from "@/components/icons"
-import { LanguagePicker } from "@/components/language-picker"
-import { langCodeISO6393Schema } from "@/definitions"
+import { toast } from "@/components/toast"
+import { TranslationLanguagePicker } from "@/components/translation-language-picker"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { detectedCodeAtom } from "@/utils/atoms/detected-code"
-import { getLanguageLabel, getLanguageName } from "@/utils/language-labels"
+import { getLanguageName } from "@/utils/language-labels"
+import { getSecondaryLanguage, isPrimaryLanguagePreserved } from "@/utils/language-policy"
 import { cn } from "@/utils/styles/utils"
-
-type SourceCode = LangCodeISO6393 | "auto"
-
-function languageItem<V extends string>(value: V, code: LangCodeISO6393, badge?: React.ReactNode): PickerItem<V> {
-  return { value, label: getLanguageLabel(code), keywords: getLanguageName(code), badge }
-}
-
-function LanguageTrigger({ title, caption, ariaLabel, ...props }: { title: string, caption: string, ariaLabel: string } & React.ComponentProps<"button">) {
-  return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      title={title}
-      className="flex h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center gap-0.5 rounded-[10px] border border-border bg-card px-3 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50"
-      {...props}
-    >
-      <span className="w-full truncate text-[14px] font-semibold leading-[18px]">{title}</span>
-      <span className="text-[11px] leading-[14px] text-muted-foreground">{caption}</span>
-    </button>
-  )
-}
-
-const PANEL_CLASS = "inset-x-0 top-full mt-1.5"
 
 export function LanguageRow({ muted = false }: { muted?: boolean }) {
   const [language, setLanguage] = useAtom(configFieldsAtomMap.language)
-  const detectedCode = useAtomValue(detectedCodeAtom)
-
-  const targetItems = langCodeISO6393Schema.options.map(code => languageItem(code, code))
-  const sourceItems: PickerItem<SourceCode>[] = [
-    languageItem<SourceCode>("auto", detectedCode, (
-      <span className="ml-auto rounded-full bg-muted px-1.5 text-[10px] text-muted-foreground">{i18n.t("popup.auto")}</span>
-    )),
-    ...targetItems,
-  ]
-
-  const isAuto = language.sourceCode === "auto"
-  const sourceTitle = getLanguageName(language.sourceCode === "auto" ? detectedCode : language.sourceCode)
+  const primaryName = getLanguageName(language.targetCode)
+  const secondary = getSecondaryLanguage(language)
+  const preserved = isPrimaryLanguagePreserved(language)
+  const save = (patch: Partial<Config["language"]>) => {
+    void setLanguage(patch).catch(() => toast.error(i18n.t("options.language.saveFailed")))
+  }
 
   return (
-    <div className={cn("relative flex items-center gap-2", muted && "opacity-60")}>
-      <LanguagePicker
-        items={sourceItems}
-        value={language.sourceCode}
-        onChange={(sourceCode) => {
-          if (sourceCode !== language.sourceCode)
-            void setLanguage({ sourceCode })
-        }}
-        searchPlaceholder={i18n.t("languageCombobox.searchLanguages")}
-        emptyText={i18n.t("languageCombobox.noLanguagesFound")}
-        panelClassName={PANEL_CLASS}
-        renderTrigger={props => (
-          <LanguageTrigger
-            title={sourceTitle}
-            caption={isAuto ? i18n.t("popup.autoDetected") : i18n.t("popup.sourceLanguage")}
-            ariaLabel={i18n.t("popup.sourceLanguage")}
-            {...props}
-          />
-        )}
-      />
-      <IconArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <LanguagePicker
-        items={targetItems}
-        value={language.targetCode}
-        onChange={(targetCode) => {
-          if (targetCode !== language.targetCode)
-            void setLanguage({ targetCode })
-        }}
-        searchPlaceholder={i18n.t("languageCombobox.searchLanguages")}
-        emptyText={i18n.t("languageCombobox.noLanguagesFound")}
-        panelClassName={PANEL_CLASS}
-        renderTrigger={props => (
-          <LanguageTrigger
-            title={getLanguageName(language.targetCode)}
-            caption={i18n.t("popup.translateInto")}
-            ariaLabel={i18n.t("popup.targetLanguage")}
-            {...props}
-          />
-        )}
-      />
-    </div>
+    <section aria-label={i18n.t("options.language.title")} className={cn("flex flex-col", muted && "opacity-60")}>
+      <div className="flex items-center justify-between gap-2 px-0.5 pb-2">
+        <span className="text-xs font-medium">{i18n.t("options.language.title")}</span>
+        <span className="text-[10px] text-muted-foreground">{i18n.t("options.language.auto")}</span>
+      </div>
+      <div className="grid grid-cols-[minmax(0,1fr)_16px_113px] items-center gap-2 border-b border-border px-0.5 py-1.5">
+        <span className="truncate text-xs text-muted-foreground">{i18n.t("options.language.other")}</span>
+        <IconArrowRight className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        <TranslationLanguagePicker compact value={language.targetCode} label={i18n.t("options.language.primary")} onChange={value => value !== language.targetCode && save({ targetCode: value as LangCodeISO6393 })} />
+      </div>
+      <div className="grid grid-cols-[minmax(0,1fr)_16px_113px] items-center gap-2 px-0.5 py-1.5">
+        <span className="truncate text-xs text-muted-foreground" title={primaryName}>{primaryName}</span>
+        <IconArrowRight className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        <TranslationLanguagePicker compact value={secondary} primaryCode={language.targetCode} label={i18n.t("options.language.secondary")} onChange={value => value !== secondary && save({ secondaryCode: value })} />
+      </div>
+      {preserved && <p className="mt-1.5 px-0.5 text-[10px] leading-[1.5] text-muted-foreground">{i18n.t("options.language.popupKeepDescription", [primaryName])}</p>}
+    </section>
   )
 }

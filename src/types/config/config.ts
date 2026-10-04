@@ -17,6 +17,7 @@ import { videoSiteRuleSchema } from "./video-site-rules"
 const languageSchema = z.object({
   sourceCode: langCodeISO6393Schema.or(z.literal("auto")),
   targetCode: langCodeISO6393Schema,
+  secondaryCode: langCodeISO6393Schema.or(z.literal("original")).default("eng"),
   level: langLevel,
 })
 

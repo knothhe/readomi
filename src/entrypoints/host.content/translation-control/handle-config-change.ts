@@ -3,8 +3,7 @@ import type { Config } from "@/types/config/config"
 import { watchLocalConfig } from "@/utils/config/storage"
 
 /**
- * Handles config changes and re-translates page when translation mode changes
- * while page translation is active.
+ * Apply display, language and prompt changes to an active translation session.
  */
 export function handleTranslationModeChange(
   newConfig: Config | null,
@@ -13,9 +12,11 @@ export function handleTranslationModeChange(
 ): void {
   const modeChanged = newConfig && oldConfig && newConfig.translate.mode !== oldConfig.translate.mode
   const rulesChanged = newConfig && oldConfig && JSON.stringify(newConfig.siteRules) !== JSON.stringify(oldConfig.siteRules)
+  const languageChanged = newConfig && oldConfig && JSON.stringify(newConfig.language) !== JSON.stringify(oldConfig.language)
+  const promptChanged = newConfig && oldConfig && JSON.stringify(newConfig.translate.customPromptsConfig) !== JSON.stringify(oldConfig.translate.customPromptsConfig)
 
   // restart() keeps the page translation on for the tab: unlike stop(), it does not tell the background that translation is off.
-  if ((modeChanged || rulesChanged) && manager.isActive) {
+  if ((modeChanged || rulesChanged || languageChanged || promptChanged) && manager.isActive) {
     void manager.restart()
   }
 }

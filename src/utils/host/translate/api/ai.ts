@@ -15,7 +15,7 @@ export async function aiTranslate<TContext>(
   targetLangName: string,
   providerConfig: ProviderConfig,
   promptResolver: PromptResolver<TContext>,
-  options?: { isBatch?: boolean, context?: TContext, signal?: AbortSignal },
+  options?: TranslatePromptOptions<TContext> & { signal?: AbortSignal },
 ) {
   const { systemPrompt, prompt } = await promptResolver(targetLangName, text, options)
 

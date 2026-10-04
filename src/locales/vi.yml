@@ -63,6 +63,32 @@ errorRecovery:
     confirm: Đặt lại
     cancel: Hủy
 options:
+  language:
+    popupKeepDescription: "Nội dung bằng $1 chỉ hiển thị bản gốc một lần, không lặp lại."
+    title: Ngôn ngữ dịch
+    description: Chọn hướng dịch dựa trên ngôn ngữ gốc.
+    rules: Quy tắc dịch
+    primary: Ngôn ngữ chính
+    secondary: Ngôn ngữ thứ hai
+    other: Ngôn ngữ khác
+    auto: Tự nhận diện bản gốc
+    automaticSource: Tự nhận diện ngôn ngữ gốc
+    autoDescription: Mô hình xác định ngôn ngữ theo từng đoạn văn hoặc đoạn phụ đề.
+    scope: Dịch trang · Dịch khi di chuột · Phụ đề video
+    toPrimary: "Khi bản gốc là ngôn ngữ khác, dịch sang $1."
+    toSecondary: "Khi bản gốc là $1, dịch sang $2."
+    keepPrimary: "Khi bản gốc là $1, giữ nguyên bản gốc."
+    keepOriginal: Giữ nguyên bản gốc
+    keepDescription: "Chế độ song ngữ chỉ hiển thị bản gốc một lần, không lặp lại."
+    sameLanguages: Ngôn ngữ chính và ngôn ngữ thứ hai giống nhau. Nội dung bằng ngôn ngữ này sẽ giữ nguyên.
+    previewMode: Chế độ xem trước
+    previewNote: Hướng dịch thay đổi theo ngôn ngữ gốc.
+    previewKeepNote: "Nội dung được giữ nguyên chỉ hiển thị một lần, không thêm vùng bản dịch."
+    previewOnlyKeepNote: Nội dung giữ nguyên vẫn hiển thị trong chế độ chỉ bản dịch.
+    shownOnce: Hiển thị một lần
+    applied: Các quy tắc này áp dụng cho mọi tính năng dịch.
+    sampleUnavailable: Chưa có văn bản mẫu cho ngôn ngữ này. Bản dịch thực tế sẽ dùng ngôn ngữ bạn chọn.
+    saveFailed: Không thể lưu ngôn ngữ dịch. Vui lòng thử lại.
   version: Phiên bản
   title: Cài đặt
   preview: Xem trước
@@ -199,7 +225,7 @@ options:
       edit: Sửa
       system: Prompt hệ thống
       template: Mẫu prompt
-      tokens: "{{input}} là văn bản cần dịch và phải được giữ lại.\n{{targetLanguage}} là ngôn ngữ đích bạn đã chọn."
+      tokens: "{{input}} là văn bản cần dịch và phải được giữ lại.\n{{targetLanguage}} là ngôn ngữ đích được xác định cho đoạn này theo quy tắc ngôn ngữ dịch của bạn."
       missingInput: "Giữ {{input}} trong mẫu để chèn văn bản cần dịch."
       restore: Khôi phục mặc định
       cancel: Hủy

@@ -63,6 +63,32 @@ errorRecovery:
     confirm: 重置
     cancel: 取消
 options:
+  language:
+    popupKeepDescription: $1内容只显示原文，不重复展示。
+    title: 翻译语言
+    description: 按原文语言，选择适合你的翻译方向。
+    rules: 翻译规则
+    primary: 主要语言
+    secondary: 第二语言
+    other: 其他语言
+    auto: 自动识别原文
+    automaticSource: 自动识别原文语言
+    autoDescription: 模型按段落或字幕句段判断原文语言。
+    scope: 网页翻译 · 悬停翻译 · 视频字幕
+    toPrimary: 原文为其他语言时，译成「$1」。
+    toSecondary: 原文为「$1」时，译成「$2」。
+    keepPrimary: 原文为「$1」时，保持原文。
+    keepOriginal: 保持原文
+    keepDescription: 双语对照中只显示原文，不重复展示。
+    sameLanguages: 主要语言和第二语言相同，该语言的内容将保持原文。
+    previewMode: 预览显示方式
+    previewNote: 原文语言不同，翻译方向随之切换。
+    previewKeepNote: 保持原文的内容只显示一次，不额外占用译文空间。
+    previewOnlyKeepNote: 即使选择仅译文，保持原文的内容也会正常显示。
+    shownOnce: 只显示一次
+    applied: 这组规则适用于所有翻译入口。
+    sampleUnavailable: 该语言暂无示例文本，实际翻译将使用你选择的语言。
+    saveFailed: 未能保存翻译语言，请重试。
   version: 版本
   title: 设置
   preview: 效果预览
@@ -199,7 +225,7 @@ options:
       edit: 修改
       system: 系统提示词
       template: 提示词模板
-      tokens: "{{input}} 是本次要翻译的文字，必须保留。\n{{targetLanguage}} 是你选择的目标语言。"
+      tokens: "{{input}} 是本次要翻译的文字，必须保留。\n{{targetLanguage}} 是本段按翻译语言规则确定的目标语言。"
       missingInput: "请在模板中保留 {{input}}，用于放入待翻译文字。"
       restore: 恢复默认
       cancel: 取消

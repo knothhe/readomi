@@ -269,7 +269,6 @@ export class PageTranslationManager implements IPageTranslationManager {
 
     this.lastSourceTitle = document.title || ""
     this.lastAppliedTranslatedTitle = null
-    this.titleRequestVersion = 0
 
     this.observeDocumentTitle()
     void this.syncDocumentTitle(this.lastSourceTitle)

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { browser, storage } from "#imports"
-import { DEFAULT_DETECTED_CODE } from "@/utils/constants/config"
-import { getDetectedCodeStateKey, getTranslationStateKey } from "@/utils/constants/storage-keys"
+import { getTranslationStateKey } from "@/utils/constants/storage-keys"
 
 const sendMessageMock = vi.fn()
 const onMessageMock = vi.fn()
@@ -9,7 +8,6 @@ const storageGetItemMock = vi.fn()
 const storageSetItemMock = vi.fn()
 const storageRemoveItemMock = vi.fn()
 const tabsOnRemovedAddListenerMock = vi.fn()
-const tabsOnActivatedAddListenerMock = vi.fn()
 const tabsQueryMock = vi.fn()
 const webNavigationOnCommittedAddListenerMock = vi.fn()
 const injectHostContentIntoTabIframesMock = vi.fn()
@@ -63,14 +61,6 @@ function getOnRemovedListener() {
   return listener as (tabId: number) => Promise<void>
 }
 
-function getOnActivatedListener() {
-  const listener = tabsOnActivatedAddListenerMock.mock.calls.at(-1)?.[0]
-  if (!listener) {
-    throw new Error("Expected tabs.onActivated listener to be registered")
-  }
-  return listener as (activeInfo: { tabId: number }) => Promise<void>
-}
-
 async function setupSubject() {
   const { translationMessage } = await import("../translation-signal")
   translationMessage()
@@ -82,7 +72,6 @@ describe("translationMessage", () => {
     messageHandlers.clear()
 
     browser.tabs.onRemoved.addListener = tabsOnRemovedAddListenerMock
-    browser.tabs.onActivated.addListener = tabsOnActivatedAddListenerMock
     browser.tabs.query = tabsQueryMock
     browser.webNavigation.onCommitted.addListener = webNavigationOnCommittedAddListenerMock
     storage.getItem = storageGetItemMock
@@ -156,103 +145,35 @@ describe("translationMessage", () => {
     expect(sendMessageMock).toHaveBeenCalledWith("askManagerToTogglePageTranslation", { enabled: false }, 42)
   })
 
-  it("stores detected language by sender tab and notifies when it is the active tab", async () => {
+  it("accepts legacy page-language reports without caching or publishing", async () => {
     await setupSubject()
-    tabsQueryMock.mockResolvedValue([{ id: 42 }])
 
-    await getHandler("reportDetectedPageLanguage")({
+    expect(await getHandler("reportDetectedPageLanguage")({
       data: { detectedCodeOrUnd: "cmn", url: "https://zh.example.test" },
       sender: { tab: { id: 42 }, frameId: 0 },
-    })
+    })).toBeUndefined()
 
-    expect(storageSetItemMock).toHaveBeenCalledWith(getDetectedCodeStateKey(42), "cmn")
-    expect(sendMessageMock).toHaveBeenCalledWith("detectedPageLanguageChanged", { detectedCode: "cmn" })
+    expect(storageGetItemMock).not.toHaveBeenCalled()
+    expect(storageSetItemMock).not.toHaveBeenCalled()
+    expect(tabsQueryMock).not.toHaveBeenCalled()
+    expect(sendMessageMock).not.toHaveBeenCalled()
   })
 
-  it("does not notify detected language from an inactive tab", async () => {
-    await setupSubject()
-    tabsQueryMock.mockResolvedValue([{ id: 7 }])
-
-    await getHandler("reportDetectedPageLanguage")({
-      data: { detectedCodeOrUnd: "jpn", url: "https://ja.example.test" },
-      sender: { tab: { id: 42 }, frameId: 0 },
-    })
-
-    expect(storageSetItemMock).toHaveBeenCalledWith(getDetectedCodeStateKey(42), "jpn")
-    expect(sendMessageMock).not.toHaveBeenCalledWith("detectedPageLanguageChanged", { detectedCode: "jpn" })
-  })
-
-  it("normalizes undetected page language before caching", async () => {
+  it("answers legacy language queries without reading page detection state", async () => {
     await setupSubject()
 
-    await getHandler("reportDetectedPageLanguage")({
-      data: { detectedCodeOrUnd: "und", url: "https://example.test" },
-      sender: { tab: { id: 42 }, frameId: 0 },
-    })
-
-    expect(storageSetItemMock).toHaveBeenCalledWith(getDetectedCodeStateKey(42), DEFAULT_DETECTED_CODE)
-  })
-
-  it("normalizes unsupported page language before caching and notifying", async () => {
-    await setupSubject()
-    tabsQueryMock.mockResolvedValue([{ id: 42 }])
-
-    await getHandler("reportDetectedPageLanguage")({
-      data: { detectedCodeOrUnd: "vmw", url: "https://example.test" },
-      sender: { tab: { id: 42 }, frameId: 0 },
-    })
-
-    expect(storageSetItemMock).toHaveBeenCalledWith(getDetectedCodeStateKey(42), DEFAULT_DETECTED_CODE)
-    expect(sendMessageMock).toHaveBeenCalledWith("detectedPageLanguageChanged", { detectedCode: DEFAULT_DETECTED_CODE })
-  })
-
-  it("returns the sender tab detected language to content scripts", async () => {
-    await setupSubject()
-    storageGetItemMock.mockImplementation(async (key: string) => {
-      if (key === getDetectedCodeStateKey(42))
-        return "jpn"
-      return undefined
-    })
-
-    const detectedCode = await getHandler("getDetectedCode")({
+    expect(await getHandler("getDetectedCode")({
       data: undefined,
       sender: { tab: { id: 42 }, frameId: 0 },
-    })
-
-    expect(detectedCode).toBe("jpn")
-  })
-
-  it("normalizes unsupported cached detected language for content scripts", async () => {
-    await setupSubject()
-    storageGetItemMock.mockImplementation(async (key: string) => {
-      if (key === getDetectedCodeStateKey(42))
-        return "vmw"
-      return undefined
-    })
-
-    const detectedCode = await getHandler("getDetectedCode")({
-      data: undefined,
-      sender: { tab: { id: 42 }, frameId: 0 },
-    })
-
-    expect(detectedCode).toBe(DEFAULT_DETECTED_CODE)
-  })
-
-  it("returns the active tab detected language to extension pages", async () => {
-    await setupSubject()
-    tabsQueryMock.mockResolvedValue([{ id: 8 }])
-    storageGetItemMock.mockImplementation(async (key: string) => {
-      if (key === getDetectedCodeStateKey(8))
-        return "cmn"
-      return undefined
-    })
-
-    const detectedCode = await getHandler("getDetectedCode")({
+    })).toBe("eng")
+    expect(await getHandler("getDetectedCode")({
       data: undefined,
       sender: {},
-    })
+    })).toBe("eng")
 
-    expect(detectedCode).toBe("cmn")
+    expect(storageGetItemMock).not.toHaveBeenCalled()
+    expect(tabsQueryMock).not.toHaveBeenCalled()
+    expect(sendMessageMock).not.toHaveBeenCalled()
   })
 
   it("waits for the top-frame manager to validate before enabling iframe injection", async () => {
@@ -267,42 +188,12 @@ describe("translationMessage", () => {
     expect(sendMessageMock).toHaveBeenCalledWith("askManagerToTogglePageTranslation", { enabled: true }, 42)
   })
 
-  it("publishes cached detected language and requests refresh when tabs are activated", async () => {
-    await setupSubject()
-    storageGetItemMock.mockImplementation(async (key: string) => {
-      if (key === getDetectedCodeStateKey(1))
-        return "cmn"
-      if (key === getDetectedCodeStateKey(2))
-        return "jpn"
-      return undefined
-    })
-
-    const onActivated = getOnActivatedListener()
-    await onActivated({ tabId: 1 })
-    await onActivated({ tabId: 2 })
-
-    expect(sendMessageMock).toHaveBeenCalledWith("detectedPageLanguageChanged", { detectedCode: "cmn" })
-    expect(sendMessageMock).toHaveBeenCalledWith("detectedPageLanguageChanged", { detectedCode: "jpn" })
-    expect(sendMessageMock).toHaveBeenCalledWith("refreshDetectedPageLanguage", undefined, 1)
-    expect(sendMessageMock).toHaveBeenCalledWith("refreshDetectedPageLanguage", undefined, 2)
-  })
-
-  it("publishes default detected language when an activated tab has no cache", async () => {
-    await setupSubject()
-
-    await getOnActivatedListener()({ tabId: 42 })
-
-    expect(sendMessageMock).toHaveBeenCalledWith("detectedPageLanguageChanged", { detectedCode: DEFAULT_DETECTED_CODE })
-    expect(sendMessageMock).toHaveBeenCalledWith("refreshDetectedPageLanguage", undefined, 42)
-  })
-
-  it("clears detected language cache when a tab is removed", async () => {
+  it("clears translation state when a tab is removed", async () => {
     await setupSubject()
 
     await getOnRemovedListener()(42)
 
     expect(storageRemoveItemMock).toHaveBeenCalledWith(getTranslationStateKey(42))
-    expect(storageRemoveItemMock).toHaveBeenCalledWith(getDetectedCodeStateKey(42))
   })
 
   it("keeps enabled translation state on same-origin top-frame navigation", async () => {

@@ -335,8 +335,15 @@ export async function translateNodeTranslationOnlyMode(
       // Keep the wrapper when translation failed so the injected error UI remains visible.
       // Only remove the wrapper when translation returned an empty string.
       if (translatedText === "") {
-        // Batch the remove operation to execute remove operation after insert operation
-        batchDOMOperation(() => translatedWrapperNode.remove())
+        batchDOMOperation(() => {
+          translatedWrapperNode.remove()
+          // Preserving a unit never replaced its DOM. Once all units under a
+          // parent are preserved, a later translation must snapshot fresh text.
+          for (const parent of [parentNode, outerParentElement]) {
+            if (parent && !parent.querySelector(`.${CONTENT_WRAPPER_CLASS}`))
+              originalContentMap.delete(parent)
+          }
+        })
       }
       return
     }

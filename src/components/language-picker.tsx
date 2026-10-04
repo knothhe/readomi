@@ -9,6 +9,7 @@ export interface PickerItem<V extends string = string> {
   /** Extra text the search also matches. */
   keywords?: string
   badge?: ReactNode
+  separatorAfter?: boolean
 }
 
 interface LanguagePickerProps<V extends string> {
@@ -16,7 +17,7 @@ interface LanguagePickerProps<V extends string> {
   value: V | null
   onChange: (value: V) => void
   /** The trigger; it receives `onClick` and the aria attributes through `renderTrigger`. */
-  renderTrigger: (props: { "onClick": () => void, "aria-expanded": boolean, "aria-haspopup": "listbox" }) => ReactNode
+  renderTrigger: (props: { "onClick": () => void, "aria-expanded": boolean, "aria-haspopup": "listbox", "aria-controls": string | undefined }) => ReactNode
   searchPlaceholder: string
   emptyText: string
   /** The panel is positioned by the nearest `relative` ancestor; this class sets its box. */
@@ -68,18 +69,31 @@ export function LanguagePicker<V extends string>({ items, value, onChange, rende
         setOpen(false)
     }
     document.addEventListener("pointerdown", onPointerDown, true)
-    return () => document.removeEventListener("pointerdown", onPointerDown, true)
+    const observer = new MutationObserver(() => {
+      if (rootRef.current?.closest("[hidden]"))
+        setOpen(false)
+    })
+    let ancestor = rootRef.current?.parentElement
+    while (ancestor) {
+      observer.observe(ancestor, { attributes: true, attributeFilter: ["hidden"] })
+      ancestor = ancestor.parentElement
+    }
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true)
+      observer.disconnect()
+    }
   }, [open])
 
   useEffect(() => {
     if (!open)
       return
-    rootRef.current?.querySelector<HTMLElement>(`[data-index="${highlighted}"]`)?.scrollIntoView({ block: "nearest" })
+    rootRef.current?.querySelector<HTMLElement>(`[data-index="${highlighted}"]`)?.scrollIntoView?.({ block: "nearest" })
   }, [highlighted, open])
 
   const pick = (item: PickerItem<V>) => {
     onChange(item.value)
     setOpen(false)
+    rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus()
   }
 
   const onKeyDown = (event: React.KeyboardEvent) => {
@@ -100,13 +114,14 @@ export function LanguagePicker<V extends string>({ items, value, onChange, rende
       case "Escape":
         event.preventDefault()
         setOpen(false)
+        rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus()
         break
     }
   }
 
   return (
     <div ref={rootRef} className="contents">
-      {renderTrigger({ "onClick": toggle, "aria-expanded": open, "aria-haspopup": "listbox" })}
+      {renderTrigger({ "onClick": toggle, "aria-expanded": open, "aria-haspopup": "listbox", "aria-controls": open ? listId : undefined })}
       {open && (
         <div className={cn("absolute z-50 flex flex-col overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 animate-[readomi-fade-in_100ms_ease-out]", panelClassName)}>
           <input
@@ -115,6 +130,7 @@ export function LanguagePicker<V extends string>({ items, value, onChange, rende
             aria-controls={listId}
             aria-expanded="true"
             aria-autocomplete="list"
+            aria-activedescendant={visible[highlighted] ? `${listId}-${highlighted}` : undefined}
             value={query}
             onChange={event => search(event.target.value)}
             onKeyDown={onKeyDown}
@@ -126,14 +142,17 @@ export function LanguagePicker<V extends string>({ items, value, onChange, rende
             {visible.map((item, index) => (
               <li
                 key={item.value}
+                id={`${listId}-${index}`}
                 role="option"
                 aria-selected={item.value === value}
                 data-index={index}
+                data-value={item.value}
                 onPointerMove={() => setHighlighted(index)}
                 onClick={() => pick(item)}
                 className={cn(
                   "relative flex cursor-default items-center gap-2 rounded-md py-1 pr-8 pl-1.5 text-sm select-none",
                   index === highlighted && "bg-accent text-accent-foreground",
+                  item.separatorAfter && "mb-1.5 border-b border-border pb-2",
                 )}
               >
                 <span className="truncate">{item.label}</span>

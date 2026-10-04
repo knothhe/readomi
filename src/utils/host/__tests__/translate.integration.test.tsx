@@ -133,6 +133,61 @@ describe("translate", () => {
     })
   })
 
+  it.each(["bilingual", "translationOnly"] as const)("uses the actual reverse target in %s mode", async (mode) => {
+    vi.mocked(translateTextForPage).mockImplementationOnce(async (_text, options) => {
+      options?.onTargetLanguage?.("arb")
+      return "مرحبا بالعالم"
+    })
+    render(<p data-testid="reverse-source">中文原文需要反向翻译。</p>)
+    await removeOrShowPageTranslation(mode)
+    const translation = screen.getByTestId("reverse-source").querySelector<HTMLElement>(`.${CONTENT_WRAPPER_CLASS}`)!
+    expect(translation.dir).toBe("rtl")
+    expect(translation.lang).toBe("ar")
+    expect(translation.textContent).toBe("مرحبا بالعالم")
+  })
+
+  it.each(["bilingual", "translationOnly"] as const)("keeps preserved text once without a translation wrapper in %s mode", async (mode) => {
+    vi.mocked(translateTextForPage).mockResolvedValueOnce("")
+    render(<p data-testid="preserved-source">中文原文保持可读。</p>)
+    await removeOrShowPageTranslation(mode)
+    const source = screen.getByTestId("preserved-source")
+    expect(source.textContent).toBe("中文原文保持可读。")
+    expect(source.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeNull()
+    expect(source.querySelector(".readomi-spinner")).toBeNull()
+  })
+
+  it("restores the latest source after preserving and then translating an updated paragraph", async () => {
+    vi.mocked(translateTextForPage).mockResolvedValueOnce("")
+    render(<p data-testid="updated-source">原文的旧内容。</p>)
+    await removeOrShowPageTranslation("translationOnly")
+    const source = screen.getByTestId("updated-source")
+    source.textContent = "原文的最新内容。"
+    vi.mocked(translateTextForPage).mockResolvedValueOnce("The latest content.")
+    await removeOrShowPageTranslation("translationOnly")
+    expect(source.textContent).toBe("The latest content.")
+    await removeOrShowPageTranslation("translationOnly", true)
+    expect(screen.getByTestId("updated-source").textContent).toBe("原文的最新内容。")
+  })
+
+  it("releases a shared source snapshot after the last preserved unit settles", async () => {
+    vi.mocked(translateTextForPage).mockResolvedValueOnce("").mockResolvedValueOnce("")
+    render(
+      <p data-testid="updated-units">
+        旧的第一句。
+        <br />
+        旧的第二句。
+      </p>,
+    )
+    await removeOrShowPageTranslation("translationOnly")
+    const source = screen.getByTestId("updated-units")
+    expect(source.querySelector(`.${CONTENT_WRAPPER_CLASS}`)).toBeNull()
+    source.innerHTML = "新的第一句。<br>新的第二句。"
+    await removeOrShowPageTranslation("translationOnly")
+    await removeOrShowPageTranslation("translationOnly", true)
+    expect(screen.getByTestId("updated-units").textContent).toBe("新的第一句。新的第二句。")
+    expect(screen.getByTestId("updated-units").querySelectorAll("br")).toHaveLength(1)
+  })
+
   describe("block node with single child node", () => {
     describe("text node", () => {
       it("bilingual mode: should insert translation wrapper after original text node", async () => {
@@ -1784,7 +1839,7 @@ describe("translate", () => {
         await removeOrShowPageTranslation("bilingual", true)
 
         // Whitespace-only nodes return single space for word separation
-        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`)
+        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
     })
 
@@ -1799,7 +1854,7 @@ describe("translate", () => {
         )
         await removeOrShowPageTranslation("bilingual", true)
 
-        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`)
+        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
     })
 
@@ -1815,7 +1870,7 @@ describe("translate", () => {
         )
         await removeOrShowPageTranslation("bilingual", true)
 
-        expect(translateTextForPage).toHaveBeenCalledWith(MOCK_ORIGINAL_TEXT)
+        expect(translateTextForPage).toHaveBeenCalledWith(MOCK_ORIGINAL_TEXT, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
 
       it("bilingual mode: space leading/trailing is trimmed before translation", async () => {
@@ -1829,7 +1884,7 @@ describe("translate", () => {
         await removeOrShowPageTranslation("bilingual", true)
 
         // Final text is trimmed before translation
-        expect(translateTextForPage).toHaveBeenCalledWith(MOCK_ORIGINAL_TEXT)
+        expect(translateTextForPage).toHaveBeenCalledWith(MOCK_ORIGINAL_TEXT, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
     })
 
@@ -1846,7 +1901,7 @@ describe("translate", () => {
         await removeOrShowPageTranslation("bilingual", true)
 
         // Whitespace-only node returns single space to preserve word separation
-        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`)
+        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
 
       it("bilingual mode: space-separated inline elements", async () => {
@@ -1860,7 +1915,7 @@ describe("translate", () => {
         )
         await removeOrShowPageTranslation("bilingual", true)
 
-        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`)
+        expect(translateTextForPage).toHaveBeenCalledWith(`${MOCK_ORIGINAL_TEXT} ${MOCK_ORIGINAL_TEXT}`, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
     })
 
@@ -1878,8 +1933,8 @@ describe("translate", () => {
 
         // BR elements are handled as paragraph separators, each paragraph translated separately
         expect(translateTextForPage).toHaveBeenCalledTimes(2)
-        expect(translateTextForPage).toHaveBeenNthCalledWith(1, MOCK_ORIGINAL_TEXT)
-        expect(translateTextForPage).toHaveBeenNthCalledWith(2, MOCK_ORIGINAL_TEXT)
+        expect(translateTextForPage).toHaveBeenNthCalledWith(1, MOCK_ORIGINAL_TEXT, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
+        expect(translateTextForPage).toHaveBeenNthCalledWith(2, MOCK_ORIGINAL_TEXT, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
 
       it("translationOnly mode: should handle BR elements as paragraph separators", async () => {
@@ -1894,8 +1949,8 @@ describe("translate", () => {
         await removeOrShowPageTranslation("translationOnly", true)
 
         expect(translateTextForPage).toHaveBeenCalledTimes(2)
-        expect(translateTextForPage).toHaveBeenNthCalledWith(1, MOCK_ORIGINAL_TEXT)
-        expect(translateTextForPage).toHaveBeenNthCalledWith(2, MOCK_ORIGINAL_TEXT)
+        expect(translateTextForPage).toHaveBeenNthCalledWith(1, MOCK_ORIGINAL_TEXT, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
+        expect(translateTextForPage).toHaveBeenNthCalledWith(2, MOCK_ORIGINAL_TEXT, expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
       })
     })
   })

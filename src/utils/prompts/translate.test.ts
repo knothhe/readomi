@@ -9,6 +9,23 @@ function custom(systemPrompt: string, prompt = "Translate to {{targetLanguage}}:
 }
 
 describe("translation prompts", () => {
+  it("infers direction in the translation request and overrides a fixed target placeholder", () => {
+    const result = getTranslatePromptFromConfig(custom("Use natural {{targetLanguage}}."), "Chinese", "中文原文", { languagePolicy: { targetCode: "cmn", secondaryCode: "eng" } })
+    expect(result.systemPrompt).toContain("Primary language: Simplified Mandarin Chinese.")
+    expect(result.systemPrompt).toContain("Secondary language: English.")
+    expect(result.systemPrompt).toContain("Determine the main language of EACH input segment")
+    expect(result.systemPrompt).toContain("Japanese is a different language")
+    expect(result.prompt).toContain("automatic target language determined by the Translation Direction Rules")
+    expect(result.systemPrompt).toMatch(/## Required Response Format[\s\S]*Never include explanations, JSON or Markdown fences around the response\.$/)
+  })
+
+  it("makes original or identical-language rules preserve the source without duplicate output", () => {
+    for (const secondaryCode of ["original", "cmn", "cmn-Hant"] as const) {
+      const result = getTranslatePromptFromConfig(defaults, "Chinese", "中文", { languagePolicy: { targetCode: "cmn", secondaryCode } })
+      expect(result.systemPrompt).toContain("preserve the original: output only [[readomi:preserve]]")
+      expect(result.systemPrompt).toContain("A preserve header has no text after it.")
+    }
+  })
   it("protects inline formula tokens even with a custom prompt and batch input", () => {
     const input = "The result is {{0}}.\n\n%%\n\nUse {{1}}."
     const result = getTranslatePromptFromConfig(custom("Translate naturally."), "Chinese", input, { isBatch: true })

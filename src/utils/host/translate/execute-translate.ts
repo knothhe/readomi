@@ -1,13 +1,14 @@
 import type { PromptResolver } from "./api/ai"
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
-import { LANG_CODE_TO_EN_NAME } from "@/definitions"
+import type { LanguagePolicyConfig } from "@/utils/language-policy"
 import { aiTranslate } from "./api/ai"
 import { prepareTranslationText } from "./text-preparation"
+import { AUTOMATIC_TARGET_LANGUAGE } from "./translation-result"
 
 export async function executeTranslate<TContext>(
   text: string,
-  langConfig: Config["language"],
+  langConfig: LanguagePolicyConfig,
   providerConfig: ProviderConfig,
   promptResolver: PromptResolver<TContext>,
   options?: {
@@ -15,6 +16,7 @@ export async function executeTranslate<TContext>(
     isBatch?: boolean
     context?: TContext
     signal?: AbortSignal
+    customPromptsConfig?: Config["translate"]["customPromptsConfig"]
   },
 ) {
   const preparedText = prepareTranslationText(text)
@@ -22,8 +24,7 @@ export async function executeTranslate<TContext>(
     return ""
   }
 
-  const targetLangName = LANG_CODE_TO_EN_NAME[langConfig.targetCode]
-  const translatedText = await aiTranslate(preparedText, targetLangName, providerConfig, promptResolver, options)
+  const translatedText = await aiTranslate(preparedText, AUTOMATIC_TARGET_LANGUAGE, providerConfig, promptResolver, { ...options, languagePolicy: langConfig })
 
   return translatedText.trim()
 }

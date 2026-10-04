@@ -3,7 +3,6 @@ import type { ColorTheme } from "@/utils/color-theme"
 import type { ThemeMode } from "@/utils/theme"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translate"
-import { detectPageLanguageLightweight } from "@/utils/content/page-language"
 import { setHostColorTheme } from "@/utils/host-color-theme"
 import { clearSiteRuleStyles, refreshSiteRuleStyles } from "@/utils/host/translate/ui/site-rule-styles"
 import { ensurePresetStyles } from "@/utils/host/translate/ui/style-injector"
@@ -115,20 +114,6 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   if (ctx.isInvalid)
     return
 
-  const detectAndReportPageLanguage = async (url: string) => {
-    if (ctx.isInvalid)
-      return
-    try {
-      const { detectedCodeOrUnd } = await detectPageLanguageLightweight()
-      if (!ctx.isInvalid)
-        await sendMessage("reportDetectedPageLanguage", { url, detectedCodeOrUnd })
-    }
-    catch (error) {
-      if (!ctx.isInvalid)
-        logger.error("Failed to report page language:", error)
-    }
-  }
-
   // For late-loading iframes: check if translation is already enabled for this tab
   let translationEnabled = false
   try {
@@ -154,10 +139,6 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
         else {
           manager.stop()
         }
-      }
-      // Only the top frame should detect and set language to avoid race conditions from iframes
-      if (window === window.top) {
-        await detectAndReportPageLanguage(to)
       }
     }
   }
@@ -190,17 +171,12 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
       })
 
   const cleanupDetectedLanguageRefreshListener = window === window.top
-    ? onMessage("refreshDetectedPageLanguage", () => {
-        void detectAndReportPageLanguage(window.location.href)
-      })
+    // Older background contexts can still send this message after an update.
+    // Each translation now identifies its own source in the translation request.
+    ? onMessage("refreshDetectedPageLanguage", () => {})
     : () => {}
 
   track(cleanupTranslationStateListener)
   track(cleanupFrameTranslationStateListener)
   track(cleanupDetectedLanguageRefreshListener)
-
-  // Only the top frame should detect and set language to avoid race conditions from iframes
-  if (window === window.top) {
-    await detectAndReportPageLanguage(window.location.href)
-  }
 }

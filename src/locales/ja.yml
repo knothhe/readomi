@@ -63,6 +63,32 @@ errorRecovery:
     confirm: リセット
     cancel: キャンセル
 options:
+  language:
+    popupKeepDescription: $1の内容は原文を1回だけ表示し、重複させません。
+    title: 翻訳言語
+    description: 原文の言語に応じて翻訳先を選びます。
+    rules: 翻訳ルール
+    primary: メイン言語
+    secondary: 第2言語
+    other: その他の言語
+    auto: 原文を自動判定
+    automaticSource: 原文の言語を自動判定
+    autoDescription: モデルが段落や字幕の区切りごとに原文の言語を判定します。
+    scope: ページ翻訳 · ホバー翻訳 · 動画字幕
+    toPrimary: 原文が他の言語の場合、$1に翻訳します。
+    toSecondary: 原文が$1の場合、$2に翻訳します。
+    keepPrimary: 原文が$1の場合、原文を表示します。
+    keepOriginal: 原文を保持
+    keepDescription: 対訳表示では原文を1回だけ表示し、重複させません。
+    sameLanguages: メイン言語と第2言語が同じため、この言語の内容は原文を表示します。
+    previewMode: プレビューの表示方法
+    previewNote: 原文の言語に応じて翻訳先が切り替わります。
+    previewKeepNote: 原文を保持する内容は1回だけ表示し、訳文の余白は追加しません。
+    previewOnlyKeepNote: 訳文のみの表示でも、保持した原文は表示されます。
+    shownOnce: 1回だけ表示
+    applied: このルールはすべての翻訳機能に適用されます。
+    sampleUnavailable: この言語のサンプル文はありません。実際の翻訳では選択した言語を使います。
+    saveFailed: 翻訳言語を保存できませんでした。もう一度お試しください。
   version: バージョン
   title: 設定
   preview: プレビュー
@@ -199,7 +225,7 @@ options:
       edit: 編集
       system: システムプロンプト
       template: プロンプトテンプレート
-      tokens: "{{input}} は翻訳するテキストなので、必ず残してください。\n{{targetLanguage}} は選択した翻訳先の言語です。"
+      tokens: "{{input}} は翻訳するテキストなので、必ず残してください。\n{{targetLanguage}}は、翻訳言語のルールに基づいてこの段落の翻訳先として決まる言語です。"
       missingInput: "翻訳するテキストを挿入するため、テンプレートに {{input}} を残してください。"
       restore: デフォルトに戻す
       cancel: キャンセル

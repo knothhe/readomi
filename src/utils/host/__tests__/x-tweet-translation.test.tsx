@@ -97,7 +97,7 @@ describe("x tweet translation", () => {
     await translate(config, true)
 
     expect(translateTextForPage).toHaveBeenCalledTimes(1)
-    expect(translateTextForPage).toHaveBeenCalledWith("Read this linked note before\nwatching the video.")
+    expect(translateTextForPage).toHaveBeenCalledWith("Read this linked note before\nwatching the video.", expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
     expect(tweet.querySelectorAll(`.${CONTENT_WRAPPER_CLASS}`)).toHaveLength(1)
     expect(tweet.querySelector(`.${BLOCK_CONTENT_CLASS}`)).toHaveAttribute("data-readomi-custom-translation-style", "line")
 

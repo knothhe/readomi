@@ -6,7 +6,6 @@ import { PageTranslationManager } from "../page-translation"
 
 const {
   mockDeepQueryTopLevelSelector,
-  mockGetDetectedCodeFromStorage,
   mockGetLocalConfig,
   mockGetOrCreateWebPageContext,
   mockHasNoWalkAncestor,
@@ -19,7 +18,6 @@ const {
   mockValidateTranslationConfigAndToast,
   mockWalkAndLabelElement,
 } = vi.hoisted(() => ({
-  mockGetDetectedCodeFromStorage: vi.fn(),
   mockGetLocalConfig: vi.fn(),
   mockGetOrCreateWebPageContext: vi.fn(),
   mockDeepQueryTopLevelSelector: vi.fn(),
@@ -32,10 +30,6 @@ const {
   mockTranslateTextForPageTitle: vi.fn(),
   mockValidateTranslationConfigAndToast: vi.fn(),
   mockSendMessage: vi.fn(),
-}))
-
-vi.mock("@/utils/config/languages", () => ({
-  getDetectedCodeFromStorage: mockGetDetectedCodeFromStorage,
 }))
 
 vi.mock("@/utils/config/storage", () => ({
@@ -198,7 +192,6 @@ describe("pageTranslationManager mutation re-walk", () => {
 
     vi.stubGlobal("IntersectionObserver", MockIntersectionObserver)
 
-    mockGetDetectedCodeFromStorage.mockResolvedValue("eng")
     mockGetLocalConfig.mockResolvedValue(DEFAULT_CONFIG)
     mockGetOrCreateWebPageContext.mockResolvedValue({
       url: window.location.href,

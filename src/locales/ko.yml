@@ -63,6 +63,32 @@ errorRecovery:
     confirm: 초기화
     cancel: 취소
 options:
+  language:
+    popupKeepDescription: $1 내용은 원문을 중복 없이 한 번만 표시합니다.
+    title: 번역 언어
+    description: 원문의 언어에 따라 번역 방향을 선택하세요.
+    rules: 번역 규칙
+    primary: 기본 언어
+    secondary: 두 번째 언어
+    other: 다른 언어
+    auto: 원문 자동 감지
+    automaticSource: 원문 언어 자동 감지
+    autoDescription: 모델이 문단이나 자막 구간마다 원문의 언어를 판단합니다.
+    scope: 페이지 번역 · 마우스 오버 번역 · 동영상 자막
+    toPrimary: 원문이 다른 언어이면 $1(으)로 번역합니다.
+    toSecondary: 원문이 $1이면 $2(으)로 번역합니다.
+    keepPrimary: 원문이 $1이면 원문을 유지합니다.
+    keepOriginal: 원문 유지
+    keepDescription: 이중 언어 모드에서는 원문을 중복 없이 한 번만 표시합니다.
+    sameLanguages: 기본 언어와 두 번째 언어가 같습니다. 이 언어의 내용은 원문을 유지합니다.
+    previewMode: 미리보기 표시 방식
+    previewNote: 원문 언어에 따라 번역 방향이 바뀝니다.
+    previewKeepNote: 유지된 원문은 번역 영역을 추가하지 않고 한 번만 표시합니다.
+    previewOnlyKeepNote: 번역문만 표시하는 모드에서도 유지된 원문을 표시합니다.
+    shownOnce: 한 번만 표시
+    applied: 이 규칙은 모든 번역 기능에 적용됩니다.
+    sampleUnavailable: 이 언어의 예문은 없습니다. 실제 번역에는 선택한 언어를 사용합니다.
+    saveFailed: 번역 언어를 저장하지 못했습니다. 다시 시도하세요.
   version: 버전
   title: 설정
   preview: 미리보기
@@ -199,7 +225,7 @@ options:
       edit: 수정
       system: 시스템 프롬프트
       template: 프롬프트 템플릿
-      tokens: "{{input}}은 번역할 텍스트이므로 반드시 유지해야 합니다.\n{{targetLanguage}}는 선택한 대상 언어입니다."
+      tokens: "{{input}}은 번역할 텍스트이므로 반드시 유지해야 합니다.\n{{targetLanguage}}는 번역 언어 규칙에 따라 이 구간에 대해 결정되는 대상 언어입니다."
       missingInput: "번역할 텍스트를 넣을 수 있도록 템플릿에 {{input}}을 유지하세요."
       restore: 기본값으로 되돌리기
       cancel: 취소

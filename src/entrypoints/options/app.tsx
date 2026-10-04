@@ -6,6 +6,7 @@ import { AppearanceSection } from "./sections/appearance"
 import { BackupSection } from "./sections/backup"
 import { FeaturesSection } from "./sections/features"
 import { SettingsHeader } from "./sections/header"
+import { LanguageSection } from "./sections/language"
 import { QualitySection } from "./sections/quality"
 import { ReadingSection } from "./sections/reading"
 import { ServiceSection } from "./sections/service"
@@ -14,6 +15,7 @@ import { SiteRulesSection } from "./sections/site-rules"
 
 const SECTIONS = [
   { id: "service", title: "options.service.title", Component: ServiceSection },
+  { id: "language", title: "options.language.title", Component: LanguageSection },
   { id: "reading", title: "options.reading.title", Component: ReadingSection },
   { id: "features", title: "features.title", Component: FeaturesSection },
   { id: "quality", title: "options.quality.title", Component: QualitySection },
@@ -44,6 +46,7 @@ function NavigationIcon({ section }: { section: typeof SECTIONS[number]["id"] })
         <path d="M7 7h.01M7 17h.01M12 7h5M12 17h5" />
       </>
     ),
+    language: <path d="M3 5h12M9 3v2M5 5c0 6 4 9 8 11M13 5c0 6-4 9-8 11m9 5 4-11 4 11m-7-3h6" />,
     reading: <path d="M12 5v15M12 5C9 3 5 3 3 4v14c3-1 6-1 9 2 3-3 6-3 9-2V4c-2-1-6-1-9 1" />,
     features: (
       <>

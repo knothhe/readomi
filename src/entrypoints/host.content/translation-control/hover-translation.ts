@@ -1,3 +1,4 @@
+import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
@@ -70,12 +71,22 @@ export function bindHoverTranslation(target: Document = document) {
       const walkId = getRandomUUID()
       walkAndLabelElement(block, walkId, config)
       const requests: { result: Promise<string>, resolve: (text: string) => void, reject: (error: unknown) => void }[] = []
-      const translateGroup = Object.assign((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void) => {
-        const onPartial = preview?.register(typographyElement, hideSpinner)
+      const translateGroup = Object.assign((text: string, typographyElement?: HTMLElement, hideSpinner?: () => void, onTargetLanguage?: (code: LangCodeISO6393) => void) => {
+        const update = preview?.register(typographyElement, hideSpinner)
+        const onPartial = update && ((partial: string) => {
+          // A replacement preview spans the whole paragraph. If that paragraph
+          // has several language units, keep it intact until all units settle.
+          if (config.translate.mode !== "translationOnly" || requests.length <= 1)
+            update(partial)
+        })
+        const onTarget = (code: LangCodeISO6393) => {
+          update?.setTargetLanguage(code)
+          onTargetLanguage?.(code)
+        }
         const result = new Promise<string>((resolve, reject) => {
           const abort = () => reject(new DOMException("Translation cancelled", "AbortError"))
           signal.addEventListener("abort", abort, { once: true })
-          void translateTextForPage(text, { onPartial, signal }).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort))
+          void translateTextForPage(text, { onPartial, onTargetLanguage: onTarget, signal }).then(resolve, reject).finally(() => signal.removeEventListener("abort", abort))
         })
         return new Promise<string>((resolve, reject) => requests.push({ result, resolve, reject }))
       }, { showSpinner: true })
@@ -207,14 +218,14 @@ export function bindHoverTranslation(target: Document = document) {
   }
   const unwatch = watchLocalConfig((next, previous) => {
     const rulesChanged = previous && JSON.stringify(next?.siteRules) !== JSON.stringify(previous.siteRules)
-    if (rulesChanged)
+    const languageChanged = previous && JSON.stringify(next?.language) !== JSON.stringify(previous.language)
+    const promptChanged = previous && JSON.stringify(next?.translate.customPromptsConfig) !== JSON.stringify(previous.translate.customPromptsConfig)
+    if (rulesChanged || languageChanged || promptChanged)
       removeAllTranslatedWrapperNodes(target)
-    if (!next?.features.hoverTranslation || rulesChanged || (previous && (
+    if (!next?.features.hoverTranslation || rulesChanged || languageChanged || promptChanged || (previous && (
       next.features.hoverStream !== previous.features.hoverStream
       || next.translate.mode !== previous.translate.mode
       || next.translate.providerId !== previous.translate.providerId
-      || next.language.sourceCode !== previous.language.sourceCode
-      || next.language.targetCode !== previous.language.targetCode
       || JSON.stringify(next.providersConfig) !== JSON.stringify(previous.providersConfig)
     ))) {
       reset()

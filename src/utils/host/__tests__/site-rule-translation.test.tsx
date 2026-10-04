@@ -63,7 +63,7 @@ describe("resolved site rule translation", () => {
 
   it("sends opaque formula placeholders and restores sanitized formulas in the translated text", async () => {
     const root = await translate("<p id='source'>The formula <span class='formula' id='formula'><b id='symbol' onclick='evil()'>x²</b></span> is useful.</p>", { atomSelectors: [".formula"] })
-    expect(translateTextForPage).toHaveBeenCalledWith("The formula {{0}} is useful.")
+    expect(translateTextForPage).toHaveBeenCalledWith("The formula {{0}} is useful.", expect.objectContaining({ onTargetLanguage: expect.any(Function) }))
     const clone = root.querySelector(`.${INLINE_ATOM_CLASS}`)!
     expect(clone).toHaveTextContent("x²")
     expect(clone).not.toHaveAttribute("id")

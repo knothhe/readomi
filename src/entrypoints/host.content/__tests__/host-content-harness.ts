@@ -88,14 +88,13 @@ export function setUpHostContentTests({ pageTranslation = true } = {}) {
     vi.stubGlobal("IntersectionObserver", VisibleIntersectionObserver)
     const removers = [
       onMessage("getEnablePageTranslationFromContentScript", () => pageTranslation),
-      onMessage("reportDetectedPageLanguage", () => {}),
       onMessage("setAndNotifyPageTranslationStateChangedByManager", (message) => {
         stateMessages.push(message.data.enabled)
       }),
       onMessage("reportTranslationProgress", () => {}),
       onMessage("enqueueTranslateRequest", async (message) => {
         await heldAnswers
-        return `translated: ${message.data.text}`
+        return { action: "translate", text: `translated: ${message.data.text}`, targetCode: "cmn" }
       }),
     ]
     removeBackground = () => removers.forEach(remove => remove())

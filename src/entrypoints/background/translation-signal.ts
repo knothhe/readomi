@@ -1,8 +1,5 @@
-import type { LangCodeISO6393 } from "@/definitions"
 import { browser, storage } from "#imports"
-import { normalizeDetectedCode } from "@/utils/config/languages"
-import { DEFAULT_DETECTED_CODE } from "@/utils/constants/config"
-import { getDetectedCodeStateKey, getTranslationStateKey } from "@/utils/constants/storage-keys"
+import { getTranslationStateKey } from "@/utils/constants/storage-keys"
 import { logger } from "@/utils/logger"
 import { onMessage, sendMessage } from "@/utils/message"
 import { updateActionIcon } from "./action-icon"
@@ -31,36 +28,6 @@ function isIframe(frameId: number | undefined): boolean {
   return frameId !== undefined && frameId !== 0
 }
 
-async function getDetectedCodeForTab(tabId: number): Promise<LangCodeISO6393> {
-  const storedCode = await storage.getItem<unknown>(getDetectedCodeStateKey(tabId))
-  return normalizeDetectedCode(storedCode)
-}
-
-function notifyDetectedCodeChanged(detectedCode: LangCodeISO6393) {
-  void sendMessage("detectedPageLanguageChanged", { detectedCode })
-    // The popup is often closed, so having no receiver is expected.
-    .catch(() => {})
-}
-
-async function isActiveCurrentWindowTab(tabId: number): Promise<boolean> {
-  const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true })
-  return activeTab?.id === tabId
-}
-
-async function publishCachedDetectedCodeForTab(tabId: number): Promise<void> {
-  notifyDetectedCodeChanged(await getDetectedCodeForTab(tabId))
-}
-
-function requestDetectedPageLanguageRefresh(tabId: number) {
-  void sendMessage("refreshDetectedPageLanguage", undefined, tabId)
-    .catch(error => logger.warn("Failed to refresh detected page language", error))
-}
-
-async function publishAndRefreshActiveTab(tabId: number): Promise<void> {
-  await publishCachedDetectedCodeForTab(tabId)
-  requestDetectedPageLanguageRefresh(tabId)
-}
-
 export function translationMessage() {
   onMessage("getEnablePageTranslationByTabId", async (msg) => {
     const { tabId } = msg.data
@@ -76,35 +43,10 @@ export function translationMessage() {
     return false
   })
 
-  onMessage("reportDetectedPageLanguage", async (msg) => {
-    const tabId = msg.sender?.tab?.id
-    const { detectedCodeOrUnd } = msg.data
-    if (typeof tabId === "number") {
-      const detectedCode = normalizeDetectedCode(detectedCodeOrUnd)
-      await storage.setItem<LangCodeISO6393>(getDetectedCodeStateKey(tabId), detectedCode)
-
-      if (await isActiveCurrentWindowTab(tabId)) {
-        notifyDetectedCodeChanged(detectedCode)
-      }
-      return
-    }
-
-    logger.error("Invalid tabId in reportDetectedPageLanguage", msg)
-  })
-
-  onMessage("getDetectedCode", async (msg) => {
-    const tabId = msg.sender?.tab?.id
-    if (typeof tabId === "number") {
-      return await getDetectedCodeForTab(tabId)
-    }
-
-    const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true })
-    if (typeof activeTab?.id === "number") {
-      return await getDetectedCodeForTab(activeTab.id)
-    }
-
-    return DEFAULT_DETECTED_CODE
-  })
+  // Compatibility for older extension contexts after an update. Source language
+  // is now inferred per translation request, so no page detection is stored.
+  onMessage("reportDetectedPageLanguage", () => {})
+  onMessage("getDetectedCode", () => "eng")
 
   onMessage("tryToSetEnablePageTranslationByTabId", async (msg) => {
     const { tabId, enabled } = msg.data
@@ -152,11 +94,6 @@ export function translationMessage() {
   // === Cleanup ===
   browser.tabs.onRemoved.addListener(async (tabId) => {
     await storage.removeItem(getTranslationStateKey(tabId))
-    await storage.removeItem(getDetectedCodeStateKey(tabId))
-  })
-
-  browser.tabs.onActivated.addListener(async (activeInfo) => {
-    await publishAndRefreshActiveTab(activeInfo.tabId)
   })
 
   // Clear translation state only when the tab leaves the origin where it was enabled.

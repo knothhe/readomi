@@ -7,6 +7,8 @@ import type {
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { TranslationProgress } from "@/types/translation-progress"
+import type { TranslationResult } from "@/utils/host/translate/translation-result"
+import type { LanguagePolicyConfig } from "@/utils/language-policy"
 import { browser } from "#imports"
 import { isExtensionContextInvalidatedError, isExtensionContextValid, isMessageConnectionLostError } from "./extension-context"
 import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-policy"
@@ -33,7 +35,7 @@ interface ProtocolMap {
   getTranslationProgressByTabId: (data: { tabId: number }) => TranslationProgress | null
   translationProgressChanged: (data: { tabId: number, progress: TranslationProgress }) => void
   // request
-  enqueueTranslateRequest: (data: { text: string, langConfig: Config["language"], providerConfig: ProviderConfig, scheduleAt: number, hash: string, webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<string>
+  enqueueTranslateRequest: (data: { text: string, langConfig: LanguagePolicyConfig, providerConfig: ProviderConfig, scheduleAt: number, hash: string, customPromptsConfig?: Config["translate"]["customPromptsConfig"], webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<TranslationResult>
   getOrGenerateWebPageSummary: (data: { webTitle: string, webContent: string, providerConfig: ProviderConfig }) => Promise<string | null>
   backgroundGenerateText: (data: BackgroundGenerateTextPayload) => Promise<BackgroundGenerateTextResponse>
 }

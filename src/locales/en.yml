@@ -63,6 +63,32 @@ errorRecovery:
     confirm: Reset
     cancel: Cancel
 options:
+  language:
+    popupKeepDescription: "Content in $1 shows the original once, without duplication."
+    title: Translation languages
+    description: Choose your translation direction based on the source language.
+    rules: Translation rules
+    primary: Primary language
+    secondary: Second language
+    other: Other languages
+    auto: Detect source automatically
+    automaticSource: Automatic source language detection
+    autoDescription: The model identifies the language of each paragraph or subtitle segment.
+    scope: Page translation · Hover translation · Video subtitles
+    toPrimary: "When the source is in another language, translate into $1."
+    toSecondary: "When the source is in $1, translate into $2."
+    keepPrimary: "When the source is in $1, keep the original."
+    keepOriginal: Keep original
+    keepDescription: "Bilingual mode shows the original once, without a duplicate translation."
+    sameLanguages: The primary and second languages are the same. Content in this language stays in the original.
+    previewMode: Preview display mode
+    previewNote: The translation direction changes with the source language.
+    previewKeepNote: Preserved content appears once without an extra translation area.
+    previewOnlyKeepNote: Preserved content is still shown in translation-only mode.
+    shownOnce: Shown once
+    applied: These rules apply to every translation feature.
+    sampleUnavailable: No sample text is available for this language. Actual translations will use your selected language.
+    saveFailed: Could not save translation languages. Please try again.
   version: Version
   title: Settings
   preview: Preview
@@ -199,7 +225,7 @@ options:
       edit: Edit
       system: System prompt
       template: Prompt template
-      tokens: "{{input}} is the text to translate and must be kept.\n{{targetLanguage}} is your selected target language."
+      tokens: "{{input}} is the text to translate and must be kept.\n{{targetLanguage}} is the target language determined for this segment by your translation language rules."
       missingInput: "Keep {{input}} in the template to insert the text to translate."
       restore: Restore default
       cancel: Cancel

@@ -325,10 +325,10 @@ describe("settings page", () => {
   it("has translation settings and a separate appearance section", async () => {
     const { container } = await renderSettings(configured)
 
-    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "reading", "features", "quality", "shortcut", "appearance", "backup", "site-rules"])
+    expect([...container.querySelectorAll("section[id]")].map(section => section.id)).toEqual(["service", "language", "reading", "features", "quality", "shortcut", "appearance", "backup", "site-rules"])
     const navigation = within(screen.getByRole("navigation", { name: "settingsNavigation.label" }))
     expect(navigation.queryAllByRole("group")).toHaveLength(0)
-    expect(navigation.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["#service", "#reading", "#features", "#quality", "#shortcut", "#appearance", "#backup"])
+    expect(navigation.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["#service", "#language", "#reading", "#features", "#quality", "#shortcut", "#appearance", "#backup"])
     expect(screen.getByText("options.version 1.0.0")).toBeInTheDocument()
     expect(screen.queryByText(/options\.advanced/)).toBeNull()
     expect(screen.getByRole("link", { name: "options.service.title" })).toHaveAttribute("aria-current", "page")

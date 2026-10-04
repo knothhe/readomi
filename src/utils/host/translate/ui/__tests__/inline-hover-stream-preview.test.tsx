@@ -62,6 +62,33 @@ afterEach(() => {
 })
 
 describe("inline hover preview visibility", () => {
+  it("keeps preserved output unmounted and applies target direction independently per group", async () => {
+    const { anchor, preview } = createPreview()
+    const kept = preview.register(anchor)
+    act(() => kept(""))
+    advanceFrame()
+    expect(anchor.querySelector("[data-readomi-inline-preview]")).toBeNull()
+
+    const arabic = preview.register(anchor)
+    const english = preview.register(anchor)
+    act(() => {
+      arabic.setTargetLanguage("arb")
+      english.setTargetLanguage("eng")
+      arabic("مرحبا")
+      english("Hello")
+    })
+    advanceFrame()
+    const content = anchor.querySelector("[data-readomi-inline-preview]")!.shadowRoot!
+    const groups = content.querySelectorAll<HTMLElement>(".preview-translation")
+    expect(groups[1].dir).toBe("rtl")
+    expect(groups[1].lang).toBe("ar")
+    expect(groups[2].dir).toBe("ltr")
+    expect(groups[2].lang).toBe("en")
+    const finished = preview.finish(["", "مرحبا", "Hello"])
+    advanceFrame()
+    expect(await finished).toBe(true)
+  })
+
   it.each([
     ["empty output", ""],
     ["whitespace", " \n\t "],
