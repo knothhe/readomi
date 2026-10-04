@@ -1,6 +1,6 @@
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
 import { storage } from "#imports"
-import { SUBTITLE_PRESET_FONT_SIZES, subtitleStyleSchema } from "@/types/config/subtitle-style"
+import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESET_STYLES, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP, subtitleStyleSchema } from "@/types/config/subtitle-style"
 import { getLocalConfigForWrite } from "@/utils/config/storage"
 import { CONFIG_STORAGE_KEY } from "@/utils/constants/config"
 
@@ -10,8 +10,32 @@ export const SUBTITLE_POSITIONS = {
   bottom: { x: 50, y: 88 },
 } as const
 
-export function subtitlePresetPatch(preset: SubtitleStyle["preset"], fontSizeMode: SubtitleStyle["fontSizeMode"]): Pick<SubtitleStyle, "preset" | "fontSize"> {
-  return { preset, fontSize: SUBTITLE_PRESET_FONT_SIZES[fontSizeMode][preset] }
+export function subtitlePresetPatch(preset: SubtitleStyle["preset"], _fontSizeMode?: SubtitleStyle["fontSizeMode"]): Pick<SubtitleStyle, "preset" | "fontSize" | "relativeFontSize" | "backgroundEnabled" | "backgroundOpacity"> {
+  return { preset, ...SUBTITLE_PRESET_STYLES[preset] }
+}
+
+export function subtitleSizeSettings(style: SubtitleStyle) {
+  return style.fontSizeMode === "video"
+    ? { value: style.relativeFontSize, min: SUBTITLE_RELATIVE_FONT_SIZE_MIN, max: SUBTITLE_RELATIVE_FONT_SIZE_MAX, step: SUBTITLE_RELATIVE_FONT_SIZE_STEP, unit: "%" }
+    : { value: style.fontSize, min: SUBTITLE_FONT_SIZE_MIN, max: SUBTITLE_FONT_SIZE_MAX, step: 1, unit: "px" }
+}
+
+export function subtitleSizePatch(style: SubtitleStyle, value: number): Partial<Pick<SubtitleStyle, "fontSize" | "relativeFontSize">> {
+  return style.fontSizeMode === "video" ? { relativeFontSize: value } : { fontSize: value }
+}
+
+export function formatSubtitleFontSize(style: SubtitleStyle): string {
+  const { value, unit } = subtitleSizeSettings(style)
+  return `${Number(value.toFixed(5))}${unit === "%" ? "%" : ` ${unit}`}`
+}
+
+/** A preset remains selected only while its active size and visible background settings match. */
+export function isSubtitlePresetModified(style: SubtitleStyle): boolean {
+  const preset = SUBTITLE_PRESET_STYLES[style.preset]
+  const presetSize = style.fontSizeMode === "video" ? preset.relativeFontSize : preset.fontSize
+  return Math.abs(subtitleSizeSettings(style).value - presetSize) > 1e-9
+    || style.backgroundEnabled !== preset.backgroundEnabled
+    || (style.backgroundEnabled && style.backgroundOpacity !== preset.backgroundOpacity)
 }
 
 export function subtitlePositionName(position: SubtitlePosition): keyof typeof SUBTITLE_POSITIONS | "custom" {
@@ -20,10 +44,10 @@ export function subtitlePositionName(position: SubtitlePosition): keyof typeof S
   ) ?? "custom"
 }
 
-/** The saved video-relative size is calibrated for a 640px-wide video window. */
+/** Relative sizes are a percentage of video width; fixed sizes are CSS pixels. */
 export function resolveSubtitleFontSize(style: SubtitleStyle, videoWidth = 640): number {
-  const scale = style.fontSizeMode === "video" && Number.isFinite(videoWidth) && videoWidth > 0 ? videoWidth / 640 : 1
-  return style.fontSize * scale
+  const width = Number.isFinite(videoWidth) && videoWidth > 0 ? videoWidth : 640
+  return style.fontSizeMode === "video" ? style.relativeFontSize * width / 100 : style.fontSize
 }
 
 /** Shared presentation for the settings preview and the in-video renderer. */
@@ -36,9 +60,9 @@ export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640) {
     textAlign: "center" as const,
     whiteSpace: "pre-line" as const,
     textShadow: "0 2px 4px #000,0 0 2px #000",
-    background: style.preset === "clear" ? "transparent" : style.preset === "compact" ? "rgba(15,20,35,.65)" : "rgba(15,20,35,.35)",
-    borderRadius: style.preset === "clear" ? "0" : "8px",
-    padding: style.preset === "clear" ? "0" : style.preset === "compact" ? "8px 14px" : "10px 16px",
+    background: style.backgroundEnabled ? `rgba(15,20,35,${style.backgroundOpacity / 100})` : "transparent",
+    borderRadius: style.backgroundEnabled ? "8px" : "0",
+    padding: style.backgroundEnabled ? style.preset === "compact" ? "8px 14px" : "10px 16px" : "0",
   }
 }
 

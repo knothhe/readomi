@@ -169,13 +169,13 @@ describe("local subtitle runtime", () => {
     const host = document.querySelector("[data-readomi-subtitles]")
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
     larger.click()
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("21px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20.8px")
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("19.2px")
     expect(controlsShadow.querySelector(".error[role='status']")?.textContent).toBe("videoTranslationControls.saveFailed")
     larger.click()
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("21px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20.8px")
     expect(save).toHaveBeenCalledTimes(2)
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
@@ -191,14 +191,14 @@ describe("local subtitle runtime", () => {
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
     larger.click()
     larger.click()
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22px")
-    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 21 } } })
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22.4px")
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 3.25 } } })
     resolveFirst()
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22.4px")
     rejectSecond(new Error("Second write failed"))
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("21px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20.8px")
   })
   it("does not mount a newly added video after the extension context expires", async () => {
     cleanup()
@@ -347,9 +347,9 @@ describe("local subtitle runtime", () => {
     vi.spyOn(player, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 320, top: 0, width: 640, height: 720 } as DOMRect)
     update(config)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("19.2px")
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, position: { x: 50, y: 18 } } } })
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("19.2px")
   })
   it("cleans VTT markup without executing HTML", () => {
     expect(readActiveCueText({ activeCues: [{ text: "<v Bob>Hello &amp; &lt;world&gt;</v>" }] } as unknown as TextTrack)).toBe("Hello & <world>")
@@ -372,29 +372,35 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(1000)
     const host = document.querySelector("[data-readomi-subtitles]")
     expect(translateTextCore).toHaveBeenCalledTimes(1)
-    update({ ...config, features: { ...config.features, subtitleMode: "translationOnly", subtitleStyle: { preset: "study", fontSize: 80, fontSizeMode: "video", position: { x: 55, y: 60 } } } })
+    update({ ...config, features: { ...config.features, subtitleMode: "translationOnly", subtitleStyle: { ...config.features.subtitleStyle, preset: "study", relativeFontSize: 12.5, backgroundEnabled: true, backgroundOpacity: 65, position: { x: 55, y: 60 } } } })
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("80px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.background).toBe("rgba(15, 20, 35, 0.65)")
     expect(shadow.querySelector<HTMLElement>(".original")?.hidden).toBe(true)
     expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
     expect((host as HTMLElement).style.left).toBe("352px")
     expect((host as HTMLElement).style.top).toBe("216px")
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, backgroundEnabled: true, backgroundOpacity: 0 } } })
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.background).toBe("rgba(15, 20, 35, 0)")
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, backgroundEnabled: false, backgroundOpacity: 65 } } })
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.background).toBe("transparent")
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     await vi.advanceTimersByTimeAsync(1000)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
   })
   it("allows increasing past 40 px and disables the size buttons at the bounds", async () => {
     attachYouTubePlayer()
     vi.spyOn(appearance, "saveSubtitleStyle").mockResolvedValue(undefined)
-    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 40 } } })
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 40, fontSizeMode: "fixed" } } })
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.larger\"]")!
     const smaller = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.smaller\"]")!
     expect(larger.disabled).toBe(false)
     larger.click()
     expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("41px")
     await vi.advanceTimersByTimeAsync(0)
-    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 80 } } })
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 80, fontSizeMode: "fixed" } } })
     expect(larger.disabled).toBe(true)
-    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 14 } } })
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSize: 8, fontSizeMode: "fixed" } } })
     expect(smaller.disabled).toBe(true)
   })
   it("applies each toolbar preset for the current size mode while preserving position and cached translations", async () => {
@@ -404,18 +410,23 @@ describe("local subtitle runtime", () => {
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
     let host: Element | null = null
     for (const fontSizeMode of ["video", "fixed"] as const) {
-      update({ ...config, features: { ...config.features, subtitleStyle: { preset: "study", fontSize: 38, fontSizeMode, position } } })
+      update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, preset: "study", fontSize: 38, relativeFontSize: 5.9375, fontSizeMode, position } } })
       await vi.advanceTimersByTimeAsync(1000)
       host ??= document.querySelector("[data-readomi-subtitles]")
       const box = shadow.querySelector<HTMLElement>(".box")!
       expect(box.style.fontSize).toBe(fontSizeMode === "video" ? "76px" : "38px")
-      const presets = fontSizeMode === "video" ? { clear: 20, compact: 16, study: 24 } : { clear: 24, compact: 20, study: 24 }
-      for (const [preset, fontSize] of Object.entries(presets)) {
+      const presets = {
+        clear: { fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 50 },
+        compact: { fontSize: 16, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 35 },
+        study: { fontSize: 24, relativeFontSize: 3.75, backgroundEnabled: true, backgroundOpacity: 65 },
+        cinema: { fontSize: 28, relativeFontSize: 4.5, backgroundEnabled: true, backgroundOpacity: 85 },
+      }
+      for (const [preset, expected] of Object.entries(presets)) {
         const button = controlsShadow.querySelector<HTMLButtonElement>(`button[data-preset="${preset}"]`)!
         button.click()
         expect(button.getAttribute("aria-pressed")).toBe("true")
-        expect(save).toHaveBeenLastCalledWith({ preset, fontSize })
-        expect(box.style.fontSize).toBe(`${fontSizeMode === "video" ? fontSize * 2 : fontSize}px`)
+        expect(save).toHaveBeenLastCalledWith({ preset, ...expected })
+        expect(Number.parseFloat(box.style.fontSize)).toBeCloseTo(fontSizeMode === "video" ? expected.relativeFontSize * 12.8 : expected.fontSize)
         expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
         expect((host as HTMLElement).style.left).toBe("768px")
         expect((host as HTMLElement).style.top).toBe("468px")
@@ -431,16 +442,16 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(1000)
     const host = document.querySelector("[data-readomi-subtitles]")
     const box = shadow.querySelector<HTMLElement>(".box")!
-    expect(box.style.fontSize).toBe("20px")
+    expect(box.style.fontSize).toBe("19.2px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 320, height: 180 } as DOMRect)
     await vi.advanceTimersByTimeAsync(250)
-    expect(box.style.fontSize).toBe("10px")
+    expect(box.style.fontSize).toBe("9.6px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 320, height: 640 } as DOMRect)
     await vi.advanceTimersByTimeAsync(250)
-    expect(box.style.fontSize).toBe("10px")
+    expect(box.style.fontSize).toBe("9.6px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
     await vi.advanceTimersByTimeAsync(250)
-    expect(box.style.fontSize).toBe("40px")
+    expect(box.style.fontSize).toBe("38.4px")
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, fontSizeMode: "fixed" } } })
     expect(box.style.fontSize).toBe("20px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 320, height: 180 } as DOMRect)

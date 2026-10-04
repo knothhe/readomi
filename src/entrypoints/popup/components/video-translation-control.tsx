@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { openOptionsPage } from "@/utils/navigation"
 import { formatHotkey } from "@/utils/os"
-import { subtitlePositionName } from "@/utils/subtitles/appearance"
+import { formatSubtitleFontSize, isSubtitlePresetModified, subtitlePositionName } from "@/utils/subtitles/appearance"
 import { DisplayModeControl } from "./display-mode-control"
 import { TranslationControlRow } from "./translation-control-row"
 import { VideoSiteExclusionControl } from "./video-site-exclusion-control"
@@ -16,7 +16,7 @@ export function VideoTranslationControl() {
   const id = useId()
   const shortcut = features.subtitlesShortcut.trim() ? formatHotkey(features.subtitlesShortcut) : null
   const style = features.subtitleStyle
-  const summary = [i18n.t(`subtitleStyle.presets.${style.preset}`), `${style.fontSize} px`, i18n.t(`subtitleStyle.positions.${subtitlePositionName(style.position)}`)].join(" · ")
+  const summary = [isSubtitlePresetModified(style) ? i18n.t("subtitleStyle.modified") : i18n.t(`subtitleStyle.presets.${style.preset}`), formatSubtitleFontSize(style), i18n.t(`subtitleStyle.positions.${subtitlePositionName(style.position)}`)].join(" · ")
 
   return (
     <section aria-label={i18n.t("popup.videoSubtitles")} className="flex flex-col gap-2 border-t border-border pt-2.5">

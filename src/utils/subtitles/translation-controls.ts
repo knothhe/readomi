@@ -1,7 +1,7 @@
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
 import { browser, i18n } from "#imports"
-import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
-import { SUBTITLE_POSITIONS, subtitlePresetPatch } from "./appearance"
+import { SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { formatSubtitleFontSize, isSubtitlePresetModified, SUBTITLE_POSITIONS, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings } from "./appearance"
 import { xVideoContainer, xVideoControls, xVideoToolsStart } from "./x-player"
 
 export interface VideoTranslationControlsState {
@@ -36,11 +36,11 @@ const CONTROL_CSS = `
 .dock{display:flex;align-items:center;gap:8px;min-height:34px;padding:5px 8px;border:1px solid #ffffff21;border-radius:8px;background:#181a20e6;color:white;box-shadow:0 3px 12px #0003;pointer-events:auto;white-space:nowrap}
 .logo{width:18px;height:18px;display:block;flex-shrink:0}.toggle{display:grid;place-items:center;width:32px;height:20px;padding:3px;border:0;border-radius:12px;background:#ffffff38}.toggle span{width:14px;height:14px;border-radius:50%;background:#fff;justify-self:start;box-shadow:0 1px 2px #0003}.toggle[aria-pressed=true]{background:#b6533e}.toggle[aria-pressed=true] span{justify-self:end}
 .trigger{display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:4px;background:transparent;padding:2px;color:#fff}.trigger:hover,.trigger[aria-expanded=true]{background:#ffffff14}.excluded{display:block;margin:0 0 10px;font-size:11px;color:#d5d3d1;line-height:1.5}
-.panel{position:fixed;width:240px;background:#1a1d24f7;border:1px solid #ffffff26;border-radius:10px;padding:14px;color:white;box-shadow:0 6px 24px #0005;pointer-events:auto;overflow:auto;overscroll-behavior:contain}.panel h2{font-size:12px;font-weight:550;margin:0 0 12px}.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.presets button{background:#ffffff12;border:1px solid #ffffff20;border-radius:6px;color:#dfdfdf;font-size:12px;padding:7px 2px}.presets button[aria-pressed=true]{border-color:#cc8a6d;background:#b6533e45;color:#ffe5d8}
-.size-row{display:flex;align-items:center;margin:14px 0;padding-top:12px;border-top:1px solid #ffffff20;gap:9px}.size-label{font-size:11px;margin-right:auto;color:#d1d0ce}.size-row button{width:25px;height:25px;background:#ffffff12;border:1px solid #ffffff24;border-radius:5px;color:white;font-size:15px;line-height:1}.size-row output{font-size:12px;min-width:33px;text-align:center}.reset{width:100%;background:transparent;border:0;border-top:1px solid #ffffff20;padding:12px 0 0;text-align:left;color:#dbd8d6;font-size:11px}.error{margin:12px 0 0;font-size:11px;line-height:1.5;color:#f4bcaa}
+.panel{position:fixed;width:240px;background:#1a1d24f7;border:1px solid #ffffff26;border-radius:10px;padding:14px;color:white;box-shadow:0 6px 24px #0005;pointer-events:auto;overflow:auto;overscroll-behavior:contain}.panel h2{font-size:12px;font-weight:550;margin:0 0 12px}.presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.presets button{min-width:0;background:#ffffff12;border:1px solid #ffffff20;border-radius:6px;color:#dfdfdf;font-size:12px;line-height:1.35;padding:8px 6px;white-space:normal;overflow-wrap:anywhere}.presets button[aria-pressed=true]{border-color:#cc8a6d;background:#b6533e45;color:#ffe5d8}
+.size-row{display:flex;align-items:center;margin:14px 0;padding-top:12px;border-top:1px solid #ffffff20;gap:9px}.size-label{font-size:11px;margin-right:auto;color:#d1d0ce}.size-row button{width:25px;height:25px;background:#ffffff12;border:1px solid #ffffff24;border-radius:5px;color:white;font-size:15px;line-height:1}.size-row output{font-size:12px;min-width:40px;font-variant-numeric:tabular-nums;text-align:center}.reset{width:100%;background:transparent;border:0;border-top:1px solid #ffffff20;padding:12px 0 0;text-align:left;color:#dbd8d6;font-size:11px}.error{margin:12px 0 0;font-size:11px;line-height:1.5;color:#f4bcaa}
 :host([data-narrow]) .dock{gap:6px;padding:5px 6px;min-height:31px}
 :host([data-narrow]) .trigger{width:20px;height:20px;padding:1px}:host([data-narrow]) .toggle{width:28px;height:18px;padding:2px}
-:host([data-narrow]) .panel{padding:10px}:host([data-narrow]) .panel h2{margin-bottom:8px}:host([data-narrow]) .presets button{padding:5px 2px}:host([data-narrow]) .size-row{margin:8px 0;padding-top:8px}:host([data-narrow]) .reset{padding-top:8px}
+:host([data-narrow]) .panel{padding:8px}:host([data-narrow]) .panel h2{display:none}:host([data-narrow]) .presets button{padding:5px 6px}:host([data-narrow]) .size-row{margin:6px 0;padding-top:6px}:host([data-narrow]) .reset{padding-top:6px}
 `
 
 /** Independent from caption availability: the reader can enable translation before a cue arrives. */
@@ -133,16 +133,17 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     presets.setAttribute("aria-label", i18n.t("subtitleStyle.preset"))
     for (const [index, preset] of SUBTITLE_PRESETS.entries()) {
       presetButtons[index].textContent = i18n.t(`subtitleStyle.presets.${preset}`)
-      presetButtons[index].setAttribute("aria-pressed", String(state.appearance.preset === preset))
+      presetButtons[index].setAttribute("aria-pressed", String(state.appearance.preset === preset && !isSubtitlePresetModified(state.appearance)))
     }
     sizeCaption.textContent = i18n.t("subtitleStyle.fontSize")
-    sizeOutput.textContent = `${state.appearance.fontSize} px`
+    sizeOutput.textContent = formatSubtitleFontSize(state.appearance)
+    const size = subtitleSizeSettings(state.appearance)
     for (const [button, label] of [[smaller, i18n.t("subtitleStyle.smaller")], [larger, i18n.t("subtitleStyle.larger")], [reset, i18n.t("subtitleStyle.resetPosition")]] as const) {
       button.setAttribute("aria-label", label)
       button.title = label
     }
-    smaller.disabled = state.appearance.fontSize <= SUBTITLE_FONT_SIZE_MIN
-    larger.disabled = state.appearance.fontSize >= SUBTITLE_FONT_SIZE_MAX
+    smaller.disabled = size.value <= size.min
+    larger.disabled = size.value >= size.max
     reset.textContent = i18n.t("subtitleStyle.resetPosition")
     error.textContent = i18n.t("videoTranslationControls.saveFailed")
     error.hidden = !state.saveFailed
@@ -353,12 +354,17 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     if (index < 0 || !["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(event.key))
       return
     event.preventDefault()
-    const next = event.key === "Home" ? 0 : event.key === "End" ? presetButtons.length - 1 : (index + (["ArrowLeft", "ArrowUp"].includes(event.key) ? -1 : 1) + presetButtons.length) % presetButtons.length
+    const offset = event.key === "ArrowUp" ? -2 : event.key === "ArrowDown" ? 2 : event.key === "ArrowLeft" ? -1 : 1
+    const next = event.key === "Home" ? 0 : event.key === "End" ? presetButtons.length - 1 : (index + offset + presetButtons.length) % presetButtons.length
     presetButtons[next].focus({ preventScroll: true })
     presetButtons[next].click()
   })
-  smaller.addEventListener("click", () => options.onStyleChange({ fontSize: Math.max(SUBTITLE_FONT_SIZE_MIN, state.appearance.fontSize - 1) }))
-  larger.addEventListener("click", () => options.onStyleChange({ fontSize: Math.min(SUBTITLE_FONT_SIZE_MAX, state.appearance.fontSize + 1) }))
+  const changeSize = (direction: number) => {
+    const size = subtitleSizeSettings(state.appearance)
+    options.onStyleChange(subtitleSizePatch(state.appearance, Math.max(size.min, Math.min(size.max, size.value + direction * size.step))))
+  }
+  smaller.addEventListener("click", () => changeSize(-1))
+  larger.addEventListener("click", () => changeSize(1))
   reset.addEventListener("click", () => options.onStyleChange({ position: SUBTITLE_POSITIONS.bottom }))
   const onOutsidePointer = (event: Event) => {
     if (menuOpen && !event.composedPath().includes(host))

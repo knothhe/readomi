@@ -86,6 +86,21 @@ function Slider() {
 }
 
 describe("settings slider", () => {
+  it("can hide visible limits while retaining the native range limits", () => {
+    const changed = vi.fn()
+    const props = { value: 3, min: 1.25, max: 12.5, step: 0.25, onValueChange: changed, unit: "%", decrementLabel: "Smaller", incrementLabel: "Larger" }
+    const view = render(<SettingsSlider {...props} aria-label="Relative size" />)
+    expect(screen.getByText("1.25 %")).toBeInTheDocument()
+    expect(screen.getByText("12.5 %")).toBeInTheDocument()
+    view.rerender(<SettingsSlider {...props} aria-label="Relative size" showLimits={false} />)
+    expect(screen.queryByText("1.25 %")).toBeNull()
+    expect(screen.queryByText("12.5 %")).toBeNull()
+    expect(screen.getByRole("slider")).toHaveAttribute("min", "1.25")
+    expect(screen.getByRole("slider")).toHaveAttribute("max", "12.5")
+    fireEvent.click(screen.getByRole("button", { name: "Larger" }))
+    expect(changed).toHaveBeenLastCalledWith(3.25)
+  })
+
   it("keeps range semantics and lets readers make precise changes within the allowed limits", () => {
     render(<Slider />)
     const range = screen.getByRole("slider", { name: "Font size" })
@@ -97,5 +112,36 @@ describe("settings slider", () => {
     expect(screen.getByRole("button", { name: "Smaller" })).toBeDisabled()
     fireEvent.click(screen.getByRole("button", { name: "Larger" }))
     expect(range).toHaveValue("15")
+  })
+
+  it("lets readers type a number without saving incomplete input and clamps it on confirmation", () => {
+    render(<Slider />)
+    const number = screen.getByRole("spinbutton", { name: "Font size" })
+    const range = screen.getByRole("slider", { name: "Font size" })
+    fireEvent.change(number, { target: { value: "" } })
+    expect(range).toHaveValue("15")
+    fireEvent.blur(number)
+    expect(number).toHaveValue(15)
+    fireEvent.change(number, { target: { value: "80" } })
+    expect(range).toHaveValue("15")
+    fireEvent.blur(number)
+    expect(number).toHaveValue(16)
+    fireEvent.change(number, { target: { value: "14" } })
+    fireEvent.keyDown(number, { key: "Escape" })
+    fireEvent.blur(number)
+    expect(range).toHaveValue("16")
+  })
+
+  it("preserves an older fractional percentage and disables all edits when its setting is off", () => {
+    const change = vi.fn()
+    const view = render(<SettingsSlider aria-label="Relative size" value={3.125} min={1.25} max={12.5} step={0.25} onValueChange={change} unit="%" decrementLabel="Smaller" incrementLabel="Larger" />)
+    expect(screen.getByRole("spinbutton")).toHaveValue(3.125)
+    fireEvent.click(screen.getByRole("button", { name: "Larger" }))
+    expect(change).toHaveBeenLastCalledWith(3.375)
+    view.rerender(<SettingsSlider aria-label="Relative size" value={3.125} min={1.25} max={12.5} step={0.25} onValueChange={change} unit="%" decrementLabel="Smaller" incrementLabel="Larger" disabled />)
+    expect(screen.getByRole("slider")).toBeDisabled()
+    expect(screen.getByRole("spinbutton")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Smaller" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Larger" })).toBeDisabled()
   })
 })

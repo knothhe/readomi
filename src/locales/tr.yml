@@ -444,13 +444,25 @@ videoTranslationControls:
   saveFailed: Could not save. Please try again.
 
 subtitleStyle:
-  title: Subtitle style and position
+  title: Subtitle style
+  moreOptions: More options
+  autoSave: Changes save automatically.
   adjust: Style and position
+  presetDescription: Choose a starting point, then adjust size and background.
+  modified: Adjusted
+  background: Subtitle background
+  backgroundDescription: Add a dark backdrop to keep subtitles readable in bright scenes.
+  backgroundOpacity: Background depth
+  backgroundOpacityDescription: Higher values make the background darker.
+  lighterBackground: Lighten subtitle background
+  darkerBackground: Darken subtitle background
+  noBackground: No background
+  backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Scales with the video window; the size below is based on a 640-pixel-wide video.
+  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
   fontSizeModes:
     video: Scale with video
     fixed: Fixed size
@@ -466,9 +478,10 @@ subtitleStyle:
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
   presets:
-    clear: Clear
+    clear: Transparent
     compact: Compact
-    study: Prominent
+    study: Study
+    cinema: Cinema
   positions:
     top: Top
     center: Center

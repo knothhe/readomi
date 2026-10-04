@@ -444,13 +444,25 @@ videoTranslationControls:
   saveFailed: Could not save. Please try again.
 
 subtitleStyle:
-  title: Subtitle style and position
+  title: 字幕樣式
+  moreOptions: 更多選項
+  autoSave: 調整會自動儲存。
   adjust: Style and position
+  presetDescription: 選擇一個起點，再調整字級和背景。
+  modified: 已調整
+  background: 字幕背景
+  backgroundDescription: 為字幕添加深色底，提升明亮畫面中的可讀性。
+  backgroundOpacity: 背景深度
+  backgroundOpacityDescription: 數值越高，背景越深。
+  lighterBackground: 減淺字幕背景
+  darkerBackground: 加深字幕背景
+  noBackground: 無背景
+  backgroundSummary: $1% 背景
   preset: Subtitle preset
   fontSize: Subtitle size
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Scales with the video window; the size below is based on a 640-pixel-wide video.
+  relativeFontDescription: 字級為影片寬度的百分比，隨視窗和全螢幕縮放。
   fontSizeModes:
     video: Scale with video
     fixed: Fixed size
@@ -458,7 +470,7 @@ subtitleStyle:
   preview: Subtitle preview
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
-  dragHint: Drag subtitles to move them
+  dragHint: 在影片上拖曳字幕調整位置。
   adjustmentHint: 在影片上拖曳字幕調整位置；點擊播放器工具列中的 Readomi 圖示可調整樣式和字級。調整會自動儲存。
   smaller: Decrease subtitle size
   larger: Increase subtitle size
@@ -466,9 +478,10 @@ subtitleStyle:
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
   presets:
-    clear: Clear
-    compact: Compact
-    study: Prominent
+    clear: 清透
+    compact: 輕量
+    study: 學習
+    cinema: 影院
   positions:
     top: Top
     center: Center

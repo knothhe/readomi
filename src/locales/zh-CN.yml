@@ -444,13 +444,25 @@ videoTranslationControls:
   saveFailed: 保存失败，请重试。
 
 subtitleStyle:
-  title: 字幕样式与位置
+  title: 字幕样式
+  moreOptions: 更多选项
+  autoSave: 调整会自动保存。
   adjust: 样式与位置
+  presetDescription: 选择一个起点，再调整字号和背景。
+  modified: 已调整
+  background: 字幕背景
+  backgroundDescription: 为字幕添加深色底，提升明亮画面中的可读性。
+  backgroundOpacity: 背景深度
+  backgroundOpacityDescription: 数值越高，背景越深。
+  lighterBackground: 减浅字幕背景
+  darkerBackground: 加深字幕背景
+  noBackground: 无背景
+  backgroundSummary: $1% 背景
   preset: 字幕预设
   fontSize: 字幕字号
   fontDescription: 同时缩放原文和译文，原文略小。
   fontSizeMode: 字号方式
-  relativeFontDescription: 随视频窗口缩放；下方字号以 640 像素宽的视频为基准。
+  relativeFontDescription: 字号为视频宽度的百分比，随窗口和全屏缩放。
   fontSizeModes:
     video: 随视频窗口
     fixed: 固定字号
@@ -458,7 +470,7 @@ subtitleStyle:
   preview: 字幕预览
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
-  dragHint: 拖动字幕调整位置
+  dragHint: 在视频上拖动字幕调整位置。
   adjustmentHint: 在视频上拖动字幕调整位置；点击播放器工具栏中的 Readomi 图标可调整样式和字号。调整会自动保存。
   smaller: 减小字号
   larger: 增大字号
@@ -466,9 +478,10 @@ subtitleStyle:
   resetPosition: 字幕位置复位
   resetPositionShort: 复位
   presets:
-    clear: 清晰
+    clear: 清透
     compact: 轻量
-    study: 醒目
+    study: 学习
+    cinema: 影院
   positions:
     top: 顶部
     center: 居中
