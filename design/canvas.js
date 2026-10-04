@@ -6,6 +6,10 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Popup-Clear-Translation-Cache-Default.html", title: "弹窗 · 全局清空缓存 · 默认", x: 0, y: 129000, w: 320, h: 556 },
+    { file: "Popup-Clear-Translation-Cache-Clearing.html", title: "弹窗 · 全局清空缓存 · 等待", x: 400, y: 129000, w: 320, h: 556 },
+    { file: "Popup-Clear-Translation-Cache-Cleared.html", title: "弹窗 · 全局清空缓存 · 完成", x: 800, y: 129000, w: 320, h: 556 },
+    { file: "Popup-Clear-Translation-Cache-Failed.html", title: "弹窗 · 全局清空缓存 · 失败可重试", x: 1200, y: 129000, w: 320, h: 556 },
     { file: "Page-Translation-Quality-Retry.html", title: "译文校验 · 自动重试 · 保留原文与等待标记", x: 0, y: 128050, w: 960, h: 620 },
     { file: "Page-Translation-Quality-Failed.html", title: "译文校验 · 重试后仍失败 · 内联原因与重试", x: 1040, y: 128050, w: 960, h: 620 },
     { file: "Page-Translation-Quality-Ready.html", title: "译文校验 · 完成 · 英语原文与中文译文", x: 2080, y: 128050, w: 960, h: 620 },
@@ -246,6 +250,7 @@ window.READOMI_CANVAS = {
     { file: "Quality-Prompt-Default.html", title: "译文质量 · 恢复默认待应用", x: 0, y: 40600, w: 1120, h: 1460 },
   ],
   notes: [
+    { text: "弹窗清空缓存：底部服务名、词首强调与设置保持原位，以次级文字入口清空所有页面已保存的译文。等待时按钮禁用；成功或失败文案原位显示，3秒后回到默认，失败也可直接重试。当前页面与已有译文保留，下次翻译重新请求；不清网页摘要、设置或密钥。", x: 0, y: 128840, maxW: 1520 },
     { text: "译文校验：检测到语言方向或内容不符合要求时自动重试，原文保留并继续显示现有等待标记；重试仍失败时，复用内联失败原因与重试按钮。有效译文通过校验后才替换等待标记；不增加设置项。", x: 0, y: 127890, maxW: 3040 },
     { text: "语言规则：其他语言译成主要语言，主要语言内容译成第二语言；模型按段落或字幕句段自动识别。第二语言为保持原文或与主要语言同语种时，只显示一次原文；仅译文模式也保留这些原文。设置与弹窗共用规则，弹窗底栏保留多服务快速切换。翻译规则不套外框，控件与效果预览保留边框。", x: 0, y: 111440, maxW: 4000 },
     { text: "02  设置 · 主要语言与第二语言", x: 0, y: 112315 },
