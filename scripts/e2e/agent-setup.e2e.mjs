@@ -1,3 +1,4 @@
+/* global chrome -- page.evaluate() reads only the isolated extension test profile. */
 import assert from "node:assert/strict"
 import { after, afterEach, before, it } from "node:test"
 import { clickButton, configureService, launchBrowser, readClipboardWrites, reportFailure, storedConfig, trackClipboard } from "./browser.mjs"
@@ -5,6 +6,12 @@ import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let service
 let context
+
+async function serviceAction(section, name) {
+  const row = section.locator(".settings-service-row[data-current='true']")
+  await row.locator("summary").click()
+  await row.getByRole("button", { name, exact: true }).click()
+}
 
 before(async () => {
   service = await startFakeService()
@@ -52,13 +59,13 @@ it("user sets up the service on the settings page: Given no key, When the popup 
   // A document the agent got wrong is refused line by line, with the JSON path.
   await editor.fill(`{"type":"openai-compatible","apiKey":"local","model":"fake-model"}`)
   await section.getByText(/baseURL: baseURL is required/).waitFor()
-  assert.equal(await section.getByRole("button", { name: "Apply", exact: true }).isDisabled(), true)
+  assert.equal(await section.getByRole("button", { name: "Check and add", exact: true }).isDisabled(), true)
 
   // The verified document previews where page text goes, then applies after the check.
   await editor.fill(JSON.stringify(setupDocumentFor(service.origin), null, 2))
   await section.getByText(new RegExp(`Page text goes to ${new URL(service.origin).host}`)).waitFor()
   const completionsBefore = service.completions().length
-  await section.getByRole("button", { name: "Apply", exact: true }).click()
+  await section.getByRole("button", { name: "Check and add", exact: true }).click()
   await section.locator(".settings-service-editor").waitFor({ state: "detached", timeout: 15_000 })
   await section.getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
   assert.equal(await editor.count(), 0, "the editor gives way to the preview")
@@ -80,7 +87,7 @@ it("user sets up the service on the settings page: Given no key, When the popup 
   assert.equal(service.completions().length, completionsAfter, "opening settings sends nothing")
 
   // Editing reveals the setup methods after saving, including after reopening settings.
-  await section.getByRole("button", { name: "Edit", exact: true }).click()
+  await serviceAction(section, "Edit")
   await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   await editor.waitFor()
   assert.equal(JSON.parse(await editor.inputValue()).model, stored.model)
@@ -102,7 +109,7 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   const section = page.locator("#service")
 
   // Agent setup opens the editor in place on the current service, key masked.
-  await section.getByRole("button", { name: "Edit", exact: true }).click()
+  await serviceAction(section, "Edit")
   await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const editor = section.getByLabel("Translation service configuration")
   const current = JSON.parse(await editor.inputValue())
@@ -111,13 +118,13 @@ it("user changes the service and the prompt in place: Given a stored key, When t
 
   // A document the service rejects is not saved.
   await editor.fill(JSON.stringify({ ...current, model: "rejected-model" }, null, 2))
-  await section.getByRole("button", { name: "Apply", exact: true }).click()
+  await section.getByRole("button", { name: "Check and save", exact: true }).click()
   await section.getByText("Failed, nothing saved").waitFor({ timeout: 15_000 })
   assert.equal((await storedConfig(context)).providersConfig.find(p => p.name === "Local gateway").model, "fake-model")
 
   await editor.fill(JSON.stringify({ ...current, model: "fake-model-2", body: { reasoning_effort: "none" } }, null, 2))
   await section.locator("span", { hasText: "fake-model-2" }).waitFor()
-  await section.getByRole("button", { name: "Apply", exact: true }).click()
+  await section.getByRole("button", { name: "Check and save", exact: true }).click()
   await section.locator(".settings-service-editor").waitFor({ state: "detached", timeout: 15_000 })
   await section.getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
 
@@ -139,7 +146,12 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   assert.equal(config.translate.customPromptsConfig.patterns[0]?.prompt, "Translate tersely: {{input}}")
 
   await page.locator("nav a[href=\"#service\"]").click()
-  await section.getByRole("button", { name: "Test connection", exact: true }).click()
+  const checkedAt = config.providersConfig.find(provider => provider.name === "Local gateway").connectionCheck.checkedAt
+  await serviceAction(section, "Test connection")
+  await page.waitForFunction(async (previousCheck) => {
+    const value = (await chrome.storage.local.get("config")).config
+    return value.providersConfig.find(provider => provider.name === "Local gateway").connectionCheck.checkedAt > previousCheck
+  }, checkedAt)
   await section.getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
   const confirmation = service.completions().at(-1)
   assert.equal(confirmation.authorization, "Bearer local-secret-key")
@@ -149,7 +161,7 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   assert.match(body.messages.at(-1).content, /^Translate tersely: /)
 
   // The instructions carry the service configuration with the key masked, never the key itself.
-  await section.getByRole("button", { name: "Edit", exact: true }).click()
+  await serviceAction(section, "Edit")
   await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   await clickButton(page, "Copy instructions for your agent")
   await page.getByRole("button", { name: "Copied" }).waitFor()

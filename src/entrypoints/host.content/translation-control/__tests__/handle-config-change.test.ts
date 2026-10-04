@@ -1,6 +1,7 @@
 import type { PageTranslationManager } from "../page-translation"
 import type { Config } from "@/types/config/config"
 import { describe, expect, it, vi } from "vitest"
+import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { handleTranslationModeChange } from "../handle-config-change"
 
 function createMockConfig(mode: "bilingual" | "translationOnly"): Config {
@@ -47,6 +48,17 @@ describe("handleTranslationModeChange", () => {
       createMockConfig("bilingual"),
       manager,
     )
+
+    expect(manager.restart).not.toHaveBeenCalled()
+  })
+
+  it("preserves existing page translations when the selected service changes", () => {
+    const manager = createMockManager(true)
+    const nextProvider = { ...DEFAULT_CONFIG.providersConfig[0], id: "second-service", name: "Second service" }
+    const previous = { ...DEFAULT_CONFIG, providersConfig: [...DEFAULT_CONFIG.providersConfig, nextProvider] }
+    const next = { ...previous, translate: { ...previous.translate, providerId: nextProvider.id } }
+
+    handleTranslationModeChange(next, previous, manager)
 
     expect(manager.restart).not.toHaveBeenCalled()
   })

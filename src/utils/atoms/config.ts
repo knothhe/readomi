@@ -49,7 +49,7 @@ function queueConfigWrite(
   get: Getter,
   set: Setter,
   optimistic: Config,
-  plan: () => Promise<PlannedWrite>,
+  plan: (recordStored: (stored: Config) => void) => Promise<PlannedWrite>,
 ): Promise<void> {
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 1: Optimistic update (immediate UI feedback)
@@ -68,11 +68,14 @@ function queueConfigWrite(
   // but `writeQueue = task` assignment happens synchronously.
   const task = writeQueue.then(async () => {
     let planned: PlannedWrite | undefined
+    let storedBeforeMutation: Config | undefined
     try {
       // Always read fresh from storage to capture any writes that completed before us.
       // This ensures we don't lose concurrent field updates:
       //   write({x:1}) then write({y:2}) → storage ends up with {x:1, y:2}
-      planned = await plan()
+      planned = await plan((stored) => {
+        storedBeforeMutation = stored
+      })
       const nextToPersist = planned.next
 
       // Storage write always executes (not affected by version check)
@@ -94,7 +97,7 @@ function queueConfigWrite(
 
       // Roll back, but only if we're still the latest write.
       if (currentWriteVersion === writeVersion) {
-        set(configAtom, planned?.stored ?? localPrev)
+        set(configAtom, planned?.stored ?? storedBeforeMutation ?? localPrev)
       }
 
       throw error
@@ -118,6 +121,15 @@ export const writeConfigAtom = atom(
       const stored = await getLocalConfigForWrite()
       return { next: deepMerge(stored, patch), stored }
     }),
+)
+
+/** Replays a pure mutation against the latest stored config, preserving unrelated changes. */
+export const mutateConfigAtom = atom(null, (get, set, mutate: (config: Config) => Config) =>
+  queueConfigWrite(get, set, configSchema.parse(mutate(get(configAtom))), async (recordStored) => {
+    const stored = await getLocalConfigForWrite()
+    recordStored(stored)
+    return { next: configSchema.parse(mutate(stored)), stored }
+  }),
 )
 
 /** The popup edits one domain in the latest list without removing wider rules. */

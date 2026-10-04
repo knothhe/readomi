@@ -367,6 +367,65 @@ describe("local subtitle runtime", () => {
     expect(track.mode).toBe("showing")
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
   })
+  it("keeps translated captions while using the selected service for subsequent cues", async () => {
+    const nextProvider = { ...config.providersConfig[0], id: "second-service", name: "Second service", model: "second-model" }
+    const stored = { ...config, providersConfig: [...config.providersConfig, nextProvider] }
+    update(stored)
+    await vi.advanceTimersByTimeAsync(1000)
+    const host = document.querySelector("[data-readomi-subtitles]")
+    expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
+
+    update({ ...stored, translate: { ...stored.translate, providerId: nextProvider.id } })
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
+    expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
+    await vi.advanceTimersByTimeAsync(500)
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+
+    vi.mocked(translateTextCore).mockResolvedValue("再见")
+    track.activeCues = [{ text: "Goodbye" }]
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translateTextCore).toHaveBeenCalledTimes(2)
+    expect(translateTextCore).toHaveBeenLastCalledWith(expect.objectContaining({ text: "Goodbye", providerConfig: nextProvider }))
+    expect(shadow.querySelector(".translated")?.textContent).toBe("再见")
+
+    track.activeCues = [{ text: "Hello" }]
+    await vi.advanceTimersByTimeAsync(500)
+    expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
+    expect(translateTextCore).toHaveBeenCalledTimes(2)
+  })
+  it("lets an in-flight caption finish when the selected service changes", async () => {
+    let resolve!: (text: string) => void
+    vi.mocked(translateTextCore).mockReturnValue(new Promise(r => resolve = r))
+    const nextProvider = { ...config.providersConfig[0], id: "second-service", name: "Second service" }
+    const stored = { ...config, providersConfig: [...config.providersConfig, nextProvider] }
+    update(stored)
+    await vi.advanceTimersByTimeAsync(750)
+    const host = document.querySelector("[data-readomi-subtitles]")
+
+    update({ ...stored, translate: { ...stored.translate, providerId: nextProvider.id } })
+    resolve("Finished with the original service")
+    await vi.advanceTimersByTimeAsync(250)
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
+    expect(shadow.querySelector(".translated")?.textContent).toBe("Finished with the original service")
+    expect(translateTextCore).toHaveBeenCalledOnce()
+  })
+  it("retries a failed current caption with the newly selected service", async () => {
+    vi.mocked(translateTextCore).mockRejectedValue(new Error("offline"))
+    const nextProvider = { ...config.providersConfig[0], id: "second-service", name: "Second service" }
+    const stored = { ...config, providersConfig: [...config.providersConfig, nextProvider] }
+    update(stored)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translateTextCore).toHaveBeenCalledOnce()
+    expect(shadow.querySelector(".translated")?.textContent).toBe("subtitleTranslation.failed")
+
+    vi.mocked(translateTextCore).mockResolvedValue("Recovered caption")
+    update({ ...stored, translate: { ...stored.translate, providerId: nextProvider.id } })
+    await vi.advanceTimersByTimeAsync(250)
+
+    expect(translateTextCore).toHaveBeenCalledTimes(2)
+    expect(translateTextCore).toHaveBeenLastCalledWith(expect.objectContaining({ text: "Hello", providerConfig: nextProvider }))
+    expect(shadow.querySelector(".translated")?.textContent).toBe("Recovered caption")
+  })
   it("updates subtitle size, position and display mode without remounting or retranslating", async () => {
     update(config)
     await vi.advanceTimersByTimeAsync(1000)

@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: Dil ara…
   noLanguagesFound: Dil bulunamadı
 popup:
+  serviceSwitch:
+    switchLabel: "Geçerli hizmet: $1. Hizmeti değiştir"
+    title: Hizmeti değiştir
+    manage: Hizmetleri yönet
+    switched: $1 hizmetine geçildi
+    switchedDescription: Yeni çeviriler yeni hizmeti kullanır. Mevcut çeviriler korunur.
+    failed: Geçerli hizmet kaydedilemedi
+    failedDescription: $1 kullanılmaya devam ediyor. Tekrar geçiş yapmayı deneyin.
+    retry: Tekrar dene
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: Ayarlar
   preview: Önizleme
   service:
+    addPreview: Eklenecek
+    editHint: Değişiklikleri kaydetmek geçerli hizmet seçimini ve mevcut çevirileri korur.
+    saveHint: Başarılı kontrolden sonra kaydedilir. İptal mevcut hizmetleri korur.
+    failedAdd: Bağlantı başarısız. Hizmet eklenmedi.
+    retryAdd: Tekrar dene ve ekle
+    draftKept: Girdiğiniz yapılandırma korunur. Mevcut hizmetler kullanılmaya devam eder.
+    agentHint: "Talimatları agent’a verin, ardından doğruladığı yapılandırmayı aşağıya yapıştırın."
+    add: Hizmet ekle
+    added: Eklenen hizmetler
+    listLabel: Eklenen çeviri hizmetleri
+    actions: $1 işlemleri
+    use: Bu hizmeti kullan
+    remove: Hizmeti kaldır
+    removeCurrentHint: Önce başka bir hizmete geçin
+    back: Çeviri hizmetlerine dön
+    editTitle: $1 düzenle
+    scope: "Geçerli hizmet sayfa, paragraf ve altyazı çevirisinde kullanılır. Geçiş yapıldığında mevcut çeviriler korunur."
+    useAfterAdd: Ekledikten sonra bu hizmeti kullan
+    useAfterAddHint: İşaretlenmezse geçerli hizmet kullanılmaya devam eder.
+    removed: $1 kaldırıldı.
+    saveFailed: Kaydedilemedi. Lütfen tekrar deneyin.
+    checkAdd: Kontrol et ve ekle
+    checkSave: Kontrol et ve kaydet
     title: Çeviri hizmeti
     currentTitle: Geçerli çeviri hizmeti
     configMethod: Yapılandırma yöntemi

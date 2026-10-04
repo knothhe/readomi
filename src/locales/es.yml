@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: Buscar idiomas…
   noLanguagesFound: No se encontraron idiomas
 popup:
+  serviceSwitch:
+    switchLabel: "Servicio actual: $1. Cambiar servicio"
+    title: Cambiar servicio
+    manage: Gestionar servicios
+    switched: Se cambió a $1
+    switchedDescription: Las nuevas traducciones usan el nuevo servicio. Las existentes se conservan.
+    failed: No se pudo guardar el servicio actual
+    failedDescription: Se sigue usando $1. Intenta cambiar de nuevo.
+    retry: Reintentar
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: Configuración
   preview: Vista previa
   service:
+    addPreview: Se añadirá
+    editHint: Guardar los cambios conserva el servicio actual y las traducciones existentes.
+    saveHint: Se guarda tras una comprobación correcta. Cancelar conserva los servicios existentes.
+    failedAdd: Falló la conexión. No se añadió el servicio.
+    retryAdd: Reintentar y añadir
+    draftKept: La configuración se conserva. Los servicios existentes siguen en uso.
+    agentHint: Entrega las instrucciones a tu agente y pega su configuración verificada abajo.
+    add: Añadir servicio
+    added: Servicios añadidos
+    listLabel: Servicios de traducción añadidos
+    actions: Acciones de $1
+    use: Usar este servicio
+    remove: Eliminar servicio
+    removeCurrentHint: Cambia primero a otro servicio
+    back: Volver a los servicios de traducción
+    editTitle: Editar $1
+    scope: "El servicio actual traduce páginas, párrafos y subtítulos. Las traducciones existentes se conservan al cambiar."
+    useAfterAdd: Usar este servicio después de añadirlo
+    useAfterAddHint: Déjalo sin marcar para seguir usando el servicio actual.
+    removed: $1 eliminado.
+    saveFailed: No se pudo guardar. Inténtalo de nuevo.
+    checkAdd: Comprobar y añadir
+    checkSave: Comprobar y guardar
     title: Servicio de traducción
     currentTitle: Servicio de traducción actual
     configMethod: Método de configuración

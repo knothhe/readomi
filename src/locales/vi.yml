@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: Tìm ngôn ngữ…
   noLanguagesFound: Không tìm thấy ngôn ngữ
 popup:
+  serviceSwitch:
+    switchLabel: "Dịch vụ hiện tại: $1. Chuyển dịch vụ"
+    title: Chuyển dịch vụ
+    manage: Quản lý dịch vụ
+    switched: Đã chuyển sang $1
+    switchedDescription: Bản dịch mới dùng dịch vụ mới. Bản dịch hiện có được giữ lại.
+    failed: Không thể lưu dịch vụ hiện tại
+    failedDescription: Vẫn dùng $1. Vui lòng thử chuyển lại.
+    retry: Thử lại
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: Cài đặt
   preview: Xem trước
   service:
+    addPreview: Sẽ thêm
+    editHint: Lưu thay đổi giữ nguyên dịch vụ hiện tại và các bản dịch đã có.
+    saveHint: Lưu sau khi kiểm tra thành công. Hủy giữ nguyên dịch vụ hiện có.
+    failedAdd: Kết nối thất bại. Chưa thêm dịch vụ.
+    retryAdd: Thử lại và thêm
+    draftKept: Cấu hình đã nhập được giữ lại. Dịch vụ hiện có tiếp tục được dùng.
+    agentHint: Gửi hướng dẫn cho agent rồi dán cấu hình đã được xác minh vào bên dưới.
+    add: Thêm dịch vụ
+    added: Dịch vụ đã thêm
+    listLabel: Dịch vụ dịch đã thêm
+    actions: Thao tác cho $1
+    use: Dùng dịch vụ này
+    remove: Xóa dịch vụ
+    removeCurrentHint: Hãy chuyển sang dịch vụ khác trước
+    back: Quay lại dịch vụ dịch
+    editTitle: Sửa $1
+    scope: "Dịch vụ hiện tại dùng để dịch trang, đoạn văn và phụ đề. Bản dịch hiện có được giữ khi chuyển dịch vụ."
+    useAfterAdd: Dùng dịch vụ này sau khi thêm
+    useAfterAddHint: Bỏ chọn để tiếp tục dùng dịch vụ hiện tại.
+    removed: Đã xóa $1.
+    saveFailed: Không thể lưu. Vui lòng thử lại.
+    checkAdd: Kiểm tra và thêm
+    checkSave: Kiểm tra và lưu
     title: Dịch vụ dịch
     currentTitle: Dịch vụ dịch hiện tại
     configMethod: Cách cấu hình

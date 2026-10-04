@@ -39,19 +39,24 @@ prompt.
    }' | pbcopy          # macOS. Linux: wl-copy or xclip -selection clipboard. Windows: clip
    ```
 
-5. **Tell the person**: open Readomi's settings page, paste into the box in
-   the "Translation service" section (if a service is already set up, click
-   "Edit" there first), and click "Apply". Readomi shows what will change,
-   including the host that page text will be sent to, sends one short request
-   to confirm, and saves the service only when that request works. Then it
-   clears the clipboard. If the confirmation fails, nothing is saved and the
-   person will paste the error text back to you.
+5. **Tell the person**: open Readomi's settings page → "Translation service"
+   and choose "Add service". The first setup opens this editor automatically.
+   Paste the configuration, review the preview and click "Check and add".
+   To change an existing service, choose "Edit" from that service's actions
+   menu, paste the configuration and click "Check and save". Readomi shows
+   the destination host, sends one short request to confirm, and saves only
+   when that request works. Then it clears the clipboard. If the check fails,
+   the draft stays open and the stored configuration is unchanged; ask the
+   person to share the error text.
 
-To change an existing configuration, ask the person to click “Copy
-instructions for your agent” in the "Translation service" section and paste
-it to you; the text ends with the current document. The key in it is masked
-(`sk-…a9f2`). Return the document with the masked key unchanged and Readomi
-keeps the stored key; only a new key needs the clipboard step above.
+To change an existing configuration, ask the person to open "Edit" for the
+intended service and click "Copy instructions for your agent". The copied
+text ends with that service's document, even when another service is current.
+Its key is masked (`sk-…a9f2`). Returning the masked key unchanged keeps the
+target service's stored key only when its `type` and resolved `baseURL` are
+unchanged. A new service, a changed type or endpoint, or a replacement key
+requires a full key and the clipboard step above. The add editor starts with
+no existing service configuration and never borrows another account's key.
 
 ## The document
 
@@ -75,7 +80,7 @@ silently ignored setting.
 | ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `type`        | yes                     | `openai`, `anthropic`, `gemini`, `deepseek`, or `openai-compatible` for any other endpoint that speaks the OpenAI chat completions API (Ollama, LM Studio, vLLM, OpenRouter, Groq, Mistral, Qwen, GLM, Moonshot, MiniMax, Doubao, gateways).                                                                                  |
 | `api`         | no                      | Wire format: `openai-chat`, `openai-responses`, `anthropic` or `gemini`. Defaults from `type`: `openai` → `openai-responses`, `anthropic` → `anthropic`, `gemini` → `gemini`, `deepseek` and `openai-compatible` → `openai-chat`. Set `openai-responses` for a compatible service that speaks the Responses API, such as xAI. |
-| `apiKey`      | for a new service       | The key. Endpoints without authentication still need a non-empty value such as `"local"`. A masked value from an export keeps the stored key.                                                                                                                                                                                 |
+| `apiKey`      | for a new service       | The key. Endpoints without authentication still need a non-empty value such as `"local"`. While editing, a masked or omitted key keeps that service's stored key only when its `type` and endpoint are unchanged.                                                                                                                                                                                 |
 | `model`       | yes                     | Model ID exactly as the service expects it.                                                                                                                                                                                                                                                                                   |
 | `baseURL`     | for `openai-compatible` | Base URL up to and including the version path, e.g. `http://localhost:11434/v1`. Omit for an official API.                                                                                                                                                                                                                    |
 | `name`        | no                      | Display name. Defaults to the service name.                                                                                                                                                                                                                                                                                   |
@@ -83,11 +88,14 @@ silently ignored setting.
 | `body`        | no                      | JSON merged into every request body, exactly as the API documents it. Objects merge key by key; anything else replaces Readomi's value. See the recipes.                                                                                                                                                                      |
 | `temperature` | no                      | Sampling temperature. Sent only when set. Anthropic's current models accept only `1`.                                                                                                                                                                                                                                         |
 
-A document replaces the stored service with the same `type` and `baseURL`,
-or adds a new one. Other services and every other setting stay as they are.
-When the person wants a different model or option, they hand you the current
-configuration and you return the changed document; they may also edit a
-field in place on the settings page.
+"Add service" saves a separate configuration. Services with the same `type`
+and `baseURL` can have different models or accounts. Adding normally keeps
+the current service; "Use this service after adding" selects the new one.
+The first configured service becomes current automatically. "Edit" updates
+only the service chosen from the actions menu, using its stored service ID,
+and preserves the current selection. Other services and settings stay as
+they are. Switching from the popup or the service list affects subsequent
+page, paragraph and subtitle requests; existing translations are kept.
 
 ## Recipes
 

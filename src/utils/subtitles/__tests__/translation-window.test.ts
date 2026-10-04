@@ -81,4 +81,28 @@ describe("subtitle lookahead scheduling", () => {
     expect(translate).toHaveBeenCalledTimes(2)
     window.dispose()
   })
+  it("retries an old in-flight failure after a service switch while keeping successful captions", async () => {
+    let reject!: (error: Error) => void
+    const translate = vi.fn()
+      .mockResolvedValueOnce("Existing caption")
+      .mockImplementationOnce(() => new Promise<string>((_resolve, r) => reject = r))
+      .mockResolvedValue("New service caption")
+    const window = new SubtitleTranslationWindow(translate)
+    window.update([], 0, 1, "Hello")
+    await flush()
+    window.update([], 1, 1, "Goodbye")
+    window.clearFailures()
+    window.update([], 1, 1, "Goodbye")
+    expect(translate).toHaveBeenCalledTimes(2)
+
+    reject(new Error("Old service went offline"))
+    await flush()
+    await flush()
+
+    expect(window.get("Hello")).toBe("Existing caption")
+    expect(window.get("Goodbye")).toBe("New service caption")
+    expect(window.hasFailed("Goodbye")).toBe(false)
+    expect(translate).toHaveBeenCalledTimes(3)
+    window.dispose()
+  })
 })

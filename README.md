@@ -58,7 +58,7 @@ pnpm install:local --browser chrome --dir "~/Extensions/chrome" --name readomi
 旧命令曾直接复制到父目录的文件会保留，不自动删除或迁移。首次仍需在浏览器中加载插件子目录（Firefox 选择其中的 `manifest.json`），后续更新后在浏览器中重新加载扩展。
 Firefox 使用临时加载，重启浏览器后需要再次加载。
 
-打开设置 → 翻译服务，手动填写服务并测试保存，或复制说明给 agent，再粘贴它验证过的配置。配置指南见 [docs/agent-setup.md](./docs/agent-setup.md)，可选 skill 见 [skills/readomi-setup](./skills/readomi-setup/SKILL.md)。之后点击“翻译此页”，或按默认快捷键 `Alt+E`（Mac 为 `Option+E`）；再次触发恢复原文。
+打开设置 → 翻译服务 → 添加服务，手动填写，或复制说明给 agent，再粘贴它验证过的配置，点“检查并添加”。可以保存同一地址下的不同模型或账号；首次配置自动使用，之后添加默认保留当前服务，也可勾选“添加后使用此服务”。修改已有配置时，从目标服务的操作菜单进入“修改”，点“保存修改”；切换服务可在弹窗或设置页进行，已有译文保留。配置指南见 [docs/agent-setup.md](./docs/agent-setup.md)，可选 skill 见 [skills/readomi-setup](./skills/readomi-setup/SKILL.md)。之后点击“翻译此页”，或按默认快捷键 `Alt+E`（Mac 为 `Option+E`）；再次触发恢复原文。
 
 Readomi 使用独立的扩展标识，与上游可以同时安装。
 

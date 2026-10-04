@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: 搜索语言…
   noLanguagesFound: 没有找到语言
 popup:
+  serviceSwitch:
+    switchLabel: 当前服务：$1，切换服务
+    title: 切换服务
+    manage: 管理服务
+    switched: 已切换为 $1
+    switchedDescription: 后续翻译使用新服务，已有译文保留。
+    failed: 未能保存当前服务
+    failedDescription: 仍使用 $1。请重试切换。
+    retry: 重试
   pageText: 网页文字
   videoSubtitles: 视频字幕
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: 设置
   preview: 效果预览
   service:
+    addPreview: 将添加
+    editHint: 保存修改后保留当前服务选择；现有译文保留。
+    saveHint: 检查成功后保存。取消会保留现有服务。
+    failedAdd: 连接失败，没有添加服务
+    retryAdd: 重试并添加
+    draftKept: 填写的配置已保留，现有服务继续使用。
+    agentHint: 把说明交给你的 agent，再将它验证好的配置粘贴到下面。
+    add: 添加服务
+    added: 已添加的服务
+    listLabel: 已添加的翻译服务
+    actions: $1 的操作
+    use: 使用此服务
+    remove: 移除服务
+    removeCurrentHint: 先切换到其他服务
+    back: 返回翻译服务
+    editTitle: 修改 $1
+    scope: 当前服务用于网页、段落和字幕翻译。切换后，已有译文保留。
+    useAfterAdd: 添加后使用此服务
+    useAfterAddHint: 未勾选时只添加配置，当前服务继续使用。
+    removed: $1 已移除。
+    saveFailed: 未能保存，请重试。
+    checkAdd: 检查并添加
+    checkSave: 保存修改
     title: 翻译服务
     currentTitle: 当前翻译服务
     configMethod: 配置方式
@@ -87,7 +119,7 @@ options:
     thinkingOff: 已关闭思考
     label:
       current: 当前
-      after: 应用后
+      after: 保存后
       connection: 连接
     unchanged: 与当前相同。已全选，粘贴即可整体替换，也可以只改一个字段。
     failedNotSaved: 失败，没有保存

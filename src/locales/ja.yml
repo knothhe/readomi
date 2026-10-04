@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: 言語を検索…
   noLanguagesFound: 言語が見つかりません
 popup:
+  serviceSwitch:
+    switchLabel: 現在のサービス：$1。サービスを切り替え
+    title: サービスを切り替え
+    manage: サービスを管理
+    switched: $1 に切り替えました
+    switchedDescription: 今後の翻訳は新しいサービスを使用します。既存の翻訳は保持されます。
+    failed: 現在のサービスを保存できませんでした
+    failedDescription: 引き続き $1 を使用します。もう一度切り替えてください。
+    retry: 再試行
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: 設定
   preview: プレビュー
   service:
+    addPreview: 追加予定
+    editHint: 保存しても現在のサービスと既存の翻訳は保持されます。
+    saveHint: 確認成功後に保存します。キャンセルしても既存のサービスは保持されます。
+    failedAdd: 接続に失敗したため追加されませんでした
+    retryAdd: 再試行して追加
+    draftKept: 入力した設定は保持されています。既存のサービスを引き続き使用します。
+    agentHint: 説明を agent に渡し、確認済みの設定を以下に貼り付けてください。
+    add: サービスを追加
+    added: 追加済みサービス
+    listLabel: 追加済みの翻訳サービス
+    actions: $1 の操作
+    use: このサービスを使用
+    remove: サービスを削除
+    removeCurrentHint: 先に別のサービスに切り替えてください
+    back: 翻訳サービスに戻る
+    editTitle: $1 を編集
+    scope: 現在のサービスはページ、段落、字幕の翻訳に使われます。切り替えても既存の翻訳は保持されます。
+    useAfterAdd: 追加後にこのサービスを使用
+    useAfterAddHint: 未選択の場合は現在のサービスを引き続き使用します。
+    removed: $1 を削除しました。
+    saveFailed: 保存できませんでした。再試行してください。
+    checkAdd: 確認して追加
+    checkSave: 確認して保存
     title: 翻訳サービス
     currentTitle: 現在の翻訳サービス
     configMethod: 設定方法

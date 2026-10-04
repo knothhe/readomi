@@ -1,15 +1,18 @@
+import type { ProviderConfig } from "@/types/config/provider"
 import type { SetupDocument } from "@/utils/setup-document"
 import { useAtomValue, useSetAtom, useStore } from "jotai"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { DEFAULT_REQUEST_API, PROVIDER_TYPES, REQUEST_APIS } from "@/types/config/provider"
-import { configAtom, writeConfigAtom } from "@/utils/atoms/config"
+import { configAtom } from "@/utils/atoms/config"
+import { saveProviderAtom } from "@/utils/atoms/service"
 import { fetchProviderModels } from "@/utils/providers/models"
 import { resolveBaseURL } from "@/utils/providers/request"
-import { checkConnection, withConnectionCheck } from "@/utils/providers/test-connection"
-import { applySetupDocument, exportSetupDocument, findMatchingProvider, setupDocumentSchema } from "@/utils/setup-document"
+import { checkConnection } from "@/utils/providers/test-connection"
+import { applySetupDocument, exportSetupDocument, setupDocumentSchema } from "@/utils/setup-document"
 import { SettingsSelect } from "../../components/settings-select"
+import { UseAfterAdd } from "./use-after-add"
 
 const BODY_EXAMPLES = {
   "openai-responses": { reasoning: { effort: "none" } },
@@ -18,13 +21,13 @@ const BODY_EXAMPLES = {
   "gemini": { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } },
 }
 
-export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, onCancel?: () => void }) {
+export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, onBusyChange, onDone, onCancel }: { current?: ProviderConfig, makeCurrent: boolean, onMakeCurrentChange?: (value: boolean) => void, onBusyChange: (value: boolean) => void, onDone: () => void, onCancel?: () => void }) {
   const config = useAtomValue(configAtom)
   const store = useStore()
-  const write = useSetAtom(writeConfigAtom)
+  const saveProvider = useSetAtom(saveProviderAtom)
   const [draft, setDraft] = useState<SetupDocument>(() => ({
-    ...exportSetupDocument(config)!,
-    name: config.providersConfig.find(p => p.id === config.translate.providerId)?.name,
+    ...(current ? exportSetupDocument(config, current.id)! : { type: "openai-compatible" as const, model: "" }),
+    name: current?.name,
   }))
   const [key, setKey] = useState("")
   const [bodyText, setBodyText] = useState(() => draft.body ? JSON.stringify(draft.body, null, 2) : "")
@@ -55,7 +58,7 @@ export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, on
     }
   }, [])
   // A stored key belongs to its endpoint; never carry it to a new address.
-  const matching = findMatchingProvider(config.providersConfig, draft)
+  const matching = current ? config.providersConfig.find(provider => provider.id === current.id && provider.provider === draft.type && resolveBaseURL(provider) === resolveBaseURL({ provider: draft.type, baseURL: draft.baseURL })) : undefined
   const effectiveKey = key.trim() || matching?.apiKey?.trim()
   const baseURL = resolveBaseURL({ provider: draft.type, baseURL: draft.baseURL })
   const canFetch = !!effectiveKey && !!baseURL
@@ -72,7 +75,7 @@ export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, on
     requestRef.current = controller
     setModelResult({ signature, models: [], state: "loading" })
     try {
-      const latest = findMatchingProvider(store.get(configAtom).providersConfig, draft)
+      const latest = matching ? store.get(configAtom).providersConfig.find(provider => provider.id === matching.id && provider.provider === draft.type && resolveBaseURL(provider) === baseURL) : undefined
       const result = await fetchProviderModels({ provider: draft.type, api: draft.api, baseURL: draft.baseURL, apiKey: key.trim() || latest?.apiKey, headers: latest?.headers }, controller.signal)
       if (!controller.signal.aborted && requestRef.current === controller) {
         setModelResult({ signature, models: result, state: result.length ? "list" : "empty" })
@@ -98,6 +101,7 @@ export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, on
     if (!body.success)
       return
     setBusy(true)
+    onBusyChange(true)
     setError(null)
     try {
       const document = setupDocumentSchema.parse({
@@ -105,14 +109,14 @@ export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, on
         body: body.data,
         name: draft.name?.trim() || undefined,
         baseURL: draft.baseURL?.trim() || undefined,
-        apiKey: key.trim() || undefined,
+        apiKey: key.trim() || (matching ? draft.apiKey : undefined),
       })
-      const { config: next, providerId } = applySetupDocument(store.get(configAtom), document)
-      const check = await checkConnection(next.providersConfig.find(p => p.id === providerId)!)
+      const { config: next, providerId } = applySetupDocument(store.get(configAtom), document, { mode: current ? "edit" : "add", providerId: current?.id, makeCurrent })
+      const provider = next.providersConfig.find(p => p.id === providerId)!
+      const check = await checkConnection(provider)
       if (!check.ok)
         throw new Error(check.error || i18n.t("options.service.status.failed"))
-      const saved = withConnectionCheck(next, providerId, check)
-      await write({ providersConfig: saved.providersConfig, translate: saved.translate })
+      await saveProvider({ provider: { ...provider, connectionCheck: check }, mode: current ? "edit" : "add", makeCurrent })
       if (mountedRef.current)
         onDone()
     }
@@ -121,6 +125,7 @@ export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, on
     }
     finally {
       setBusy(false)
+      onBusyChange(false)
     }
   }
 
@@ -224,9 +229,11 @@ export function ManualServiceForm({ onDone, onCancel }: { onDone: () => void, on
             <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-muted-foreground">{error}</pre>
           </div>
         )}
+        {current && <p className="text-[11px] text-muted-foreground sm:col-span-2">{i18n.t("options.service.editHint")}</p>}
+        {!current && <div className="sm:col-span-2"><UseAfterAdd value={makeCurrent} onChange={onMakeCurrentChange} disabled={busy} /></div>}
         <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
           {onCancel && <Button type="button" variant="outline" onClick={onCancel}>{i18n.t("options.service.cancel")}</Button>}
-          <Button type="submit" disabled={!body.success}>{busy ? i18n.t("options.service.applying") : i18n.t("manualService.save")}</Button>
+          <Button type="submit" disabled={!body.success}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
         </div>
       </fieldset>
     </form>

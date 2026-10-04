@@ -47,6 +47,34 @@ describe("tap-or-hold hover translation", () => {
     expect(removeAllTranslatedWrapperNodes).toHaveBeenCalledTimes(2)
   })
 
+  it("keeps completed paragraphs and reads the selected service on the next hover", async () => {
+    const nextProvider = { ...DEFAULT_CONFIG.providersConfig[0], id: "second-service", name: "Second service" }
+    const previous = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true }, providersConfig: [...DEFAULT_CONFIG.providersConfig, nextProvider] }
+    const next = { ...previous, translate: { ...previous.translate, providerId: nextProvider.id } }
+    vi.mocked(getLocalConfig).mockResolvedValue(previous)
+    down()
+    up()
+    await vi.advanceTimersByTimeAsync(0)
+    const first = document.querySelector("p")!
+    const existingTranslation = document.createElement("span")
+    existingTranslation.textContent = "已有译文"
+    first.append(existingTranslation)
+
+    vi.mocked(getLocalConfig).mockResolvedValue(next)
+    vi.mocked(watchLocalConfig).mock.calls[0][0](next, previous)
+    const second = document.createElement("p")
+    second.textContent = "Second paragraph."
+    document.body.append(second)
+    second.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+    down()
+    up()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(translateWalkedElement).toHaveBeenLastCalledWith(second, expect.any(String), next, true, expect.any(AbortSignal), expect.any(Function))
+    expect(removeAllTranslatedWrapperNodes).not.toHaveBeenCalled()
+    expect(existingTranslation.isConnected).toBe(true)
+  })
+
   it.each(keyboardTriggers)("translates on release after a short %s tap", async (hotkey, key) => {
     vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
     down(key)

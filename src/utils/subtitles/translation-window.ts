@@ -6,6 +6,7 @@ export class SubtitleTranslationWindow {
   private pending = new Set<string>()
   private failed = new Set<string>()
   private generation = 0
+  private failureGeneration = 0
   private disposed = false
   private latencyMs = 3000
   private latencyUpdatedAt = Date.now()
@@ -20,6 +21,12 @@ export class SubtitleTranslationWindow {
 
   hasFailed(text: string): boolean {
     return this.failed.has(text)
+  }
+
+  /** A newly selected service can retry failures without discarding captions. */
+  clearFailures() {
+    this.failureGeneration++
+    this.failed.clear()
   }
 
   reset() {
@@ -72,6 +79,7 @@ export class SubtitleTranslationWindow {
     if (this.cache.has(text) || this.pending.has(text) || this.failed.has(text) || this.pending.size >= (urgent ? 10 : 8))
       return
     const token = this.generation
+    const failureToken = this.failureGeneration
     const started = Date.now()
     this.pending.add(text)
     void this.translate(text).then((result) => {
@@ -82,7 +90,7 @@ export class SubtitleTranslationWindow {
         this.cache.delete(this.cache.keys().next().value!)
       this.cache.set(text, result)
     }).catch(() => {
-      if (token === this.generation && !this.disposed)
+      if (token === this.generation && failureToken === this.failureGeneration && !this.disposed)
         this.failed.add(text)
     }).finally(() => {
       if (token === this.generation && !this.disposed) {

@@ -172,6 +172,69 @@ describe("applySetupDocument", () => {
     expect(config.providersConfig.filter(p => p.provider === "openai")).toHaveLength(2)
     expect(config.providersConfig.find(p => p.id === "openai-default")?.apiKey).toBe("sk-official")
   })
+
+  it("adds another account at the same endpoint without overwriting or selecting it", () => {
+    const stored = configWithOpenAIKey("sk-first-account")
+    const result = applySetupDocument(stored, { type: "openai", apiKey: "sk-second-account", model: "gpt-6-sol" }, { mode: "add" })
+    expect(result.replaced).toBe(false)
+    expect(result.config.providersConfig).toHaveLength(2)
+    expect(result.config.providersConfig[0]).toEqual(stored.providersConfig[0])
+    expect(result.config.providersConfig[1]).toMatchObject({ name: "OpenAI 1", apiKey: "sk-second-account", model: "gpt-6-sol" })
+    expect(result.config.translate.providerId).toBe(stored.translate.providerId)
+  })
+
+  it("requires a new account's own key even when another account uses the same endpoint", () => {
+    const stored = configWithOpenAIKey("sk-existing-key")
+    const document = { type: "openai" as const, apiKey: "sk-…-key", model: "gpt-6-sol" }
+    expect(describeSetupDocument(stored, document, { mode: "add" }).keyStatus).toBe("missing")
+    expect(() => applySetupDocument(stored, document, { mode: "add" })).toThrow(SetupDocumentError)
+  })
+
+  it("replaces the untouched initial placeholder and activates the first configured service", () => {
+    const result = applySetupDocument(DEFAULT_CONFIG, { type: "deepseek", apiKey: "sk-first", model: "deepseek-chat" }, { mode: "add" })
+    expect(result.config.providersConfig).toHaveLength(1)
+    expect(result.config.providersConfig[0]).toMatchObject({ id: "openai-default", name: "DeepSeek", provider: "deepseek" })
+    expect(result.config.translate.providerId).toBe(result.providerId)
+  })
+
+  it("edits an inactive identity and reuses only its own key", () => {
+    const stored: Config = {
+      ...configWithOpenAIKey("sk-active"),
+      providersConfig: [
+        ...configWithOpenAIKey("sk-active").providersConfig,
+        { id: "second-account", name: "Second account", enabled: true, provider: "openai", apiKey: "sk-second", model: "gpt-6-sol" },
+      ],
+    }
+    const exported = exportSetupDocument(stored, "second-account")!
+    expect(exported.apiKey).toBe("sk-…cond")
+    const document = { ...exported, model: "gpt-6-luna" }
+    const result = applySetupDocument(stored, document, { mode: "edit", providerId: "second-account" })
+    expect(result.providerId).toBe("second-account")
+    expect(result.keyReused).toBe(true)
+    expect(result.config.providersConfig[1]).toMatchObject({ apiKey: "sk-second", model: "gpt-6-luna" })
+    expect(result.config.providersConfig[0]).toEqual(stored.providersConfig[0])
+    expect(result.config.translate).toEqual(stored.translate)
+    expect(describeSetupDocument(stored, document, { mode: "edit", providerId: "second-account" }).keyStatus).toBe("reused")
+  })
+
+  it("requires a new key when an explicit edit changes the endpoint or service type", () => {
+    const stored = configWithOpenAIKey("sk-current-key")
+    const exported = exportSetupDocument(stored)!
+    const options = { mode: "edit" as const, providerId: "openai-default" }
+    const changed = { ...exported, baseURL: "https://different.example/v1" }
+    expect(describeSetupDocument(stored, changed, options).keyStatus).toBe("missing")
+    expect(() => applySetupDocument(stored, changed, options)).toThrow(SetupDocumentError)
+    expect(() => applySetupDocument(stored, { ...changed, apiKey: undefined }, options)).toThrow(SetupDocumentError)
+    expect(() => applySetupDocument(stored, { ...exported, type: "deepseek" }, options)).toThrow(SetupDocumentError)
+    const result = applySetupDocument(stored, { ...changed, apiKey: "sk-new-endpoint-key" }, options)
+    expect(result.providerId).toBe("openai-default")
+    expect(result.config.providersConfig[0]).toMatchObject({ apiKey: "sk-new-endpoint-key", baseURL: changed.baseURL })
+  })
+
+  it("refuses to recreate an edited service that was removed while its editor was open", () => {
+    expect(() => applySetupDocument(configWithOpenAIKey("sk-current"), { type: "openai", apiKey: "sk-key", model: "gpt-6-sol" }, { mode: "edit", providerId: "removed" }))
+      .toThrow("no longer exists")
+  })
 })
 
 describe("describeSetupDocument", () => {

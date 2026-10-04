@@ -8,7 +8,7 @@ description: Configure the Readomi browser extension's translation service for t
 Readomi supports manual configuration in settings. In this optional agent flow, you produce a JSON
 document that describes the service only, verify it against the real API with
 the user's key, and put it on the user's clipboard. The user pastes it into
-the "Translation service" section of Readomi's settings page and applies it.
+the add or edit page within "Translation service" and saves after a connection check.
 Languages, display and the prompt are the user's own settings in Readomi.
 
 Read the guide for the document format, the recipes and the verification
@@ -27,11 +27,25 @@ templates: https://github.com/knothhe/readomi/blob/main/docs/agent-setup.md
    Adjust until a request succeeds.
 4. Build the document with `jq --arg k "$KEY"` and pipe it to the clipboard
    (`pbcopy`, `wl-copy`, `xclip -selection clipboard`, or `clip`). A masked
-   key from an export (`sk-…a9f2`) is returned unchanged.
-5. Tell the user to open Readomi's settings page, paste into the
-   "Translation service" section (click "Edit" first if a service is already
-   set up), and click "Apply". Readomi previews the change, confirms the
-   connection, saves only if it works, and clears the clipboard.
+   key from an export (`sk-…a9f2`) can be returned unchanged when editing that
+   service with the same type and endpoint. Adding a service or changing its
+   type, endpoint or key requires a full key.
+5. Tell the user to open settings → "Translation service" → "Add service",
+   paste the configuration and click "Check and add". First setup opens the
+   add editor automatically. To change a stored service, choose "Edit" from
+   that service's actions menu and click "Check and save" after pasting.
+   Readomi previews the change, confirms the connection, saves only if it
+   works, and clears the clipboard. A failed check keeps the draft and the
+   stored configuration.
+
+Adding creates a separate configuration, including for another model or
+account at the same endpoint, and keeps the current service unless "Use this
+service after adding" is checked. The first configured service becomes
+current automatically. Editing targets the service selected in the menu,
+even when it is inactive, and preserves the current selection. Ask the user
+to copy agent instructions from that service's editor; the add editor never
+includes another service's configuration or key. Switching services affects
+subsequent translation requests and keeps existing translations.
 
 ## Defaults
 

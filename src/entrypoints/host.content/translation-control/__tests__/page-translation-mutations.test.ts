@@ -304,4 +304,33 @@ describe("pageTranslationManager mutation re-walk", () => {
 
     manager.stop()
   })
+
+  it("reads the selected service for new paragraphs without removing existing translations", async () => {
+    document.body.innerHTML = "<p id='first'>First paragraph.</p><p id='second'>Second paragraph.</p>"
+    const nextProvider = { ...DEFAULT_CONFIG.providersConfig[0], id: "second-service", name: "Second service" }
+    const previous = { ...DEFAULT_CONFIG, providersConfig: [...DEFAULT_CONFIG.providersConfig, nextProvider] }
+    const next = { ...previous, translate: { ...previous.translate, providerId: nextProvider.id } }
+    mockGetLocalConfig.mockResolvedValue(previous)
+    mockTranslateWalkedElement.mockResolvedValue(undefined)
+    const manager = new PageTranslationManager()
+    await manager.start()
+    const observer = intersectionObservers[0]
+    const first = document.getElementById("first")!
+    const second = document.getElementById("second")!
+    await observer.triggerIntersect(first)
+    expect(mockTranslateWalkedElement).toHaveBeenLastCalledWith(first, "walk-id", previous, false, expect.any(AbortSignal))
+    const existingTranslation = document.createElement("span")
+    existingTranslation.textContent = "已有译文"
+    first.append(existingTranslation)
+
+    mockGetLocalConfig.mockResolvedValue(next)
+    await observer.triggerIntersect(second)
+
+    expect(mockTranslateWalkedElement).toHaveBeenLastCalledWith(second, "walk-id", next, false, expect.any(AbortSignal))
+    expect(existingTranslation.isConnected).toBe(true)
+    expect(existingTranslation.textContent).toBe("已有译文")
+    expect(mockRemoveAllTranslatedWrapperNodes).not.toHaveBeenCalled()
+    expect(manager.isActive).toBe(true)
+    manager.stop()
+  })
 })

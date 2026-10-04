@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: 搜尋語言…
   noLanguagesFound: 找不到語言
 popup:
+  serviceSwitch:
+    switchLabel: 目前服務：$1，切換服務
+    title: 切換服務
+    manage: 管理服務
+    switched: 已切換為 $1
+    switchedDescription: 後續翻譯使用新服務，既有譯文保留。
+    failed: 無法儲存目前服務
+    failedDescription: 仍使用 $1。請重試切換。
+    retry: 重試
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: 設定
   preview: 效果預覽
   service:
+    addPreview: 將新增
+    editHint: 儲存修改後保留目前服務選擇；既有譯文保留。
+    saveHint: 檢查成功後儲存。取消會保留現有服務。
+    failedAdd: 連線失敗，未新增服務
+    retryAdd: 重試並新增
+    draftKept: 填寫的設定已保留，現有服務繼續使用。
+    agentHint: 把說明交給你的 agent，再將它驗證好的設定貼到下面。
+    add: 新增服務
+    added: 已新增的服務
+    listLabel: 已新增的翻譯服務
+    actions: $1 的操作
+    use: 使用此服務
+    remove: 移除服務
+    removeCurrentHint: 請先切換到其他服務
+    back: 返回翻譯服務
+    editTitle: 修改 $1
+    scope: 目前服務用於網頁、段落和字幕翻譯。切換後，既有譯文保留。
+    useAfterAdd: 新增後使用此服務
+    useAfterAddHint: 未勾選時只新增設定，目前服務繼續使用。
+    removed: $1 已移除。
+    saveFailed: 無法儲存，請重試。
+    checkAdd: 檢查並新增
+    checkSave: 儲存修改
     title: 翻譯服務
     currentTitle: 目前翻譯服務
     configMethod: 設定方式

@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: 언어 검색…
   noLanguagesFound: 언어를 찾을 수 없습니다
 popup:
+  serviceSwitch:
+    switchLabel: "현재 서비스: $1. 서비스 전환"
+    title: 서비스 전환
+    manage: 서비스 관리
+    switched: $1로 전환됨
+    switchedDescription: 새 번역은 새 서비스를 사용합니다. 기존 번역은 유지됩니다.
+    failed: 현재 서비스를 저장하지 못했습니다
+    failedDescription: 계속 $1을 사용합니다. 다시 전환해 주세요.
+    retry: 다시 시도
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: 설정
   preview: 미리보기
   service:
+    addPreview: 추가할 서비스
+    editHint: 변경 사항을 저장해도 현재 서비스 선택과 기존 번역은 유지됩니다.
+    saveHint: 확인 성공 후 저장합니다. 취소하면 기존 서비스가 유지됩니다.
+    failedAdd: 연결에 실패하여 서비스를 추가하지 않았습니다
+    retryAdd: 다시 시도하여 추가
+    draftKept: 입력한 설정은 유지됩니다. 기존 서비스를 계속 사용합니다.
+    agentHint: 설명을 agent에 전달한 후 검증된 설정을 아래에 붙여넣으세요。
+    add: 서비스 추가
+    added: 추가된 서비스
+    listLabel: 추가된 번역 서비스
+    actions: $1 작업
+    use: 이 서비스 사용
+    remove: 서비스 삭제
+    removeCurrentHint: 먼저 다른 서비스로 전환하세요
+    back: 번역 서비스로 돌아가기
+    editTitle: $1 수정
+    scope: "현재 서비스는 페이지, 문단 및 자막 번역에 사용됩니다. 전환해도 기존 번역은 유지됩니다."
+    useAfterAdd: 추가 후 이 서비스 사용
+    useAfterAddHint: 선택하지 않으면 현재 서비스를 계속 사용합니다.
+    removed: $1 삭제됨.
+    saveFailed: 저장하지 못했습니다. 다시 시도하세요.
+    checkAdd: 확인 후 추가
+    checkSave: 확인 후 저장
     title: 번역 서비스
     currentTitle: 현재 번역 서비스
     configMethod: 설정 방식

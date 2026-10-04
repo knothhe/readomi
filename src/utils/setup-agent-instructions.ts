@@ -9,8 +9,8 @@ export const AGENT_SETUP_GUIDE_URL = "https://github.com/knothhe/readomi/blob/ma
  * carries the current configuration with the key masked, so the agent can
  * change one thing without asking for everything again.
  */
-export function buildAgentInstructions(config: Config): string {
-  const current = exportSetupDocument(config)
+export function buildAgentInstructions(config: Config, providerId?: string | null): string {
+  const current = providerId === null ? null : exportSetupDocument(config, providerId)
   const currentText = current?.apiKey
     ? stringifySetupDocument(current)
     : i18n.t("agentInstructions.noConfiguration")

@@ -85,8 +85,8 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   const xPlayer = isXHost()
   const tracks = createTextTrackSession(video, track => !xPlayer || track.label !== "clone")
   const timeline = youtubePlayer ? createYouTubeTimeline() : null
-  const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
   const translations = new SubtitleTranslationWindow(async (input) => {
+    const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
     if (!provider?.apiKey?.trim())
       throw new Error("Translation service is not configured")
     return translateTextCore({ text: input, langConfig: config.language, providerConfig: provider, extraHashTags: ["video-subtitles"] })
@@ -231,6 +231,8 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   return {
     tick,
     updateConfig: (next) => {
+      if (config.translate.providerId !== next.translate.providerId)
+        translations.clearFailures()
       config = next
       appearance = next.features.subtitleStyle
       renderAppearance()
@@ -338,7 +340,10 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
       if (!storedChange && lastStoredConfig === next && enabled === nextEnabled && excluded === nextExcluded)
         return
       if (storedChange || lastStoredConfig !== next) {
-        if (subtitleRequestKey(config) !== subtitleRequestKey(next)) {
+        // A service switch applies to the next request. Keep captions already
+        // translated or in flight so changing services does not interrupt playback.
+        const serviceSwitched = config.translate.providerId !== next.translate.providerId
+        if (subtitleRequestKey(config, serviceSwitched) !== subtitleRequestKey(next, serviceSwitched)) {
           renderer?.dispose()
           renderer = null
         }
@@ -360,10 +365,10 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
   }
 }
 
-function subtitleRequestKey(config: Config): string {
+function subtitleRequestKey(config: Config, omitProvider = false): string {
   return JSON.stringify([
     config.language,
-    config.providersConfig.find(provider => provider.id === config.translate.providerId),
+    omitProvider ? null : config.providersConfig.find(provider => provider.id === config.translate.providerId),
     config.translate.customPromptsConfig,
   ])
 }

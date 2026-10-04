@@ -5,6 +5,15 @@ languageCombobox:
   searchLanguages: Search languages…
   noLanguagesFound: No languages found
 popup:
+  serviceSwitch:
+    switchLabel: "Current service: $1. Switch service"
+    title: Switch service
+    manage: Manage services
+    switched: Switched to $1
+    switchedDescription: New translations use the new service. Existing translations are kept.
+    failed: Could not save the current service
+    failedDescription: Still using $1. Please try switching again.
+    retry: Retry
   pageText: Web text
   videoSubtitles: Video subtitles
   videoSiteExclusion:
@@ -58,6 +67,29 @@ options:
   title: Settings
   preview: Preview
   service:
+    addPreview: To be added
+    editHint: Saving changes keeps the current service selection and existing translations.
+    saveHint: Saved after a successful check. Canceling keeps existing services.
+    failedAdd: Connection failed. Service was not added.
+    retryAdd: Retry and add
+    draftKept: Your configuration is kept. Existing services remain in use.
+    agentHint: "Hand the instructions to your agent, then paste its verified configuration below."
+    add: Add service
+    added: Added services
+    listLabel: Added translation services
+    actions: Actions for $1
+    use: Use this service
+    remove: Remove service
+    removeCurrentHint: Switch to another service first
+    back: Back to translation services
+    editTitle: Edit $1
+    scope: "The current service is used for page, paragraph and subtitle translation. Existing translations are kept when switching."
+    useAfterAdd: Use this service after adding
+    useAfterAddHint: Leave unchecked to keep using the current service.
+    removed: $1 removed.
+    saveFailed: Could not save. Please try again.
+    checkAdd: Check and add
+    checkSave: Check and save
     title: Translation service
     currentTitle: Current translation service
     configMethod: Configuration method

@@ -17,19 +17,9 @@ vi.mock("@/utils/providers/test-connection", async importOriginal => ({
   checkConnection: vi.fn(),
 }))
 
-const configured: Config = {
-  ...DEFAULT_CONFIG,
-  providersConfig: DEFAULT_CONFIG.providersConfig.map(provider => ({
-    ...provider,
-    name: "My translation service",
-    apiKey: "sk-abcdefghijkl",
-    baseURL: "https://translation.example/v1",
-    headers: { "X-Readomi": "fixture" },
-    body: { reasoning: { effort: "none" } },
-    temperature: 0,
-    connectionCheck: { ok: true, checkedAt: 1_000 },
-  })),
-}
+const first = { ...DEFAULT_CONFIG.providersConfig[0], name: "Service A", apiKey: "sk-abcdefghijkl", baseURL: "https://translation.example/v1", model: "model-a", connectionCheck: { ok: true, checkedAt: 1_000 } }
+const second = { ...first, id: "second", name: "Service B", apiKey: "sk-second-key", model: "model-b" }
+const configured: Config = { ...DEFAULT_CONFIG, providersConfig: [first, second], translate: { ...DEFAULT_CONFIG.translate, providerId: first.id } }
 
 async function renderService(config: Config = configured) {
   await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
@@ -38,121 +28,152 @@ async function renderService(config: Config = configured) {
   const view = render(<Provider store={store}><ServiceSection /></Provider>)
   return { ...view, store }
 }
-
 const editor = () => screen.getByRole("textbox", { name: "options.service.editorLabel" }) as HTMLTextAreaElement
+const row = (name: string) => screen.getByRole("heading", { name }).closest("article")!
+function menu(name: string) {
+  const serviceRow = row(name)
+  fireEvent.click(within(serviceRow).getByLabelText("options.service.actions"))
+  return within(serviceRow)
+}
+function edit(name: string) {
+  fireEvent.click(menu(name).getByRole("button", { name: "options.service.edit" }))
+}
 
-describe("compact translation service settings", () => {
+describe("multiple translation services", () => {
   beforeEach(() => {
     fakeBrowser.reset()
-    vi.mocked(checkConnection).mockReset().mockResolvedValue({ ok: true, checkedAt: 1_000 })
+    vi.mocked(checkConnection).mockReset().mockResolvedValue({ ok: true, checkedAt: 2_000 })
     vi.mocked(fetchProviderModels).mockReset().mockResolvedValue(["model-a"])
   })
   afterEach(cleanup)
 
-  it("keeps the main card compact and expands full connection details without requests or saved changes", async () => {
+  it("lists services without requests, marks current and prevents removing it", async () => {
     const { container, store } = await renderService()
-    expect(screen.getAllByRole("button").map(button => button.textContent)).toEqual(["options.service.test", "options.service.edit"])
-    expect(screen.getByRole("heading", { name: "My translation service" })).toBeVisible()
-    expect(screen.getByTestId("service-status")).toHaveTextContent("options.service.status.ok")
-    expect(screen.queryByRole("group", { name: "options.service.configMethod" })).toBeNull()
+    expect(screen.getByRole("heading", { name: "Service A" })).toBeVisible()
+    expect(screen.getByRole("heading", { name: "Service B" })).toBeVisible()
+    expect(within(row("Service A")).getByText("options.service.label.current")).toBeVisible()
     expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
-    const details = container.querySelector<HTMLDetailsElement>(".settings-service-details")!
-    expect(details.open).toBe(false)
-    expect(screen.getByText("https://translation.example/v1")).not.toBeVisible()
-    expect(container).not.toHaveTextContent("sk-abcdefghijkl")
-
-    fireEvent.click(screen.getByText("options.service.connectionDetails"))
-    expect(details.open).toBe(true)
-    expect(screen.getByText("https://translation.example/v1")).toBeVisible()
-    expect(within(details).getByText("options.service.headers")).toBeVisible()
-    expect(within(details).getByText(/"X-Readomi": "fixture"/)).toBeVisible()
-    expect(within(details).getByText(/"reasoning"/)).toBeVisible()
-    expect(within(details).getByText("0")).toBeVisible()
-    expect(within(details).getByText(configured.translate.providerId)).toBeVisible()
-    expect(within(details).getByText("sk-…ijkl")).toBeVisible()
+    expect(container).not.toHaveTextContent(first.apiKey)
+    const actions = menu("Service A")
+    expect(actions.getByRole("button", { name: "options.service.remove" })).toBeDisabled()
+    expect(actions.getByRole("button", { name: "options.service.use" })).toBeDisabled()
     expect(checkConnection).not.toHaveBeenCalled()
-    expect(fetchProviderModels).not.toHaveBeenCalled()
     expect(store.get(configAtom)).toEqual(configured)
-    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(configured)
   })
 
-  it("opens both configuration methods inside the same card and cancels their drafts without saving", async () => {
-    const { container, store } = await renderService()
-    const card = container.querySelector(".settings-service-card")
-    fireEvent.click(screen.getByRole("button", { name: "options.service.edit" }))
-    expect(screen.getByRole("group", { name: "options.service.configMethod" })).toBeVisible()
-    expect(screen.getByRole("heading", { name: "My translation service" })).toBeVisible()
-    expect(JSON.parse(editor().value)).toMatchObject({ apiKey: "sk-…ijkl", headers: { "X-Readomi": "fixture" }, temperature: 0 })
-    expect(editor().selectionStart).toBe(0)
-    expect(editor().selectionEnd).toBe(editor().value.length)
-    expect(screen.getByRole("button", { name: "options.service.copyInstructions" })).toBeVisible()
-
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
-    expect(screen.getByLabelText("manualService.name")).toHaveValue("My translation service")
-    fireEvent.change(screen.getByLabelText("manualService.name"), { target: { value: "Unsaved name" } })
-    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "unsaved-model" } })
-    fireEvent.change(screen.getByLabelText("manualService.key"), { target: { value: "unsaved-key" } })
-    fireEvent.click(screen.getByRole("button", { name: "options.service.cancel" }))
-    expect(container.querySelector(".settings-service-card")).toBe(card)
-    expect(screen.queryByRole("group", { name: "options.service.configMethod" })).toBeNull()
-    expect(screen.queryByLabelText("manualService.model")).toBeNull()
-    expect(store.get(configAtom)).toEqual(configured)
-
-    fireEvent.click(screen.getByRole("button", { name: "options.service.edit" }))
-    fireEvent.change(editor(), { target: { value: JSON.stringify({ ...JSON.parse(editor().value), model: "unsaved-agent-model" }) } })
-    fireEvent.click(screen.getByRole("button", { name: "options.service.cancel" }))
-    expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
-    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(configured)
-    expect(checkConnection).not.toHaveBeenCalled()
-    expect(fetchProviderModels).not.toHaveBeenCalled()
-  })
-
-  it("starts unconfigured services directly in agent setup and keeps manual setup available", async () => {
-    await renderService(DEFAULT_CONFIG)
-    expect(screen.getByText("options.service.empty.title")).toBeVisible()
-    expect(editor()).toHaveValue("")
-    expect(screen.queryByTestId("service-status")).toBeNull()
-    expect(screen.queryByRole("button", { name: "options.service.test" })).toBeNull()
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
-    expect(screen.getByLabelText("manualService.model")).toBeVisible()
-    expect(screen.getByRole("button", { name: "modelDiscovery.fetch" })).toBeDisabled()
-    expect(checkConnection).not.toHaveBeenCalled()
-    expect(fetchProviderModels).not.toHaveBeenCalled()
-  })
-
-  it("tests only on request, shows pending and failed states and preserves every other setting", async () => {
-    let finishCheck!: (value: Awaited<ReturnType<typeof checkConnection>>) => void
-    vi.mocked(checkConnection).mockImplementation(() => new Promise(resolve => finishCheck = resolve))
+  it("adds another account/model at the same endpoint without switching", async () => {
     const { store } = await renderService()
-    const test = screen.getByRole("button", { name: "options.service.test" })
-    fireEvent.click(test)
-    expect(test).toBeDisabled()
-    expect(screen.getByRole("button", { name: "options.service.edit" })).toBeDisabled()
-    expect(screen.getByTestId("service-status")).toHaveTextContent("options.service.testing")
-    fireEvent.click(screen.getByText("options.service.connectionDetails"))
-    expect(checkConnection).toHaveBeenCalledTimes(1)
-    const result = { ok: false, checkedAt: 2_000, error: "HTTP 401: invalid key" }
-    await act(async () => finishCheck(result))
-    const expected: Config = { ...configured, providersConfig: configured.providersConfig.map(provider => provider.id === configured.translate.providerId ? { ...provider, connectionCheck: result } : provider) }
-    await waitFor(async () => expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(expected))
-    expect(store.get(configAtom)).toEqual(expected)
-    expect(screen.getByTestId("service-status")).toHaveTextContent("options.service.status.failed")
-    expect(screen.getByText(result.error)).toBeVisible()
-    expect(test).toBeEnabled()
+    fireEvent.click(screen.getByRole("button", { name: "options.service.add" }))
+    expect(screen.getByRole("checkbox", { name: "options.service.useAfterAdd" })).not.toBeChecked()
+    fireEvent.change(editor(), { target: { value: JSON.stringify({ type: first.provider, name: "Service C", apiKey: "new-key", baseURL: first.baseURL, model: "model-c" }) } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkAdd" }))
+    await screen.findByRole("heading", { name: "Service C" })
+    expect(store.get(configAtom).providersConfig).toHaveLength(3)
+    expect(store.get(configAtom).translate.providerId).toBe(first.id)
+    expect(store.get(configAtom).providersConfig.slice(0, 2)).toEqual(configured.providersConfig)
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(store.get(configAtom))
   })
 
-  it("keeps the working service summary and agent draft when a replacement fails its connection check", async () => {
-    vi.mocked(checkConnection).mockResolvedValue({ ok: false, checkedAt: 2_000, error: "Model unavailable" })
+  it("can use the new service after a checked addition", async () => {
     const { store } = await renderService()
-    fireEvent.click(screen.getByRole("button", { name: "options.service.edit" }))
+    fireEvent.click(screen.getByRole("button", { name: "options.service.add" }))
+    fireEvent.click(screen.getByRole("checkbox", { name: "options.service.useAfterAdd" }))
+    fireEvent.change(editor(), { target: { value: JSON.stringify({ type: "deepseek", name: "Service C", apiKey: "key-c", model: "model-c" }) } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkAdd" }))
+    await screen.findByRole("heading", { name: "Service C" })
+    expect(store.get(configAtom).translate.providerId).toBe(store.get(configAtom).providersConfig[2].id)
+  })
+
+  it("edits the inactive service by ID with its own masked key and keeps selection", async () => {
+    const { store } = await renderService()
+    edit("Service B")
+    expect(JSON.parse(editor().value)).toMatchObject({ model: "model-b", apiKey: "sk-…-key" })
+    fireEvent.change(editor(), { target: { value: JSON.stringify({ ...JSON.parse(editor().value), model: "edited-model-b" }) } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
+    await screen.findByRole("heading", { name: "Service B" })
+    expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ id: second.id, apiKey: second.apiKey, model: "edited-model-b" }))
+    expect(store.get(configAtom).translate.providerId).toBe(first.id)
+    expect(store.get(configAtom).providersConfig[0]).toEqual(first)
+  })
+
+  it("manual editing reuses only the targeted account and cancels unsaved changes", async () => {
+    const { store } = await renderService()
+    edit("Service B")
+    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    expect(screen.getByLabelText("manualService.name")).toHaveValue("Service B")
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "manual-model-b" } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
+    await screen.findByRole("heading", { name: "Service B" })
+    expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ id: second.id, apiKey: second.apiKey, model: "manual-model-b" }))
+    const saved = store.get(configAtom)
+    expect(saved.translate.providerId).toBe(first.id)
+    edit("Service B")
+    fireEvent.change(editor(), { target: { value: "invalid draft" } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.cancel" }))
+    expect(store.get(configAtom)).toEqual(saved)
+  })
+
+  it("keeps failed drafts without saving or switching, then permits a retry", async () => {
+    vi.mocked(checkConnection).mockResolvedValueOnce({ ok: false, checkedAt: 2_000, error: "Model unavailable" })
+    const { store } = await renderService()
+    edit("Service B")
     const draft = JSON.stringify({ ...JSON.parse(editor().value), model: "unavailable-model" })
     fireEvent.change(editor(), { target: { value: draft } })
-    fireEvent.click(screen.getByRole("button", { name: "options.service.apply" }))
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
     expect(await screen.findByText("options.service.failedNotSaved")).toBeVisible()
-    expect(screen.getByText("Model unavailable")).toBeVisible()
-    expect(screen.getByRole("heading", { name: "My translation service" })).toBeVisible()
     expect(editor()).toHaveValue(draft)
     expect(store.get(configAtom)).toEqual(configured)
     expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(configured)
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
+    await screen.findByRole("heading", { name: "Service B" })
+    expect(store.get(configAtom).translate.providerId).toBe(first.id)
+  })
+
+  it("selects and removes services explicitly, and only tests on request", async () => {
+    const { store } = await renderService()
+    fireEvent.click(menu("Service B").getByRole("button", { name: "options.service.use" }))
+    await waitFor(() => expect(store.get(configAtom).translate.providerId).toBe(second.id))
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.translate.providerId).toBe(second.id))
+    expect(checkConnection).not.toHaveBeenCalled()
+    fireEvent.click(menu("Service B").getByRole("button", { name: "options.service.test" }))
+    await waitFor(() => expect(checkConnection).toHaveBeenCalledOnce())
+    await act(async () => {})
+    fireEvent.click(menu("Service A").getByRole("button", { name: "options.service.remove" }))
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "Service A" })).toBeNull())
+    expect(store.get(configAtom).providersConfig.map(provider => provider.id)).toEqual([second.id])
+  })
+
+  it("requires a new key when adding at an existing endpoint", async () => {
+    const { store } = await renderService()
+    fireEvent.click(screen.getByRole("button", { name: "options.service.add" }))
+    fireEvent.change(editor(), { target: { value: JSON.stringify({ type: first.provider, baseURL: first.baseURL, model: "model-c", apiKey: "sk-…ijkl" }) } })
+    expect(screen.getByRole("button", { name: "options.service.checkAdd" })).toBeDisabled()
+    expect(screen.getByText("options.service.keyMissing")).toBeVisible()
+    expect(checkConnection).not.toHaveBeenCalled()
+    expect(store.get(configAtom)).toEqual(configured)
+  })
+
+  it("returns to the list when another page removes the edited service", async () => {
+    const { store } = await renderService()
+    edit("Service B")
+    await act(async () => {
+      const removed = { ...configured, providersConfig: [first] }
+      await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, removed)
+      store.set(configAtom, removed)
+    })
+    await waitFor(() => expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull())
+    expect(screen.getByRole("button", { name: "options.service.add" })).toBeVisible()
+    expect(screen.queryByRole("heading", { name: "Service B" })).toBeNull()
+    expect(checkConnection).not.toHaveBeenCalled()
+  })
+
+  it("initial setup opens the agent form and saves its first checked service", async () => {
+    const { store } = await renderService(DEFAULT_CONFIG)
+    expect(editor()).toHaveValue("")
+    fireEvent.change(editor(), { target: { value: JSON.stringify({ type: "deepseek", name: "First", apiKey: "key", model: "model" }) } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkAdd" }))
+    await screen.findByRole("heading", { name: "First" })
+    expect(store.get(configAtom).providersConfig).toHaveLength(1)
+    expect(store.get(configAtom).providersConfig[0].id).toBe(store.get(configAtom).translate.providerId)
   })
 })
