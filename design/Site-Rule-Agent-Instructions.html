@@ -1,0 +1,31 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>Readomi · 给 agent 的站点适配指令</title><style>*{box-sizing:border-box}html,body{margin:0;width:1280px;height:1050px;background:#faf8f5;color:#302b29;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}main{width:920px;margin:36px auto}header{display:flex;align-items:center;gap:14px;margin-bottom:18px}header img{width:30px;height:30px}h1{font-size:23px;line-height:32px;font-weight:550;margin:0}.subtitle{font-size:12px;color:#8d7768;margin:0 0 17px}pre{margin:0;padding:23px 26px;border:1px solid #e4d8cc;border-radius:10px;background:#fffdfa;white-space:pre-wrap;font:12px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#68584d}.foot{display:flex;justify-content:space-between;gap:16px;margin-top:15px;font-size:10px;color:#9a8474}.foot a{color:inherit;text-decoration:underline;text-underline-offset:3px}</style></head><body><main><header><img src="assets/icon-terra.svg" alt="Readomi"><h1>给 agent 的站点适配指令</h1></header><p class="subtitle">由当前网站与规则自动生成；本画板为 Reddit 内容示意。</p><pre>请为 Readomi 适配当前网站
+
+网站：https://www.reddit.com/
+允许主机：www.reddit.com
+问题：首页帖子 hover 希望每帖一次请求，完整原文之后、媒体之前显示同一块分段译文；详情正文沿用竖线样式。
+阅读设置：双语对照 · 竖线 · Option / Alt
+相关内置规则：redditList、reddit、readomi-reddit
+相关用户规则：无
+
+以上是设计示例。实际复制时由应用读取当前网站、规则及设置，不含服务凭据。
+
+工作方式
+1. 查看真实 DOM 和覆盖链接，优先使用已观察的稳定属性和正文容器。
+2. 生成单站点文档：format=&quot;readomi-site-rule&quot;、version=1、site.hosts=[&quot;www.reddit.com&quot;]、changes 使用 upsert 或 disable。
+3. 打开 Readomi 的「适配此网站」面板，展开「更多」。将文档写入 readomi-rule-document-input，点击 readomi-rule-preview-action。提交最新候选后直接预览，不使用交付步骤。
+4. 读取 readomi-rule-report，确认对应当前候选。根据实际观察继续调整；未验证的页面或交互明确说明。输入改变会停止旧预览，不能沿用旧成功结果。
+5. 最终返回与当前预览一致的规则文档，说明规则目标、适用范围及未验证的限制。持久保存由用户点击「保存规则」。
+
+整帖翻译与插入位置
+需要把多个正文片段合成一帖译文时，使用 translationGroups。每组字段：containerSelector（组容器）、sourceSelectors（要提取的后代正文选择器）、placement（可选，append 或 after，默认 append）、slot（可选，仅 append 时指定宿主已有的 named slot）。sourceSelectors 相对当前容器查询，支持 :scope；只读取指定后代的 light DOM 正文，不穿透 Shadow DOM，并保留正文段落边界。按 sourceSelectors 数组声明顺序收集；每个选择器内按 querySelectorAll 的 DOM 顺序。相同节点按身份去重；源互相嵌套时只保留最外层源，覆盖的子源不重复提取。最终保留来源列表顺序，不全局重排为 DOM 顺序。一帖作为一组，一次请求，输出同一译文容器，不把标题和摘录分开各插一块译文。
+同一个容器只负责一组；多个生效规则出现相同 containerSelector 时，后规则覆盖前规则，不合并 sourceSelectors。sourceSelectors: [] 停止该组。
+append 把译文作为容器的新增子节点：宿主必须能显示该节点；未填写 slot 时使用可见的 default slot，填写 slot 时使用宿主已有的对应 named slot。Reddit 首页指定 slot: 'text-body'，让文字帖显示原文→整帖译文→操作栏，图片帖显示原文→整帖译文→媒体→操作栏。等待、流式和完成都使用同一个插入位置，不在完成时从图片下方跳到原文下方。after 在组容器之后插入同一个译文容器，不能同时填写 slot；slot 必须是非空白字符串。图片、点赞、分享、用户名和其他元数据不放入 sourceSelectors；保留原链接行为。
+
+公开规则字段
+matches / excludeMatches 限定网站与路径；includeSelectors 指定正文白名单；excludeSelectors 排除非正文，include 不重新开启已排除祖先。forceBlockNodeSelectors 控制正文分段，forceBlockStyleSelectors 控制译文块级展示；forceInlineNodeSelectors / forceInlineStyleSelectors 分别控制节点与译文行内行为。preserveTextSelectors 保留文本，atomSelectors 保留公式等原子区域。选择器字段的 .add / .remove 增删现有集合。minCharacters / minWords 控制最低文本长度，injectedCss 仅补充当前站点需要的样式。
+
+约束
+一个文档只处理这个站点；不改其他网站、内置停用列表、服务或阅读样式。upsert 完整替换同 ID 用户规则，必须保留仍需生效的字段；disable 只暂停已有用户规则。文档不包含 hash、generation、tab ID 或会话令牌。
+
+如果问题属于规则无法表达的事件或 runtime 行为，报告具体缺口，不编造已修好的规则。DOM 匹配和静态校验不能证明实际 hover 与译文排版已通过。
+</pre><footer class="foot"><span>设计示意 · 不连接真实网页</span><a href="agent-site-rules.html">当前流程</a></footer></main></body></html>
