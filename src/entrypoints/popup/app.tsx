@@ -22,7 +22,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col gap-3 p-3.5">
+      <div className="flex flex-col gap-2 p-3.5">
         <LanguageRow muted={needsApiKey} />
         {needsApiKey && <SetupPromptCard />}
         <section aria-label={i18n.t("popup.pageText")} className="flex flex-col gap-2">
