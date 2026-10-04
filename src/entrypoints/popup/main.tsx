@@ -22,6 +22,7 @@ import App from "./app"
 import { activeTabAtom, isTranslatableUrl, pageTranslationEnabledAtom, translationProgressAtom } from "./atoms"
 import "@/assets/styles/text-small.css"
 import "@/assets/styles/theme.css"
+import "./style.css"
 
 function HydrateAtoms({
   initialValues,
@@ -41,7 +42,7 @@ function HydrateAtoms({
 
 async function initApp() {
   const root = document.getElementById("root")!
-  root.className = "text-base antialiased w-[320px] bg-background text-foreground"
+  root.className = "text-base antialiased w-[320px] max-w-full bg-background text-foreground"
 
   const [configValue, [activeTab]] = await Promise.all([
     getLocalConfig(),

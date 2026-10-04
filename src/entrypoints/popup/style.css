@@ -1,0 +1,12 @@
+/* Preserve native scrolling and overlay behavior, scoped to the popup. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--rf-muted-foreground) 80%, var(--rf-background)) transparent;
+}
+
+@media (forced-colors: active) {
+  html {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}
