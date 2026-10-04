@@ -70,15 +70,15 @@ X 沿用 Read Frog 的来源轨道与播放器选择策略：读取真实字幕�
 
 默认无规则时显示原有三种类型的表单和「还没有排除的网站」；不显示「已保存」。当前布局见 Settings-Light-Video-More.html，历史空状态案例为 Settings-Video-Excluded-Empty.html。添加与删除立即保存。保存成功才更新已保存列表并清空输入；保存失败显示「保存失败，请重试。」，保留输入、类型和原列表，可再次点击「添加网站」重试。无效输入显示「请输入有效的网站规则。」；重复输入显示「这条规则已存在。」。设计状态为 Settings-Video-Excluded-Saved.html、Settings-Video-Excluded-Invalid.html、Settings-Video-Excluded-Duplicate.html、Settings-Video-Excluded-Save-Failed.html 和 Settings-Video-Excluded-Mobile.html；页面主说明为「匹配的网站不会启动视频翻译；不影响网页翻译。」。
 
-## 右侧工具组前端的图标与独立开关（2026-10-03）
+## 右侧工具组前端的两段式图标与独立开关（2026-10-05）
 
-播放器控件使用站点白名单，只支持 YouTube、youtube-nocookie、X 和 Twitter。YouTube（含 youtube-nocookie 嵌入域名）只在真实 watch / live / embed / shorts 播放器页面显示。支持的播放器将 Readomi 入口放在原生播放工具栏右侧工具组最前端，位于设置、画中画或全屏按钮之前；播放与时间保持原生位置。默认只显示可点击的 Readomi 图标和独立视频翻译开关，不显示当前预设名、下拉箭头或分隔线（Video-Player-Enabled.html、Video-Player-Disabled.html、Video-Player-X-Toolbar.html）。图标按钮的可访问名称沿用「调整字幕预设」，开关分别为「开启视频翻译」与「关闭视频翻译」，`aria-pressed` 对应当前状态，整个控件组的帮助为「仅对当前视频生效」。
+播放器控件使用站点白名单，只支持 YouTube、youtube-nocookie、X 和 Twitter。YouTube（含 youtube-nocookie 嵌入域名）只在真实 watch / live / embed / shorts 播放器页面显示。支持的播放器将 Readomi 入口放在原生播放工具栏右侧工具组最前端，位于设置、画中画或全屏按钮之前；播放与时间保持原生位置。入口使用紧凑的两段式工具项：左侧仅保留现有 terra 品牌图标，右侧为独立视频翻译开关，不显示 Readomi 字样、当前预设名或下拉箭头。两段共享极轻的 `#ffffff08` 底色，内部以 12 px 高的 `#ffffff18` 细竖线区分操作，外圆角 4 px，无外框与阴影；组 hover 和图标展开态使用 `#ffffff12`，键盘焦点以按钮内描边区分当前操作；工具项与后续原生按钮保留 8 px 边界间距。YouTube 工具项高 30 px，两个点击区域各宽 32 px，图标 19 px，开关轨道 26 × 14 px、滑块 10 px；X 高 28 px，点击区域各宽 30 px，图标 18 px，轨道 24 × 13 px、滑块 9 px。开启轨道与图标使用 terra `#b6533e`，关闭轨道为灰色 `#ffffff1c`、内描边 `#ffffff28`、滑块 `#ffffffb3`，开启滑块为 `#fff8ec`，滑块位置同时表达状态（Video-Player-Enabled.html、Video-Player-Disabled.html、Video-Player-X-Toolbar.html）。图标按钮的可访问名称沿用「调整字幕预设」，开关分别为「开启视频翻译」与「关闭视频翻译」，`aria-pressed` 对应当前状态；「仅对当前视频生效」只说明视频翻译开关的作用域，样式调整会保存并用于后续视频。
 
-开关不改写设置页的全局开关，只对当前视频生效；切换视频后使用全局设置和排除规则。匹配排除规则时开关处于关闭、禁用状态，按钮 title 为「此网站已排除」（Video-Player-Excluded.html）；默认工具栏仍仅显示图标与开关，不添加行内状态文案。Readomi 图标仍可打开字幕设置，面板在「字幕预设」标题下方显示轻量的「此网站已排除」状态提示，预设、字号和复位仍可调整（Video-Player-Excluded-Open.html）。关闭时还原播放器字幕及来源轨状态，控件可以在有字幕的视频上再次开启。
+开关不改写设置页的全局开关，只对当前视频生效；切换视频后使用全局设置和排除规则。仅关闭当前视频翻译时保留图标与关闭的开关，读者可以再次开启（Video-Player-Disabled.html）。匹配网站排除规则时，整个 Readomi 工具项及菜单完全隐藏，也不保留禁用入口或空占位，原生工具栏继续正常显示（Video-Player-Excluded.html）；若排除发生在菜单打开期间，也立即关闭并移除菜单。取消排除后，在支持播放器的原生工具栏恢复图标与开关，翻译状态依据全局设置重新判断，不恢复此前打开的菜单（Video-Player-Exclusion-Removed.html）。停用翻译时还原播放器字幕及来源轨状态。
 
-点击 Readomi 图标从入口向上、右对齐打开约 240 px 宽的细节面板，包含「字幕预设」、四列的清透 / 轻量 / 专注 / 影院、字号 − / 3% / +（固定模式显示 px） 与「字幕位置复位」（Video-Player-Preset-Open.html）。开关保持独立，不因打开菜单或修改外观而启动翻译。菜单面板呈现在字幕之上，避免字幕遮住按钮或文字；全屏时保留在全屏元素内（Video-Player-Fullscreen.html）。Esc、点击外部或再次点击图标关闭菜单。
+点击 Readomi 图标从入口向上、右对齐打开约 240 px 宽的细节面板，包含「字幕预设」、两列的清透 / 轻量 / 专注 / 影院、字号 − / 3% / +（固定模式显示 px） 与「字幕位置复位」（Video-Player-Preset-Open.html）。开关保持独立，不因打开菜单或修改外观而启动翻译。菜单面板呈现在字幕之上，避免字幕遮住按钮或文字；全屏时保留在全屏元素内（Video-Player-Fullscreen.html）。Esc、点击外部或再次点击图标关闭菜单。
 
-窄屏先收紧同排布局。Readomi 图标与独立开关一同显示，缩小间距、内边距与开关宽度，继续放在右侧设置 / 全屏等工具按钮之前；仍无法安全容纳时隐藏整个 Readomi 控件组，不使用悬浮回退（Video-Player-Mobile.html、Video-Player-X-Toolbar-Mobile.html、Video-Player-Toolbar-Crowded.html）。面板限制在播放器边界内、向上右对齐，收紧间距；极矮播放器内部滚动，让全部操作可达。面板顶边与播放器保持至少 8 px，底边与入口保持约 9 px；优先右对齐入口，接近窗口边界时钳制在播放器右边界内。
+窄屏先收紧同排布局。Readomi 图标与独立开关一同显示，工具项高 26 px、点击区域各宽 28 px、图标 18 px、开关轨道 23 × 13 px、滑块 9 px，继续放在右侧设置 / 全屏等工具按钮之前；仍无法安全容纳时隐藏整个 Readomi 控件组，不使用悬浮回退（Video-Player-Mobile.html、Video-Player-X-Toolbar-Mobile.html、Video-Player-Toolbar-Crowded.html）。面板限制在播放器边界内、向上右对齐，收紧间距；极矮播放器内部滚动，让全部操作可达。面板顶边与播放器保持至少 8 px，底边与入口保持约 9 px；优先右对齐入口，接近窗口边界时钳制在播放器右边界内。
 
 站点白名单只限制播放器工具栏，不删除或限制现有通用 HTML5 字幕翻译特性。其他网站包括 Bilibili 搜索预览与 Bilibili 主播放器都不显示 Readomi 图标、开关或预设面板（Video-Bilibili-Search-No-Controls.html、Video-Bilibili-Player-No-Controls.html）。有真实 HTML5 字幕轨道时仍可根据全局视频字幕设置自动翻译（Video-Player-HTML5-Toolbar.html）；没有字幕轨道时保留原生播放器，不注入字幕或控件。不增加按网站隐藏工具栏的弹窗开关或隐藏列表；视频翻译排除快捷开关单独说明如下。
 
@@ -99,7 +99,7 @@ Readomi 图标和开关与原生播放工具栏一起自然隐藏，不因功能
 
 ## 弹窗当前网站的视频翻译排除（2026-10-04）
 
-弹窗视频字幕模块在样式摘要下增加「此网站不翻译视频」开关，平时和已保存排除时只有左侧标签、右侧开关的一行，不增加内部边线，也不常驻域名、说明或管理入口。标签和开关的 title 包含完整 hostname 与「含子域名，仅影响视频翻译。」；相同内容保留在 sr-only 描述中，由开关的 aria-describedby 关联，使键盘和读屏操作可获得完整范围。长域名不占用可见行宽。模块与网页翻译及视频字幕全局开关独立，不隐藏播放器工具栏（Popup-Video.html、Popup-Video-Site-Excluded.html、Popup-Video-Site-Long-Hostname.html、Popup-Video-Site-Dark.html）。
+弹窗视频字幕模块在样式摘要下增加「此网站不翻译视频」开关，平时和已保存排除时只有左侧标签、右侧开关的一行，不增加内部边线，也不常驻域名、说明或管理入口。标签和开关的 title 包含完整 hostname 与「含子域名，仅影响视频翻译。」；相同内容保留在 sr-only 描述中，由开关的 aria-describedby 关联，使键盘和读屏操作可获得完整范围。长域名不占用可见行宽。模块与网页翻译及视频字幕全局开关独立；开启网站排除后隐藏 Readomi 播放器工具项及菜单，保留网站原生工具栏（Popup-Video.html、Popup-Video-Site-Excluded.html、Popup-Video-Site-Long-Hostname.html、Popup-Video-Site-Dark.html）。
 
 开关开启时将规范化的当前 hostname 添加为现有 `videoExcludedSites` 的域名规则，匹配该域名和其全部子域名；不限于播放器控件的站点白名单。开关选中状态来自当前完整 URL 是否被任意现有域名、通配符或正则规则排除。关闭只移除规范化后与当前 hostname 完全相等的域名规则，不自动删除更宽的域名或任何通配符、正则规则（Popup-Video-Site-Excluded.html）。
 
