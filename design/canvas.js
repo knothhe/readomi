@@ -6,6 +6,8 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Popup-Content-Fits.html", title: "弹窗 · 中文不可用页面 · 内容完整显示，无滚动条", x: 0, y: 150800, w: 320, h: 600 },
+    { file: "Popup-Content-Scroll.html", title: "弹窗 · 高度不足 · 保留滚动访问全部内容", x: 400, y: 150800, w: 320, h: 480 },
     { file: "Page-Hover-Chat-Ready.html", title: "悬停 · 聊天正文翻译 · 输入框保持空白", x: 0, y: 150050, w: 960, h: 620 },
     { file: "Page-Hover-Chat-Typing.html", title: "悬停 · 已聚焦输入框 · 反引号正常输入", x: 1040, y: 150050, w: 960, h: 620 },
     { file: "Popup-Clear-Translation-Cache-Default.html", title: "弹窗 · 全局清空缓存 · 默认", x: 0, y: 129000, w: 320, h: 556 },
