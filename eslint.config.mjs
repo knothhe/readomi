@@ -46,6 +46,14 @@ export default antfu({
   },
 }, [
   {
+    files: ["pnpm-workspace.yaml"],
+    rules: {
+      // Keep pnpm's defaults when upgrading; only require explicit build decisions.
+      "pnpm/yaml-enforce-settings": ["error", { requiredFields: ["allowBuilds"] }],
+    },
+  },
+], [
+  {
     files: ["**/*.ts", "**/*.tsx"],
     ignores: [".claude/**/*"],
     languageOptions: {

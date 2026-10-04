@@ -1,4 +1,5 @@
 import type { UILanguage } from "./ui-language-options"
+import { catalogs, messageIndexes } from "virtual:readomi-ui-messages"
 import { browser, i18n } from "#imports"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "./extension-context"
 
@@ -7,11 +8,6 @@ interface Message {
   placeholders?: Record<string, { content: string }>
 }
 
-const catalogs = import.meta.glob<Record<string, Message>>("../locales/*.yml", {
-  query: "?readomi-messages",
-  import: "default",
-  eager: true,
-})
 type Translate = (key: string, ...args: Array<number | Array<string | number> | undefined>) => string
 const browserTranslate = i18n.t.bind(i18n) as Translate
 let language: UILanguage = "browser"
@@ -52,9 +48,11 @@ const translate: Translate = (key, ...args) => {
   // Use its bundled messages instead of calling an API Chrome has removed.
   const locale = language === "browser" ? lastBrowserLocale : language
   const messageKey = key.replaceAll(".", "_")
-  const entry = catalogs[`../locales/${locale}.yml`]?.[messageKey] ?? catalogs[`../locales/${locale.split("-")[0]}.yml`]?.[messageKey] ?? catalogs["../locales/en.yml"]?.[messageKey]
-  if (!entry)
+  const index = messageIndexes[messageKey]
+  const compact = catalogs[locale]?.[index] ?? catalogs[locale.split("-")[0]]?.[index] ?? catalogs.en?.[index]
+  if (compact === undefined || compact === null)
     return browserMessage ?? (isExtensionContextValid() && typeof browser.i18n?.getMessage === "function" ? browserTranslate(key, ...args) : key)
+  const entry: Message = typeof compact === "string" ? { message: compact } : { message: compact[0], placeholders: compact[1] }
   const count = args.find(arg => typeof arg === "number") as number | undefined
   const substitutions = args.find(Array.isArray) as Array<string | number> | undefined
   const message = formatUIMessage(entry, substitutions ?? (count === undefined ? [] : [count]))

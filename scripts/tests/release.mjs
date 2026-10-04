@@ -74,6 +74,34 @@ it("previews without changing files, running checks or creating refs", (t) => {
   assert.equal(f.remoteRef(projectConfig.branch), f.initial)
 })
 
+it("allows pnpm configuration without workspace packages", (t) => {
+  const f = fixture(t)
+  const config = "allowBuilds:\n  esbuild: true\n  msw: false\n"
+  writeFileSync(join(f.work, "pnpm-workspace.yaml"), config)
+  f.git("add", "pnpm-workspace.yaml")
+  f.git("commit", "-m", "configure dependency builds")
+  const result = f.release("patch", "--apply", "--no-push", "--no-github-release")
+  assert.equal(result.status, 0, result.stderr)
+  assert.equal(f.version(), "1.2.1")
+  assert.equal(readFileSync(join(f.work, "pnpm-workspace.yaml"), "utf8"), config)
+  assert.equal(f.git("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"), "package.json")
+})
+
+it("rejects multi-package workspaces before changing versions or refs", (t) => {
+  const f = fixture(t)
+  writeFileSync(join(f.work, "pnpm-workspace.yaml"), "packages:\n  - packages/*\nallowBuilds:\n  esbuild: true\n")
+  f.git("add", "pnpm-workspace.yaml")
+  f.git("commit", "-m", "configure workspace packages")
+  const head = f.git("rev-parse", "HEAD")
+  const result = f.release("patch", "--apply", "--no-push", "--no-github-release")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /Workspace\/monorepo detected/)
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("rev-parse", "HEAD"), head)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
 it("commits only the version, creates an annotated tag and atomically pushes both refs", (t) => {
   const f = fixture(t, [[process.execPath, "-e", "if (require('./package.json').version !== '1.2.0') process.exit(3); console.log('Release check ran before bump')"]])
   const result = f.release("minor", "--apply")

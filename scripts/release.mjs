@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Single-package SemVer releases. Node.js 18+, Git; gh only when selected.
-// .mjs works in both CommonJS and ESM projects without extra dependencies.
+// .mjs works in both CommonJS and ESM projects.
 import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import process from "node:process"
 import { pathToFileURL } from "node:url"
+import { parse as parseYaml } from "yaml"
 
 function requireThat(condition, message) {
   if (!condition)
@@ -81,7 +82,8 @@ function versionFiles(config) {
   requireThat(["package.json", "VERSION"].includes(filename), "version_file must be package.json or VERSION.")
   requireThat(fs.existsSync(filename) && fs.lstatSync(filename).isFile(), `Missing or symlinked version file: ${filename}`)
   const pkg = fs.existsSync("package.json") ? readJSON("package.json") : null
-  requireThat(!pkg?.workspaces && !fs.existsSync("pnpm-workspace.yaml"), "Workspace/monorepo detected. Use the project release system or adapt explicitly; this helper supports one package.")
+  const workspace = fs.existsSync("pnpm-workspace.yaml") ? parseYaml(read("pnpm-workspace.yaml")) : null
+  requireThat(!pkg?.workspaces && !workspace?.packages?.length, "Workspace/monorepo detected. Use the project release system or adapt explicitly; this helper supports one package.")
   if (filename === "VERSION") {
     requireThat(pkg === null, "For a Node project use package.json as the source of truth, not VERSION.")
     const current = read(filename).trim()

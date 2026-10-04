@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { generateChromeMessages, parseMessagesText } from "@wxt-dev/i18n/build"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { browser, i18n } from "#imports"
 import { configSchema } from "@/types/config/config"
@@ -29,6 +31,15 @@ describe("interface language", () => {
     expect(i18n.t("uiLanguage.title")).not.toBe("uiLanguage.title")
     expect(i18n.t("options.service.sendsTo", ["example.com"])).toContain("example.com")
     expect(i18n.t("options.service.sendsTo", ["example.com"])).not.toContain("$1")
+  })
+
+  it.each(UI_LANGUAGES.filter(language => language !== "browser"))("preserves every %s message and substitution after compilation", (language) => {
+    const source = readFileSync(new URL(`../../locales/${language}.yml`, import.meta.url), "utf8")
+    const messages = generateChromeMessages(parseMessagesText(source, "YAML"))
+    const substitutions = ["$2.example.com", "12", "sample"]
+    setUILanguage(language)
+    for (const [key, entry] of Object.entries(messages))
+      expect(translate(key, substitutions), `${language}.${key}`).toBe(formatUIMessage(entry, substitutions))
   })
 
   it("returns to browser messages after a manual choice", () => {
