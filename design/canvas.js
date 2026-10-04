@@ -6,6 +6,9 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Page-Translation-Quality-Retry.html", title: "译文校验 · 自动重试 · 保留原文与等待标记", x: 0, y: 128050, w: 960, h: 620 },
+    { file: "Page-Translation-Quality-Failed.html", title: "译文校验 · 重试后仍失败 · 内联原因与重试", x: 1040, y: 128050, w: 960, h: 620 },
+    { file: "Page-Translation-Quality-Ready.html", title: "译文校验 · 完成 · 英语原文与中文译文", x: 2080, y: 128050, w: 960, h: 620 },
     { file: "Popup-Languages.html", title: "语言规则 · 弹窗 · 主要语言中文 / 第二语言英语", x: 0, y: 111640, w: 320, h: 556 },
     { file: "Popup-Languages-Keep.html", title: "语言规则 · 弹窗 · 中文保持原文", x: 400, y: 111640, w: 320, h: 556 },
     { file: "Popup-Languages-Menu.html", title: "语言规则 · 弹窗 · 第二语言选择展开", x: 800, y: 111640, w: 320, h: 556 },
@@ -243,6 +246,7 @@ window.READOMI_CANVAS = {
     { file: "Quality-Prompt-Default.html", title: "译文质量 · 恢复默认待应用", x: 0, y: 40600, w: 1120, h: 1460 },
   ],
   notes: [
+    { text: "译文校验：检测到语言方向或内容不符合要求时自动重试，原文保留并继续显示现有等待标记；重试仍失败时，复用内联失败原因与重试按钮。有效译文通过校验后才替换等待标记；不增加设置项。", x: 0, y: 127890, maxW: 3040 },
     { text: "语言规则：其他语言译成主要语言，主要语言内容译成第二语言；模型按段落或字幕句段自动识别。第二语言为保持原文或与主要语言同语种时，只显示一次原文；仅译文模式也保留这些原文。设置与弹窗共用规则，弹窗底栏保留多服务快速切换。翻译规则不套外框，控件与效果预览保留边框。", x: 0, y: 111440, maxW: 4000 },
     { text: "02  设置 · 主要语言与第二语言", x: 0, y: 112315 },
     { text: "03  混合语言网页 · 按段落生效", x: 0, y: 114660 },
