@@ -140,7 +140,9 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
       }
       const user = [...json.messages].reverse().find(message => message.role === "user")?.content ?? ""
       const system = json.messages.filter(message => message.role === "system").map(message => message.content).join("\n")
-      const segments = user
+      // Interpret the wire envelope, then translate source segments only.
+      const source = user.match(/<(readomi_source_\d+)>\n([\s\S]*)\n<\/\1>/)?.[2] ?? user
+      const segments = source
         .split(/\r?\n[ \t]*%%[ \t]*\r?\n/)
         .map(segment => responseSegment(segment, system, languageRules))
       const translated = segments

@@ -249,6 +249,7 @@ translation:
   noApiKey: Primero añade una clave API. Haz clic en el icono de Readomi en la barra de herramientas para configurarla.
   failed: Error de traducción
   retry: Reintentar
+  invalidResult: El idioma o el contenido de la traducción no cumple los requisitos. Vuelve a intentarlo.
   unknownError: Algo salió mal
 agentInstructions:
   noConfiguration: (aún ninguna)

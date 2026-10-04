@@ -20,7 +20,7 @@ export type HoverStreamReply
   = | { type: "partial", text: string }
     | { type: "target", targetCode: LangCodeISO6393 }
     | { type: "done", result: TranslationResult }
-    | { type: "error", message: string }
+    | { type: "error", message: string, name?: string }
 
 /**
  * Typography comes from the final text container. Streaming renderers call
@@ -79,7 +79,9 @@ export function requestHoverStream(data: HoverStreamRequest, options: PageTransl
           resolve(displayTranslationResult(reply.result))
         }
         else {
-          reject(new Error(reply.message))
+          const error = new Error(reply.message)
+          error.name = reply.name ?? "Error"
+          reject(error)
         }
       }
     }

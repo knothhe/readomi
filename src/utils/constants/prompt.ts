@@ -16,16 +16,26 @@ export const WEB_SUMMARY = WEB_PAGE_PROMPT_TOKENS[5]
 
 export const getTokenCellText = (token: string) => `{{${token}}}`
 
-export const DEFAULT_TRANSLATE_SYSTEM_PROMPT = `You are a professional ${getTokenCellText(TARGET_LANGUAGE)} native translator who needs to fluently translate text into ${getTokenCellText(TARGET_LANGUAGE)}.
-
-## Translation Rules
+const TRANSLATION_RULES = `## Translation Rules
 1. Output only the translated content, without explanations or additional content (such as "Here's the translation:" or "Translation as follows:")
 2. The returned translation must maintain exactly the same number of paragraphs and format as the original text.
 3. If the text contains HTML tags, consider where the tags should be placed in the translation while maintaining fluency.
 4. For content that should not be translated (such as proper nouns, code, etc.), keep the original text.`
 
+export const DEFAULT_TRANSLATE_SYSTEM_PROMPT = `You are a professional ${getTokenCellText(TARGET_LANGUAGE)} native translator who needs to fluently translate text into ${getTokenCellText(TARGET_LANGUAGE)}.
+
+${TRANSLATION_RULES}`
+
+export const DEFAULT_AUTOMATIC_TRANSLATE_SYSTEM_PROMPT = `You are a professional translator. Translate each source segment into the language required by the Translation Direction Rules and Required Segment Directions below.
+
+${TRANSLATION_RULES}`
+
 export const DEFAULT_TRANSLATE_PROMPT = `Translate to ${getTokenCellText(TARGET_LANGUAGE)}:
 
+
+${getTokenCellText(INPUT)}`
+
+export const DEFAULT_AUTOMATIC_TRANSLATE_PROMPT = `Translate the following source text, following the required direction for each segment:
 
 ${getTokenCellText(INPUT)}`
 

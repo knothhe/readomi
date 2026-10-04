@@ -249,6 +249,7 @@ translation:
   noApiKey: まず API キーを追加してください。ツールバーの Readomi アイコンをクリックすると設定できます。
   failed: 翻訳に失敗しました
   retry: 再試行
+  invalidResult: 翻訳の言語または内容が要件を満たしていません。再試行してください。
   unknownError: 問題が発生しました
 agentInstructions:
   noConfiguration: （まだありません）

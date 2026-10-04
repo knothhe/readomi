@@ -17,6 +17,7 @@ export async function executeTranslate<TContext>(
     context?: TContext
     signal?: AbortSignal
     customPromptsConfig?: Config["translate"]["customPromptsConfig"]
+    qualityRetry?: boolean
   },
 ) {
   const preparedText = prepareTranslationText(text)

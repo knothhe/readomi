@@ -249,6 +249,7 @@ translation:
   noApiKey: Hãy thêm API Key trước. Nhấp vào biểu tượng Readomi trên thanh công cụ để cài đặt.
   failed: Dịch thất bại
   retry: Thử lại
+  invalidResult: Ngôn ngữ hoặc nội dung bản dịch không đáp ứng yêu cầu. Vui lòng thử lại.
   unknownError: Đã xảy ra sự cố
 agentInstructions:
   noConfiguration: (chưa có)

@@ -57,4 +57,11 @@ describe("hover stream string boundary", () => {
     expect(onPartial).not.toHaveBeenCalled()
     expect(onTargetLanguage).not.toHaveBeenCalled()
   })
+
+  it("preserves the quality error name across the hover port for localized failure copy", async () => {
+    const { emit } = connectPort()
+    const pending = requestHoverStream(request, {})
+    emit({ type: "error", name: "TranslationQualityError", message: "The translation response selected the wrong language direction" })
+    await expect(pending).rejects.toMatchObject({ name: "TranslationQualityError" })
+  })
 })

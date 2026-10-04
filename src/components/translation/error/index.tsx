@@ -3,6 +3,9 @@ import { getRequestErrorMeta } from "@/utils/request/retry-policy"
 import { RetryButton } from "./retry-button"
 
 function describeError(error: Error): string {
+  if (error.name === "TranslationQualityError")
+    return i18n.t("translation.invalidResult")
+
   const { statusCode } = getRequestErrorMeta(error)
   const status = statusCode ? `${statusCode} ` : ""
   const message = error.message?.trim() || i18n.t("translation.unknownError")

@@ -11,6 +11,8 @@ export interface TranslationCacheRecord {
   translation: string
   action?: "translate" | "preserve"
   targetCode?: LangCodeISO6393
+  /** Only results audited under the current translation protocol are reusable. */
+  protocolVersion?: string
   createdAt: Date
 }
 
@@ -80,6 +82,10 @@ class CacheTable<T extends { key: string, createdAt: Date }> {
 
   async put(record: T): Promise<void> {
     await request((await this.store("readwrite")).put(record))
+  }
+
+  async delete(key: string): Promise<void> {
+    await request((await this.store("readwrite")).delete(key))
   }
 
   async clear(): Promise<void> {

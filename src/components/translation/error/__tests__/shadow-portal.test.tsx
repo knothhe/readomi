@@ -12,10 +12,12 @@ describe("translationError", () => {
     cleanup()
   })
 
-  function renderError({ statusCode, message }: { statusCode?: number, message: string }) {
+  function renderError({ statusCode, message, name }: { statusCode?: number, message: string, name?: string }) {
     const store = createStore()
     store.set(configAtom, DEFAULT_CONFIG)
     const error = statusCode ? attachRequestErrorMeta(new Error(message), { statusCode }) : new Error(message)
+    if (name)
+      error.name = name
 
     return render(
       <Provider store={store}>
@@ -37,5 +39,14 @@ describe("translationError", () => {
     const { container } = renderError({ message: "" })
 
     expect(container).toHaveTextContent("translation.unknownError")
+  })
+
+  it("localizes translation quality failures while retaining the retry action", () => {
+    const { container } = renderError({ name: "TranslationQualityError", message: "wrong-route: secondary, expected primary" })
+
+    expect(container).toHaveTextContent("translation.failed · translation.invalidResult")
+    expect(container).not.toHaveTextContent("wrong-route")
+    expect(screen.getByTitle("translation.invalidResult")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "translation.retry" })).toBeInTheDocument()
   })
 })

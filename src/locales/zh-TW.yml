@@ -249,6 +249,7 @@ translation:
   noApiKey: 尚未填入 API 金鑰。請點一下工具列上的Readomi圖示進行設定。
   failed: 翻譯失敗
   retry: 重試
+  invalidResult: 譯文的語言或內容不符合要求，請重試。
   unknownError: 發生錯誤
 agentInstructions:
   noConfiguration: （尚未設定）

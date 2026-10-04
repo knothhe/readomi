@@ -249,6 +249,7 @@ translation:
   noApiKey: Add an API key first. Click the Readomi icon in the toolbar to set it up.
   failed: Translation failed
   retry: Retry
+  invalidResult: The translation language or content does not meet the requirements. Please retry.
   unknownError: Something went wrong
 agentInstructions:
   noConfiguration: (none yet)

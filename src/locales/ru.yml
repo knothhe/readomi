@@ -249,6 +249,7 @@ translation:
   noApiKey: Сначала добавьте API-ключ. Нажмите на значок Readomi на панели инструментов, чтобы настроить его.
   failed: Не удалось перевести
   retry: Повторить
+  invalidResult: Язык или содержание перевода не соответствует требованиям. Повторите попытку.
   unknownError: Что-то пошло не так
 agentInstructions:
   noConfiguration: (пока нет)
