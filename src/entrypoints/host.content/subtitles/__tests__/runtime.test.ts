@@ -416,7 +416,7 @@ describe("local subtitle runtime", () => {
       const box = shadow.querySelector<HTMLElement>(".box")!
       expect(box.style.fontSize).toBe(fontSizeMode === "video" ? "76px" : "38px")
       const presets = {
-        clear: { fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 50 },
+        clear: { fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 0 },
         compact: { fontSize: 16, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 35 },
         study: { fontSize: 24, relativeFontSize: 3.75, backgroundEnabled: true, backgroundOpacity: 65 },
         cinema: { fontSize: 28, relativeFontSize: 4.5, backgroundEnabled: true, backgroundOpacity: 85 },

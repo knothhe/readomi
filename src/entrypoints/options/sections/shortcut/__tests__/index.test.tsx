@@ -61,8 +61,8 @@ describe("shortcut defaults", () => {
     })
     expect(store.get(configAtom)).toEqual(expected)
     expect(screen.getByLabelText("options.shortcut.togglePage")).toHaveAttribute("data-shortcut", DEFAULT_CONFIG.translate.page.shortcut)
-    expect(screen.getByLabelText("translationShortcuts.mode")).toHaveTextContent("shortcutKeySelector.unset")
-    expect(screen.getByLabelText("translationShortcuts.subtitles")).toHaveTextContent("shortcutKeySelector.unset")
+    expect(screen.getByLabelText("translationShortcuts.mode")).toHaveAttribute("data-shortcut", "Alt+M")
+    expect(screen.getByLabelText("translationShortcuts.subtitles")).toHaveAttribute("data-shortcut", "Alt+V")
   })
 
   it("clears a conflict and cancels an active recording when restoring", async () => {
@@ -82,7 +82,7 @@ describe("shortcut defaults", () => {
       expect(store.get(configAtom).features.modeShortcut).toBe(DEFAULT_CONFIG.features.modeShortcut)
       expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.modeShortcut).toBe(DEFAULT_CONFIG.features.modeShortcut)
     })
-    expect(mode()).toHaveTextContent("shortcutKeySelector.unset")
+    expect(mode()).toHaveAttribute("data-shortcut", "Alt+M")
   })
 
   it("preserves newer stored preferences while the settings page still shows older values", async () => {

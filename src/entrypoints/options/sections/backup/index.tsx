@@ -2,12 +2,12 @@ import type { Config } from "@/types/config/config"
 import { useSetAtom, useStore } from "jotai"
 import { useRef, useState } from "react"
 import { i18n } from "#imports"
-import { IconAlertCircle, IconArrowRight } from "@/components/icons"
+import { IconAlertCircle } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { configAtom, replaceConfigAtom } from "@/utils/atoms/config"
 import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "@/utils/config/backup"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
-import { SettingsSection } from "../../components/settings-section"
+import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
 
 export function BackupSection() {
   const store = useStore()
@@ -66,25 +66,27 @@ export function BackupSection() {
   const provider = pending?.config.providersConfig.find(p => p.id === pending.config.translate.providerId)
   return (
     <SettingsSection id="backup" title={i18n.t("configBackup.title")}>
-      <div className="settings-backup-content flex flex-col gap-6">
-        <div className="settings-backup-grid grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div className="settings-backup-card rounded-2xl border border-border bg-card p-7">
-            <BackupIcon direction="download" />
-            <h3 className="mt-5 text-[17px] font-semibold">{i18n.t("configBackup.backup")}</h3>
-            <Button variant="outline" className="mt-5 gap-2 text-xs" disabled={busy} onClick={download}>
-              {i18n.t("configBackup.export")}
-              <IconArrowRight className="size-3.5" aria-hidden="true" />
-            </Button>
-          </div>
-          <div className="settings-backup-card rounded-2xl border border-border bg-card p-7">
-            <BackupIcon direction="upload" />
-            <h3 className="mt-5 text-[17px] font-semibold">{i18n.t("configBackup.restore")}</h3>
-            <Button variant="outline" className="mt-5 gap-2 text-xs" disabled={busy} onClick={() => inputRef.current?.click()}>
-              {i18n.t("configBackup.import")}
-              <IconArrowRight className="size-3.5" aria-hidden="true" />
-            </Button>
-          </div>
-        </div>
+      <div className="settings-backup-content flex flex-col gap-5">
+        <SettingsGroup>
+          <SettingsRow
+            label={i18n.t("configBackup.export")}
+            description={i18n.t("configBackup.exportDescription")}
+            control={(
+              <Button variant="outline" size="sm" disabled={busy} onClick={download}>
+                {i18n.t("configBackup.exportAction")}
+              </Button>
+            )}
+          />
+          <SettingsRow
+            label={i18n.t("configBackup.import")}
+            description={i18n.t("configBackup.importDescription")}
+            control={(
+              <Button variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
+                {i18n.t("configBackup.importAction")}
+              </Button>
+            )}
+          />
+        </SettingsGroup>
         <input
           ref={inputRef}
           type="file"
@@ -101,7 +103,7 @@ export function BackupSection() {
           <p>{i18n.t("configBackup.description")}</p>
         </div>
         {pending && (
-          <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6">
+          <div className="flex flex-col gap-4 rounded-[10px] border border-border bg-card p-5">
             <p className="break-all text-sm font-medium">{i18n.t("configBackup.preview", [pending.name])}</p>
             <p className="rounded-lg border border-border bg-background p-4 font-mono text-xs leading-[1.7]">{i18n.t("configBackup.service", [provider?.name ?? "—", provider?.model ?? "—"])}</p>
             <div className="flex flex-wrap justify-end gap-2">
@@ -119,13 +121,5 @@ export function BackupSection() {
         {saved && <p role="status" className="text-xs text-success">{i18n.t("configBackup.saved")}</p>}
       </div>
     </SettingsSection>
-  )
-}
-
-function BackupIcon({ direction }: { direction: "download" | "upload" }) {
-  return (
-    <svg className="size-7 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={direction === "download" ? "M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4" : "M12 15V3m-4 4 4-4 4 4M4 16v4h16v-4"} />
-    </svg>
   )
 }

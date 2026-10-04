@@ -160,6 +160,8 @@ export async function configureService(page, extensionId, doc) {
     await edit.click()
   await section.getByLabel("Translation service configuration").fill(JSON.stringify(doc, null, 2))
   await section.getByRole("button", { name: "Apply", exact: true }).click()
+  // The saved summary remains visible while editing, so its status alone cannot confirm completion.
+  await section.locator(".settings-service-editor").waitFor({ state: "detached", timeout: 15_000 })
   await section.getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
 }
 

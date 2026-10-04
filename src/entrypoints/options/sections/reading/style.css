@@ -1,0 +1,83 @@
+.settings-reading-style-options {
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 3px 2px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rf-border) transparent;
+}
+
+.settings-reading-style-options::-webkit-scrollbar {
+  height: 5px;
+}
+
+.settings-reading-style-options::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: var(--rf-border);
+}
+
+.settings-reading-style-choice {
+  display: flex;
+  flex: 0 0 78px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 78px;
+  border-width: 1px;
+  border-radius: 7px;
+  padding: 12px 5px 10px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.settings-reading-more > summary,
+.settings-reading-custom > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  list-style: none;
+  color: var(--rf-muted-foreground);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-reading-more > summary {
+  padding: 12px 0;
+}
+
+.settings-reading-custom {
+  padding: 0 18px 18px;
+}
+
+.settings-reading-custom > summary {
+  padding: 12px 0;
+}
+
+.settings-reading-more > summary::-webkit-details-marker,
+.settings-reading-custom > summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-reading-more > summary::before,
+.settings-reading-custom > summary::before {
+  display: inline-block;
+  width: 9px;
+  content: "›";
+  font-size: 18px;
+}
+
+.settings-reading-more[open] > summary::before,
+.settings-reading-custom[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (max-width: 600px) {
+  .settings-reading-mode .settings-row-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

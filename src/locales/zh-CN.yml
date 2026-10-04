@@ -59,6 +59,11 @@ options:
   preview: 效果预览
   service:
     title: 翻译服务
+    currentTitle: 当前翻译服务
+    configMethod: 配置方式
+    headers: 自定义请求头
+    providerId: 服务 ID
+    temperature: 采样温度
     connectionDetails: 连接详情
     reconfigure: 重新配置
     empty:
@@ -107,13 +112,14 @@ options:
     title: 网页阅读
     whileTranslating: 翻译时
     allPages: 所有网页
+    moreOptions: 更多阅读选项
     mode:
       title: 显示方式
       bilingual: 双语对照
       translationOnly: 仅译文
     wordPrefixEmphasis:
       title: 英文词首加粗
-      description: 加粗每个英文单词的前半部分。
+      description: 应用于所有网页。
     style:
       title: 译文样式
       custom: 自定义 CSS
@@ -137,6 +143,7 @@ options:
         }
       css:
         save: 保存
+        cancel: 取消
         saved: 已保存
         validating: 检查中…
         valid: CSS 有效
@@ -393,12 +400,16 @@ manualService:
   bodyExample: 思考参数示例（请按模型文档调整）：
   bodyInvalid: 请输入有效的 JSON 对象（不能是数组、字符串或 null）。
 configBackup:
-  title: 配置备份
+  title: 备份
   backup: 备份
   restore: 恢复
   description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
   export: 导出配置
+  exportDescription: 保存当前设置。
+  exportAction: 导出
   import: 导入配置
+  importDescription: 从备份恢复设置。
+  importAction: 导入
   preview: 待导入：$1
   service: 翻译服务：$1 · $2
   apply: 替换全部设置
@@ -408,9 +419,9 @@ configBackup:
 features:
   title: 视频字幕
   hover: 悬停翻译
-  hoverDescription: 鼠标停在段落上，按快捷键页设置的触发方式翻译；再次触发恢复原文。
+  hoverDescription: 鼠标停在段落上，按触发键翻译。
   hoverStream: 悬停翻译流式渲染
-  hoverStreamDescription: 在正文原位逐步显示译文，减少等待；关闭后等待完整译文再显示。
+  hoverStreamDescription: 逐步显示译文，减少等待。
   video: 视频字幕翻译
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   mode: 字幕显示方式
@@ -422,6 +433,7 @@ videoSiteRules:
   add: 添加网站
   remove: 删除规则
   saved: 已保存
+  empty: 还没有排除的网站
   invalid: 请输入有效的网站规则。
   duplicate: 这条规则已存在。
   saveFailed: 保存失败，请重试。
@@ -445,7 +457,10 @@ videoTranslationControls:
 
 subtitleStyle:
   title: 字幕样式
+  controlsTitle: 翻译与样式
   moreOptions: 更多选项
+  custom: 自定义
+  customDescription: 自定义字号、背景与字幕位置
   autoSave: 调整会自动保存。
   adjust: 样式与位置
   presetDescription: 选择一个起点，再调整字号和背景。
@@ -454,15 +469,18 @@ subtitleStyle:
   backgroundDescription: 为字幕添加深色底，提升明亮画面中的可读性。
   backgroundOpacity: 背景深度
   backgroundOpacityDescription: 数值越高，背景越深。
+  backgroundZeroDescription: "0% 为无背景，数值越大背景越深。"
   lighterBackground: 减浅字幕背景
   darkerBackground: 加深字幕背景
   noBackground: 无背景
   backgroundSummary: $1% 背景
   preset: 字幕预设
   fontSize: 字幕字号
+  commonSizes: 常用字号
   fontDescription: 同时缩放原文和译文，原文略小。
   fontSizeMode: 字号方式
   relativeFontDescription: 字号为视频宽度的百分比，随窗口和全屏缩放。
+  fixedFontDescription: 字号保持固定，不随窗口缩放。
   fontSizeModes:
     video: 随视频窗口
     fixed: 固定字号
@@ -471,6 +489,8 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: 在视频上拖动字幕调整位置。
+  previewDragHint: 拖动字幕调整位置；方向键也可精调。
+  previewDragLabel: 可拖动的字幕
   adjustmentHint: 在视频上拖动字幕调整位置；点击播放器工具栏中的 Readomi 图标可调整样式和字号。调整会自动保存。
   smaller: 减小字号
   larger: 增大字号
@@ -480,7 +500,7 @@ subtitleStyle:
   presets:
     clear: 清透
     compact: 轻量
-    study: 学习
+    study: 专注
     cinema: 影院
   positions:
     top: 顶部
@@ -507,9 +527,13 @@ translationShortcuts:
   restoreDefaults: 恢复默认
   restoreFailed: 恢复失败，请重试。
   mode: 切换双语 / 仅译文
+  modeHint: 仅切换网页的显示方式。
   subtitles: 切换视频字幕
+  subtitlesHint: 开关当前页面的视频翻译。
   hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕开关只影响当前页面，需要先启用视频字幕翻译。
+  platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: 悬停翻译触发方式
+  hoverHelp: 触发方式说明
   hoverHint: 鼠标停在段落上，点按触发键并松开即可翻译；按住 500 毫秒也会自动翻译，同一次按键只触发一次。鼠标左键需要长按 500 毫秒。再次触发恢复原文；输入框中不触发，组合键或拖动鼠标会取消触发。
   alt: Option / Alt
   control: Control

@@ -171,7 +171,10 @@ export default function App() {
               }}
             >
               <NavigationIcon section={id} />
-              <span className="options-nav-label">{i18n.t(title)}</span>
+              <span className="options-nav-label">
+                <span className="options-nav-label-text">{i18n.t(title)}</span>
+                <span className="options-nav-label-size" aria-hidden="true">{i18n.t(title)}</span>
+              </span>
             </a>
           ))}
         </nav>

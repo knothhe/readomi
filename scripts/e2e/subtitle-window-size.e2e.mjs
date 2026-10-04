@@ -24,9 +24,8 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await configureService(settings, launched.extensionId, setupDocumentFor(service.origin))
   await settings.getByRole("link", { name: "Video subtitles", exact: true }).click()
   await settings.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
-  const moreOptions = settings.locator("summary").filter({ hasText: "More options" })
-  assert.equal(await moreOptions.evaluate(summary => summary.closest("details").open), false, "secondary subtitle controls start collapsed")
-  await moreOptions.click()
+  const customOptions = settings.locator(".subtitle-custom > summary")
+  assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "custom subtitle controls start collapsed")
   const modes = settings.getByRole("group", { name: "Size mode", exact: true })
   assert.equal(await modes.getByRole("button", { name: "Scale with video", exact: true }).getAttribute("aria-pressed"), "true")
   await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.videoSubtitles)
@@ -132,9 +131,9 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await cdp.send("DOM.enable")
   await cdp.send("CSS.enable")
   const presetStyles = [
-    { preset: "clear", label: "Transparent", fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 50 },
+    { preset: "clear", label: "Transparent", fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 0 },
     { preset: "compact", label: "Compact", fontSize: 16, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 35 },
-    { preset: "study", label: "Study", fontSize: 24, relativeFontSize: 3.75, backgroundEnabled: true, backgroundOpacity: 65 },
+    { preset: "study", label: "Focus", fontSize: 24, relativeFontSize: 3.75, backgroundEnabled: true, backgroundOpacity: 65 },
     { preset: "cinema", label: "Cinema", fontSize: 28, relativeFontSize: 4.5, backgroundEnabled: true, backgroundOpacity: 85 },
   ]
   // The dock and preset panel use a closed shadow root. CDP reads the
@@ -257,7 +256,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   assert.equal(initialStyle.fontSize, 20)
   assert.equal(initialStyle.relativeFontSize, 3)
   assert.equal(initialStyle.backgroundEnabled, false)
-  assert.equal(initialStyle.backgroundOpacity, 50)
+  assert.equal(initialStyle.backgroundOpacity, 0)
   for (const width of [320, 960, 640]) {
     await page.locator("#player").evaluate((player, width) => {
       player.style.width = `${width}px`
@@ -296,8 +295,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   })
   await waitFor(state => state.fontSize === 20 && state.translation === ready.translation)
   await settings.reload()
-  assert.equal(await moreOptions.evaluate(summary => summary.closest("details").open), false, "reloading settings restores the compact presentation")
-  await moreOptions.click()
+  assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "reloading settings restores the compact presentation")
   assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Fixed size", exact: true }).getAttribute("aria-pressed"), "true")
   await settings.setViewportSize({ width: 390, height: 900 })
   assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Fixed size", exact: true }).isVisible(), true)
@@ -324,6 +322,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
     throw new Error(`Subtitle style was not saved: expected ${JSON.stringify(expected)}, received ${JSON.stringify(style)}`)
   }
 
+  await customOptions.click()
   // Exercise native range keyboard interaction and precise numeric entry.
   // Each mode owns its saved size, so switching never rewrites the other value.
   const sizeSlider = settings.getByRole("slider", { name: "Subtitle size", exact: true })
@@ -361,41 +360,42 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
   await waitForStyle({ fontSizeMode: "video", relativeFontSize: 4.25, fontSize: 18 })
 
-  const backgroundSwitch = settings.getByRole("switch", { name: "Subtitle background", exact: true })
   const depthSlider = settings.getByRole("slider", { name: "Background depth", exact: true })
   const depthInput = settings.getByRole("spinbutton", { name: "Background depth", exact: true })
-  assert.equal(await depthSlider.count(), 0, "background depth is hidden when the background is off")
-  assert.equal(await depthInput.count(), 0)
-  await backgroundSwitch.click()
-  await waitForPreview(await waitForStyle({ backgroundEnabled: true, backgroundOpacity: 50 }))
-  await waitFor(state => Math.abs(colorOpacity(state.backgroundColor) - 0.5) < 0.01 && state.translation === ready.translation)
-  assert.equal(await depthSlider.getAttribute("step"), "5")
+  assert.equal(await settings.getByRole("switch", { name: "Subtitle background", exact: true }).count(), 0, "depth replaces the separate background switch")
+  assert.equal(await depthSlider.isVisible(), true, "zero depth retains the same custom controls")
+  assert.equal(await depthInput.inputValue(), "0")
+  assert.equal(await depthSlider.getAttribute("step"), "1")
+  const previewPadding = await settings.locator(".subtitle-preview-caption").evaluate(caption => getComputedStyle(caption).padding)
+  const panelHeight = (await settings.locator(".subtitle-settings-group").boundingBox()).height
   await depthSlider.press("ArrowRight")
-  await waitForStyle({ backgroundEnabled: true, backgroundOpacity: 55 })
+  await waitForStyle({ backgroundEnabled: true, backgroundOpacity: 1 })
   await depthInput.fill("72")
   await depthInput.press("Enter")
   await waitForPreview(await waitForStyle({ backgroundEnabled: true, backgroundOpacity: 72 }))
   await waitFor(state => Math.abs(colorOpacity(state.backgroundColor) - 0.72) < 0.01 && state.translation === ready.translation)
-  await backgroundSwitch.click()
-  await waitForPreview(await waitForStyle({ backgroundEnabled: false, backgroundOpacity: 72 }))
-  assert.equal(await depthSlider.count(), 0, "turning the background off removes its depth controls")
-  assert.equal(await depthInput.count(), 0)
+  await depthSlider.press("Home")
+  await waitForPreview(await waitForStyle({ backgroundEnabled: false, backgroundOpacity: 0 }))
+  assert.equal(await depthSlider.isVisible(), true, "no-background depth keeps the slider visible")
+  assert.equal(await depthInput.isVisible(), true)
+  assert.equal(await settings.locator(".subtitle-preview-caption").evaluate(caption => getComputedStyle(caption).padding), previewPadding, "background fill keeps preview padding fixed")
+  assert.ok(Math.abs((await settings.locator(".subtitle-settings-group").boundingBox()).height - panelHeight) < 1, "background depth does not insert or remove settings rows")
   await waitFor(state => colorOpacity(state.backgroundColor) === 0 && state.translation === ready.translation)
-  await backgroundSwitch.click()
+  await depthInput.fill("72")
+  await depthInput.press("Enter")
   await waitForPreview(await waitForStyle({ backgroundEnabled: true, backgroundOpacity: 72 }))
   await waitFor(state => Math.abs(colorOpacity(state.backgroundColor) - 0.72) < 0.01 && state.translation === ready.translation)
   await settings.reload()
+  assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "reload returns to the compact main list")
+  await customOptions.click()
   assert.equal(await sizeInput.inputValue(), "4.25")
-  assert.equal(await depthInput.inputValue(), "72", "turning the background off and on preserves its saved depth")
-  assert.equal(await backgroundSwitch.getAttribute("aria-checked"), "true")
-  assert.equal(await moreOptions.evaluate(summary => summary.closest("details").open), false)
+  assert.equal(await depthInput.inputValue(), "72", "reloading restores saved background depth")
   assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "narrow controls fit without horizontal overflow")
   await settings.setViewportSize({ width: 1280, height: 900 })
   await waitForPreview(await storedConfig(context).then(config => config.features.subtitleStyle))
   await settings.screenshot({ path: "/tmp/readomi-subtitle-settings-desktop.png", fullPage: true })
 
   const position = { x: 50, y: 55 }
-  await moreOptions.click()
   await settings.getByRole("group", { name: "Subtitle position", exact: true }).getByRole("button", { name: "Center", exact: true }).click()
   await waitForStyle({ position })
   const presets = settings.getByRole("group", { name: "Subtitle preset", exact: true })

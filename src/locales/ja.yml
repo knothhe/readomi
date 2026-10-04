@@ -59,6 +59,11 @@ options:
   preview: プレビュー
   service:
     title: 翻訳サービス
+    currentTitle: 現在の翻訳サービス
+    configMethod: 設定方法
+    headers: カスタムヘッダー
+    providerId: サービス ID
+    temperature: サンプリング温度
     connectionDetails: 接続の詳細
     reconfigure: 再設定
     empty:
@@ -107,13 +112,14 @@ options:
     title: ウェブ閲覧
     whileTranslating: 翻訳時
     allPages: すべてのページ
+    moreOptions: その他の読書設定
     mode:
       title: 表示
       bilingual: バイリンガル
       translationOnly: 翻訳のみ
     wordPrefixEmphasis:
       title: 英単語の前半を太字に
-      description: 英単語ごとに前半を太字にします。
+      description: すべてのウェブページに適用します。
     style:
       title: 翻訳のスタイル
       custom: カスタム CSS
@@ -137,6 +143,7 @@ options:
         }
       css:
         save: 保存
+        cancel: キャンセル
         saved: 保存済み
         validating: 確認中…
         valid: CSS は有効です
@@ -393,12 +400,16 @@ manualService:
   bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
-  title: Configuration backup
+  title: バックアップ
   backup: バックアップ
   restore: 復元
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
+  exportDescription: 現在の設定を保存します。
+  exportAction: エクスポート
   import: Import configuration
+  importDescription: バックアップから設定を復元します。
+  importAction: インポート
   preview: "Ready to import: $1"
   service: "Translation service: $1 · $2"
   apply: Replace all settings
@@ -408,9 +419,9 @@ configBackup:
 features:
   title: 動画字幕
   hover: Hover translation
-  hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverDescription: 段落にカーソルを合わせ、トリガーキーを押すと翻訳します。
   hoverStream: ホバー翻訳のストリーミング表示
-  hoverStreamDescription: 本文内で訳文を順次表示し、待ち時間を減らします。オフにすると翻訳完了後に表示します。
+  hoverStreamDescription: 訳文を順次表示し、待ち時間を減らします。
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
@@ -422,6 +433,7 @@ videoSiteRules:
   add: Add site
   remove: Remove rule
   saved: Saved
+  empty: 除外したウェブサイトはまだありません
   invalid: Enter a valid site rule.
   duplicate: This rule already exists.
   saveFailed: Could not save. Please try again.
@@ -445,7 +457,10 @@ videoTranslationControls:
 
 subtitleStyle:
   title: Subtitle style
+  controlsTitle: 翻訳とスタイル
   moreOptions: More options
+  custom: カスタマイズ
+  customDescription: 字幕のサイズ・背景・位置をカスタマイズ
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -454,15 +469,18 @@ subtitleStyle:
   backgroundDescription: Add a dark backdrop to keep subtitles readable in bright scenes.
   backgroundOpacity: Background depth
   backgroundOpacityDescription: Higher values make the background darker.
+  backgroundZeroDescription: "0%で背景なし。数値が大きいほど背景が濃くなります。"
   lighterBackground: Lighten subtitle background
   darkerBackground: Darken subtitle background
   noBackground: No background
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  commonSizes: よく使うサイズ
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  fixedFontDescription: ウィンドウの大きさを変えても文字サイズは固定です。
   fontSizeModes:
     video: Scale with video
     fixed: Fixed size
@@ -471,6 +489,8 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
+  previewDragHint: 字幕をドラッグして位置を調整できます。矢印キーで微調整もできます。
+  previewDragLabel: ドラッグできる字幕
   adjustmentHint: 動画上で字幕をドラッグして位置を調整できます。プレーヤーのツールバーにある Readomi アイコンをクリックすると、スタイルと文字サイズを変更できます。変更は自動的に保存されます。
   smaller: Decrease subtitle size
   larger: Increase subtitle size
@@ -480,7 +500,7 @@ subtitleStyle:
   presets:
     clear: Transparent
     compact: Compact
-    study: Study
+    study: 集中
     cinema: Cinema
   positions:
     top: Top
@@ -507,9 +527,13 @@ translationShortcuts:
   restoreDefaults: デフォルトに戻す
   restoreFailed: デフォルトに戻せませんでした。もう一度お試しください。
   mode: Switch bilingual / translation only
+  modeHint: ウェブページの翻訳表示のみを切り替えます。
   subtitles: Toggle video subtitles
+  subtitlesHint: このページの動画翻訳をオン・オフします。
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  platformHint: macOSではOption（⌥）、Windows / LinuxではAltを使います。
   hover: Hover translation trigger
+  hoverHelp: 翻訳の操作方法
   hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
   alt: Option / Alt
   control: Control

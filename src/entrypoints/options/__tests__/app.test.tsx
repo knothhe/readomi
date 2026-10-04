@@ -83,8 +83,14 @@ function selectValue(trigger: HTMLElement, value: string) {
   fireEvent.click(option!)
 }
 
+function chooseServiceMethod(method: "manual" | "agent") {
+  if (!screen.queryByRole("button", { name: `manualService.${method}` }))
+    fireEvent.click(screen.getByRole("button", { name: "options.service.edit" }))
+  fireEvent.click(screen.getByRole("button", { name: `manualService.${method}` }))
+}
+
 function openSubtitleMore() {
-  const summary = screen.getByText("subtitleStyle.moreOptions")
+  const summary = screen.getByText("subtitleStyle.custom")
   const details = summary.closest("details")!
   if (!details.open)
     fireEvent.click(summary)
@@ -107,43 +113,33 @@ describe("settings page", () => {
     vi.unstubAllGlobals()
   })
 
-  it("keeps the subtitle controls compact and opens more options without changing saved settings", async () => {
+  it("keeps size mode visible while custom adjustments open without changing saved settings", async () => {
     const { container, store } = await renderSettings(configured, "features")
-    const details = container.querySelector<HTMLDetailsElement>(".subtitle-more")!
-    const summary = screen.getByText("subtitleStyle.moreOptions")
+    const details = container.querySelector<HTMLDetailsElement>(".subtitle-custom")!
+    const summary = screen.getByText("subtitleStyle.custom")
     const saved = store.get(configAtom).features.subtitleStyle
     expect(details).not.toHaveAttribute("open")
     expect(summary.closest("summary")).toBeVisible()
-    expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toBeVisible()
-    expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toBeVisible()
-    expect(within(screen.getByRole("group", { name: "subtitleStyle.preset" })).getAllByRole("button")).toHaveLength(4)
-    expect(screen.getByRole("switch", { name: "subtitleStyle.background" })).toBeVisible()
-    expect(screen.queryByRole("slider", { name: "subtitleStyle.backgroundOpacity" })).toBeNull()
-    expect(screen.queryByRole("spinbutton", { name: "subtitleStyle.backgroundOpacity" })).toBeNull()
-    expect(screen.queryByText("1.25 %")).toBeNull()
-    expect(screen.queryByText("12.5 %")).toBeNull()
-    const mode = within(details).getByRole("button", { name: "subtitleStyle.fontSizeModes.video", hidden: true })
-    const position = within(details).getByRole("button", { name: "subtitleStyle.positions.bottom", hidden: true })
-    const reset = within(details).getByRole("button", { name: "subtitleStyle.reset", hidden: true })
-    expect(mode).not.toBeVisible()
-    expect(position).not.toBeVisible()
-    expect(reset).not.toBeVisible()
-    expect(screen.getAllByText("subtitleStyle.fontSizeModes.video").some(label => !details.contains(label))).toBe(true)
-
-    fireEvent.click(summary)
-    expect(details).toHaveAttribute("open")
+    const mode = screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" })
     expect(mode).toBeVisible()
-    expect(position).toBeVisible()
-    expect(reset).toBeVisible()
+    expect(details.contains(mode)).toBe(false)
+    expect(within(screen.getByRole("group", { name: "subtitleStyle.preset" })).getAllByRole("button")).toHaveLength(4)
+    expect(screen.queryByRole("switch", { name: "subtitleStyle.background" })).toBeNull()
+    expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).not.toBeVisible()
+    expect(screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" })).not.toBeVisible()
+    openSubtitleMore()
+    expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toBeVisible()
+    expect(screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" })).toHaveValue("0")
+    expect(screen.getByRole("group", { name: "subtitleStyle.position" })).toBeVisible()
     expect(store.get(configAtom).features.subtitleStyle).toEqual(saved)
     fireEvent.click(summary)
     expect(details).not.toHaveAttribute("open")
-    expect(mode).not.toBeVisible()
+    expect(mode).toBeVisible()
     expect(store.get(configAtom).features.subtitleStyle).toEqual(saved)
     expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toEqual(saved)
   })
 
-  it("previews manual subtitle sizing and backgrounds, preserves a dragged position and restores the defaults", async () => {
+  it("previews manual subtitle sizing and backgrounds, and resets only position", async () => {
     const position = { x: 60, y: 65 }
     const custom: Config = { ...configured, features: { ...configured.features, subtitleMode: "translationOnly", subtitleStyle: { ...DEFAULT_SUBTITLE_STYLE, fontSize: 30, relativeFontSize: 4.25, fontSizeMode: "fixed", position } } }
     const { store } = await renderSettings(custom, "features")
@@ -157,7 +153,7 @@ describe("settings page", () => {
     fireEvent.click(presets.getByRole("button", { name: "subtitleStyle.presets.compact" }))
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.compact, preset: "compact", fontSizeMode: "fixed", position }))
     expect(presets.getByRole("button", { name: "subtitleStyle.presets.compact" })).toHaveAttribute("aria-pressed", "true")
-    expect(screen.queryByText("subtitleStyle.modified")).toBeNull()
+    expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     const fontSizeSlider = screen.getByRole("slider", { name: "subtitleStyle.fontSize" })
     const fontSizeInput = screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })
     expect(fontSizeSlider).toHaveAttribute("min", "8")
@@ -185,34 +181,33 @@ describe("settings page", () => {
     expect(screen.getByText("subtitleStyle.modified")).toBeInTheDocument()
     expect(presets.getByRole("button", { name: "subtitleStyle.presets.compact" })).toHaveAttribute("aria-pressed", "false")
 
-    const background = screen.getByRole("switch", { name: "subtitleStyle.background" })
     const depthSlider = screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" })
     const depthInput = screen.getByRole("spinbutton", { name: "subtitleStyle.backgroundOpacity" })
-    expect(background).toHaveAttribute("aria-checked", "true")
     expect(depthSlider).toHaveAttribute("min", "0")
     expect(depthSlider).toHaveAttribute("max", "100")
-    expect(depthSlider).toHaveAttribute("step", "5")
+    expect(depthSlider).toHaveAttribute("step", "1")
     fireEvent.change(depthInput, { target: { value: "72" } })
     expect(store.get(configAtom).features.subtitleStyle.backgroundOpacity).toBe(35)
     fireEvent.blur(depthInput)
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.backgroundOpacity).toBe(72))
     expect(caption.style.backgroundColor).toBe("rgba(15, 20, 35, 0.72)")
-    fireEvent.click(background)
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.backgroundEnabled).toBe(false))
-    expect(screen.queryByRole("slider", { name: "subtitleStyle.backgroundOpacity" })).toBeNull()
-    expect(screen.queryByRole("spinbutton", { name: "subtitleStyle.backgroundOpacity" })).toBeNull()
-    expect(store.get(configAtom).features.subtitleStyle.backgroundOpacity).toBe(72)
+    const captionPadding = caption.style.padding
+    fireEvent.change(depthSlider, { target: { value: "0" } })
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toMatchObject({ backgroundEnabled: false, backgroundOpacity: 0 }))
+    expect(screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" })).toBe(depthSlider)
+    expect(depthInput).toHaveValue(0)
     expect(caption.style.backgroundColor).toBe("transparent")
-    fireEvent.click(background)
+    expect(caption.style.padding).toBe(captionPadding)
+    fireEvent.change(depthInput, { target: { value: "72" } })
+    fireEvent.blur(depthInput)
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.backgroundEnabled).toBe(true))
-    expect(screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" })).toBeEnabled()
-    expect(screen.getByRole("spinbutton", { name: "subtitleStyle.backgroundOpacity" })).toHaveValue(72)
+    expect(depthInput).toHaveValue(72)
     expect(caption.style.backgroundColor).toBe("rgba(15, 20, 35, 0.72)")
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toMatchObject({ fontSize: 80, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 72, position }))
     fireEvent.click(within(screen.getByRole("group", { name: "subtitleStyle.position" })).getByRole("button", { name: "subtitleStyle.positions.top" }))
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.position).toEqual({ x: 50, y: 18 }))
-    fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.reset" }))
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(DEFAULT_CONFIG.features.subtitleStyle))
+    fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.resetPosition" }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toMatchObject({ fontSize: 80, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 72, position: { x: 50, y: 88 } }))
     expect(store.get(configAtom).features.subtitleMode).toBe("translationOnly")
     expect(store.get(configAtom).translate.mode).toBe(custom.translate.mode)
   })
@@ -232,8 +227,9 @@ describe("settings page", () => {
       expect(caption.style.fontSize).toBe(`${resolveSubtitleFontSize(expectedStyle)}px`)
       expect(caption.style.backgroundColor).toBe(expectedStyle.backgroundEnabled ? `rgba(15, 20, 35, ${expectedStyle.backgroundOpacity / 100})` : "transparent")
       expect(presetControl.getByRole("button", { name: `subtitleStyle.presets.${preset}` })).toHaveAttribute("aria-pressed", "true")
-      expect(screen.queryByText("subtitleStyle.modified")).toBeNull()
+      expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     }
+    openSubtitleMore()
     const manualSize = fontSizeMode === "video" ? 5.5 : 38
     fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: String(manualSize) } })
     const manualStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.cinema, preset: "cinema" as const, fontSizeMode, position, ...(fontSizeMode === "video" ? { relativeFontSize: manualSize } : { fontSize: manualSize }) }
@@ -249,7 +245,7 @@ describe("settings page", () => {
     expect(screen.getByText("subtitleStyle.previewTranslation").parentElement).toBe(caption)
     expect(caption.style.fontSize).toBe(`${resolveSubtitleFontSize(nextStyle)}px`)
     expect(presetControl.getByRole("button", { name: "subtitleStyle.presets.cinema" })).toHaveAttribute("aria-pressed", "true")
-    expect(screen.queryByText("subtitleStyle.modified")).toBeNull()
+    expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     fireEvent.click(modes.getByRole("button", { name: `subtitleStyle.fontSizeModes.${fontSizeMode}` }))
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(manualStyle))
     expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(manualSize)
@@ -286,7 +282,7 @@ describe("settings page", () => {
       width = 640
       act(() => resizePreview())
       expect(caption.style.fontSize).toBe("19.2px")
-      fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.larger" }))
+      fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "3.25" } })
       await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(3.25))
       expect(caption.style.fontSize).toBe("20.8px")
       const relativeInput = screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })
@@ -297,7 +293,7 @@ describe("settings page", () => {
       expect(caption.style.fontSize).toBe("26.4px")
       fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.fixed" }))
       await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.fontSizeMode).toBe("fixed"))
-      expect(screen.getByText("subtitleStyle.fontDescription")).toBeInTheDocument()
+      expect(screen.getByText("subtitleStyle.fixedFontDescription")).toBeInTheDocument()
       width = 320
       act(() => resizePreview())
       expect(caption.style.fontSize).toBe("20px")
@@ -434,8 +430,8 @@ describe("settings page", () => {
     fireEvent.click(recorder)
     fireEvent.keyDown(document, { key: "e", altKey: true })
     expect(screen.getByRole("alert")).toHaveTextContent("translationShortcuts.conflict")
-    expect(store.get(configAtom).features.modeShortcut).toBe("")
-    expect(recorder).toHaveTextContent("shortcutKeySelector.unset")
+    expect(store.get(configAtom).features.modeShortcut).toBe("Alt+M")
+    expect(recorder).toHaveTextContent("M")
     await act(async () => {
       await Promise.resolve()
     })
@@ -514,10 +510,11 @@ describe("settings page", () => {
     await waitFor(async () => expect((await storage.getItem<Config>("local:config"))?.appearance.mode).toBe("system"))
   })
 
-  it("previews each reading group above its settings and follows each change", async () => {
+  it("previews reading changes and retains them across navigation", async () => {
     stubHighlightRegistry()
     const { store } = await renderSettings(configured, "reading")
     const translationPreview = within(document.getElementById("reading")!).getByText(/^Reading and experience train your model of the world\.$/).parentElement!
+    fireEvent.click(screen.getByText("options.reading.moreOptions"))
     const englishPreview = screen.getByText(/Even if you forget what you read/)
 
     fireEvent.click(screen.getByRole("switch", { name: "features.hover" }))
@@ -548,7 +545,8 @@ describe("settings page", () => {
   it("saves hover streaming independently and preserves it while hover translation is disabled", async () => {
     const config: Config = { ...configured, features: { ...configured.features, hoverTranslation: true } }
     const { store } = await renderSettings(config, "reading")
-    const streaming = screen.getByRole("switch", { name: "features.hoverStream" })
+    fireEvent.click(screen.getByText("options.reading.moreOptions"))
+    let streaming = screen.getByRole("switch", { name: "features.hoverStream" })
     const hover = screen.getByRole("switch", { name: "features.hover" })
 
     expect(streaming).toBeChecked()
@@ -560,13 +558,12 @@ describe("settings page", () => {
 
     fireEvent.click(hover)
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.hoverTranslation).toBe(false))
-    expect(streaming).toBeDisabled()
-    expect(streaming).not.toBeChecked()
-    fireEvent.click(streaming)
+    expect(screen.queryByRole("switch", { name: "features.hoverStream" })).toBeNull()
     expect(store.get(configAtom).features.hoverStream).toBe(false)
 
     fireEvent.click(hover)
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.hoverTranslation).toBe(true))
+    streaming = screen.getByRole("switch", { name: "features.hoverStream" })
     expect(streaming).toBeEnabled()
     expect(streaming).not.toBeChecked()
     fireEvent.click(streaming)
@@ -575,12 +572,10 @@ describe("settings page", () => {
     expect(store.get(configAtom).providersConfig).toEqual(config.providersConfig)
   })
 
-  it("keeps the default hover streaming preference selected while hover translation is off", async () => {
+  it("retains the default hover streaming preference while its control is hidden", async () => {
     const { store } = await renderSettings(configured, "reading")
-    const streaming = screen.getByRole("switch", { name: "features.hoverStream" })
-    expect(streaming).toBeChecked()
-    expect(streaming).toBeDisabled()
-    fireEvent.click(streaming)
+    fireEvent.click(screen.getByText("options.reading.moreOptions"))
+    expect(screen.queryByRole("switch", { name: "features.hoverStream" })).toBeNull()
     expect(store.get(configAtom).features.hoverStream).toBe(true)
   })
 
@@ -618,9 +613,11 @@ describe("settings page", () => {
 
   it("opens Agent Setup again after configuration and preserves a draft on repeated clicks", async () => {
     const { store } = await renderSettings(configured)
+    expect(screen.queryByRole("button", { name: "manualService.agent" })).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "options.service.edit" }))
     const agent = screen.getByRole("button", { name: "manualService.agent" })
     const manual = screen.getByRole("button", { name: "manualService.manual" })
-    expect(agent).toHaveAttribute("aria-pressed", "false")
+    expect(agent).toHaveAttribute("aria-pressed", "true")
     expect(manual).toHaveAttribute("aria-pressed", "false")
 
     fireEvent.click(agent)
@@ -640,8 +637,8 @@ describe("settings page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "options.service.cancel" }))
     expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
-    expect(agent).toHaveAttribute("aria-pressed", "false")
-    fireEvent.click(agent)
+    expect(screen.queryByRole("button", { name: "manualService.agent" })).toBeNull()
+    chooseServiceMethod("agent")
     expect(JSON.parse(editor().value).model).toBe("gpt-6-luna")
     expect(store.get(configAtom)).toEqual(configured)
     expect(await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)).toEqual(configured)
@@ -677,7 +674,7 @@ describe("settings page", () => {
     expect(service).toMatchObject({ provider: "deepseek", apiKey: "sk-test", connectionCheck: { ok: true, checkedAt: 1_000 } })
     expect(vi.mocked(checkConnection).mock.calls[0][0]).toMatchObject({ provider: "deepseek", apiKey: "sk-test" })
 
-    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+    chooseServiceMethod("agent")
     expect(JSON.parse(editor().value)).toEqual({ type: "deepseek", apiKey: "sk-…test", model: "deepseek-flash" })
     expect(applyButton()).toBeDisabled()
     expect(screen.getByRole("button", { name: "options.service.copyInstructions" })).toBeInTheDocument()
@@ -774,7 +771,7 @@ describe("manual service configuration", () => {
   })
   it("keeps an unsaved form when switching sections and follows hash navigation", async () => {
     await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "draft-model" } })
     fireEvent.click(screen.getByRole("link", { name: "options.reading.title" }))
     expect(screen.queryByRole("button", { name: "manualService.save" })).toBeNull()
@@ -788,7 +785,7 @@ describe("manual service configuration", () => {
   })
   it("fetches only on click, allows selecting and manually overriding a model without saving", async () => {
     const { store } = await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     expect(fetchProviderModels).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
     const select = await screen.findByLabelText("modelDiscovery.select")
@@ -800,7 +797,7 @@ describe("manual service configuration", () => {
   })
   it("never reuses a stored key at a different endpoint", async () => {
     await renderSettings({ ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, headers: { Authorization: "stored-auth" } })) })
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.url"), { target: { value: "https://other.example/v1" } })
     expect(screen.getByRole("button", { name: "modelDiscovery.fetch" })).toBeDisabled()
     fireEvent.change(screen.getByLabelText("manualService.key"), { target: { value: "new-key" } })
@@ -812,7 +809,7 @@ describe("manual service configuration", () => {
     let resolve!: (models: string[]) => void
     vi.mocked(fetchProviderModels).mockReturnValue(new Promise(r => resolve = r))
     await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
     expect(screen.getByRole("button", { name: "modelDiscovery.loading" })).toBeDisabled()
     fireEvent.change(screen.getByLabelText("manualService.url"), { target: { value: "https://changed.example/v1" } })
@@ -827,7 +824,7 @@ describe("manual service configuration", () => {
     else
       vi.mocked(fetchProviderModels).mockRejectedValue(new Error("no endpoint"))
     await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
     await screen.findByText(`modelDiscovery.${state}`)
     expect(screen.getByLabelText("manualService.model")).toHaveValue("gpt-6-luna")
@@ -835,7 +832,7 @@ describe("manual service configuration", () => {
   })
   it("opens Agent Setup after a manual model save and copies the latest masked configuration", async () => {
     const { store } = await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     expect(screen.getByLabelText("manualService.key")).toHaveValue("")
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "my-local-model" } })
     fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
@@ -844,7 +841,7 @@ describe("manual service configuration", () => {
     await waitFor(() => expect(screen.queryByLabelText("manualService.model")).toBeNull())
     const saved = store.get(configAtom)
 
-    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+    chooseServiceMethod("agent")
     expect(JSON.parse(editor().value)).toMatchObject({ type: "openai", model: "my-local-model", apiKey: "sk-…ijkl" })
     expect(applyButton()).toBeDisabled()
 
@@ -867,12 +864,12 @@ describe("manual service configuration", () => {
       finishCheck = () => resolve({ ok: true, checkedAt: 1_000 })
     }))
     const { store } = await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "saved-manual-model" } })
     fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
     expect(checkConnection).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+    chooseServiceMethod("agent")
     const agentEditor = editor()
     const draft = JSON.stringify({ type: "openai", apiKey: "sk-…ijkl", model: "new-agent-draft" })
     fireEvent.change(agentEditor, { target: { value: draft } })
@@ -889,7 +886,7 @@ describe("manual service configuration", () => {
   it("shows existing parameters and uses edited nested JSON in the connection check and saved requests", async () => {
     const existing = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "low" }, max_output_tokens: 1000 } })) }
     const { store } = await renderSettings(existing)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     const input = screen.getByLabelText("manualService.body")
     expect(JSON.parse((input as HTMLTextAreaElement).value)).toEqual(existing.providersConfig[0].body)
     const body = { reasoning: { effort: "none", summary: "auto" }, max_output_tokens: 2000, metadata: { tags: ["translation", null], enabled: false } }
@@ -902,12 +899,12 @@ describe("manual service configuration", () => {
     expect(provider.body).toEqual(body)
     expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ body }))
     expect(prepareRequest(provider, { prompt: "Translate this" }).body).toMatchObject({ ...body, input: "Translate this" })
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     expect(JSON.parse((screen.getByLabelText("manualService.body") as HTMLTextAreaElement).value)).toEqual(body)
   })
   it.each(["{", "[]", "null", "\"text\"", "42", "{\"budget\":1e999}"])("blocks invalid body %s before sending or saving", async (value) => {
     const { store } = await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value } })
     expect(screen.getByRole("alert")).toHaveTextContent("manualService.bodyInvalid")
     expect(screen.getByLabelText("manualService.body")).toHaveAttribute("aria-invalid", "true")
@@ -922,7 +919,7 @@ describe("manual service configuration", () => {
   })
   it("clears saved parameters when the editor is emptied", async () => {
     const { store } = await renderSettings({ ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "none" } } })) })
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "  " } })
     fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))
     await waitFor(() => expect(screen.queryByLabelText("manualService.body")).toBeNull())
@@ -931,7 +928,7 @@ describe("manual service configuration", () => {
   })
   it("changes examples with the wire format without overwriting the parameter draft", async () => {
     await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     const input = screen.getByLabelText("manualService.body")
     expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual({ reasoning: { effort: "none" } })
     fireEvent.change(input, { target: { value: "{\"custom\":true}" } })
@@ -951,7 +948,7 @@ describe("manual service configuration", () => {
   it("does not replace the working service when a manual connection check fails", async () => {
     vi.mocked(checkConnection).mockResolvedValue({ ok: false, checkedAt: 1_000, error: "HTTP 401" })
     const { store } = await renderSettings(configured)
-    fireEvent.click(screen.getByRole("button", { name: "manualService.manual" }))
+    chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "bad-model" } })
     fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "{\"reasoning\":{\"effort\":\"high\"}}" } })
     fireEvent.click(screen.getByRole("button", { name: "manualService.save" }))

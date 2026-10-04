@@ -59,6 +59,11 @@ options:
   preview: 미리보기
   service:
     title: 번역 서비스
+    currentTitle: 현재 번역 서비스
+    configMethod: 설정 방식
+    headers: 사용자 지정 헤더
+    providerId: 서비스 ID
+    temperature: 샘플링 온도
     connectionDetails: 연결 세부 정보
     reconfigure: 다시 설정
     empty:
@@ -107,13 +112,14 @@ options:
     title: 웹 읽기
     whileTranslating: 번역할 때
     allPages: 모든 페이지
+    moreOptions: 추가 읽기 옵션
     mode:
       title: 표시
       bilingual: 이중 언어
       translationOnly: 번역만
     wordPrefixEmphasis:
       title: 영어 단어 앞부분 굵게
-      description: 영어 단어마다 앞쪽 절반을 굵게 표시합니다.
+      description: 모든 웹페이지에 적용됩니다.
     style:
       title: 번역 스타일
       custom: 사용자 지정 CSS
@@ -137,6 +143,7 @@ options:
         }
       css:
         save: 저장
+        cancel: 취소
         saved: 저장됨
         validating: 확인 중…
         valid: CSS가 유효합니다
@@ -393,12 +400,16 @@ manualService:
   bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
-  title: Configuration backup
+  title: 백업
   backup: 백업
   restore: 복원
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
+  exportDescription: 현재 설정을 저장합니다.
+  exportAction: 내보내기
   import: Import configuration
+  importDescription: 백업에서 설정을 복원합니다.
+  importAction: 가져오기
   preview: "Ready to import: $1"
   service: "Translation service: $1 · $2"
   apply: Replace all settings
@@ -408,9 +419,9 @@ configBackup:
 features:
   title: 동영상 자막
   hover: Hover translation
-  hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverDescription: 문단 위에 마우스를 놓고 실행 키를 눌러 번역하세요.
   hoverStream: 마우스 오버 번역 스트리밍
-  hoverStreamDescription: 본문의 원래 위치에 번역을 점진적으로 표시해 대기 시간을 줄입니다. 끄면 번역이 완료된 후 표시합니다.
+  hoverStreamDescription: 번역을 점진적으로 표시해 대기 시간을 줄입니다.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
@@ -422,6 +433,7 @@ videoSiteRules:
   add: Add site
   remove: Remove rule
   saved: Saved
+  empty: 아직 제외된 웹사이트가 없습니다
   invalid: Enter a valid site rule.
   duplicate: This rule already exists.
   saveFailed: Could not save. Please try again.
@@ -445,7 +457,10 @@ videoTranslationControls:
 
 subtitleStyle:
   title: Subtitle style
+  controlsTitle: 번역 및 스타일
   moreOptions: More options
+  custom: 사용자 지정
+  customDescription: "자막 크기, 배경 및 위치 사용자 지정"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -454,15 +469,18 @@ subtitleStyle:
   backgroundDescription: Add a dark backdrop to keep subtitles readable in bright scenes.
   backgroundOpacity: Background depth
   backgroundOpacityDescription: Higher values make the background darker.
+  backgroundZeroDescription: "0%는 배경 없음입니다. 값이 클수록 배경이 짙어집니다."
   lighterBackground: Lighten subtitle background
   darkerBackground: Darken subtitle background
   noBackground: No background
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  commonSizes: 자주 쓰는 크기
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  fixedFontDescription: 창 크기가 바뀌어도 글자 크기는 고정됩니다.
   fontSizeModes:
     video: Scale with video
     fixed: Fixed size
@@ -471,6 +489,8 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
+  previewDragHint: 자막을 드래그해 위치를 조정하고 방향키로 미세 조정하세요.
+  previewDragLabel: 드래그 가능한 자막
   adjustmentHint: 영상 위에서 자막을 드래그해 위치를 조정하세요. 플레이어 도구 모음의 Readomi 아이콘을 클릭하면 스타일과 글자 크기를 조정할 수 있습니다. 변경 사항은 자동으로 저장됩니다.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
@@ -480,7 +500,7 @@ subtitleStyle:
   presets:
     clear: Transparent
     compact: Compact
-    study: Study
+    study: 집중
     cinema: Cinema
   positions:
     top: Top
@@ -507,9 +527,13 @@ translationShortcuts:
   restoreDefaults: 기본값으로 되돌리기
   restoreFailed: 기본값으로 되돌리지 못했습니다. 다시 시도하세요.
   mode: Switch bilingual / translation only
+  modeHint: 웹페이지 번역의 표시 방식만 바꿉니다.
   subtitles: Toggle video subtitles
+  subtitlesHint: 현재 페이지의 동영상 번역을 켜거나 끕니다.
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  platformHint: "macOS에서는 Option(⌥), Windows / Linux에서는 Alt를 사용하세요."
   hover: Hover translation trigger
+  hoverHelp: 번역 실행 방법
   hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
   alt: Option / Alt
   control: Control

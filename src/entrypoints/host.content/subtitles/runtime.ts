@@ -428,6 +428,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
       return
     if (!current?.features.videoSubtitles || event.defaultPrevented || event.repeat || isEditableTarget(event.target) || !eventMatchesHotkey(event, current.features.subtitlesShortcut))
       return
+    if (isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
+      return
     event.preventDefault()
     event.stopPropagation()
     suspended = !suspended

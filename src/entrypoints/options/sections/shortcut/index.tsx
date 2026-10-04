@@ -10,6 +10,7 @@ import { DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY } from "@/utils/constants/translate
 import { normalizePageTranslationShortcut } from "@/utils/page-translation-shortcut"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
 import { SettingsSelect } from "../../components/settings-select"
+import "./style.css"
 
 /** Keyboard shortcuts, each named after the action it runs, as the popup names that action. */
 export function ShortcutSection() {
@@ -65,38 +66,26 @@ export function ShortcutSection() {
 
   return (
     <SettingsSection id="shortcut" title={i18n.t("options.shortcut.title")}>
-      <div className="settings-shortcuts flex flex-col gap-6">
-        <div className="flex flex-col gap-3">
-          <SettingsGroup>
-            <SettingsRow
-              className="settings-shortcut-row"
-              label={i18n.t("options.shortcut.togglePage")}
-              htmlFor={togglePageId}
-              control={(
-                <ShortcutKeyRecorder
-                  key={resetVersion}
-                  id={togglePageId}
-                  shortcutKey={translateConfig.page.shortcut ?? DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY}
-                  onChange={shortcut => change("page", shortcut)}
-                />
-              )}
-            />
-            <SettingsRow className="settings-shortcut-row" label={i18n.t("translationShortcuts.mode")} htmlFor={modeId} control={<ShortcutKeyRecorder key={resetVersion} id={modeId} shortcutKey={features.modeShortcut} onChange={shortcut => change("modeShortcut", shortcut)} />} />
-            <SettingsRow className="settings-shortcut-row" label={i18n.t("translationShortcuts.subtitles")} htmlFor={subtitlesId} control={<ShortcutKeyRecorder key={resetVersion} id={subtitlesId} shortcutKey={features.subtitlesShortcut} onChange={shortcut => change("subtitlesShortcut", shortcut)} />} />
-            <div className="settings-shortcut-actions flex justify-end px-[23px] py-3.5">
-              <Button variant="outline" className="h-9 rounded-[7px] px-3 text-xs" disabled={restoring} onClick={() => void restoreDefaults()}>
-                {i18n.t("translationShortcuts.restoreDefaults")}
-              </Button>
-            </div>
-          </SettingsGroup>
-          <p className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("translationShortcuts.hint")}</p>
-          {error && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive">{i18n.t("translationShortcuts.conflict")}</p>}
-        </div>
+      <div className="settings-shortcuts flex flex-col gap-4">
         <SettingsGroup>
+          <SettingsRow
+            className="settings-shortcut-row"
+            label={i18n.t("options.shortcut.togglePage")}
+            htmlFor={togglePageId}
+            control={(
+              <ShortcutKeyRecorder
+                key={resetVersion}
+                id={togglePageId}
+                shortcutKey={translateConfig.page.shortcut ?? DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY}
+                onChange={shortcut => change("page", shortcut)}
+              />
+            )}
+          />
+          <SettingsRow className="settings-shortcut-row" label={i18n.t("translationShortcuts.mode")} description={i18n.t("translationShortcuts.modeHint")} htmlFor={modeId} control={<ShortcutKeyRecorder key={resetVersion} id={modeId} shortcutKey={features.modeShortcut} onChange={shortcut => change("modeShortcut", shortcut)} />} />
+          <SettingsRow className="settings-shortcut-row" label={i18n.t("translationShortcuts.subtitles")} description={i18n.t("translationShortcuts.subtitlesHint")} htmlFor={subtitlesId} control={<ShortcutKeyRecorder key={resetVersion} id={subtitlesId} shortcutKey={features.subtitlesShortcut} onChange={shortcut => change("subtitlesShortcut", shortcut)} />} />
           <SettingsRow
             className="settings-hover-trigger"
             label={i18n.t("translationShortcuts.hover")}
-            description={i18n.t("translationShortcuts.hoverHint")}
             htmlFor={hoverId}
             control={(
               <SettingsSelect
@@ -109,6 +98,18 @@ export function ShortcutSection() {
             )}
           />
         </SettingsGroup>
+        <p className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("translationShortcuts.hint")}</p>
+        <p className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("translationShortcuts.platformHint")}</p>
+        <div className="settings-shortcut-actions flex">
+          <Button variant="outline" className="h-9 rounded-[7px] px-3 text-xs" disabled={restoring} onClick={() => void restoreDefaults()}>
+            {i18n.t("translationShortcuts.restoreDefaults")}
+          </Button>
+        </div>
+        <details className="settings-shortcut-help">
+          <summary>{i18n.t("translationShortcuts.hoverHelp")}</summary>
+          <p className="text-xs leading-[1.7] text-muted-foreground">{i18n.t("translationShortcuts.hoverHint")}</p>
+        </details>
+        {error && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive">{i18n.t("translationShortcuts.conflict")}</p>}
       </div>
     </SettingsSection>
   )

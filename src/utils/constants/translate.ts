@@ -15,6 +15,8 @@ export const DEFAULT_MAX_CHARACTER_PER_BATCH = 1000
 export const DEFAULT_MAX_ITEMS_PER_BATCH = 4
 
 export const DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY = "Alt+E"
+export const DEFAULT_MODE_SHORTCUT_KEY = "Alt+M"
+export const DEFAULT_SUBTITLES_SHORTCUT_KEY = "Alt+V"
 
 /** Paragraphs this far below the viewport are translated before they scroll in. */
 export const PRELOAD_MARGIN_PX = 1000

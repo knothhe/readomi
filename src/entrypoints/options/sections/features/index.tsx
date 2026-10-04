@@ -3,7 +3,7 @@ import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
 import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
+import { SettingsRow, SettingsSection } from "../../components/settings-section"
 import { SubtitleStyleEditor } from "./subtitle-style-editor"
 import { VideoSiteRulesEditor } from "./video-site-rules-editor"
 
@@ -12,9 +12,10 @@ export function FeaturesSection() {
   return (
     <SettingsSection id="features" title={i18n.t("features.title")}>
       <SubtitleStyleEditor footer={<VideoSiteRulesEditor />}>
-        <SettingsGroup>
+        <>
           <SettingsRow label={i18n.t("features.video")} description={i18n.t("features.videoDescription")} control={<Switch aria-label={i18n.t("features.video")} checked={features.videoSubtitles} onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })} />} />
           <SettingsRow
+            className="subtitle-display-row"
             label={i18n.t("features.mode")}
             control={(
               <SegmentedControl
@@ -29,7 +30,7 @@ export function FeaturesSection() {
               />
             )}
           />
-        </SettingsGroup>
+        </>
       </SubtitleStyleEditor>
     </SettingsSection>
   )

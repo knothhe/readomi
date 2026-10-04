@@ -115,6 +115,7 @@ export function VideoSiteRulesEditor() {
           <p id={helpId} className="text-[11px] leading-relaxed text-muted-foreground">{i18n.t(`videoSiteRules.hints.${type}`)}</p>
           {inputInvalid && <p id={errorId} role="alert" className="text-[11px] leading-relaxed text-destructive">{i18n.t(`videoSiteRules.${error}`)}</p>}
         </form>
+        {rules.length === 0 && <p className="mt-[18px] border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">{i18n.t("videoSiteRules.empty")}</p>}
         {rules.length > 0 && (
           <ul className="mt-[18px] list-none border-t border-border">
             {rules.map((rule, index) => (

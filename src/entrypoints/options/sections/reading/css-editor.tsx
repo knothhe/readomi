@@ -1,10 +1,10 @@
-import { useAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { useMemo, useState } from "react"
 import { i18n } from "#imports"
 import { Button } from "@/components/ui/button"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { MAX_CUSTOM_CSS_LENGTH } from "@/types/config/translate"
-import { configFieldsAtomMap } from "@/utils/atoms/config"
+import { configFieldsAtomMap, writeConfigAtom } from "@/utils/atoms/config"
 import { lintCSS } from "@/utils/css/lint-css"
 import { cn } from "@/utils/styles/utils"
 
@@ -12,8 +12,9 @@ import { cn } from "@/utils/styles/utils"
  * Custom CSS for translated nodes, validated as you type and saved on demand
  * so a half-typed rule never reaches the page.
  */
-export function CSSEditor() {
-  const [translateConfig, setTranslateConfig] = useAtom(configFieldsAtomMap.translate)
+export function CSSEditor({ onCancel }: { onCancel: () => void }) {
+  const translateConfig = useAtomValue(configFieldsAtomMap.translate)
+  const writeConfig = useSetAtom(writeConfigAtom)
   const savedCss = translateConfig.translationNodeStyle.customCSS ?? ""
   const [cssInput, setCssInput] = useState(savedCss)
   const debouncedCssInput = useDebouncedValue(cssInput, 500)
@@ -23,17 +24,18 @@ export function CSSEditor() {
   const hasLengthError = debouncedCssInput.length > MAX_CUSTOM_CSS_LENGTH
   const hasSyntaxError = !syntaxCheck.valid
   const isValidating = cssInput !== debouncedCssInput
-  const hasChanges = cssInput !== savedCss
+  const hasChanges = cssInput !== savedCss || (!translateConfig.translationNodeStyle.isCustom && !!cssInput.trim())
   const canSave = !isValidating && !hasSyntaxError && !hasLengthError && hasChanges
 
   const handleSave = () => {
     if (!canSave)
       return
-    void setTranslateConfig({
-      ...translateConfig,
-      translationNodeStyle: {
-        ...translateConfig.translationNodeStyle,
-        customCSS: cssInput,
+    void writeConfig({
+      translate: {
+        translationNodeStyle: {
+          customCSS: cssInput,
+          isCustom: true,
+        },
       },
     })
   }
@@ -56,9 +58,12 @@ export function CSSEditor() {
         <div className={cn("text-xs text-muted-foreground", (hasSyntaxError || hasLengthError) && "text-destructive")}>
           {cssInput.trim().length > 0 ? getValidationMessage(isValidating, syntaxCheck.errors[0], hasLengthError, hasChanges) : ""}
         </div>
-        <Button size="sm" onClick={handleSave} disabled={!canSave}>
-          {hasChanges ? i18n.t("options.reading.style.css.save") : i18n.t("options.reading.style.css.saved")}
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={onCancel}>{i18n.t("options.reading.style.css.cancel")}</Button>
+          <Button size="sm" onClick={handleSave} disabled={!canSave}>
+            {hasChanges ? i18n.t("options.reading.style.css.save") : i18n.t("options.reading.style.css.saved")}
+          </Button>
+        </div>
       </div>
     </div>
   )

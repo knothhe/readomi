@@ -152,7 +152,7 @@ describe("video translation controls", () => {
     expect(shadow.querySelectorAll("[data-preset]")).toHaveLength(4)
     instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, relativeFontSize: 3.25 } })
     expect(shadow.querySelectorAll("[data-preset][aria-pressed=true]")).toHaveLength(0)
-    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, backgroundEnabled: true } })
+    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, backgroundEnabled: true, backgroundOpacity: 50 } })
     expect(shadow.querySelectorAll("[data-preset][aria-pressed=true]")).toHaveLength(0)
     instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, fontSize: 80, backgroundOpacity: 0 } })
     expect(button("[data-preset=clear]")).toHaveAttribute("aria-pressed", "true")

@@ -42,9 +42,11 @@ function chooseType(type: VideoSiteRule["type"]) {
 
 it("adds and removes normalized rules without changing other features", async () => {
   const store = await renderEditor()
+  expect(screen.getByText("videoSiteRules.empty")).toBeInTheDocument()
   add(" Example.COM. ")
   await waitFor(() => expect(input()).toHaveValue(""))
   expect(screen.getByText("example.com")).toBeInTheDocument()
+  expect(screen.queryByText("videoSiteRules.empty")).not.toBeInTheDocument()
   let stored = await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)
   expect(stored?.features).toEqual({ ...DEFAULT_CONFIG.features, videoExcludedSites: [{ type: "domain", value: "example.com" }] })
   chooseType("pattern")
@@ -103,6 +105,7 @@ it("restores a rule after deletion fails and can retry the delete", async () => 
   await waitFor(() => expect(screen.queryByText("example.com")).not.toBeInTheDocument())
   await waitFor(() => expect(screen.getByRole("button", { name: "videoSiteRules.add" })).toBeEnabled())
   expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.videoExcludedSites).toEqual([])
+  expect(screen.getByText("videoSiteRules.empty")).toBeInTheDocument()
 })
 
 it("shows rules changed in another context while retaining an unfinished draft", async () => {

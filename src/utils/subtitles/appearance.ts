@@ -29,13 +29,22 @@ export function formatSubtitleFontSize(style: SubtitleStyle): string {
   return `${Number(value.toFixed(5))}${unit === "%" ? "%" : ` ${unit}`}`
 }
 
+/** A disabled legacy background stays invisible even when its remembered depth is nonzero. */
+export function effectiveSubtitleBackgroundOpacity(style: Pick<SubtitleStyle, "backgroundEnabled" | "backgroundOpacity">): number {
+  return style.backgroundEnabled ? style.backgroundOpacity : 0
+}
+
+/** The depth control is the only background control: zero disables it, a positive depth enables it. */
+export function subtitleBackgroundPatch(backgroundOpacity: number): Pick<SubtitleStyle, "backgroundEnabled" | "backgroundOpacity"> {
+  return { backgroundOpacity, backgroundEnabled: backgroundOpacity > 0 }
+}
+
 /** A preset remains selected only while its active size and visible background settings match. */
 export function isSubtitlePresetModified(style: SubtitleStyle): boolean {
   const preset = SUBTITLE_PRESET_STYLES[style.preset]
   const presetSize = style.fontSizeMode === "video" ? preset.relativeFontSize : preset.fontSize
   return Math.abs(subtitleSizeSettings(style).value - presetSize) > 1e-9
-    || style.backgroundEnabled !== preset.backgroundEnabled
-    || (style.backgroundEnabled && style.backgroundOpacity !== preset.backgroundOpacity)
+    || effectiveSubtitleBackgroundOpacity(style) !== effectiveSubtitleBackgroundOpacity(preset)
 }
 
 export function subtitlePositionName(position: SubtitlePosition): keyof typeof SUBTITLE_POSITIONS | "custom" {

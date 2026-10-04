@@ -59,6 +59,11 @@ options:
   preview: 效果預覽
   service:
     title: 翻譯服務
+    currentTitle: 目前翻譯服務
+    configMethod: 設定方式
+    headers: 自訂請求標頭
+    providerId: 服務 ID
+    temperature: 採樣溫度
     connectionDetails: 連線詳情
     reconfigure: 重新設定
     empty:
@@ -107,13 +112,14 @@ options:
     title: 網頁閱讀
     whileTranslating: 翻譯時
     allPages: 所有網頁
+    moreOptions: 更多閱讀選項
     mode:
       title: 顯示方式
       bilingual: 雙語對照
       translationOnly: 僅顯示譯文
     wordPrefixEmphasis:
       title: 英文字首加粗
-      description: 將每個英文單字的前半部分加粗。
+      description: 套用至所有網頁。
     style:
       title: 譯文樣式
       custom: 自訂 CSS
@@ -137,6 +143,7 @@ options:
         }
       css:
         save: 儲存
+        cancel: 取消
         saved: 已儲存
         validating: 檢查中…
         valid: CSS 有效
@@ -393,12 +400,16 @@ manualService:
   bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
 configBackup:
-  title: Configuration backup
+  title: 備份
   backup: 備份
   restore: 還原
   description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
   export: Export configuration
+  exportDescription: 儲存目前設定。
+  exportAction: 匯出
   import: Import configuration
+  importDescription: 從備份還原設定。
+  importAction: 匯入
   preview: "Ready to import: $1"
   service: "Translation service: $1 · $2"
   apply: Replace all settings
@@ -408,9 +419,9 @@ configBackup:
 features:
   title: 影片字幕
   hover: Hover translation
-  hoverDescription: Hover over a paragraph and use the trigger configured in Shortcuts to translate. Trigger again to restore the original.
+  hoverDescription: 將滑鼠停在段落上，按觸發鍵翻譯。
   hoverStream: 懸停翻譯串流顯示
-  hoverStreamDescription: 在內文原位逐步顯示譯文，減少等待；關閉後等待完整譯文再顯示。
+  hoverStreamDescription: 逐步顯示譯文，減少等待。
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
   mode: Subtitle display mode
@@ -422,6 +433,7 @@ videoSiteRules:
   add: Add site
   remove: Remove rule
   saved: Saved
+  empty: 尚未排除任何網站
   invalid: Enter a valid site rule.
   duplicate: This rule already exists.
   saveFailed: Could not save. Please try again.
@@ -445,7 +457,10 @@ videoTranslationControls:
 
 subtitleStyle:
   title: 字幕樣式
+  controlsTitle: 翻譯與樣式
   moreOptions: 更多選項
+  custom: 自訂
+  customDescription: 自訂字級、背景與字幕位置
   autoSave: 調整會自動儲存。
   adjust: Style and position
   presetDescription: 選擇一個起點，再調整字級和背景。
@@ -454,15 +469,18 @@ subtitleStyle:
   backgroundDescription: 為字幕添加深色底，提升明亮畫面中的可讀性。
   backgroundOpacity: 背景深度
   backgroundOpacityDescription: 數值越高，背景越深。
+  backgroundZeroDescription: "0% 為無背景，數值越大背景越深。"
   lighterBackground: 減淺字幕背景
   darkerBackground: 加深字幕背景
   noBackground: 無背景
   backgroundSummary: $1% 背景
   preset: Subtitle preset
   fontSize: Subtitle size
+  commonSizes: 常用字級
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
   relativeFontDescription: 字級為影片寬度的百分比，隨視窗和全螢幕縮放。
+  fixedFontDescription: 字級保持固定，不隨視窗縮放。
   fontSizeModes:
     video: Scale with video
     fixed: Fixed size
@@ -471,6 +489,8 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: 在影片上拖曳字幕調整位置。
+  previewDragHint: 拖曳字幕調整位置；方向鍵也可微調。
+  previewDragLabel: 可拖曳的字幕
   adjustmentHint: 在影片上拖曳字幕調整位置；點擊播放器工具列中的 Readomi 圖示可調整樣式和字級。調整會自動儲存。
   smaller: Decrease subtitle size
   larger: Increase subtitle size
@@ -480,7 +500,7 @@ subtitleStyle:
   presets:
     clear: 清透
     compact: 輕量
-    study: 學習
+    study: 專注
     cinema: 影院
   positions:
     top: Top
@@ -507,9 +527,13 @@ translationShortcuts:
   restoreDefaults: 恢復預設
   restoreFailed: 恢復失敗，請再試一次。
   mode: Switch bilingual / translation only
+  modeHint: 僅切換網頁的顯示方式。
   subtitles: Toggle video subtitles
+  subtitlesHint: 開關目前頁面的影片翻譯。
   hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: Hover translation trigger
+  hoverHelp: 觸發方式說明
   hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
   alt: Option / Alt
   control: Control

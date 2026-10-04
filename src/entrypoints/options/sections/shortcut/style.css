@@ -1,0 +1,26 @@
+.settings-shortcut-help > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 12px 0;
+  list-style: none;
+  color: var(--rf-muted-foreground);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-shortcut-help > summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-shortcut-help > summary::before {
+  display: inline-block;
+  width: 9px;
+  content: "›";
+  font-size: 18px;
+}
+
+.settings-shortcut-help[open] > summary::before {
+  transform: rotate(90deg);
+}

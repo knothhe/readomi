@@ -3,7 +3,7 @@ import { storage } from "#imports"
 import { configSchema } from "@/types/config/config"
 import { subtitleStyleSchema } from "@/types/config/subtitle-style"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
-import { formatSubtitleFontSize, isSubtitlePresetModified, resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings, subtitleTextStyle } from "../appearance"
+import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitleBackgroundPatch, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings, subtitleTextStyle } from "../appearance"
 
 describe("subtitle appearance configuration", () => {
   it("scales the saved size to the video window and keeps fixed pixels independent of its width", () => {
@@ -20,7 +20,7 @@ describe("subtitle appearance configuration", () => {
     expect(style.fontSize).toBe(20)
   })
   it.each([
-    { preset: "clear", fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 50 },
+    { preset: "clear", fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 0 },
     { preset: "compact", fontSize: 16, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 35 },
     { preset: "study", fontSize: 24, relativeFontSize: 3.75, backgroundEnabled: true, backgroundOpacity: 65 },
     { preset: "cinema", fontSize: 28, relativeFontSize: 4.5, backgroundEnabled: true, backgroundOpacity: 85 },
@@ -81,11 +81,21 @@ describe("subtitle appearance configuration", () => {
     const clear = DEFAULT_CONFIG.features.subtitleStyle
     expect(isSubtitlePresetModified({ ...clear, fontSize: 80, position: { x: 25, y: 50 }, backgroundOpacity: 0 })).toBe(false)
     expect(isSubtitlePresetModified({ ...clear, relativeFontSize: 3.25 })).toBe(true)
-    expect(isSubtitlePresetModified({ ...clear, backgroundEnabled: true })).toBe(true)
+    expect(isSubtitlePresetModified({ ...clear, backgroundEnabled: true, backgroundOpacity: 35 })).toBe(true)
+    expect(isSubtitlePresetModified({ ...clear, backgroundEnabled: false, backgroundOpacity: 72 })).toBe(false)
+    expect(isSubtitlePresetModified({ ...clear, backgroundEnabled: true, backgroundOpacity: 0 })).toBe(false)
     expect(isSubtitlePresetModified({ ...clear, fontSizeMode: "fixed", relativeFontSize: 8 })).toBe(false)
     const compact = { ...clear, ...subtitlePresetPatch("compact") }
     expect(isSubtitlePresetModified({ ...compact, backgroundOpacity: 0 })).toBe(true)
     expect(isSubtitlePresetModified({ ...compact, backgroundEnabled: false })).toBe(true)
+  })
+  it("shows disabled legacy backgrounds as zero without overwriting their stored depth", () => {
+    const legacy = { ...DEFAULT_CONFIG.features.subtitleStyle, backgroundEnabled: false, backgroundOpacity: 72 }
+    expect(effectiveSubtitleBackgroundOpacity(legacy)).toBe(0)
+    expect(subtitleStyleSchema.parse(legacy)).toEqual(legacy)
+    expect(subtitleBackgroundPatch(35)).toEqual({ backgroundEnabled: true, backgroundOpacity: 35 })
+    expect(subtitleBackgroundPatch(0)).toEqual({ backgroundEnabled: false, backgroundOpacity: 0 })
+    expect(effectiveSubtitleBackgroundOpacity({ ...legacy, ...subtitleBackgroundPatch(35) })).toBe(35)
   })
   it("keeps a 2% bottom inset and accepts YouTube's computed edge without moving custom positions", () => {
     const video = { width: 640, height: 360 }
