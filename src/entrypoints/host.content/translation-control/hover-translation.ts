@@ -5,9 +5,10 @@ import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
-import { hasNoWalkAncestor, isHTMLElement } from "@/utils/host/dom/filter"
+import { hasNoWalkAncestor, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isWalkBlockedElement, isWithinIncludeScope } from "@/utils/host/dom/filter"
 import { findNearestAncestorBlockNodeFor } from "@/utils/host/dom/find"
-import { walkAndLabelElement } from "@/utils/host/dom/traversal"
+import { getTranslationGroup, getTranslationGroupOwner } from "@/utils/host/dom/translation-group"
+import { extractTextContent, walkAndLabelElement } from "@/utils/host/dom/traversal"
 import { containsInlineAtomOutsideWrappers } from "@/utils/host/translate/dom/inline-atoms"
 import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
@@ -21,6 +22,10 @@ const KEYBOARD_TRIGGERS = { "Alt": "alt", "Control": "control", "Shift": "shift"
 
 /** Read Frog's tap-or-hold keyboard interaction and mouse hold, using the paragraph renderer. */
 export function bindHoverTranslation(target: Document = document) {
+  const keyboardTarget = target.defaultView ?? target
+  let currentConfig: Config | null = null
+  let configChanged = false
+  let consumedKey: string | null = null
   let hovered: Element | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
   let session = 0
@@ -171,7 +176,51 @@ export function bindHoverTranslation(target: Document = document) {
     pressedKeys.clear()
     cancel()
   }
+  const resetKeyboard = () => {
+    consumedKey = null
+    reset()
+  }
+  const consume = (event: KeyboardEvent) => {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+  }
+  const canConsumeBacktick = (event: KeyboardEvent, element: Element | null) => {
+    const config = currentConfig
+    if (!config?.features.hoverTranslation || config.features.hoverHotkey !== "backtick"
+      || !element?.isConnected || press || busy || controller.signal.aborted || !isExtensionContextValid()
+      || event.isComposing || event.composedPath().some(isEditableTarget) || isEditableTarget(target.activeElement)) {
+      return false
+    }
+    const block = findNearestAncestorBlockNodeFor(element, config)
+    if (!isHTMLElement(block) || block === target.body || block === target.documentElement
+      || hasNoWalkAncestor(block, config) || isWalkBlockedElement(block, config)
+      || block.closest("input,textarea,[contenteditable]:not([contenteditable='false']),video,[data-readomi-subtitles]")
+      || !block.textContent?.trim()) {
+      return false
+    }
+    const group = getTranslationGroup(block, config)
+    if (!group) {
+      return isWithinIncludeScope(block, config)
+        || (isHTMLElement(element) && isWithinIncludeScope(element, config))
+    }
+    // The owner may sit outside the paragraph whitelist (e.g. a Reddit card).
+    // Only its declared, readable sources make it eligible for translation.
+    if (group.sources.some(source => !hasNoWalkAncestor(source, config)
+      && !isWalkBlockedElement(source, config) && !!extractTextContent(source, config).trim())) {
+      return true
+    }
+    // Translation-only results hide their live sources. Keep the visible owned
+    // result eligible so another press can restore those original sources.
+    const results = group.placement === "append" ? [...block.children] : [block.nextElementSibling]
+    return results.some(result => result && isHTMLElement(result) && getTranslationGroupOwner(result) === block
+      && !hasNoWalkAncestor(result, config) && !isDontWalkIntoAndDontTranslateAsChildElement(result, config)
+      && !!result.textContent?.trim())
+  }
   const keydown = (event: KeyboardEvent) => {
+    if (consumedKey === (event.code || event.key)) {
+      consume(event)
+      return
+    }
     if (event.repeat)
       return
     if (event.key === "Escape") {
@@ -187,9 +236,23 @@ export function bindHoverTranslation(target: Document = document) {
     }
     if (event.defaultPrevented || isEditableTarget(event.target))
       return
-    start(hotkey, hovered ?? target.querySelector(`:hover:not(.${CONTENT_WRAPPER_CLASS})`))
+    const element = hovered ?? target.querySelector(`:hover:not(.${CONTENT_WRAPPER_CLASS})`)
+    if (hotkey === "backtick") {
+      if (!canConsumeBacktick(event, element))
+        return
+      // Decide synchronously, before the page can route this character into
+      // its editor. Keep ownership through repeat and release, even on cancel.
+      consumedKey = event.code || event.key
+      consume(event)
+    }
+    start(hotkey, element)
   }
   const keyup = (event: KeyboardEvent) => {
+    const consumed = consumedKey === (event.code || event.key)
+    if (consumed) {
+      consumedKey = null
+      consume(event)
+    }
     pressedKeys.delete(event.code || event.key)
     const hotkey = KEYBOARD_TRIGGERS[event.key as keyof typeof KEYBOARD_TRIGGERS]
     if (!press || press.hotkey !== hotkey) {
@@ -200,7 +263,7 @@ export function bindHoverTranslation(target: Document = document) {
     timer = undefined
     const released = press
     press = null
-    if (event.defaultPrevented || isEditableTarget(event.target)) {
+    if ((!consumed && event.defaultPrevented) || isEditableTarget(event.target)) {
       cancel()
       return
     }
@@ -217,6 +280,8 @@ export function bindHoverTranslation(target: Document = document) {
     start("clickAndHold", element)
   }
   const unwatch = watchLocalConfig((next, previous) => {
+    currentConfig = next
+    configChanged = true
     const rulesChanged = previous && JSON.stringify(next?.siteRules) !== JSON.stringify(previous.siteRules)
     const languageChanged = previous && JSON.stringify(next?.language) !== JSON.stringify(previous.language)
     const promptChanged = previous && JSON.stringify(next?.translate.customPromptsConfig) !== JSON.stringify(previous.translate.customPromptsConfig)
@@ -232,6 +297,14 @@ export function bindHoverTranslation(target: Document = document) {
       activeTranslation?.abort()
     }
   })
+  // Watch first: a delayed initial read must not overwrite a newer setting.
+  void getLocalConfig().then((config) => {
+    if (!configChanged && !controller.signal.aborted && isExtensionContextValid())
+      currentConfig = config
+  }).catch((error) => {
+    if (!controller.signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
+      logger.error("Hover configuration failed", error)
+  })
   const handleRouteChange = () => {
     reset()
     activeTranslation?.abort()
@@ -240,29 +313,29 @@ export function bindHoverTranslation(target: Document = document) {
   target.defaultView?.addEventListener("extension:URLChange", handleRouteChange)
   target.addEventListener("mouseover", move, true)
   target.addEventListener("mousemove", move, true)
-  target.addEventListener("keydown", keydown, true)
-  target.addEventListener("keyup", keyup, true)
+  keyboardTarget.addEventListener("keydown", keydown as EventListener, true)
+  keyboardTarget.addEventListener("keyup", keyup as EventListener, true)
   target.addEventListener("mousedown", mousedown, true)
   target.addEventListener("mouseup", cancel, true)
   target.addEventListener("dragstart", cancel, true)
   target.addEventListener("contextmenu", cancel, true)
-  target.addEventListener("visibilitychange", reset)
-  target.defaultView?.addEventListener("blur", reset)
+  target.addEventListener("visibilitychange", resetKeyboard)
+  target.defaultView?.addEventListener("blur", resetKeyboard)
   return () => {
     unwatch()
-    reset()
+    resetKeyboard()
     activeTranslation?.abort()
     controller.abort()
     target.defaultView?.removeEventListener("extension:URLChange", handleRouteChange)
     target.removeEventListener("mouseover", move, true)
     target.removeEventListener("mousemove", move, true)
-    target.removeEventListener("keydown", keydown, true)
-    target.removeEventListener("keyup", keyup, true)
+    keyboardTarget.removeEventListener("keydown", keydown as EventListener, true)
+    keyboardTarget.removeEventListener("keyup", keyup as EventListener, true)
     target.removeEventListener("mousedown", mousedown, true)
     target.removeEventListener("mouseup", cancel, true)
     target.removeEventListener("dragstart", cancel, true)
     target.removeEventListener("contextmenu", cancel, true)
-    target.removeEventListener("visibilitychange", reset)
-    target.defaultView?.removeEventListener("blur", reset)
+    target.removeEventListener("visibilitychange", resetKeyboard)
+    target.defaultView?.removeEventListener("blur", resetKeyboard)
   }
 }

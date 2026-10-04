@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import type { Config } from "@/types/config/config"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
@@ -12,14 +13,19 @@ vi.mock("@/utils/host/translate/ui/inline-hover-stream-preview", () => ({ create
 vi.mock("@/utils/host/translate/translate-text", () => ({ validateTranslationConfigAndToast: () => true }))
 
 let cleanup: () => void
-beforeEach(() => {
+let pageListeners: AbortController
+beforeEach(async () => {
   vi.useFakeTimers()
+  pageListeners = new window.AbortController()
   vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true } })
   document.body.innerHTML = "<p>Hello reader.</p><input>"
   cleanup = bindHoverTranslation()
   document.querySelector("p")!.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+  await vi.advanceTimersByTimeAsync(0)
+  vi.mocked(getLocalConfig).mockClear()
 })
 afterEach(() => {
+  pageListeners.abort()
   cleanup()
   vi.useRealTimers()
   vi.clearAllMocks()
@@ -27,6 +33,216 @@ afterEach(() => {
 const down = (key = "Alt") => document.dispatchEvent(new KeyboardEvent("keydown", { key }))
 const up = (key = "Alt") => document.dispatchEvent(new KeyboardEvent("keyup", { key }))
 const keyboardTriggers = [["alt", "Alt"], ["control", "Control"], ["shift", "Shift"], ["backtick", "`"]] as const
+function setConfig(config: Config) {
+  vi.mocked(getLocalConfig).mockResolvedValue(config)
+  vi.mocked(watchLocalConfig).mock.calls.at(-1)![0](config, null)
+}
+const backtickConfig = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: "backtick" as const } }
+function backtick(type: "keydown" | "keyup", init: KeyboardEventInit = {}, target: EventTarget = document.body) {
+  const event = new KeyboardEvent(type, { key: "`", code: "Backquote", bubbles: true, cancelable: true, ...init })
+  target.dispatchEvent(event)
+  return event
+}
+
+describe("backtick ownership before the page routes typing into its editor", () => {
+  beforeEach(() => setConfig(backtickConfig))
+
+  it("translates a tap without letting document capture or later window listeners focus the editor", async () => {
+    const input = document.querySelector("input")!
+    const routeToEditor = vi.fn((event: Event) => {
+      input.focus()
+      input.value += (event as KeyboardEvent).key
+    })
+    const release = vi.fn()
+    document.addEventListener("keydown", routeToEditor, { capture: true, signal: pageListeners.signal })
+    window.addEventListener("keydown", routeToEditor, { capture: true, signal: pageListeners.signal })
+    document.addEventListener("keyup", release, { capture: true, signal: pageListeners.signal })
+
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    expect(backtick("keyup").defaultPrevented).toBe(true)
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(routeToEditor).not.toHaveBeenCalled()
+    expect(release).not.toHaveBeenCalled()
+    expect(input.value).toBe("")
+    expect(document.activeElement).toBe(document.body)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "a", code: "KeyA", bubbles: true, cancelable: true }))
+    expect(routeToEditor).toHaveBeenCalled()
+    expect(document.activeElement).toBe(input)
+  })
+
+  it("consumes repeats and release while translating a held key only once", async () => {
+    backtick("keydown")
+    await vi.advanceTimersByTimeAsync(500)
+    expect(backtick("keydown", { repeat: true }).defaultPrevented).toBe(true)
+    expect(backtick("keyup").defaultPrevented).toBe(true)
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+  })
+
+  it.each(["combination", "settings", "mouse", "route"])("keeps ownership until physical release after %s cancels translation", async (reason) => {
+    backtick("keydown")
+    if (reason === "combination")
+      document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift", code: "ShiftLeft", shiftKey: true, bubbles: true }))
+    else if (reason === "settings")
+      setConfig({ ...backtickConfig, features: { ...backtickConfig.features, hoverTranslation: false } })
+    else if (reason === "mouse")
+      document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }))
+    else
+      window.dispatchEvent(new CustomEvent("extension:URLChange"))
+    expect(backtick("keydown", { key: "~", shiftKey: true, repeat: true }).defaultPrevented).toBe(true)
+    expect(backtick("keyup", { key: "~", shiftKey: true }).defaultPrevented).toBe(true)
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+
+    document.body.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift", code: "ShiftLeft", bubbles: true }))
+    setConfig(backtickConfig)
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+  })
+
+  it.each(["input", "textarea", "contenteditable"])("leaves focused %s input alone while the mouse remains over a message", async (kind) => {
+    const editor = document.createElement(kind === "contenteditable" ? "div" : kind)
+    if (kind === "contenteditable") {
+      editor.setAttribute("contenteditable", "true")
+      // jsdom does not implement the browser's isContentEditable property.
+      Object.defineProperty(editor, "isContentEditable", { value: true })
+    }
+    document.body.append(editor)
+    editor.focus()
+    const handler = vi.fn()
+    document.addEventListener("keydown", handler, { capture: true, signal: pageListeners.signal })
+    expect(backtick("keydown", {}, editor).defaultPrevented).toBe(false)
+    expect(backtick("keyup", {}, editor).defaultPrevented).toBe(false)
+    await vi.advanceTimersByTimeAsync(600)
+    expect(handler).toHaveBeenCalledOnce()
+    expect(document.activeElement).toBe(editor)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+
+  it("does not claim a retargeted event from a shadow editor", async () => {
+    const host = document.createElement("div")
+    document.body.append(host)
+    const shadow = host.attachShadow({ mode: "open" })
+    const input = document.createElement("input")
+    shadow.append(input)
+    input.focus()
+    expect(backtick("keydown", { composed: true }, input).defaultPrevented).toBe(false)
+    backtick("keyup", { composed: true }, input)
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { isComposing: true }, { ctrlKey: true }, { altKey: true }, { shiftKey: true }, { metaKey: true },
+  ])("leaves composition and modified keys alone: %s", async (init) => {
+    expect(backtick("keydown", init).defaultPrevented).toBe(false)
+    expect(backtick("keyup", init).defaultPrevented).toBe(false)
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+
+  it.each([false, "alt"] as const)("does not claim backtick when disabled or configured for another trigger: %s", async (setting) => {
+    setConfig({ ...backtickConfig, features: { ...backtickConfig.features, hoverTranslation: setting !== false, hoverHotkey: setting || "backtick" } })
+    expect(backtick("keydown").defaultPrevented).toBe(false)
+    expect(backtick("keyup").defaultPrevented).toBe(false)
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+
+  it.each(["empty", "hidden", "excluded", "editable", "document", "detached"])("does not claim over a %s hover target", async (kind) => {
+    const paragraph = document.querySelector("p")!
+    if (kind === "empty")
+      paragraph.textContent = ""
+    else if (kind === "hidden")
+      paragraph.hidden = true
+    else if (kind === "excluded")
+      paragraph.classList.add("notranslate")
+    else if (kind === "editable")
+      paragraph.setAttribute("contenteditable", "true")
+    else if (kind === "document")
+      document.body.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+    else
+      paragraph.remove()
+    expect(backtick("keydown").defaultPrevented).toBe(false)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+
+  it("respects the configured include scope before claiming the key", async () => {
+    setConfig({ ...backtickConfig, siteRules: { ...backtickConfig.siteRules, userRules: [{ id: "only-article", matches: "*://*/*", includeSelectors: ["article"] }] } })
+    expect(backtick("keydown").defaultPrevented).toBe(false)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+
+  it("can translate an included inline descendant of a block outside the include scope", async () => {
+    const paragraph = document.querySelector("p")!
+    paragraph.innerHTML = "<span class='allowed' style='display:inline'>Readable message.</span>"
+    const span = paragraph.querySelector("span")!
+    span.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+    setConfig({ ...backtickConfig, siteRules: { ...backtickConfig.siteRules, userRules: [{ id: "inline-source", matches: "*://*/*", includeSelectors: [".allowed"] }] } })
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(translateWalkedElement).toHaveBeenCalledWith(paragraph, expect.any(String), expect.any(Object), true, expect.any(AbortSignal), expect.any(Function))
+  })
+
+  it("keeps explicit translation groups eligible independently of the include scope", async () => {
+    const paragraph = document.querySelector("p")!
+    paragraph.id = "group"
+    paragraph.innerHTML = "<span id='source'>Readable grouped message.</span>"
+    setConfig({ ...backtickConfig, siteRules: { ...backtickConfig.siteRules, userRules: [{
+      id: "group-source",
+      matches: "*://*/*",
+      includeSelectors: ["#other"],
+      translationGroups: [{ containerSelector: "#group", sourceSelectors: ["#source"] }],
+    }] } })
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+  })
+
+  it("lets keys through before config is ready and ignores a stale initial config", async () => {
+    cleanup()
+    let resolveConfig!: (config: Config) => void
+    vi.mocked(getLocalConfig).mockReturnValueOnce(new Promise(resolve => resolveConfig = resolve))
+    cleanup = bindHoverTranslation()
+    document.querySelector("p")!.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+    expect(backtick("keydown").defaultPrevented).toBe(false)
+    backtick("keyup")
+
+    setConfig(backtickConfig)
+    resolveConfig(DEFAULT_CONFIG)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+  })
+
+  it("cleans up the window listeners and discards a late initial config", async () => {
+    cleanup()
+    let resolveConfig!: (config: Config) => void
+    vi.mocked(getLocalConfig).mockReturnValueOnce(new Promise(resolve => resolveConfig = resolve))
+    cleanup = bindHoverTranslation()
+    document.querySelector("p")!.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+    cleanup()
+    resolveConfig(backtickConfig)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(backtick("keydown").defaultPrevented).toBe(false)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+})
 
 describe("tap-or-hold hover translation", () => {
   it("waits for the complete formula renderer without previewing request placeholders", async () => {
@@ -86,7 +302,7 @@ describe("tap-or-hold hover translation", () => {
   })
 
   it.each(keyboardTriggers)("translates on release after a short %s tap", async (hotkey, key) => {
-    vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
+    setConfig({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
     down(key)
     await vi.advanceTimersByTimeAsync(100)
     expect(translateWalkedElement).not.toHaveBeenCalled()
@@ -97,7 +313,7 @@ describe("tap-or-hold hover translation", () => {
     expect(translateWalkedElement).toHaveBeenCalledTimes(1)
   })
   it.each(keyboardTriggers)("translates a held %s key once, including after release", async (hotkey, key) => {
-    vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
+    setConfig({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
     down(key)
     await vi.advanceTimersByTimeAsync(499)
     expect(translateWalkedElement).not.toHaveBeenCalled()
@@ -130,7 +346,7 @@ describe("tap-or-hold hover translation", () => {
     expect(translateWalkedElement).toHaveBeenCalledWith(next, expect.any(String), expect.any(Object), true, expect.any(AbortSignal), expect.any(Function))
   })
   it.each([["control", "Control"], ["shift", "Shift"], ["backtick", "`"]] as const)("uses the configured %s trigger instead of Alt", async (hotkey, key) => {
-    vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
+    setConfig({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: hotkey } })
     down()
     await vi.advanceTimersByTimeAsync(600)
     expect(translateWalkedElement).not.toHaveBeenCalled()
@@ -187,7 +403,7 @@ describe("tap-or-hold hover translation", () => {
     expect(translateWalkedElement).not.toHaveBeenCalled()
   })
   it("recovers after Shift changes the character of a pressed key", async () => {
-    vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true, hoverHotkey: "backtick" } })
+    setConfig(backtickConfig)
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "`", code: "Backquote" }))
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift", code: "ShiftLeft", shiftKey: true }))
     document.dispatchEvent(new KeyboardEvent("keyup", { key: "~", code: "Backquote", shiftKey: true }))
