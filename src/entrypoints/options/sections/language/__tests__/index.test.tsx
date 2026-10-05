@@ -62,43 +62,22 @@ describe("translation language settings and popup", () => {
     expect(screen.getByText("原文为「日语」时，译成「英语」。")).toBeInTheDocument()
   })
 
-  it("keeps the original once in both preview modes without changing actual display modes", async () => {
-    const { container, store } = await renderLanguages()
+  it("saves keeping the original without changing actual display modes", async () => {
+    const { store } = await renderLanguages()
     choose("第二语言", "original")
-    const preview = container.querySelector("[data-preview=\"primary\"]")!
-    await waitFor(() => expect(preview).toHaveAttribute("data-preserved", "true"))
-    expect(preview.querySelectorAll(".language-preview-original")).toHaveLength(1)
-    expect(preview.querySelector(".language-preview-translation")).toBeNull()
-    fireEvent.click(screen.getByRole("button", { name: "仅译文" }))
-    expect(preview).toHaveTextContent("先读懂世界，再表达自己。")
-    expect(preview.querySelectorAll(".language-preview-original")).toHaveLength(1)
-    expect(preview.querySelector(".language-preview-translation")).toBeNull()
+    expect(screen.getByText("原文为「简体中文」时，保持原文。")).toBeInTheDocument()
+    expect(screen.getByText("双语对照中只显示原文，不重复展示。")).toBeInTheDocument()
     expect(store.get(configAtom).translate.mode).toBe(configured.translate.mode)
     expect(store.get(configAtom).features.subtitleMode).toBe(configured.features.subtitleMode)
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.language.secondaryCode).toBe("original"))
   })
 
   it("allows same-family choices without resetting either selected language", async () => {
-    const { container, store } = await renderLanguages()
+    const { store } = await renderLanguages()
     choose("第二语言", "cmn-Hant")
     expect(screen.getByRole("button", { name: "第二语言" })).toHaveAttribute("data-value", "cmn-Hant")
     expect(screen.getByText("主要语言和第二语言相同，该语言的内容将保持原文。")).toBeInTheDocument()
-    expect(container.querySelector("[data-preview=\"primary\"]")).toHaveAttribute("data-preserved", "true")
     await waitFor(() => expect(store.get(configAtom).language).toEqual({ ...configured.language, secondaryCode: "cmn-Hant" }))
-  })
-
-  it("labels unsupported preview samples accurately without inventing a translation", async () => {
-    const { container } = await renderLanguages()
-    choose("主要语言", "arb")
-    const other = container.querySelector("[data-preview=\"other\"]")!
-    const primary = container.querySelector("[data-preview=\"primary\"]")!
-    expect(other.querySelector(".language-preview-translation")).toBeNull()
-    expect(other.querySelector(".language-preview-original")).toBeNull()
-    expect(primary.querySelector(".language-preview-original")).toBeNull()
-    expect(primary.querySelector(".language-preview-translation")).toBeNull()
-    expect(other).toHaveTextContent("该语言暂无示例文本，实际翻译将使用你选择的语言。")
-    expect(primary).toHaveTextContent("该语言暂无示例文本，实际翻译将使用你选择的语言。")
-    expect(other.querySelector(".language-preview-direction")).toHaveTextContent("阿拉伯语")
   })
 
   it("uses the same two settings in the popup and makes its condition follow the primary language", async () => {

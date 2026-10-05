@@ -21,12 +21,7 @@
   margin-bottom: 10px;
 }
 
-.language-settings-preview {
-  margin-top: 3px;
-}
-
-.language-settings-rule-heading,
-.language-settings-preview-heading {
+.language-settings-rule-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34,8 +29,7 @@
   min-width: 0;
 }
 
-.language-settings-rule-heading h3,
-.language-settings-preview-heading h2 {
+.language-settings-rule-heading h3 {
   margin: 0;
   font-size: 13px;
   font-weight: 500;
@@ -81,109 +75,17 @@
   font-size: 11px;
 }
 
-.language-settings-preview-heading {
-  margin-bottom: 14px;
-}
-
-.language-settings-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.language-preview-paper {
-  min-width: 0;
-  min-height: 198px;
-  padding: 19px 21px;
-  border: 1px solid var(--rf-border);
-  border-radius: 10px;
-  background: var(--options-paper);
-}
-
-.language-preview-direction {
+.language-settings-foot {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 20px;
-  color: var(--rf-muted-foreground);
-  font-size: 11px;
-  overflow-wrap: anywhere;
-}
-
-.language-preview-keep {
-  flex-shrink: 0;
-  margin-left: auto;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--options-sidebar);
-  font-size: 10px;
-}
-
-.language-preview-original {
-  font-size: 15px;
-  line-height: 1.8;
-}
-
-.language-preview-original[data-language="eng"] {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 20px;
-  line-height: 1.5;
-  letter-spacing: -0.2px;
-}
-
-.language-preview-translation {
-  margin-top: 17px;
-  padding-left: 11px;
-  border-left: 2px solid var(--rf-primary);
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.language-preview-translation[data-language="eng"] {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 17px;
-  line-height: 1.6;
-}
-
-.language-preview-paper[data-mode="translationOnly"] .language-preview-translation {
-  margin-top: 0;
-  padding-left: 0;
-  border: 0;
-}
-
-.language-preview-unavailable,
-.language-settings-preview-note,
-.language-settings-foot {
+  gap: 6px;
   color: var(--rf-muted-foreground);
   font-size: 11px;
   line-height: 1.7;
 }
 
-.language-preview-unavailable {
-  margin-top: 12px;
-}
-
-.language-settings-preview-note {
-  margin-top: 12px;
-}
-
-.language-settings-foot {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 @media (max-width: 600px) {
-  .language-settings-preview { margin-top: -3px; }
+  .language-settings-rule-heading { gap: 10px; }
   .language-settings-picker { flex-basis: 142px; }
-  .language-settings-rule-heading,
-  .language-settings-preview-heading { gap: 10px; }
-  .language-settings-preview-grid { grid-template-columns: 1fr; gap: 10px; }
-  .language-preview-paper { min-height: 0; padding: 14px 16px; }
-  .language-preview-direction { margin-bottom: 10px; font-size: 10px; }
-  .language-preview-original { font-size: 13px; line-height: 1.6; }
-  .language-preview-original[data-language="eng"] { font-size: 16px; line-height: 1.4; }
-  .language-preview-translation { margin-top: 10px; padding-left: 9px; font-size: 12px; line-height: 1.6; }
-  .language-preview-translation[data-language="eng"] { font-size: 14px; line-height: 1.4; }
   .language-settings-foot { display: none; }
 }
