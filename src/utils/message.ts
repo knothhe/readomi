@@ -45,7 +45,6 @@ interface ProtocolMap {
   askManagerToTogglePageTranslation: (data: { enabled: boolean }) => void
   refreshPageTranslation: (data: { url: string, failedOnly: boolean }) => Promise<void>
   getSubtitleStatus: () => SubtitleStatus
-  getTabSubtitleStatus: (data: { tabId: number }) => Promise<SubtitleStatus>
   retrySubtitleTranslation: () => void
   // translation progress (content script -> background -> popup)
   reportTranslationProgress: (data: TranslationProgress) => void

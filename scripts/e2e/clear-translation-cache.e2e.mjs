@@ -275,12 +275,11 @@ it("retries failed paragraphs and retranslates an already translated page", asyn
   assert.equal(await blocks.count(), 5)
 })
 
-it("keeps video settings directly visible on articles and reports a detected player’s subtitle status", async () => {
+it("keeps video controls directly visible without subtitle status notices", async () => {
   const { popup, article, worker } = await setup()
   const section = popup.getByRole("region", { name: "Video subtitles", exact: true })
   await section.getByRole("switch", { name: "Video subtitle translation", exact: true }).waitFor()
   assert.equal(await popup.locator("summary").filter({ hasText: "Video subtitles" }).count(), 0)
-  await new Promise(resolve => setTimeout(resolve, 100))
   assert.equal(await section.getByRole("status").count(), 0, "pages without videos have no subtitle status notice")
   assert.equal(await section.getByRole("button", { name: "Style and position", exact: true }).count(), 0)
   await article.evaluate(() => {
@@ -291,10 +290,14 @@ it("keeps video settings directly visible on articles and reports a detected pla
     track.mode = "showing"
     track.addCue(new VTTCue(0, 60, "A readable subtitle."))
   })
-  await popup.getByText("Enable subtitle translation to read the player’s existing captions.", { exact: true }).waitFor()
   assert.equal(await section.isVisible(), true)
+  assert.equal(await section.getByRole("status").count(), 0)
+  const requests = service.translationRequests().length
   await section.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
-  await popup.getByText("Subtitle translation is ready.", { exact: true }).waitFor({ timeout: 20_000 })
+  await article.locator("[data-readomi-subtitles]").waitFor()
+  await waitFor(() => service.translationRequests().length, count => count > requests, "subtitle translation starts without popup notices")
+  assert.equal(await section.getByRole("status").count(), 0)
+  assert.equal(await section.getByRole("alert").count(), 0)
   await screenshot(popup, "popup-video-ready.png")
   assert.equal(await section.isVisible(), true, "subtitle settings remain directly accessible")
   await worker.evaluate(async () => {
