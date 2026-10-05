@@ -6,6 +6,7 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Reading-Refinement-Popup-Help-Dark.html", title: "弹窗 · 深色问题操作按钮", x: 1360, y: 166250, w: 320, h: 650 },
     { file: "Reading-Refinement-Setup-Empty.html", title: "首次配置 · 空白", x: 0, y: 165000, w: 1280, h: 900 },
     { file: "Reading-Refinement-Popup-Recovery-Pending.html", title: "弹窗 · 重试处理中", x: 1360, y: 165000, w: 320, h: 650 },
     { file: "Reading-Refinement-Popup-Recovery-Error.html", title: "弹窗 · 重试未完成", x: 2720, y: 165000, w: 320, h: 650 },
