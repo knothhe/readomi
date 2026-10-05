@@ -68,7 +68,6 @@ window.READOMI_CANVAS = {
     { file: "Settings-Languages-Dark.html", title: "语言规则 · 设置 · 深色", x: 0, y: 113570, w: 1280, h: 900 },
     { file: "Settings-Languages-Mobile.html", title: "语言规则 · 设置 · 窄屏", x: 1360, y: 113570, w: 390, h: 900 },
     { file: "Settings-Languages-Same.html", title: "语言规则 · 设置 · 主次同语言时保持原文", x: 1880, y: 113570, w: 1280, h: 900 },
-    { file: "Settings-Languages-No-Preview.html", title: "语言规则 · 设置 · 所选语言暂无示例文本", x: 3320, y: 113570, w: 1280, h: 900 },
     { file: "Page-Bilingual.html", title: "语言规则 · 网页 · 中英双向 / 双语对照", x: 0, y: 114820, w: 960, h: 620 },
     { file: "Page-Keep.html", title: "语言规则 · 网页 · 中文保持原文 / 双语对照", x: 1040, y: 114820, w: 960, h: 620 },
     { file: "Page-Only-Keep.html", title: "语言规则 · 网页 · 中文保持原文 / 仅译文", x: 2080, y: 114820, w: 960, h: 620 },
