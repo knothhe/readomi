@@ -7,6 +7,30 @@ import { isForceInlineTranslation } from "./translation-utils"
 
 export type TranslationLayout = "block" | "inline"
 const pendingLayouts = new WeakMap<HTMLElement, TranslationLayout | null>()
+const PARAGRAPH_LAYOUT_TAGS = new Set(["P", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "BLOCKQUOTE", "FIGCAPTION"])
+
+/** A whole paragraph keeps its layout when single-child unwrapping reaches an inline span. */
+function paragraphLayoutSource(target: TransNode, sources: readonly TransNode[], config: Config): TransNode {
+  const source = sources.length === 1 ? sources[0] : undefined
+  if (!source || source === target || !isHTMLElement(source) || !source.contains(target))
+    return target
+
+  let element = isHTMLElement(target) ? target : target.parentElement
+  while (element) {
+    if (PARAGRAPH_LAYOUT_TAGS.has(element.tagName) && isNaturalBlockTransNode(element))
+      return element
+    // Neutral spans can wrap prose. Controls and flex containers keep their
+    // own inline layout even when a paragraph surrounds the entire control.
+    if (window.getComputedStyle(element).display.includes("flex")
+      || (element.tagName !== "SPAN" && isForceInlineTranslation(element, config))) {
+      return target
+    }
+    if (element === source)
+      break
+    element = element.parentElement
+  }
+  return target
+}
 
 /** Resolve once per translation group, before a stream or the final DOM writes. */
 export function resolveTranslationLayout(
@@ -24,15 +48,16 @@ export function resolveTranslationLayout(
     return "block"
   if (matches(rule.forceInlineStyleSelector))
     return "inline"
-  // Natural layout belongs to the insertion target after unwrapping. A site's
-  // explicit style selectors above can still keep the original paragraph block.
-  if (isForceInlineTranslation(target, config))
+  // Insertion and layout have different sources: preserve complete semantic
+  // paragraphs, while partial groups and generic containers keep target layout.
+  const layoutSource = paragraphLayoutSource(target, sources, config)
+  if (isForceInlineTranslation(layoutSource, config))
     return "inline"
   if (forceBlock)
     return "block"
-  if (isNaturalInlineTransNode(target))
+  if (isNaturalInlineTransNode(layoutSource))
     return "inline"
-  return isNaturalBlockTransNode(target) ? "block" : null
+  return isNaturalBlockTransNode(layoutSource) ? "block" : null
 }
 
 // The request contract stays shared with subtitles and translation quality.
