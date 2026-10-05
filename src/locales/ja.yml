@@ -490,7 +490,7 @@ manualService:
   advanced: その他のパラメーター
   compatible: OpenAI 互換サービス
 configBackup:
-  title: バックアップとキャッシュ
+  title: バックアップ
   backup: バックアップ
   restore: 復元
   description: Exports include API keys and custom headers. Keep them private.
@@ -779,7 +779,7 @@ cacheManagement:
   title: 翻訳キャッシュ
   clearAll: すべてのキャッシュを削除
   clear: 削除
-  description: 7日を超えた記録は自動で削除されます。キャッシュを削除しても、表示中の訳文とサービス設定は残ります。
+  description: 7日を超えた記録は自動で削除されます。
   pending: すべてのキャッシュを削除中…
   success: 翻訳と要約のキャッシュをすべて削除しました。
   failed: キャッシュを削除できませんでした。再試行してください。

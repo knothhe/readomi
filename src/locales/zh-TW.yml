@@ -490,7 +490,7 @@ manualService:
   advanced: 更多參數
   compatible: OpenAI 相容服務
 configBackup:
-  title: 備份與快取
+  title: 備份
   backup: 備份
   restore: 還原
   description: Exports include API keys and custom headers. Keep them private.
@@ -774,7 +774,7 @@ cacheManagement:
   title: 翻譯快取
   clearAll: 清空所有快取
   clear: 清空
-  description: 快取會自動清理超過 7 天的記錄。清空快取不會移除目前頁面的譯文或翻譯服務設定。
+  description: 快取會自動清理超過 7 天的記錄。
   pending: 正在清空所有快取…
   success: 所有翻譯與摘要快取已清空。
   failed: 清空失敗，請重試。

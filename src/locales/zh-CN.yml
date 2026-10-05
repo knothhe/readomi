@@ -486,7 +486,7 @@ manualService:
   advanced: 更多参数
   compatible: OpenAI 兼容服务
 configBackup:
-  title: 备份与缓存
+  title: 备份
   backup: 备份
   restore: 恢复
   description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
@@ -757,7 +757,7 @@ cacheManagement:
   title: 翻译缓存
   clearAll: 清空所有缓存
   clear: 清空
-  description: 缓存会自动清理超过 7 天的记录。清空缓存不会移除当前页面的译文或翻译服务配置。
+  description: 缓存会自动清理超过 7 天的记录。
   pending: 正在清空所有缓存…
   success: 所有翻译与摘要缓存已清空。
   failed: 清空失败，请重试。

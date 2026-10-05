@@ -510,7 +510,7 @@ manualService:
   advanced: Diğer parametreler
   compatible: OpenAI uyumlu hizmet
 configBackup:
-  title: Yedekleme ve önbellek
+  title: Yedekleme
   backup: Yedekleme
   restore: Geri yükleme
   description: Exports include API keys and custom headers. Keep them private.
@@ -807,8 +807,7 @@ cacheManagement:
   title: Çeviri önbelleği
   clearAll: Tüm önbelleği temizle
   clear: Temizle
-  description: 7 günden eski kayıtlar otomatik temizlenir. Önbelleği temizlemek
-    görünen çevirileri ve hizmet ayarlarını korur.
+  description: 7 günden eski kayıtlar otomatik temizlenir.
   pending: Tüm önbellek temizleniyor…
   success: Tüm çeviri ve özet önbelleği temizlendi.
   failed: Önbellek temizlenemedi. Tekrar deneyin.

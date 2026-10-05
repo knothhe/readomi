@@ -4,7 +4,7 @@ import { mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import process from "node:process"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -126,7 +126,7 @@ it("centers the settings workspace on wide screens and restores shortcut default
   for (const width of [1920, 2504, 2560, 3840]) {
     await page.setViewportSize({ width, height: width === 2504 ? 1302 : 1440 })
     let starts
-    for (const section of ["service", "reading", "features", "quality", "shortcut", "appearance", "backup"]) {
+    for (const section of ["service", "reading", "features", "quality", "shortcut", "appearance", "cache", "backup"]) {
       await page.locator(`nav a[href='#${section}']`).click()
       const layout = await noOverflow(page)
       const nextStarts = { sidebarLeft: layout.sidebar.left, sidebarTop: layout.sidebar.top, mainLeft: layout.main.left, mainTop: layout.main.top, titleTop: layout.title.top }
@@ -136,7 +136,7 @@ it("centers the settings workspace on wide screens and restores shortcut default
         starts = nextStarts
       assert.equal(layout.dpr, 2)
       assert.ok(layout.section.width <= layout.main.width + 1, "sections fit the content column")
-      if (["service", "quality", "shortcut", "appearance", "backup"].includes(section))
+      if (["service", "quality", "shortcut", "appearance", "cache", "backup"].includes(section))
         assert.ok(layout.section.width <= 760, "single-column settings retain a readable form width")
       if (layout.formWidth)
         assert.ok(layout.formWidth <= 760, "forms keep the designed maximum width")
@@ -164,13 +164,14 @@ it("centers the settings workspace on wide screens and restores shortcut default
     await button.click()
     await page.keyboard.press(shortcut)
   }
+  await waitForStoredConfig(context, config => config.features.modeShortcut === "Alt+E")
   assert.equal((await storedConfig(context)).features.modeShortcut, "Alt+E")
   assert.equal(await pageKey.locator("kbd").count(), 2, "the shortcut is rendered as individual key buttons")
   await modeKey.click()
   assert.equal(await modeKey.getAttribute("data-recording"), "true")
   await screenshot(page, "wide-shortcut-recording")
   await page.getByRole("button", { name: "Restore defaults", exact: true }).click()
-  const defaults = await storedConfig(context)
+  const defaults = await waitForStoredConfig(context, config => config.translate.page.shortcut === "Alt+E" && config.features.modeShortcut === "Alt+M" && config.features.subtitlesShortcut === "Alt+V")
   assert.equal(defaults.translate.page.shortcut, "Alt+E")
   assert.equal(defaults.features.modeShortcut, "Alt+M")
   assert.equal(defaults.features.subtitlesShortcut, "Alt+V")
@@ -223,7 +224,7 @@ it("keeps settings readable across sizes, preserves prompt contents and drafts, 
   await language.click()
   await page.getByRole("option").filter({ hasText: "简体中文" }).click()
   await page.getByRole("heading", { name: "外观", exact: true }).waitFor()
-  for (const section of ["service", "reading", "features", "quality", "shortcut", "appearance", "backup"]) {
+  for (const section of ["service", "reading", "features", "quality", "shortcut", "appearance", "cache", "backup"]) {
     await page.locator(`nav a[href='#${section}']`).click()
     await noOverflow(page)
     await screenshot(page, `desktop-${section}`)
@@ -257,7 +258,7 @@ it("keeps settings readable across sizes, preserves prompt contents and drafts, 
   await noOverflow(page)
   await screenshot(page, "mobile-prompt-editing")
   await quality.getByRole("button", { name: "取消", exact: true }).click()
-  for (const section of ["service", "reading", "features", "shortcut", "appearance", "backup"]) {
+  for (const section of ["service", "reading", "features", "shortcut", "appearance", "cache", "backup"]) {
     await page.locator(`nav a[href='#${section}']`).click()
     await noOverflow(page)
     await screenshot(page, `mobile-${section}`)
@@ -289,6 +290,7 @@ it("keeps settings readable across sizes, preserves prompt contents and drafts, 
   const previous = Number(await range.inputValue())
   await page.keyboard.press("ArrowRight")
   await page.waitForFunction(value => document.querySelector("input[type='range']")?.value === String(value), previous + 1)
+  await waitForStoredConfig(context, config => config.features.subtitleStyle.fontSize === previous + 1)
   assert.equal((await storedConfig(context)).features.subtitleStyle.fontSize, previous + 1)
   await screenshot(page, "dark-video-range-focus")
   await page.keyboard.press("End")
@@ -349,11 +351,11 @@ it("keeps custom subtitle controls steady and offers all reading styles in a hor
   assert.equal(await depth.inputValue(), "0")
   await depth.fill("35")
   await depth.press("Enter")
-  await page.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.subtitleStyle.backgroundOpacity === 35)
+  await waitForStoredConfig(context, config => config.features.subtitleStyle.backgroundOpacity === 35 && config.features.subtitleStyle.backgroundEnabled)
   assert.deepEqual(await frameGeometry(), plain, "adding a background preserves the custom layout and caption padding")
   assert.equal((await storedConfig(context)).features.subtitleStyle.backgroundEnabled, true)
   await depthSlider.press("Home")
-  await page.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.subtitleStyle.backgroundOpacity === 0)
+  await waitForStoredConfig(context, config => config.features.subtitleStyle.backgroundOpacity === 0 && !config.features.subtitleStyle.backgroundEnabled)
   assert.equal((await storedConfig(context)).features.subtitleStyle.backgroundEnabled, false)
   assert.deepEqual(await frameGeometry(), plain)
   const presets = page.getByRole("group", { name: "Subtitle preset", exact: true })
@@ -386,6 +388,7 @@ it("keeps custom subtitle controls steady and offers all reading styles in a hor
   assert.equal(await styles.getByRole("button").count(), 9)
   assert.equal(await styles.evaluate(list => list.scrollWidth > list.clientWidth), true)
   await styles.getByRole("button").last().click()
+  await waitForStoredConfig(context, config => config.translate.translationNodeStyle.preset === "blur")
   assert.equal((await storedConfig(context)).translate.translationNodeStyle.preset, "blur")
   assert.equal(await styles.evaluate(list => list.scrollLeft > 0), true, "offscreen choices scroll into view")
   await noOverflow(page)

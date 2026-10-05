@@ -520,7 +520,7 @@ manualService:
   advanced: Más parámetros
   compatible: Servicio compatible con OpenAI
 configBackup:
-  title: Copia de seguridad y caché
+  title: Copia de seguridad
   backup: Copia de seguridad
   restore: Restaurar
   description: Exports include API keys and custom headers. Keep them private.
@@ -820,8 +820,7 @@ cacheManagement:
   title: Caché de traducción
   clearAll: Borrar toda la caché
   clear: Borrar
-  description: Los registros de más de 7 días se borran automáticamente. Borrar la
-    caché conserva las traducciones visibles y la configuración del servicio.
+  description: Los registros de más de 7 días se borran automáticamente.
   pending: Borrando toda la caché…
   success: Se borró toda la caché de traducciones y resúmenes.
   failed: No se pudo borrar la caché. Inténtalo de nuevo.

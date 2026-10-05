@@ -510,7 +510,7 @@ manualService:
   advanced: More parameters
   compatible: OpenAI-compatible service
 configBackup:
-  title: Backup & cache
+  title: Backup
   backup: Backup
   restore: Restore
   description: Exports include API keys and custom headers. Keep them private.
@@ -802,8 +802,7 @@ cacheManagement:
   title: Translation cache
   clearAll: Clear all caches
   clear: Clear
-  description: Records older than 7 days are cleared automatically. Clearing
-    caches keeps visible translations and service settings.
+  description: Records older than 7 days are cleared automatically.
   pending: Clearing all caches…
   success: All translation and summary caches were cleared.
   failed: Could not clear the caches. Try again.

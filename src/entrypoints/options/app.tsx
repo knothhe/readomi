@@ -4,6 +4,7 @@ import { i18n } from "#imports"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
 import { AppearanceSection } from "./sections/appearance"
 import { BackupSection } from "./sections/backup"
+import { CacheSection } from "./sections/cache"
 import { FeaturesSection } from "./sections/features"
 import { SettingsHeader } from "./sections/header"
 import { LanguageSection } from "./sections/language"
@@ -21,6 +22,7 @@ const SECTIONS = [
   { id: "quality", title: "options.quality.title", Component: QualitySection },
   { id: "shortcut", title: "options.shortcut.title", Component: ShortcutSection },
   { id: "appearance", title: "options.appearance.title", Component: AppearanceSection },
+  { id: "cache", title: "cacheManagement.title", Component: CacheSection },
   { id: "backup", title: "configBackup.title", Component: BackupSection },
 ] as const
 
@@ -67,6 +69,7 @@ function NavigationIcon({ section }: { section: typeof SECTIONS[number]["id"] })
         <path d="M12 4v16M12 4a8 8 0 0 1 0 16Z" />
       </>
     ),
+    cache: <path d="M4 7c0-2 16-2 16 0s-16 2-16 0Zm0 0v10c0 2 16 2 16 0V7M4 12c0 2 16 2 16 0" />,
     backup: <path d="m3 7 9-4 9 4v10l-9 4-9-4ZM3 7l9 4 9-4M12 11v10M7.5 5l9 4" />,
   }
   return <svg className="options-nav-icon" viewBox="0 0 24 24" aria-hidden="true">{shapes[section]}</svg>

@@ -509,7 +509,7 @@ manualService:
   advanced: Дополнительные параметры
   compatible: Сервис, совместимый с OpenAI
 configBackup:
-  title: Резервная копия и кеш
+  title: Резервная копия
   backup: Резервная копия
   restore: Восстановление
   description: Exports include API keys and custom headers. Keep them private.
@@ -805,8 +805,7 @@ cacheManagement:
   title: Кеш переводов
   clearAll: Очистить весь кеш
   clear: Очистить
-  description: Записи старше 7 дней удаляются автоматически. Очистка кеша
-    сохраняет видимые переводы и настройки сервиса.
+  description: Записи старше 7 дней удаляются автоматически.
   pending: Очистка всего кеша…
   success: Весь кеш переводов и сводок очищен.
   failed: Не удалось очистить кеш. Повторите попытку.

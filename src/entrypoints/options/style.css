@@ -150,6 +150,7 @@ body {
 #quality.settings-section,
 #shortcut.settings-section,
 #appearance.settings-section,
+#cache.settings-section,
 #backup.settings-section {
   max-width: var(--settings-form-width);
 }

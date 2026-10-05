@@ -505,7 +505,7 @@ manualService:
   advanced: Tham số khác
   compatible: Dịch vụ tương thích OpenAI
 configBackup:
-  title: Sao lưu và bộ nhớ đệm
+  title: Sao lưu
   backup: Sao lưu
   restore: Khôi phục
   description: Exports include API keys and custom headers. Keep them private.
@@ -798,8 +798,7 @@ cacheManagement:
   title: Bộ nhớ đệm bản dịch
   clearAll: Xóa toàn bộ bộ nhớ đệm
   clear: Xóa
-  description: Các bản ghi quá 7 ngày được tự động xóa. Xóa bộ nhớ đệm vẫn giữ bản
-    dịch đang hiển thị và cài đặt dịch vụ.
+  description: Các bản ghi quá 7 ngày được tự động xóa.
   pending: Đang xóa toàn bộ bộ nhớ đệm…
   success: Đã xóa toàn bộ bản dịch và tóm tắt trong bộ nhớ đệm.
   failed: Không thể xóa bộ nhớ đệm. Hãy thử lại.
