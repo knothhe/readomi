@@ -73,7 +73,7 @@ export function VideoSiteExclusionControl() {
       </div>
       <span id={descriptionId} className="sr-only">{title}</span>
       {status && (
-        <p id={statusId} role={busy || failed ? "status" : undefined} className={`text-[11px] leading-4 ${failed ? "text-destructive" : "text-muted-foreground"}`}>
+        <p id={statusId} role={busy || failed ? "status" : undefined} className={busy ? "sr-only" : `text-[11px] leading-4 ${failed ? "text-destructive" : "text-muted-foreground"}`}>
           {status}
           {managed && (
             <button

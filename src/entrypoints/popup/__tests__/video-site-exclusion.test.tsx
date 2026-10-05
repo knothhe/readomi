@@ -97,7 +97,7 @@ describe("popup current-site video exclusion switch", () => {
     }))
     const toggle = screen.getByRole("switch", { name: label })
     fireEvent.click(toggle)
-    await waitFor(() => expect(screen.getByText("popup.videoSiteExclusion.saving")).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText("popup.videoSiteExclusion.saving")).toHaveClass("sr-only"))
     expect(toggle).toBeDisabled()
     await waitFor(() => expect(rejectSave).toBeDefined())
     rejectSave(new Error("Storage unavailable"))
