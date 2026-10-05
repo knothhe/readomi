@@ -147,39 +147,15 @@ describe("popup app", () => {
     expect(screen.getByTitle(`${provider.name} · ${model}`)).toHaveTextContent(provider.name)
   })
 
-  it("persists page context without changing other translation settings, even without a service", async () => {
-    const config: Config = {
-      ...DEFAULT_CONFIG,
-      translate: { ...DEFAULT_CONFIG.translate, mode: "translationOnly" },
-    }
-    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
-    renderPopup({ config })
-    const toggle = screen.getByRole("switch", { name: "options.quality.context.title" })
-    expect(toggle).toHaveAttribute("aria-checked", "false")
-
-    fireEvent.click(toggle)
-    await waitFor(async () => expect(await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)).toEqual({
-      ...config,
-      translate: { ...config.translate, enableAIContentAware: true },
-    }))
-    expect(toggle).toHaveAttribute("aria-checked", "true")
-
-    fireEvent.click(toggle)
-    await waitFor(async () => expect(await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)).toEqual(config))
-    expect(toggle).toHaveAttribute("aria-checked", "false")
-  })
-
-  it("reflects page-context changes made in settings while the popup is open", async () => {
-    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, configWithKey)
+  it("keeps article context in settings and exposes quality and agent repair under help", () => {
     renderPopup({ config: configWithKey })
-    const toggle = screen.getByRole("switch", { name: "options.quality.context.title" })
-    expect(toggle).toHaveAttribute("aria-checked", "false")
-
-    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, {
-      ...configWithKey,
-      translate: { ...configWithKey.translate, enableAIContentAware: true },
-    })
-    await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", "true"))
+    expect(screen.queryByRole("switch", { name: "options.quality.context.title" })).toBeNull()
+    const summary = screen.getByText("popup.recovery.help")
+    expect(summary.closest("details")).not.toHaveAttribute("open")
+    fireEvent.click(summary)
+    fireEvent.click(screen.getByRole("button", { name: "popup.recovery.quality" }))
+    expect(openOptionsPage).toHaveBeenCalledWith({ section: "quality" })
+    expect(screen.getByRole("button", { name: /siteRuleAgent.entry/ })).toBeVisible()
   })
 
   it("persists the subtitle toggle while preserving the hover preference and subtitle mode", async () => {

@@ -58,4 +58,27 @@ describe("translation progress tracker", () => {
 
     expect(tracker.getTranslationProgress().total).toBe(1)
   })
+  it("ignores completion and cancellation from a page session that was restarted", async () => {
+    const tracker = await import("../translation-progress")
+    const old = tracker.trackTranslationStarted()
+    tracker.resetTranslationProgress()
+    const current = tracker.trackTranslationStarted()
+    tracker.trackTranslationFinished(false, old)
+    tracker.trackTranslationCancelled(old)
+    expect(tracker.getTranslationProgress()).toEqual({ total: 1, done: 0, failed: 0 })
+    tracker.trackTranslationFinished(true, current)
+    expect(tracker.getTranslationProgress()).toEqual({ total: 1, done: 1, failed: 0 })
+  })
+
+  it("replaces failed work during retry and removes cancelled work from the total", async () => {
+    const tracker = await import("../translation-progress")
+    const failed = tracker.trackTranslationStarted()
+    tracker.trackTranslationFinished(false, failed)
+    tracker.trackTranslationRetry()
+    const retry = tracker.trackTranslationStarted()
+    tracker.trackTranslationFinished(true, retry)
+    const cancelled = tracker.trackTranslationStarted()
+    tracker.trackTranslationCancelled(cancelled)
+    expect(tracker.getTranslationProgress()).toEqual({ total: 1, done: 1, failed: 0 })
+  })
 })

@@ -9,6 +9,7 @@ import { setUpDatabaseCleanup } from "./db-cleanup"
 import { setupIframeInjection } from "./iframe-injection"
 import { setupLLMGenerateTextMessageHandlers } from "./llm-generate-text"
 import { setupSiteRuleSessions } from "./site-rule-sessions"
+import { setupSubtitleStatus } from "./subtitle-status"
 import { setupTranslationProgress } from "./translation-progress"
 import { setUpWebPageTranslationQueue } from "./translation-queues"
 import { translationMessage } from "./translation-signal"
@@ -34,6 +35,7 @@ export default defineBackground({
     translationMessage()
     setupActionIcons()
     setupTranslationProgress()
+    setupSubtitleStatus()
 
     setUpWebPageTranslationQueue()
     void setUpDatabaseCleanup()

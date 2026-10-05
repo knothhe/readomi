@@ -5,6 +5,7 @@ import { sendMessage } from "@/utils/message"
 const REPORT_DELAY_MS = 150
 
 let progress: TranslationProgress = EMPTY_TRANSLATION_PROGRESS
+let generation = 0
 let reportTimer: ReturnType<typeof setTimeout> | null = null
 
 function report() {
@@ -25,9 +26,19 @@ function scheduleReport() {
 export function trackTranslationStarted() {
   progress = { ...progress, total: progress.total + 1 }
   scheduleReport()
+  return generation
 }
 
-export function trackTranslationFinished(succeeded: boolean) {
+export function trackTranslationRetry() {
+  if (progress.failed === 0)
+    return
+  progress = { total: Math.max(0, progress.total - 1), done: Math.max(0, progress.done - 1), failed: progress.failed - 1 }
+  scheduleReport()
+}
+
+export function trackTranslationFinished(succeeded: boolean, requestGeneration = generation) {
+  if (requestGeneration !== generation)
+    return
   progress = {
     total: progress.total,
     done: progress.done + 1,
@@ -36,7 +47,15 @@ export function trackTranslationFinished(succeeded: boolean) {
   scheduleReport()
 }
 
+export function trackTranslationCancelled(requestGeneration = generation) {
+  if (requestGeneration !== generation)
+    return
+  progress = { ...progress, total: Math.max(progress.done, progress.total - 1) }
+  scheduleReport()
+}
+
 export function resetTranslationProgress() {
+  generation++
   progress = EMPTY_TRANSLATION_PROGRESS
   if (reportTimer) {
     clearTimeout(reportTimer)

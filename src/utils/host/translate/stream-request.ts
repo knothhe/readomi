@@ -13,6 +13,7 @@ export interface HoverStreamRequest {
   langConfig: LanguagePolicyConfig
   providerConfig: ProviderConfig
   hash: string
+  pageUrl?: string
   context?: WebPagePromptContext
   customPromptsConfig?: Config["translate"]["customPromptsConfig"]
 }

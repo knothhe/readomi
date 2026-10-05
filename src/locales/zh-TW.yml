@@ -6,11 +6,11 @@ languageCombobox:
   noLanguagesFound: 找不到語言
 popup:
   clearTranslationCache:
-    label: 清空快取
-    description: 清空所有頁面已儲存的譯文，下次翻譯會重新請求。
-    clearing: 清空中…
-    cleared: 翻譯快取已清空
-    failed: 清空失敗，請重試。
+    label: 清理目前頁面快取
+    description: 只清理目前頁面的文字、字幕與上下文摘要快取；已有譯文保留，下次翻譯會重新請求。
+    clearing: 正在清理目前頁面快取…
+    cleared: 目前頁面快取已清理
+    failed: 清理失敗，請重試。
   serviceSwitch:
     switchLabel: 目前服務：$1，切換服務
     title: 切換服務
@@ -52,8 +52,16 @@ popup:
     missingKey: 尚未設定金鑰
   setup:
     title: 還沒有翻譯服務
-    description: 在設定頁貼上 agent 產生的設定，就能翻譯。
+    description: 在設定中選擇服務並填寫 API Key，就能開始翻譯。
     openSettings: 前往設定
+  recovery:
+    help: 翻譯有問題？
+    quality: 調整譯文品質
+    retryFailed: 重試失敗段落
+    retranslate: 重新翻譯此頁
+    retranslateDescription: 使用目前服務與設定，重新請求本頁譯文。
+    pending: 正在重試…
+    failed: 操作未完成，請重新開啟彈出視窗後重試。
 errorRecovery:
   title: 應用程式發生異常
   description: 已進入復原模式。請重新整理頁面或重設設定後再試一次。
@@ -132,7 +140,7 @@ options:
     reconfigure: 重新設定
     empty:
       title: 還沒有翻譯服務
-      description: 把說明交給你的 agent。它會用你的金鑰驗證翻譯服務的設定，放進剪貼簿，你貼到下面。
+      description: 選擇服務，填寫 API Key 和模型；也可以貼上 agent 驗證好的設定。
     copyInstructions: 複製給 agent 的說明
     copied: 已複製
     edit: 修改
@@ -220,7 +228,7 @@ options:
     web: 網頁翻譯
     shared: 網頁與影片字幕共用
     context:
-      title: 使用網頁摘要
+      title: 結合文章上下文
       description: 先參考文章摘要，再翻譯每個段落，幫助理解文章主題。
       note: "摘要取自正文前 2,000 個字元；首次產生需要額外請求翻譯服務。"
       purpose: 讓段落翻譯參考文章主題。
@@ -231,7 +239,9 @@ options:
       edit: 修改
       system: 系統提示詞
       template: 提示詞範本
-      tokens: "{{input}} 是本次要翻譯的文字，必須保留。\n{{targetLanguage}} 是此段依翻譯語言規則決定的目標語言。"
+      tokens: "{{input}} 是本次要翻譯的文字，必須保留。
+
+        {{targetLanguage}} 是此段依翻譯語言規則決定的目標語言。"
       missingInput: "請在範本中保留 {{input}}，用於放入待翻譯文字。"
       restore: 恢復預設
       cancel: 取消
@@ -257,6 +267,14 @@ translation:
   retry: 重試
   invalidResult: 譯文的語言或內容不符合要求，請重試。
   unknownError: 發生錯誤
+  errorReasons:
+    key: 金鑰無效或沒有存取權限，請在設定中修改翻譯服務。
+    rate: 請求過多，請稍後重試或切換服務。
+    timeout: 服務回應逾時，請重試。
+    network: 無法連線至翻譯服務，請檢查網路與服務位址。
+    service: 翻譯服務暫時無法使用，請稍後重試或切換服務。
+    quality: 譯文格式不完整，請重試。
+    unknown: 請檢查翻譯服務或重試，可展開錯誤詳情查看原因。
 agentInstructions:
   noConfiguration: （尚未設定）
   text: |
@@ -456,19 +474,28 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: 選擇服務，填寫 API Key 和模型，檢查成功後即可翻譯。
+  advanced: 更多參數
+  compatible: OpenAI 相容服務
 configBackup:
-  title: 備份
+  title: 備份與快取
   backup: 備份
   restore: 還原
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: 儲存目前設定。
   exportAction: 匯出
@@ -488,13 +515,17 @@ features:
   hoverStream: 懸停翻譯串流顯示
   hoverStreamDescription: 逐步顯示譯文，減少等待。
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +542,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -589,7 +621,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: 恢復預設
   restoreFailed: 恢復失敗，請再試一次。
@@ -597,11 +630,17 @@ translationShortcuts:
   modeHint: 僅切換網頁的顯示方式。
   subtitles: Toggle video subtitles
   subtitlesHint: 開關目前頁面的影片翻譯。
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: Hover translation trigger
   hoverHelp: 觸發方式說明
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -731,3 +770,22 @@ siteRuleAgent:
   scopeHelp: 目前頁面不在規則範圍內，請返回適用頁面。
   requestFailed: 翻譯請求失敗，譯文效果仍待確認。
   modify: 修改設定
+cacheManagement:
+  title: 翻譯快取
+  clearAll: 清空所有快取
+  clear: 清空
+  description: 快取會自動清理超過 7 天的記錄。清空快取不會移除目前頁面的譯文或翻譯服務設定。
+  pending: 正在清空所有快取…
+  success: 所有翻譯與摘要快取已清空。
+  failed: 清空失敗，請重試。
+subtitleStatus:
+  none: 目前頁面未偵測到影片。
+  off: 啟用字幕翻譯，讀取播放器已有字幕。
+  excluded: 此網站已排除字幕翻譯。
+  disabled: 請先在播放器中開啟原字幕。
+  missing: 未找到可用字幕；Readomi 翻譯已有字幕。
+  waiting: 正在等待字幕文字…
+  ready: 字幕已就緒。
+  delayed: 字幕翻譯較慢，原字幕仍可閱讀。
+  failed: 字幕翻譯失敗，請檢查翻譯服務或重試。
+  retry: 重試字幕翻譯

@@ -51,8 +51,12 @@ async function setup() {
   const popup = await context.newPage()
   await popup.setViewportSize({ width: 320, height: 640 })
   await popup.goto(`chrome-extension://${launched.extensionId}/popup.html`)
-  await popup.getByRole("button", { name: "Clear cache", exact: true }).waitFor()
-  return { popup, worker }
+  const article = await context.newPage()
+  await article.goto(`${service.origin}/article?id=a`)
+  await article.bringToFront()
+  await popup.reload()
+  await popup.getByRole("button", { name: "Clear this page’s cache", exact: true }).waitFor()
+  return { popup, worker, article, extensionId: launched.extensionId }
 }
 
 async function caches(worker) {
@@ -78,16 +82,18 @@ async function caches(worker) {
   })
 }
 
-async function seedSummary(worker) {
-  await worker.evaluate(async () => {
+async function seedSummary(worker, pageUrl) {
+  await worker.evaluate(async (pageUrl) => {
     const database = await new Promise((resolve, reject) => {
       const request = indexedDB.open("JiandaoDB")
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
     })
     try {
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pageUrl))
+      const pageKey = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("")
       const transaction = database.transaction("articleSummaryCache", "readwrite")
-      transaction.objectStore("articleSummaryCache").put({ key: "e2e-summary-preserved", summary: "An existing article summary.", createdAt: new Date() })
+      transaction.objectStore("articleSummaryCache").put({ key: `e2e-summary-${pageKey}`, pageKey, summary: "An existing article summary.", createdAt: new Date() })
       await new Promise((resolve, reject) => {
         transaction.oncomplete = resolve
         transaction.onerror = () => reject(transaction.error)
@@ -97,13 +103,13 @@ async function seedSummary(worker) {
     finally {
       database.close()
     }
-  })
+  }, pageUrl)
 }
 
 async function clearFromPopup(popup) {
   // Success and failure stay actionable; readers can clear again immediately.
-  await popup.getByRole("button", { name: /^(?:Clear cache|Translation cache cleared|Could not clear\. Retry\.)$/ }).click()
-  await popup.getByText("Translation cache cleared", { exact: true }).waitFor()
+  await popup.getByRole("button", { name: /^(?:Clear this page’s cache|This page’s cache was cleared|Could not clear this page’s cache. Try again.)$/ }).click()
+  await popup.getByRole("button", { name: "This page’s cache was cleared", exact: true }).waitFor()
 }
 
 async function screenshot(page, name) {
@@ -139,8 +145,8 @@ async function assertFooterFits(popup) {
 }
 
 /** Hold a real background response without blocking the popup.evaluate call. */
-async function enqueue(popup, id, hash, text) {
-  await popup.evaluate(async ({ id, hash, text }) => {
+async function enqueue(popup, id, hash, text, pageUrl) {
+  await popup.evaluate(async ({ id, hash, text, pageUrl }) => {
     const { config } = await chrome.storage.local.get("config")
     const providerConfig = config.providersConfig.find(provider => provider.id === config.translate.providerId)
     globalThis.e2eCacheRequests ??= new Map()
@@ -150,6 +156,7 @@ async function enqueue(popup, id, hash, text) {
       data: {
         text,
         hash,
+        pageUrl,
         langConfig: config.language,
         providerConfig,
         customPromptsConfig: config.translate.customPromptsConfig,
@@ -157,7 +164,7 @@ async function enqueue(popup, id, hash, text) {
       },
     })
     globalThis.e2eCacheRequests.set(id, reply)
-  }, { id, hash, text })
+  }, { id, hash, text, pageUrl })
 }
 
 async function completedRequest(popup, id) {
@@ -166,72 +173,60 @@ async function completedRequest(popup, id) {
   return reply.response
 }
 
-it("clears translation cache from the popup while retaining summaries, configuration and displayed translations", async () => {
-  const { popup, worker } = await setup()
+it("clears only this page's text and summary caches, retains visible translations, and clears all from settings", async () => {
+  const { popup, worker, article, extensionId } = await setup()
   await screenshotFooter(popup)
-  const article = await context.newPage()
-  await article.goto(`${service.origin}/article`)
   await pressTranslateShortcut(article)
   const blocks = article.locator(".readomi-translated-block-content")
   await blocks.nth(4).waitFor({ timeout: 20_000 })
   await article.locator(".readomi-spinner").first().waitFor({ state: "detached" })
-  await waitFor(() => caches(worker), value => value.translations.length > 0, "successful translations are cached")
-  await seedSummary(worker)
+  await seedSummary(worker, article.url())
+  const other = await context.newPage()
+  await other.goto(`${service.origin}/article?id=b`)
+  await pressTranslateShortcut(other)
+  await other.locator(".readomi-translated-block-content").nth(4).waitFor({ timeout: 20_000 })
+  await other.locator(".readomi-spinner").first().waitFor({ state: "detached" })
+  await seedSummary(worker, other.url())
   const before = await caches(worker)
+  assert.equal(new Set(before.translations.map(record => record.pageKey)).size, 2)
   const configuration = await storedConfig(context)
   const displayed = await blocks.allTextContents()
   const requests = service.translationRequests().length
-
+  await article.bringToFront()
+  await popup.reload()
   await clearFromPopup(popup)
   const after = await caches(worker)
-  assert.deepEqual(after.translations, [], "all stored translation entries were cleared")
-  assert.deepEqual(after.summaries, before.summaries, "article summaries remain stored")
-  assert.deepEqual(await storedConfig(context), configuration, "clearing does not change saved preferences or services")
-  assert.deepEqual(await blocks.allTextContents(), displayed, "already displayed translations remain readable")
-  assert.equal(service.translationRequests().length, requests, "clearing does not automatically translate the page again")
+  assert.ok(after.translations.length > 0, "another page retains its translations")
+  assert.equal(new Set(after.translations.map(record => record.pageKey)).size, 1)
+  assert.equal(after.summaries.length, 1, "only this page's summary was cleared")
+  assert.ok(after.translations.every(record => record.pageKey === after.summaries[0].pageKey))
+  assert.deepEqual(await storedConfig(context), configuration)
+  assert.deepEqual(await blocks.allTextContents(), displayed)
+  assert.equal(service.translationRequests().length, requests)
   await assertFooterFits(popup)
   await screenshot(popup, "popup-translation-cache-cleared.png")
-
   await pressTranslateShortcut(article)
   await blocks.first().waitFor({ state: "detached" })
   await pressTranslateShortcut(article)
   await blocks.nth(4).waitFor({ timeout: 20_000 })
-  assert.ok(service.translationRequests().length > requests, "the next translation reaches the provider instead of reusing cleared entries")
-  await waitFor(() => caches(worker), value => value.translations.length > 0, "new successful translations rebuild the cache")
-  assert.deepEqual((await caches(worker)).summaries, before.summaries)
-
-  // Locale preparation is separate from the cache invariants above. Check a
-  // longer footer label with the same 320px viewport and restore preferences.
-  await worker.evaluate(async () => {
-    const { config } = await chrome.storage.local.get("config")
-    config.ui.language = "ru"
-    await chrome.storage.local.set({ config })
-  })
-  try {
-    const russianClear = popup.getByRole("button", { name: /^(?:Очистить кэш|Кэш переводов очищен)$/ })
-    await russianClear.waitFor()
-    await assertFooterFits(popup)
-    await russianClear.click()
-    await popup.getByText("Кэш переводов очищен", { exact: true }).waitFor()
-    await assertFooterFits(popup)
-    await screenshot(popup, "popup-translation-cache-cleared-ru.png")
-  }
-  finally {
-    await worker.evaluate(async (language) => {
-      const { config } = await chrome.storage.local.get("config")
-      config.ui.language = language
-      await chrome.storage.local.set({ config })
-    }, configuration.ui.language)
-  }
-  assert.deepEqual(await storedConfig(context), configuration, "locale layout checks restore the saved preferences")
+  assert.ok(service.translationRequests().length > requests)
+  await waitFor(() => caches(worker), value => new Set(value.translations.map(record => record.pageKey)).size === 2, "this page builds a fresh cache")
+  const settings = await context.newPage()
+  await settings.goto(`chrome-extension://${extensionId}/options.html#backup`)
+  await settings.locator("#backup").getByRole("button", { name: "Clear", exact: true }).click()
+  await settings.getByText("All translation and summary caches were cleared.", { exact: true }).waitFor()
+  assert.deepEqual(await caches(worker), { translations: [], summaries: [] })
+  assert.deepEqual(await storedConfig(context), configuration)
+  assert.deepEqual(await blocks.allTextContents(), displayed)
+  await screenshot(settings, "settings-cache-cleared.png")
 })
 
 it("keeps pre-clear in-flight results out of the cache and starts a fresh request for the same hash after clearing", async () => {
-  const { popup, worker } = await setup()
+  const { popup, worker, article } = await setup()
   const text = "The reader can keep the code and names unchanged in this sentence."
   releaseAnswers = service.holdAnswers()
   const beforeOld = service.translationRequests().length
-  await enqueue(popup, "old-only", "e2e-cache-old-only", text)
+  await enqueue(popup, "old-only", "e2e-cache-old-only", text, article.url())
   await waitFor(() => service.translationRequests().length, value => value === beforeOld + 1, "the provider received a request before clearing")
   await clearFromPopup(popup)
   assert.deepEqual((await caches(worker)).translations, [], "an empty cache can still be cleared while a request is in flight")
@@ -242,14 +237,62 @@ it("keeps pre-clear in-flight results out of the cache and starts a fresh reques
 
   releaseAnswers = service.holdAnswers()
   const beforeSameHash = service.translationRequests().length
-  await enqueue(popup, "old-shared", "e2e-cache-shared", text)
+  await enqueue(popup, "old-shared", "e2e-cache-shared", text, article.url())
   await waitFor(() => service.translationRequests().length, value => value === beforeSameHash + 1, "the first shared-hash request reached the provider")
   await clearFromPopup(popup)
-  await enqueue(popup, "new-shared", "e2e-cache-shared", text)
+  await enqueue(popup, "new-shared", "e2e-cache-shared", text, article.url())
   await waitFor(() => service.translationRequests().length, value => value === beforeSameHash + 2, "clearing separates the new shared-hash request from the old pending promise")
   releaseAnswers()
   releaseAnswers = undefined
   await Promise.all([completedRequest(popup, "old-shared"), completedRequest(popup, "new-shared")])
   const final = await caches(worker)
-  assert.deepEqual(final.translations.map(record => record.key), ["e2e-cache-shared"], "only a result from the new cache generation is stored")
+  assert.equal(final.translations.length, 1, "only a result from the new cache generation is stored")
+  assert.ok(final.translations[0].pageKey, "the stored result belongs to the current page")
+})
+
+it("retries failed paragraphs and retranslates an already translated page", async () => {
+  const { popup, worker, article } = await setup()
+  const setModel = model => worker.evaluate(async (model) => {
+    const { config } = await chrome.storage.local.get("config")
+    config.providersConfig.find(provider => provider.id === config.translate.providerId).model = model
+    await chrome.storage.local.set({ config })
+  }, model)
+  await setModel("rejected-model")
+  await pressTranslateShortcut(article)
+  await article.getByText("Check your translation service or try again. See error details for more information.").first().waitFor({ timeout: 20_000 })
+  await setModel("fake-model")
+  await article.bringToFront()
+  await popup.reload()
+  await popup.getByRole("button", { name: "Retry failed paragraphs", exact: true }).click()
+  const blocks = article.locator(".readomi-translated-block-content")
+  await blocks.nth(4).waitFor({ timeout: 20_000 })
+  await waitFor(() => article.getByText("Check your translation service or try again. See error details for more information.").count(), value => value === 0, "all failed paragraphs recover")
+  await screenshot(popup, "popup-recovered.png")
+  const requests = service.translationRequests().length
+  await popup.getByRole("button", { name: "Retranslate this page", exact: true }).click()
+  await waitFor(() => service.translationRequests().length, value => value > requests, "retranslation requests fresh provider results")
+  await blocks.nth(4).waitFor({ timeout: 20_000 })
+  assert.equal(await blocks.count(), 5)
+})
+
+it("keeps video settings collapsed on articles and opens them for a detected player with subtitle status", async () => {
+  const { popup, article } = await setup()
+  const section = popup.locator("details").filter({ has: popup.locator("summary").filter({ hasText: "Video subtitles" }) })
+  assert.equal(await section.evaluate(element => element.open), false)
+  await article.evaluate(() => {
+    const video = document.createElement("video")
+    video.style.cssText = "display:block;width:640px;height:360px"
+    document.body.prepend(video)
+    const track = video.addTextTrack("subtitles", "English", "en")
+    track.mode = "showing"
+    track.addCue(new VTTCue(0, 60, "A readable subtitle."))
+  })
+  await popup.getByText("Enable subtitle translation to read the player’s existing captions.", { exact: true }).waitFor()
+  assert.equal(await section.evaluate(element => element.open), true)
+  await section.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
+  await popup.getByText("Subtitle translation is ready.", { exact: true }).waitFor({ timeout: 20_000 })
+  await screenshot(popup, "popup-video-ready.png")
+  await section.locator("summary").click()
+  await new Promise(resolve => setTimeout(resolve, 1800))
+  assert.equal(await section.evaluate(element => element.open), false, "polling respects the reader’s manual collapse")
 })

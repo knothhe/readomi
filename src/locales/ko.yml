@@ -6,11 +6,11 @@ languageCombobox:
   noLanguagesFound: 언어를 찾을 수 없습니다
 popup:
   clearTranslationCache:
-    label: 캐시 지우기
-    description: 모든 페이지의 저장된 번역을 지웁니다. 다음 번역 시 새 요청을 보냅니다.
-    clearing: 지우는 중…
-    cleared: 번역 캐시를 지웠습니다
-    failed: 실패했습니다. 다시 시도.
+    label: 현재 페이지 캐시 지우기
+    description: 현재 페이지의 텍스트, 자막, 요약 캐시만 지웁니다. 표시된 번역은 유지되며 다음 번역 시 다시 요청합니다.
+    clearing: 현재 페이지 캐시 지우는 중…
+    cleared: 현재 페이지 캐시를 지웠습니다
+    failed: 지우지 못했습니다. 다시 시도하세요.
   serviceSwitch:
     switchLabel: "현재 서비스: $1. 서비스 전환"
     title: 서비스 전환
@@ -52,8 +52,16 @@ popup:
     missingKey: 키 없음
   setup:
     title: 아직 번역 서비스가 없습니다
-    description: 에이전트가 만든 구성을 설정 페이지에 붙여 넣으면 번역할 수 있습니다.
+    description: 설정에서 서비스를 선택하고 API Key를 입력하면 번역을 시작할 수 있습니다.
     openSettings: 설정에서 구성하기
+  recovery:
+    help: 번역에 문제가 있나요?
+    quality: 번역 품질 조정
+    retryFailed: 실패한 문단 재시도
+    retranslate: 현재 페이지 다시 번역
+    retranslateDescription: 현재 서비스와 설정으로 이 페이지의 번역을 새로 요청합니다.
+    pending: 재시도 중…
+    failed: 작업을 완료하지 못했습니다. 팝업을 다시 열고 재시도하세요.
 errorRecovery:
   title: 문제가 발생했습니다
   description: 복구 모드가 활성화되었습니다. 페이지를 새로고침하거나 설정을 초기화한 뒤 다시 시도하세요.
@@ -132,7 +140,7 @@ options:
     reconfigure: 다시 설정
     empty:
       title: 아직 번역 서비스가 없습니다
-      description: 안내를 에이전트에게 전달하세요. 에이전트가 키로 번역 서비스 구성을 확인해 클립보드에 넣어 줍니다. 아래에 붙여 넣으세요.
+      description: 서비스를 선택하고 API Key와 모델을 입력하세요. agent가 검증한 설정을 붙여 넣을 수도 있습니다.
     copyInstructions: 에이전트용 안내 복사
     copied: 복사됨
     edit: 수정
@@ -220,7 +228,7 @@ options:
     web: 웹 번역
     shared: 웹과 동영상 자막 공통
     context:
-      title: 페이지 요약 사용
+      title: 문서 문맥 사용
       description: 각 문단을 번역하기 전에 글의 요약을 참고하여 주제를 이해하도록 돕습니다.
       note: "요약은 본문의 처음 2,000자를 사용합니다. 처음 생성할 때 번역 서비스에 추가 요청이 필요합니다."
       purpose: 문단 번역에 글의 주제를 참고합니다.
@@ -231,7 +239,9 @@ options:
       edit: 수정
       system: 시스템 프롬프트
       template: 프롬프트 템플릿
-      tokens: "{{input}}은 번역할 텍스트이므로 반드시 유지해야 합니다.\n{{targetLanguage}}는 번역 언어 규칙에 따라 이 구간에 대해 결정되는 대상 언어입니다."
+      tokens: "{{input}}은 번역할 텍스트이므로 반드시 유지해야 합니다.
+
+        {{targetLanguage}}는 번역 언어 규칙에 따라 이 구간에 대해 결정되는 대상 언어입니다."
       missingInput: "번역할 텍스트를 넣을 수 있도록 템플릿에 {{input}}을 유지하세요."
       restore: 기본값으로 되돌리기
       cancel: 취소
@@ -246,7 +256,8 @@ options:
         description: 페이지 설명
         content: "본문의 처음 2,000자"
         summary: 페이지 요약(요약 활성화 필요)
-        note: 제목과 활성화된 요약은 자동으로 제공되므로 반복해서 작성할 필요가 없습니다. 다른 페이지 정보는 변수를 사용해 별도 줄에 넣으세요. 자막 번역에서는 값이 없는 줄을 생략합니다.
+        note: 제목과 활성화된 요약은 자동으로 제공되므로 반복해서 작성할 필요가 없습니다. 다른 페이지 정보는 변수를 사용해 별도 줄에 넣으세요.
+          자막 번역에서는 값이 없는 줄을 생략합니다.
   shortcut:
     title: 단축키
     togglePage: 이 페이지 번역 / 원문 보기
@@ -257,6 +268,14 @@ translation:
   retry: 다시 시도
   invalidResult: 번역의 언어나 내용이 요구 사항에 맞지 않습니다. 다시 시도해 주세요.
   unknownError: 문제가 발생했습니다
+  errorReasons:
+    key: 키가 잘못되었거나 접근이 거부되었습니다. 설정에서 번역 서비스를 수정하세요.
+    rate: 요청이 너무 많습니다. 잠시 후 재시도하거나 서비스를 바꾸세요.
+    timeout: 서비스 응답 시간이 초과되었습니다. 다시 시도하세요.
+    network: 연결할 수 없습니다. 네트워크와 서비스 주소를 확인하세요.
+    service: 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 재시도하거나 서비스를 바꾸세요.
+    quality: 번역 형식이 불완전합니다. 다시 시도하세요.
+    unknown: 번역 서비스를 확인하거나 다시 시도하세요. 오류 상세 정보에서 원인을 확인할 수 있습니다.
 agentInstructions:
   noConfiguration: (아직 없음)
   text: |
@@ -456,19 +475,28 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: 서비스를 선택하고 API Key와 모델을 입력한 뒤 연결을 확인하면 번역을 시작할 수 있습니다.
+  advanced: 추가 매개변수
+  compatible: OpenAI 호환 서비스
 configBackup:
-  title: 백업
+  title: 백업 및 캐시
   backup: 백업
   restore: 복원
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: 현재 설정을 저장합니다.
   exportAction: 내보내기
@@ -488,13 +516,17 @@ features:
   hoverStream: 마우스 오버 번역 스트리밍
   hoverStreamDescription: 번역을 점진적으로 표시해 대기 시간을 줄입니다.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +543,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -546,7 +579,8 @@ subtitleStyle:
   commonSizes: 자주 쓰는 크기
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: 창 크기가 바뀌어도 글자 크기는 고정됩니다.
   fontSizeModes:
     video: Scale with video
@@ -558,7 +592,8 @@ subtitleStyle:
   dragHint: Drag subtitles to move them
   previewDragHint: 자막을 드래그해 위치를 조정하고 방향키로 미세 조정하세요.
   previewDragLabel: 드래그 가능한 자막
-  adjustmentHint: 영상 위에서 자막을 드래그해 위치를 조정하세요. 플레이어 도구 모음의 Readomi 아이콘을 클릭하면 스타일과 글자 크기를 조정할 수 있습니다. 변경 사항은 자동으로 저장됩니다.
+  adjustmentHint: 영상 위에서 자막을 드래그해 위치를 조정하세요. 플레이어 도구 모음의 Readomi 아이콘을 클릭하면 스타일과 글자
+    크기를 조정할 수 있습니다. 변경 사항은 자동으로 저장됩니다.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +624,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: 기본값으로 되돌리기
   restoreFailed: 기본값으로 되돌리지 못했습니다. 다시 시도하세요.
@@ -597,11 +633,17 @@ translationShortcuts:
   modeHint: 웹페이지 번역의 표시 방식만 바꿉니다.
   subtitles: Toggle video subtitles
   subtitlesHint: 현재 페이지의 동영상 번역을 켜거나 끕니다.
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: "macOS에서는 Option(⌥), Windows / Linux에서는 Alt를 사용하세요."
   hover: Hover translation trigger
   hoverHelp: 번역 실행 방법
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +666,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +694,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -731,3 +776,22 @@ siteRuleAgent:
   scopeHelp: 이 페이지는 규칙 범위 밖에 있습니다. 일치하는 페이지로 돌아가세요.
   requestFailed: 번역 요청이 실패했습니다. 결과는 아직 확인되지 않았습니다.
   modify: 설정 편집
+cacheManagement:
+  title: 번역 캐시
+  clearAll: 모든 캐시 지우기
+  clear: 지우기
+  description: 7일이 지난 기록은 자동으로 삭제됩니다. 캐시를 지워도 표시된 번역과 서비스 설정은 유지됩니다.
+  pending: 모든 캐시 지우는 중…
+  success: 모든 번역 및 요약 캐시를 지웠습니다.
+  failed: 캐시를 지우지 못했습니다. 다시 시도하세요.
+subtitleStatus:
+  none: 현재 페이지에서 동영상이 감지되지 않았습니다.
+  off: 자막 번역을 켜면 플레이어의 기존 자막을 읽습니다.
+  excluded: 이 사이트에서는 자막 번역이 제외됩니다.
+  disabled: 먼저 플레이어의 원본 자막을 켜세요.
+  missing: 사용할 수 있는 자막이 없습니다. Readomi는 기존 자막을 번역합니다.
+  waiting: 자막 텍스트 기다리는 중…
+  ready: 자막 번역이 준비되었습니다.
+  delayed: 자막 번역이 느립니다. 원본 자막은 계속 읽을 수 있습니다.
+  failed: 자막 번역에 실패했습니다. 서비스를 확인하거나 다시 시도하세요.
+  retry: 자막 번역 재시도

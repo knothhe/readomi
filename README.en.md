@@ -62,6 +62,8 @@ Firefox loading is temporary and must be repeated after restarting the browser.
 
 In Settings → Translation service, enter and test your service manually, or copy the instructions for an agent and paste its verified configuration. See the [setup guide](./docs/agent-setup.md) and optional [readomi-setup skill](./skills/readomi-setup/SKILL.md). Click "Translate this page" or press `Alt+E` (`Option+E` on Mac); repeat to restore the original.
 
+New installations translate other languages into Simplified Chinese and preserve Chinese originals; existing language settings are kept. Retry failed paragraphs or retranslate the page from the popup. The trash icon clears only the current page’s cache, with an explanation on hover. Clear all text, subtitle and summary caches in Settings → Backup & cache. Article context is in Settings → Translation quality, and site repair is under “Translation problems?” in the popup.
+
 Readomi has its own extension identity and can coexist with upstream installations.
 
 ## Development and feedback

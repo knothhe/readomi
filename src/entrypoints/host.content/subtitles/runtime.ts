@@ -1,8 +1,10 @@
 import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
+import type { SubtitleStatus } from "@/types/subtitle-status"
 import type { VideoTranslationControls } from "@/utils/subtitles/translation-controls"
 import { i18n } from "#imports"
+import { NO_VIDEO_STATUS } from "@/types/subtitle-status"
 import { subscribeLocalConfig } from "@/utils/config/storage"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
@@ -11,6 +13,7 @@ import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { setTranslationDirAndLang } from "@/utils/host/translate/translation-attributes"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
+import { onMessage } from "@/utils/message"
 import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { shouldShowVideoControls } from "@/utils/subtitles/control-sites"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
@@ -35,12 +38,16 @@ export function readActiveCueText(track: TextTrack): string {
 }
 
 interface Player {
+  retry: () => void
+  status: () => SubtitleStatus
   tick: () => void
   dispose: () => void
   updateConfig: (config: Config, enabled: boolean, excluded: boolean, storedChange?: boolean) => void
 }
 
 interface SubtitleRenderer {
+  retry: () => void
+  status: () => SubtitleStatus["state"]
   tick: () => void
   dispose: () => void
   updateConfig: (config: Config) => void
@@ -127,6 +134,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   let source = ""
   let text = ""
   let changedAt = 0
+  let state: SubtitleStatus["state"] = "waiting"
   const positionCaption = () => {
     const videoRect = video.getBoundingClientRect()
     box.style.fontSize = `${resolveSubtitleFontSize(appearance, videoRect.width)}px`
@@ -246,8 +254,19 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     const visible = !!text && rect.width > 0 && rect.height > 0 && !video.ended
     box.classList.toggle("empty", !visible)
     const result = translations.get(text)
+    state = youtube?.enabled === false
+      ? "disabled"
+      : !track && !cues.length && !youtubeText
+          ? youtubePlayer && youtube?.enabled === null ? "waiting" : "missing"
+          : !text || adPlaying || video.ended
+              ? "waiting"
+              : translations.hasFailed(text)
+                ? "failed"
+                : result !== undefined
+                  ? "ready"
+                  : Date.now() - changedAt >= 5000 ? "delayed" : "waiting"
     const preserved = result !== undefined && (result.trim() === "" || prepareTranslationText(result) === prepareTranslationText(text))
-    const showOriginal = config.features.subtitleMode === "bilingual" || preserved
+    const showOriginal = config.features.subtitleMode === "bilingual" || preserved || result === undefined
     original.textContent = showOriginal ? text : ""
     original.hidden = !showOriginal
     original.style.marginBottom = preserved ? "0" : ""
@@ -263,6 +282,11 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     translations.update(cues, video.currentTime, video.playbackRate, visible && (cues.length || Date.now() - changedAt >= 300) ? text : "")
   }
   return {
+    status: () => state,
+    retry: () => {
+      translations.clearFailures()
+      tick()
+    },
     tick,
     updateConfig: (next) => {
       if (config.translate.providerId !== next.translate.providerId)
@@ -366,6 +390,8 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
   }
   render()
   return {
+    status: () => ({ hasVideo: true, state: excluded ? "excluded" : !enabled ? "off" : renderer?.status() ?? "waiting" }),
+    retry: () => renderer?.retry(),
     tick: () => {
       syncControls()
       controls?.tick()
@@ -470,6 +496,20 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     }
     players.forEach(player => player.tick())
   }
+  const unsubscribeStatus = onMessage("getSubtitleStatus", () => {
+    if (disposed || isContextInvalid())
+      return NO_VIDEO_STATUS
+    tick()
+    const videos = [...players.keys()].filter((video) => {
+      const rect = video.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
+    }).sort((a, b) => Number(a.paused) - Number(b.paused) || b.getBoundingClientRect().width * b.getBoundingClientRect().height - a.getBoundingClientRect().width * a.getBoundingClientRect().height)
+    return videos.length ? players.get(videos[0])!.status() : NO_VIDEO_STATUS
+  })
+  const unsubscribeRetry = onMessage("retrySubtitleTranslation", () => {
+    if (!disposed && !isContextInvalid())
+      players.forEach(player => player.retry())
+  })
   const unsubscribe = subscribeLocalConfig((config) => {
     if (disposed || isContextInvalid())
       return
@@ -502,6 +542,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
   document.addEventListener("keydown", keydown, true)
   return () => {
     disposed = true
+    unsubscribeStatus()
+    unsubscribeRetry()
     document.removeEventListener("keydown", keydown, true)
     unsubscribe()
     reset()

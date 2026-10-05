@@ -1,8 +1,11 @@
 import type { ProviderConfig } from "@/types/config/provider"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { browser } from "#imports"
-import { DEFAULT_CONFIG } from "@/utils/constants/config"
+import { DEFAULT_CONFIG as READING_DEFAULT_CONFIG } from "@/utils/constants/config"
 import { TRANSLATION_PROTOCOL_VERSION } from "@/utils/host/translate/translation-result"
+
+// These protocol tests exercise both translation directions explicitly.
+const DEFAULT_CONFIG = { ...READING_DEFAULT_CONFIG, language: { ...READING_DEFAULT_CONFIG.language, secondaryCode: "eng" as const } }
 
 const onMessageMock = vi.fn()
 const ensureInitializedConfigMock = vi.fn()
@@ -16,6 +19,8 @@ const translationCacheGetMock = vi.fn()
 const translationCachePutMock = vi.fn()
 const translationCacheDeleteMock = vi.fn()
 const translationCacheClearMock = vi.fn()
+const pageTranslationCacheClearMock = vi.fn()
+const pageSummaryCacheClearMock = vi.fn()
 const logErrorMock = vi.fn()
 const logInfoMock = vi.fn()
 
@@ -47,12 +52,14 @@ vi.mock("@/utils/db/cache-db", () => ({
       get: articleSummaryCacheGetMock,
       put: articleSummaryCachePutMock,
       clear: articleSummaryCacheClearMock,
+      deleteByPage: pageSummaryCacheClearMock,
     },
     translationCache: {
       get: translationCacheGetMock,
       put: translationCachePutMock,
       delete: translationCacheDeleteMock,
       clear: translationCacheClearMock,
+      deleteByPage: pageTranslationCacheClearMock,
     },
   },
 }))
@@ -62,7 +69,7 @@ function getRegisteredMessageHandler(name: string) {
   if (!registration) {
     throw new Error(`Message handler not registered: ${name}`)
   }
-  return registration[1] as (message: { data: Record<string, unknown> }) => Promise<unknown>
+  return registration[1] as (message: { data: Record<string, unknown>, sender?: { tab?: { url?: string } } }) => Promise<unknown>
 }
 
 const llmProvider: ProviderConfig = {
@@ -477,13 +484,13 @@ describe("translation queue helpers", () => {
     }
   })
 
-  it("clears translation cache without clearing article summaries", async () => {
+  it("clears both translation and summary caches from settings", async () => {
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const clear = getRegisteredMessageHandler("clearTranslationCache")
     await expect(clear({ data: {} })).resolves.toBeUndefined()
     expect(translationCacheClearMock).toHaveBeenCalledOnce()
-    expect(articleSummaryCacheClearMock).not.toHaveBeenCalled()
+    expect(articleSummaryCacheClearMock).toHaveBeenCalledOnce()
   })
 
   it("does not cache a pre-clear request or deduplicate a new identical request against it", async () => {
@@ -590,5 +597,97 @@ describe("translation queue helpers", () => {
     await expect(clear({ data: {} })).resolves.toBeUndefined()
     await expect(handler({ data: translationData("successful-write") })).resolves.toEqual(translated("translated text"))
     expect(translationCachePutMock).toHaveBeenCalledTimes(2)
+  })
+  it("clears one page's text and summary cache while retaining another page with identical text", async () => {
+    const records = new Map<string, { key: string, pageKey: string }>()
+    const summaries = new Map<string, { key: string, pageKey: string }>()
+    translationCacheGetMock.mockImplementation(async key => records.get(key))
+    translationCachePutMock.mockImplementation(async (record) => {
+      records.set(record.key, record)
+    })
+    articleSummaryCacheGetMock.mockImplementation(async key => summaries.get(key))
+    articleSummaryCachePutMock.mockImplementation(async (record) => {
+      summaries.set(record.key, record)
+    })
+    pageTranslationCacheClearMock.mockImplementation(async (pageKey) => {
+      for (const [key, record] of records) {
+        if (record.pageKey === pageKey)
+          records.delete(key)
+      }
+    })
+    pageSummaryCacheClearMock.mockImplementation(async (pageKey) => {
+      for (const [key, record] of summaries) {
+        if (record.pageKey === pageKey)
+          summaries.delete(key)
+      }
+    })
+    vi.spyOn(browser.tabs, "get").mockResolvedValue({ id: 7, url: "https://example.com/a" } as unknown as Awaited<ReturnType<typeof browser.tabs.get>>)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const request = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const summary = getRegisteredMessageHandler("getOrGenerateWebPageSummary")
+    const clear = getRegisteredMessageHandler("clearPageTranslationCache")
+    for (const pageUrl of ["https://example.com/a", "https://example.com/b"]) {
+      await request({ data: { ...translationData("same-text"), pageUrl }, sender: { tab: { url: "chrome-extension://readomi/popup.html" } } })
+      await summary({ data: { webTitle: "Same title", webContent: "Same article", providerConfig: llmProvider, pageUrl } })
+    }
+    expect(records.size).toBe(2)
+    expect(summaries.size).toBe(2)
+    expect(executeTranslateMock).toHaveBeenCalledTimes(2)
+    await clear({ data: { tabId: 7, url: "https://example.com/a" } })
+    expect(records.size).toBe(1)
+    expect(summaries.size).toBe(1)
+    await request({ data: { ...translationData("same-text"), pageUrl: "https://example.com/b" } })
+    expect(executeTranslateMock).toHaveBeenCalledTimes(2)
+    await request({ data: { ...translationData("same-text"), pageUrl: "https://example.com/a" } })
+    expect(executeTranslateMock).toHaveBeenCalledTimes(3)
+  })
+
+  it("blocks pre-clear page results from writing back without blocking another page's result", async () => {
+    const oldA = deferred<string>()
+    const pendingB = deferred<string>()
+    executeTranslateMock.mockReturnValueOnce(oldA.promise).mockReturnValueOnce(pendingB.promise).mockResolvedValue(response("新结果"))
+    vi.spyOn(browser.tabs, "get").mockResolvedValue({ id: 7, url: "https://example.com/a" } as unknown as Awaited<ReturnType<typeof browser.tabs.get>>)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const request = getRegisteredMessageHandler("enqueueTranslateRequest")
+    const firstA = request({ data: { ...translationData("old-a"), pageUrl: "https://example.com/a" } })
+    await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledTimes(1))
+    const firstB = request({ data: { ...translationData("other-b"), pageUrl: "https://example.com/b" } })
+    await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledTimes(2))
+    await getRegisteredMessageHandler("clearPageTranslationCache")({ data: { tabId: 7, url: "https://example.com/a" } })
+    oldA.resolve(response("旧结果"))
+    pendingB.resolve(response("其他页结果"))
+    await Promise.all([firstA, firstB])
+    expect(translationCachePutMock).toHaveBeenCalledOnce()
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ translation: "其他页结果" }))
+    await request({ data: { ...translationData("old-a"), pageUrl: "https://example.com/a" } })
+    expect(translationCachePutMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("scopes embedded local-file requests to their top-level page when clearing", async () => {
+    const url = "file:///reader/article.html"
+    vi.spyOn(browser.tabs, "get").mockResolvedValue({ id: 7, url } as unknown as Awaited<ReturnType<typeof browser.tabs.get>>)
+    const { sha256Hex } = await import("@/utils/hash")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    await getRegisteredMessageHandler("enqueueTranslateRequest")({
+      data: { ...translationData("local-frame"), pageUrl: "file:///reader/player.html" },
+      sender: { tab: { url } },
+    })
+    const pageKey = await sha256Hex(url)
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ pageKey }))
+    await getRegisteredMessageHandler("clearPageTranslationCache")({ data: { tabId: 7, url } })
+    expect(pageTranslationCacheClearMock).toHaveBeenCalledWith(pageKey)
+    expect(pageSummaryCacheClearMock).toHaveBeenCalledWith(pageKey)
+  })
+
+  it("refuses a page cache clear after the selected tab navigates", async () => {
+    vi.spyOn(browser.tabs, "get").mockResolvedValue({ id: 7, url: "https://example.com/b" } as unknown as Awaited<ReturnType<typeof browser.tabs.get>>)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    await expect(getRegisteredMessageHandler("clearPageTranslationCache")({ data: { tabId: 7, url: "https://example.com/a" } })).rejects.toThrow("page changed")
+    expect(pageTranslationCacheClearMock).not.toHaveBeenCalled()
+    expect(pageSummaryCacheClearMock).not.toHaveBeenCalled()
   })
 })

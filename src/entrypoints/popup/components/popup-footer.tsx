@@ -181,8 +181,8 @@ export function PopupFooter() {
           <span className="truncate">{serviceLabel}</span>
           <IconChevronDown aria-hidden="true" className={cn("size-3 shrink-0 transition-transform", open && "rotate-180")} stroke={1.75} />
         </button>
-        <ClearTranslationCacheButton />
         <div className="flex shrink-0 items-center gap-0.5">
+          <ClearTranslationCacheButton />
           <WordPrefixEmphasisToggle />
           <button
             type="button"

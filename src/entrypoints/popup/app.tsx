@@ -5,11 +5,11 @@ import { featureProviderConfigAtom } from "@/utils/atoms/provider"
 import { DisplayModeControl } from "./components/display-mode-control"
 import { HoverTranslationControl } from "./components/hover-translation-control"
 import { LanguageRow } from "./components/language-row"
-import { PageContextControl } from "./components/page-context-control"
 import { PopupFooter } from "./components/popup-footer"
 import { SetupPromptCard } from "./components/setup-prompt-card"
 import { SiteRuleAgentEntry } from "./components/site-rule-agent-entry"
 import { TranslateButton } from "./components/translate-button"
+import { TranslationHelp } from "./components/translation-help"
 import { VideoTranslationControl } from "./components/video-translation-control"
 import { usePopupSync } from "./use-popup-sync"
 
@@ -33,10 +33,9 @@ export default function App() {
             </>
           )}
           <HoverTranslationControl />
-          <PageContextControl />
         </section>
         <VideoTranslationControl />
-        <SiteRuleAgentEntry />
+        <TranslationHelp><SiteRuleAgentEntry /></TranslationHelp>
       </div>
       <PopupFooter />
     </div>

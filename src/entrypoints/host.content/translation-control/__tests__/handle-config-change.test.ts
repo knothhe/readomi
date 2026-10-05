@@ -73,7 +73,7 @@ describe("handleTranslationModeChange", () => {
 
   it.each([
     { targetCode: "jpn" as const },
-    { secondaryCode: "original" as const },
+    { secondaryCode: "eng" as const },
   ])("restarts an active page after a language rule changes: %s", (patch) => {
     const manager = createMockManager(true)
     const next = { ...DEFAULT_CONFIG, language: { ...DEFAULT_CONFIG.language, ...patch } }

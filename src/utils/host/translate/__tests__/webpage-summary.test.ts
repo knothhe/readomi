@@ -33,6 +33,7 @@ describe("getOrGenerateWebPageSummary", () => {
     expect(sendMessage).toHaveBeenCalledWith("getOrGenerateWebPageSummary", {
       webTitle: "Page title",
       webContent: "Page body",
+      pageUrl: "https://example.com/article",
       providerConfig: expect.objectContaining({ id: "openai-default" }),
     })
   })

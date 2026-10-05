@@ -6,6 +6,7 @@ import { formatHotkey } from "@/utils/os"
 import { isPageTranslationShortcutEmpty } from "@/utils/page-translation-shortcut"
 import { cn } from "@/utils/styles/utils"
 import { activeTabAtom, pageTranslationEnabledAtom, translationProgressAtom } from "../atoms"
+import { PageRecoveryActions } from "./page-recovery-actions"
 import { TranslationControlRow } from "./translation-control-row"
 
 export async function setPageTranslation(tabId: number, enabled: boolean) {
@@ -85,6 +86,7 @@ export function TranslateButton() {
           {enabled && <ProgressLine />}
         </div>
       )}
+      {enabled && <div className="pb-2"><PageRecoveryActions /></div>}
     </div>
   )
 }

@@ -6,11 +6,11 @@ languageCombobox:
   noLanguagesFound: 言語が見つかりません
 popup:
   clearTranslationCache:
-    label: キャッシュを削除
-    description: すべてのページの保存済み翻訳を削除します。次回の翻訳時に新しいリクエストを送信します。
-    clearing: 削除中…
-    cleared: 翻訳キャッシュ削除済み
-    failed: 削除失敗。再試行。
+    label: このページのキャッシュを削除
+    description: このページの本文・字幕・要約キャッシュだけを削除します。表示中の訳文は残り、次の翻訳で再取得します。
+    clearing: このページのキャッシュを削除中…
+    cleared: このページのキャッシュを削除しました
+    failed: 削除できませんでした。もう一度お試しください。
   serviceSwitch:
     switchLabel: 現在のサービス：$1。サービスを切り替え
     title: サービスを切り替え
@@ -52,8 +52,16 @@ popup:
     missingKey: キー未設定
   setup:
     title: 翻訳サービスがまだありません
-    description: エージェントが生成した設定を設定ページに貼り付けると、翻訳できます。
+    description: 設定でサービスを選び、API Keyを入力すると翻訳を開始できます。
     openSettings: 設定を開く
+  recovery:
+    help: 翻訳に問題がありますか？
+    quality: 翻訳品質を調整
+    retryFailed: 失敗した段落を再試行
+    retranslate: このページを再翻訳
+    retranslateDescription: 現在のサービスと設定で、このページの翻訳を新しく取得します。
+    pending: 再試行中…
+    failed: 操作を完了できませんでした。ポップアップを開き直して再試行してください。
 errorRecovery:
   title: 問題が発生しました
   description: 復旧モードになっています。ページを再読み込みするか、設定をリセットしてからもう一度お試しください。
@@ -132,7 +140,7 @@ options:
     reconfigure: 再設定
     empty:
       title: 翻訳サービスがまだありません
-      description: 説明をエージェントに渡してください。エージェントがあなたのキーで翻訳サービスの設定を確認し、クリップボードに入れます。下に貼り付けてください。
+      description: サービスを選び、API Keyとモデルを入力してください。agentが検証した設定を貼り付けることもできます。
     copyInstructions: エージェント向けの説明をコピー
     copied: コピーしました
     edit: 編集
@@ -220,7 +228,7 @@ options:
     web: ウェブ翻訳
     shared: ウェブと動画字幕で共通
     context:
-      title: ページの要約を使用
+      title: 記事の文脈を使用
       description: 各段落を翻訳する前に記事の要約を参照し、テーマを理解する手がかりにします。
       note: "要約には本文の先頭 2,000 文字を使います。初回の生成には翻訳サービスへの追加リクエストが必要です。"
       purpose: 段落の翻訳に記事のテーマを活用します。
@@ -231,7 +239,9 @@ options:
       edit: 編集
       system: システムプロンプト
       template: プロンプトテンプレート
-      tokens: "{{input}} は翻訳するテキストなので、必ず残してください。\n{{targetLanguage}}は、翻訳言語のルールに基づいてこの段落の翻訳先として決まる言語です。"
+      tokens: "{{input}} は翻訳するテキストなので、必ず残してください。
+
+        {{targetLanguage}}は、翻訳言語のルールに基づいてこの段落の翻訳先として決まる言語です。"
       missingInput: "翻訳するテキストを挿入するため、テンプレートに {{input}} を残してください。"
       restore: デフォルトに戻す
       cancel: キャンセル
@@ -257,6 +267,14 @@ translation:
   retry: 再試行
   invalidResult: 翻訳の言語または内容が要件を満たしていません。再試行してください。
   unknownError: 問題が発生しました
+  errorReasons:
+    key: キーが無効か、アクセスが拒否されました。設定で翻訳サービスを変更してください。
+    rate: リクエストが多すぎます。時間をおくか、サービスを切り替えてください。
+    timeout: サービスがタイムアウトしました。再試行してください。
+    network: 接続できません。ネットワークとサービスのアドレスを確認してください。
+    service: サービスが一時的に利用できません。時間をおくか、サービスを切り替えてください。
+    quality: 翻訳の形式が不完全です。再試行してください。
+    unknown: 翻訳サービスを確認するか再試行してください。エラー詳細も確認できます。
 agentInstructions:
   noConfiguration: （まだありません）
   text: |
@@ -456,19 +474,28 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: サービスを選び、API Keyとモデルを入力し、接続を確認すると翻訳を開始できます。
+  advanced: その他のパラメーター
+  compatible: OpenAI 互換サービス
 configBackup:
-  title: バックアップ
+  title: バックアップとキャッシュ
   backup: バックアップ
   restore: 復元
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: 現在の設定を保存します。
   exportAction: エクスポート
@@ -488,13 +515,17 @@ features:
   hoverStream: ホバー翻訳のストリーミング表示
   hoverStreamDescription: 訳文を順次表示し、待ち時間を減らします。
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +542,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -546,7 +578,8 @@ subtitleStyle:
   commonSizes: よく使うサイズ
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: ウィンドウの大きさを変えても文字サイズは固定です。
   fontSizeModes:
     video: Scale with video
@@ -558,7 +591,8 @@ subtitleStyle:
   dragHint: Drag subtitles to move them
   previewDragHint: 字幕をドラッグして位置を調整できます。矢印キーで微調整もできます。
   previewDragLabel: ドラッグできる字幕
-  adjustmentHint: 動画上で字幕をドラッグして位置を調整できます。プレーヤーのツールバーにある Readomi アイコンをクリックすると、スタイルと文字サイズを変更できます。変更は自動的に保存されます。
+  adjustmentHint: 動画上で字幕をドラッグして位置を調整できます。プレーヤーのツールバーにある Readomi
+    アイコンをクリックすると、スタイルと文字サイズを変更できます。変更は自動的に保存されます。
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +623,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: デフォルトに戻す
   restoreFailed: デフォルトに戻せませんでした。もう一度お試しください。
@@ -597,11 +632,17 @@ translationShortcuts:
   modeHint: ウェブページの翻訳表示のみを切り替えます。
   subtitles: Toggle video subtitles
   subtitlesHint: このページの動画翻訳をオン・オフします。
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: macOSではOption（⌥）、Windows / LinuxではAltを使います。
   hover: Hover translation trigger
   hoverHelp: 翻訳の操作方法
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +665,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +693,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -731,3 +775,22 @@ siteRuleAgent:
   scopeHelp: このページはルールの対象外です。対象ページに戻ってください。
   requestFailed: 翻訳リクエストに失敗しました。結果はまだ確認できていません。
   modify: 設定を編集
+cacheManagement:
+  title: 翻訳キャッシュ
+  clearAll: すべてのキャッシュを削除
+  clear: 削除
+  description: 7日を超えた記録は自動で削除されます。キャッシュを削除しても、表示中の訳文とサービス設定は残ります。
+  pending: すべてのキャッシュを削除中…
+  success: 翻訳と要約のキャッシュをすべて削除しました。
+  failed: キャッシュを削除できませんでした。再試行してください。
+subtitleStatus:
+  none: このページに動画は見つかりません。
+  off: 字幕翻訳を有効にすると、プレーヤーの既存字幕を読み取ります。
+  excluded: このサイトでは字幕翻訳が除外されています。
+  disabled: 先にプレーヤーの元の字幕を有効にしてください。
+  missing: 利用できる字幕がありません。Readomiは既存字幕を翻訳します。
+  waiting: 字幕のテキストを待っています…
+  ready: 字幕翻訳の準備ができました。
+  delayed: 字幕翻訳に時間がかかっています。元の字幕は引き続き読めます。
+  failed: 字幕翻訳に失敗しました。サービスを確認するか再試行してください。
+  retry: 字幕翻訳を再試行

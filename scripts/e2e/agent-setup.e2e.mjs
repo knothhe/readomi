@@ -1,7 +1,6 @@
-/* global chrome -- page.evaluate() reads only the isolated extension test profile. */
 import assert from "node:assert/strict"
 import { after, afterEach, before, it } from "node:test"
-import { clickButton, configureService, launchBrowser, readClipboardWrites, reportFailure, storedConfig, trackClipboard } from "./browser.mjs"
+import { clickButton, configureService, launchBrowser, readClipboardWrites, reportFailure, storedConfig, trackClipboard, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let service
@@ -46,6 +45,7 @@ it("user sets up the service on the settings page: Given no key, When the popup 
   await page.goto(`chrome-extension://${extensionId}/options.html#service`)
   await trackClipboard(page)
   const section = page.locator("#service")
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const editor = section.getByLabel("Translation service configuration")
   await editor.waitFor()
 
@@ -142,16 +142,14 @@ it("user changes the service and the prompt in place: Given a stored key, When t
   await quality.getByLabel("Prompt template", { exact: true }).fill("Translate tersely: {{input}}")
   await quality.getByRole("button", { name: "Apply", exact: true }).click()
   await quality.getByText("Custom", { exact: true }).waitFor()
+  await waitForStoredConfig(context, config => config.translate.customPromptsConfig.patterns[0]?.prompt === "Translate tersely: {{input}}")
   config = await storedConfig(context)
   assert.equal(config.translate.customPromptsConfig.patterns[0]?.prompt, "Translate tersely: {{input}}")
 
   await page.locator("nav a[href=\"#service\"]").click()
   const checkedAt = config.providersConfig.find(provider => provider.name === "Local gateway").connectionCheck.checkedAt
   await serviceAction(section, "Test connection")
-  await page.waitForFunction(async (previousCheck) => {
-    const value = (await chrome.storage.local.get("config")).config
-    return value.providersConfig.find(provider => provider.name === "Local gateway").connectionCheck.checkedAt > previousCheck
-  }, checkedAt)
+  await waitForStoredConfig(context, config => config.providersConfig.find(provider => provider.name === "Local gateway").connectionCheck.checkedAt > checkedAt)
   await section.getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
   const confirmation = service.completions().at(-1)
   assert.equal(confirmation.authorization, "Bearer local-secret-key")

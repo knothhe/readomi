@@ -20,6 +20,7 @@ export async function getOrGenerateWebPageSummary(
     webTitle,
     webContent,
     providerConfig,
+    pageUrl: webPageContext.url,
   })
 
   return summary || null

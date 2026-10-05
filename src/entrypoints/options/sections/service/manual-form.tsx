@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DEFAULT_REQUEST_API, PROVIDER_TYPES, REQUEST_APIS } from "@/types/config/provider"
 import { configAtom } from "@/utils/atoms/config"
 import { saveProviderAtom } from "@/utils/atoms/service"
+import { PROVIDER_ITEMS } from "@/utils/constants/providers"
 import { fetchProviderModels } from "@/utils/providers/models"
 import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
@@ -26,12 +27,12 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
   const store = useStore()
   const saveProvider = useSetAtom(saveProviderAtom)
   const [draft, setDraft] = useState<SetupDocument>(() => ({
-    ...(current ? exportSetupDocument(config, current.id)! : { type: "openai-compatible" as const, model: "" }),
+    ...(current ? exportSetupDocument(config, current.id)! : { type: "openai" as const, model: "" }),
     name: current?.name,
   }))
   const [key, setKey] = useState("")
   const [bodyText, setBodyText] = useState(() => draft.body ? JSON.stringify(draft.body, null, 2) : "")
-  const [bodyExpanded, setBodyExpanded] = useState(() => !!draft.body)
+  const [bodyExpanded, setBodyExpanded] = useState(() => !!draft.body || draft.type === "openai-compatible")
   const body = useMemo(() => {
     try {
       return setupDocumentSchema.shape.body.safeParse(bodyText.trim() ? JSON.parse(bodyText) : undefined)
@@ -137,28 +138,22 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
         void save()
       }}
     >
+      <p className="text-xs leading-5 text-muted-foreground">{i18n.t("manualService.intro")}</p>
       <fieldset disabled={busy} className="grid min-w-0 grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2">
-        <div className="flex min-w-0 flex-col gap-2">
-          <label className={labelClass} htmlFor={nameId}>{i18n.t("manualService.name")}</label>
-          <input id={nameId} className={fieldClass} value={draft.name ?? ""} onChange={e => setDraft({ ...draft, name: e.target.value })} />
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
+        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
           <label className={labelClass} htmlFor={typeId}>{i18n.t("manualService.type")}</label>
           <SettingsSelect
             id={typeId}
             className="w-full"
             value={draft.type}
             disabled={busy}
-            options={PROVIDER_TYPES.map(type => ({ value: type, label: type }))}
+            options={PROVIDER_TYPES.map(type => ({ value: type, label: type === "openai-compatible" ? i18n.t("manualService.compatible") : PROVIDER_ITEMS[type].name }))}
             onValueChange={(value) => {
               setDraft({ type: value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[value as typeof draft.type] })
               setBodyText("")
+              setBodyExpanded(value === "openai-compatible")
             }}
           />
-        </div>
-        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
-          <label className={labelClass} htmlFor={urlId}>{i18n.t("manualService.url")}</label>
-          <input id={urlId} className={fieldClass} type="url" value={draft.baseURL ?? ""} onChange={e => setDraft({ ...draft, baseURL: e.target.value })} />
         </div>
         <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
           <label className={labelClass} htmlFor={keyId}>{i18n.t("manualService.key")}</label>
@@ -188,20 +183,31 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
             </div>
           )}
         </div>
-        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
-          <label className={labelClass} htmlFor={apiId}>{i18n.t("manualService.api")}</label>
-          <SettingsSelect
-            id={apiId}
-            className="w-full"
-            value={draft.api ?? DEFAULT_REQUEST_API[draft.type]}
-            disabled={busy}
-            options={REQUEST_APIS.map(api => ({ value: api, label: api }))}
-            onValueChange={value => setDraft({ ...draft, api: value as typeof draft.api })}
-          />
-        </div>
         <details className="border-y border-border py-4 sm:col-span-2" open={bodyExpanded || !body.success} onToggle={event => setBodyExpanded(event.currentTarget.open)}>
-          <summary className="cursor-pointer text-xs font-medium">{i18n.t("manualService.body")}</summary>
+          <summary className="cursor-pointer text-xs font-medium">{i18n.t("manualService.advanced")}</summary>
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="flex min-w-0 flex-col gap-2">
+              <label className={labelClass} htmlFor={nameId}>{i18n.t("manualService.name")}</label>
+              <input id={nameId} className={fieldClass} value={draft.name ?? ""} onChange={e => setDraft({ ...draft, name: e.target.value })} />
+            </div>
+            <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+              <label className={labelClass} htmlFor={urlId}>{i18n.t("manualService.url")}</label>
+              <input id={urlId} className={fieldClass} type="url" placeholder={baseURL} value={draft.baseURL ?? ""} onChange={e => setDraft({ ...draft, baseURL: e.target.value })} />
+            </div>
+            <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+              <label className={labelClass} htmlFor={apiId}>{i18n.t("manualService.api")}</label>
+              <SettingsSelect
+                id={apiId}
+                className="w-full"
+                value={draft.api ?? DEFAULT_REQUEST_API[draft.type]}
+                disabled={busy}
+                options={REQUEST_APIS.map(api => ({ value: api, label: api }))}
+                onValueChange={value => setDraft({ ...draft, api: value as typeof draft.api })}
+              />
+            </div>
+          </div>
           <div className="mt-4 flex min-w-0 flex-col gap-2">
+            <label className={labelClass} htmlFor={bodyId}>{i18n.t("manualService.body")}</label>
             <textarea
               id={bodyId}
               aria-label={i18n.t("manualService.body")}
@@ -233,7 +239,7 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
         {!current && <div className="sm:col-span-2"><UseAfterAdd value={makeCurrent} onChange={onMakeCurrentChange} disabled={busy} /></div>}
         <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
           {onCancel && <Button type="button" variant="outline" onClick={onCancel}>{i18n.t("options.service.cancel")}</Button>}
-          <Button type="submit" disabled={!body.success}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
+          <Button type="submit" disabled={!body.success || !draft.model.trim() || !effectiveKey}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
         </div>
       </fieldset>
     </form>

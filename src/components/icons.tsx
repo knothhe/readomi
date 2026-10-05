@@ -28,6 +28,7 @@ function icon(paths: string[]) {
 export const IconAlertCircle = icon(["M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0", "M12 8v4", "M12 16h.01"])
 export const IconArrowRight = icon(["M5 12l14 0", "M13 18l6 -6", "M13 6l6 6"])
 export const IconCheck = icon(["M5 12l5 5l10 -10"])
+export const IconTrash = icon(["M3 6h18", "M9 6V3h6v3", "M6 6l1 15h10l1-15", "M10 10v7", "M14 10v7"])
 export const IconChevronDown = icon(["M6 9l6 6l6 -6"])
 export const IconCopy = icon([
   "M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666",

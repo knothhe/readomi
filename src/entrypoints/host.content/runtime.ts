@@ -5,6 +5,7 @@ import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translat
 import { setHostColorTheme } from "@/utils/host-color-theme"
 import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { removeAllTranslatedWrapperNodes } from "@/utils/host/translate/node-manipulation"
+import { retryFailedTranslations } from "@/utils/host/translate/retry-failed"
 import { clearSiteRuleStyles, refreshSiteRuleStyles } from "@/utils/host/translate/ui/site-rule-styles"
 import { ensurePresetStyles } from "@/utils/host/translate/ui/style-injector"
 import { createWordPrefixEmphasisController } from "@/utils/host/word-prefix-emphasis"
@@ -101,6 +102,14 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
     threshold: PRELOAD_THRESHOLD,
   })
   track(() => manager.dispose())
+  track(onMessage("refreshPageTranslation", async ({ data }) => {
+    if (ctx.isInvalid || (window === window.top && location.href !== data.url))
+      throw new Error("The page changed. Reopen the popup and try again.")
+    if (data.failedOnly)
+      await retryFailedTranslations(manager.requestSignal)
+    else
+      await manager.restart()
+  }))
 
   let previewRestoring = false
   let pageTranslationWanted = false

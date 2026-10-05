@@ -87,6 +87,10 @@ export class PageTranslationManager implements IPageTranslationManager {
     return this.isPageTranslating
   }
 
+  get requestSignal(): AbortSignal | undefined {
+    return this.walkController?.signal
+  }
+
   async start(): Promise<void> {
     try {
       await this.startInternal()

@@ -6,11 +6,12 @@ languageCombobox:
   noLanguagesFound: Языки не найдены
 popup:
   clearTranslationCache:
-    label: Очистить кэш
-    description: Удаляет сохранённые переводы всех страниц. Следующий перевод отправит новый запрос.
-    clearing: Очистка…
-    cleared: Кэш переводов очищен
-    failed: Не очищено. Повторить.
+    label: Очистить кеш этой страницы
+    description: Удаляется только кеш текста, субтитров и сводок этой страницы.
+      Видимые переводы сохраняются.
+    clearing: Очистка кеша страницы…
+    cleared: Кеш страницы очищен
+    failed: Не удалось очистить. Повторите попытку.
   serviceSwitch:
     switchLabel: "Текущий сервис: $1. Сменить сервис"
     title: Сменить сервис
@@ -52,11 +53,20 @@ popup:
     missingKey: нет ключа
   setup:
     title: Сервис перевода ещё не настроен
-    description: Вставьте на странице настроек конфигурацию от вашего агента — и можно переводить.
+    description: Выберите сервис и введите API Key в настройках, чтобы начать перевод.
     openSettings: Настроить
+  recovery:
+    help: Проблемы с переводом?
+    quality: Настроить качество перевода
+    retryFailed: Повторить неудачные абзацы
+    retranslate: Перевести страницу заново
+    retranslateDescription: Запросить новые переводы страницы с текущим сервисом и настройками.
+    pending: Повторная попытка…
+    failed: Не удалось выполнить действие. Откройте панель заново и повторите попытку.
 errorRecovery:
   title: Что-то пошло не так
-  description: Включён режим восстановления. Обновите страницу или сбросьте настройки и попробуйте снова.
+  description: Включён режим восстановления. Обновите страницу или сбросьте
+    настройки и попробуйте снова.
   recoveryTitle: Варианты восстановления
   refreshPage: Обновить страницу
   resetAction: Сбросить к настройкам по умолчанию
@@ -86,14 +96,17 @@ options:
     keepPrimary: "Если оригинал на $1, сохранять оригинал."
     keepOriginal: Сохранить оригинал
     keepDescription: "В двуязычном режиме оригинал отображается один раз, без дублирования."
-    sameLanguages: Основной и второй языки совпадают. Текст на этом языке останется в оригинале.
+    sameLanguages: Основной и второй языки совпадают. Текст на этом языке останется
+      в оригинале.
     previewMode: Режим предпросмотра
     previewNote: Направление перевода меняется в зависимости от языка оригинала.
-    previewKeepNote: "Сохранённый оригинал отображается один раз, без дополнительной области перевода."
+    previewKeepNote: "Сохранённый оригинал отображается один раз, без дополнительной
+      области перевода."
     previewOnlyKeepNote: Сохранённый оригинал отображается и в режиме только перевода.
     shownOnce: Показано один раз
     applied: Эти правила действуют для всех функций перевода.
-    sampleUnavailable: Для этого языка нет примера текста. При переводе будет использован выбранный язык.
+    sampleUnavailable: Для этого языка нет примера текста. При переводе будет
+      использован выбранный язык.
     saveFailed: Не удалось сохранить языки перевода. Повторите попытку.
   version: Версия
   title: Настройки
@@ -104,8 +117,10 @@ options:
     saveHint: Сохранение после успешной проверки. Отмена сохраняет существующие сервисы.
     failedAdd: Ошибка подключения. Сервис не добавлен.
     retryAdd: Повторить и добавить
-    draftKept: Введённая конфигурация сохранена в форме. Существующие сервисы продолжают работать.
-    agentHint: "Передайте инструкции агенту, затем вставьте проверенную конфигурацию ниже."
+    draftKept: Введённая конфигурация сохранена в форме. Существующие сервисы
+      продолжают работать.
+    agentHint: "Передайте инструкции агенту, затем вставьте проверенную конфигурацию
+      ниже."
     add: Добавить сервис
     added: Добавленные сервисы
     listLabel: Добавленные сервисы перевода
@@ -115,7 +130,8 @@ options:
     removeCurrentHint: Сначала выберите другой сервис
     back: Назад к сервисам перевода
     editTitle: Изменить $1
-    scope: "Текущий сервис переводит страницы, абзацы и субтитры. При смене сервиса готовые переводы сохраняются."
+    scope: "Текущий сервис переводит страницы, абзацы и субтитры. При смене сервиса
+      готовые переводы сохраняются."
     useAfterAdd: Использовать после добавления
     useAfterAddHint: "Не отмечайте, чтобы продолжить использовать текущий сервис."
     removed: $1 удалён.
@@ -132,7 +148,8 @@ options:
     reconfigure: Настроить заново
     empty:
       title: Сервис перевода ещё не настроен
-      description: Передайте инструкции своему агенту. Он проверит конфигурацию сервиса с вашим ключом и положит её в буфер обмена; вставьте её ниже.
+      description: Выберите сервис, введите API Key и модель. Можно также вставить
+        конфигурацию, проверенную агентом.
     copyInstructions: Скопировать инструкции для агента
     copied: Скопировано
     edit: Изменить
@@ -153,7 +170,8 @@ options:
       current: Сейчас
       after: После
       connection: Связь
-    unchanged: "Совпадает с текущим сервисом. Текст выделен: вставьте, чтобы заменить его целиком, или измените одно поле."
+    unchanged: "Совпадает с текущим сервисом. Текст выделен: вставьте, чтобы
+      заменить его целиком, или измените одно поле."
     failedNotSaved: Ошибка, ничего не сохранено
     editorLabel: Конфигурация сервиса перевода
     placeholder: '{ "type": "deepseek", "apiKey": "…", "model": "…" }'
@@ -220,9 +238,11 @@ options:
     web: Перевод веб-страниц
     shared: Общее для веб-страниц и субтитров
     context:
-      title: Использовать краткое содержание страницы
-      description: "При переводе каждого абзаца модель обращается к краткому содержанию статьи, чтобы понять её тему."
-      note: Краткое содержание использует первые 2 000 символов текста; первое создание требует дополнительного запроса к сервису перевода.
+      title: Учитывать контекст статьи
+      description: "При переводе каждого абзаца модель обращается к краткому
+        содержанию статьи, чтобы понять её тему."
+      note: Краткое содержание использует первые 2 000 символов текста; первое
+        создание требует дополнительного запроса к сервису перевода.
       purpose: Учитывайте тему статьи при переводе абзацев.
     prompt:
       title: Промпт перевода
@@ -231,14 +251,19 @@ options:
       edit: Изменить
       system: Системный промпт
       template: Шаблон промпта
-      tokens: "{{input}} — переводимый текст; этот элемент нужно сохранить.\n{{targetLanguage}} — целевой язык этого фрагмента, определённый правилами языков перевода."
+      tokens: "{{input}} — переводимый текст; этот элемент нужно сохранить.
+
+        {{targetLanguage}} — целевой язык этого фрагмента, определённый
+        правилами языков перевода."
       missingInput: "Сохраните {{input}} в шаблоне для вставки переводимого текста."
       restore: Вернуть по умолчанию
       cancel: Отмена
       apply: Применить
       description: "Задайте тон, термины и формулировки для веб-страниц и субтитров."
-      background: Перевод страниц учитывает заголовок и включённое краткое содержание; для субтитров передаётся только переводимый текст субтитров.
-      systemDescription: "Укажите модели, как переводить, например «используй естественную разговорную речь» или «сохраняй технические термины»."
+      background: Перевод страниц учитывает заголовок и включённое краткое содержание;
+        для субтитров передаётся только переводимый текст субтитров.
+      systemDescription: "Укажите модели, как переводить, например «используй
+        естественную разговорную речь» или «сохраняй технические термины»."
       purpose: Настройте тон и формулировки перевода.
       variables:
         title: Доступная информация о странице
@@ -246,17 +271,30 @@ options:
         description: Описание страницы
         content: Первые 2 000 символов текста
         summary: Краткое содержание страницы (нужно включить его использование)
-        note: Заголовок и включённое краткое содержание передаются автоматически; повторять их не нужно. Добавляйте другие сведения переменными на отдельных строках; при переводе субтитров строки без доступных значений пропускаются.
+        note: Заголовок и включённое краткое содержание передаются автоматически;
+          повторять их не нужно. Добавляйте другие сведения переменными на
+          отдельных строках; при переводе субтитров строки без доступных
+          значений пропускаются.
   shortcut:
     title: Горячая клавиша
     togglePage: Перевести страницу / Показать оригинал
 translation:
   sameLanguage: Исходный и целевой языки должны различаться
-  noApiKey: Сначала добавьте API-ключ. Нажмите на значок Readomi на панели инструментов, чтобы настроить его.
+  noApiKey: Сначала добавьте API-ключ. Нажмите на значок Readomi на панели
+    инструментов, чтобы настроить его.
   failed: Не удалось перевести
   retry: Повторить
   invalidResult: Язык или содержание перевода не соответствует требованиям. Повторите попытку.
   unknownError: Что-то пошло не так
+  errorReasons:
+    key: Неверный ключ или доступ запрещён. Измените сервис перевода в настройках.
+    rate: Слишком много запросов. Повторите позже или смените сервис.
+    timeout: Время ожидания сервиса истекло. Повторите попытку.
+    network: Нет соединения. Проверьте сеть и адрес сервиса.
+    service: Сервис временно недоступен. Повторите позже или смените сервис.
+    quality: Формат перевода неполный. Повторите попытку.
+    unknown: Проверьте сервис или повторите попытку. Причина указана в подробностях
+      ошибки.
 agentInstructions:
   noConfiguration: (пока нет)
   text: |
@@ -456,19 +494,28 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: Выберите сервис, введите API Key и модель, затем проверьте соединение.
+  advanced: Дополнительные параметры
+  compatible: Сервис, совместимый с OpenAI
 configBackup:
-  title: Резервная копия
+  title: Резервная копия и кеш
   backup: Резервная копия
   restore: Восстановление
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: Сохранить текущие настройки.
   exportAction: Экспорт
@@ -488,13 +535,17 @@ features:
   hoverStream: Потоковый перевод при наведении
   hoverStreamDescription: "Показывает перевод постепенно, сокращая ожидание."
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +562,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -546,7 +598,8 @@ subtitleStyle:
   commonSizes: Частые размеры
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: Размер шрифта не меняется при изменении размера окна.
   fontSizeModes:
     video: Scale with video
@@ -556,9 +609,12 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
-  previewDragHint: Перетащите субтитры для смены положения; используйте стрелки для точной настройки.
+  previewDragHint: Перетащите субтитры для смены положения; используйте стрелки
+    для точной настройки.
   previewDragLabel: Субтитры можно перетаскивать
-  adjustmentHint: Перетаскивайте субтитры на видео, чтобы изменить их положение; нажмите значок Readomi на панели инструментов проигрывателя, чтобы настроить стиль и размер текста. Изменения сохраняются автоматически.
+  adjustmentHint: Перетаскивайте субтитры на видео, чтобы изменить их положение;
+    нажмите значок Readomi на панели инструментов проигрывателя, чтобы настроить
+    стиль и размер текста. Изменения сохраняются автоматически.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +645,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: Восстановить настройки по умолчанию
   restoreFailed: Не удалось восстановить настройки по умолчанию. Повторите попытку.
@@ -597,11 +654,17 @@ translationShortcuts:
   modeHint: Меняет только способ отображения перевода веб-страниц.
   subtitles: Toggle video subtitles
   subtitlesHint: Включает или выключает перевод видео на текущей странице.
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: "В macOS используйте Option (⌥), в Windows / Linux — Alt."
   hover: Hover translation trigger
   hoverHelp: Как запускать перевод
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +687,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +715,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -677,7 +743,8 @@ siteRuleAgent:
   entry: Адаптировать сайт с помощью агента
   title: Адаптировать этот сайт
   problem: Что нужно исправить?
-  problemPlaceholder: "Необязательно: например, не работает перевод при наведении или нет вертикальной линии."
+  problemPlaceholder: "Необязательно: например, не работает перевод при наведении
+    или нет вертикальной линии."
   copyInstructions: Копировать инструкции для агента
   paste: Уже есть правила? Вставить настройки
   candidate: Предложенные правила получены
@@ -687,7 +754,8 @@ siteRuleAgent:
   starting: Запуск предпросмотра
   restoring: Восстановление предпросмотра
   paused: Предпросмотр приостановлен
-  pausedHelp: "Вернитесь на $1, чтобы продолжить. Этот сайт использует сохранённые настройки."
+  pausedHelp: "Вернитесь на $1, чтобы продолжить. Этот сайт использует сохранённые
+    настройки."
   invalid: Предложенные правила недействительны
   previewFailed: Не удалось запустить предпросмотр
   noContent: Подходящий текст не найден
@@ -712,7 +780,8 @@ siteRuleAgent:
   close: Закрыть
   collapse: Свернуть
   expand: Развернуть панель адаптации
-  temporary: Предпросмотр действует только в этой вкладке. Сохранённые правила применяются к подходящим страницам.
+  temporary: Предпросмотр действует только в этой вкладке. Сохранённые правила
+    применяются к подходящим страницам.
   summary: Добавить или обновить $1 пользовательских правил; приостановить $2.
   contentCount: На этой странице найдено $1 текстовых областей.
   copied: Скопировано
@@ -721,13 +790,35 @@ siteRuleAgent:
   openFailed: Не удалось открыть панель. Обновите страницу и повторите попытку.
   unsupported: Перед адаптацией сайта откройте обычную веб-страницу.
   manage: Управление правилами сайтов
-  settingsHelp: Откройте всплывающее окно Readomi на сайте и выберите «Адаптировать сайт с помощью агента».
+  settingsHelp: Откройте всплывающее окно Readomi на сайте и выберите
+    «Адаптировать сайт с помощью агента».
   advanced: Расширенное редактирование JSON
   delete: Удалить правило
   enabled: Включено
   disabled: Приостановлено
   userAction: Проверьте предпросмотр на странице и сами нажмите «Сохранить правила».
-  hoverTriggerHelp: Удержание кнопки мыши на ссылках пока не поддерживается. Выберите клавишу для перевода при наведении во всплывающем окне.
+  hoverTriggerHelp: Удержание кнопки мыши на ссылках пока не поддерживается.
+    Выберите клавишу для перевода при наведении во всплывающем окне.
   scopeHelp: Эта страница вне области действия правила. Вернитесь на подходящую страницу.
   requestFailed: Запрос перевода завершился ошибкой. Результат ещё не подтверждён.
   modify: Изменить настройки
+cacheManagement:
+  title: Кеш переводов
+  clearAll: Очистить весь кеш
+  clear: Очистить
+  description: Записи старше 7 дней удаляются автоматически. Очистка кеша
+    сохраняет видимые переводы и настройки сервиса.
+  pending: Очистка всего кеша…
+  success: Весь кеш переводов и сводок очищен.
+  failed: Не удалось очистить кеш. Повторите попытку.
+subtitleStatus:
+  none: Видео на странице не обнаружено.
+  off: Включите перевод субтитров для чтения существующих субтитров плеера.
+  excluded: На этом сайте перевод субтитров исключён.
+  disabled: Сначала включите исходные субтитры в плеере.
+  missing: Подходящие субтитры не найдены. Readomi переводит существующие субтитры.
+  waiting: Ожидание текста субтитров…
+  ready: Перевод субтитров готов.
+  delayed: Перевод субтитров идёт медленно. Исходные субтитры остаются доступными.
+  failed: Не удалось перевести субтитры. Проверьте сервис или повторите попытку.
+  retry: Повторить перевод субтитров

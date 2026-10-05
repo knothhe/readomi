@@ -29,7 +29,7 @@ export function ServiceSection() {
   const config = useAtomValue(configAtom)
   const providers = config.providersConfig.filter(provider => provider.apiKey?.trim())
   const [editing, setEditing] = useState<string | null>(() => providers.length ? null : "add")
-  const [editorMode, setEditorMode] = useState<"manual" | "agent">("agent")
+  const [editorMode, setEditorMode] = useState<"manual" | "agent">("manual")
   const [busy, setBusy] = useState(false)
   const [makeCurrent, setMakeCurrent] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export function ServiceSection() {
     setFeedback(null)
   }
   const openEditor = (id: string) => {
-    setEditorMode("agent")
+    setEditorMode("manual")
     setMakeCurrent(false)
     setFeedback(null)
     setEditing(id)

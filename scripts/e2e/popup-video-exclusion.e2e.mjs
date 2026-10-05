@@ -142,6 +142,10 @@ async function openPopup(host, popupUrl, test) {
     }
   }
   await popup.waitForURL(popupUrl)
+  const videoSection = popup.locator("details").filter({ has: popup.locator("summary").filter({ hasText: /Video subtitles|视频字幕/ }) })
+  await videoSection.waitFor()
+  if (!await videoSection.evaluate(element => element.open))
+    await videoSection.locator("summary").click()
   await popup.getByRole("switch", { name: /Exclude this site from video translation|此网站不翻译视频/, exact: true }).waitFor()
   await waitFor(() => popup.evaluate(() => window.e2eActiveTabQueries), queries => queries?.some(tabs => tabs.some(tab => tab.id === target.id && tab.url === target.url)), "popup bootstrap did not query the actual active host tab")
   const proof = `${mode} queried host tab ${target.id}: ${target.url}`
@@ -209,6 +213,7 @@ async function expectCompactExclusion(popup, toggle, description = "Includes sub
 it("popup exclusion reads the actual active host, restores subtitles and synchronizes exact domain rules with settings", async (test) => {
   const { host, page: settings, extensionId, popupUrl } = await prepare()
   await settings.goto(`chrome-extension://${extensionId}/options.html#features`)
+  await settings.locator("summary").filter({ hasText: "More options" }).click()
   await ruleSection(settings).getByRole("heading", { name: "Sites without video translation", exact: true }).waitFor()
   const child = await context.newPage()
   await child.goto(CHILD_URL)
@@ -271,6 +276,7 @@ it("popup exclusion reads the actual active host, restores subtitles and synchro
   await popup.getByRole("button", { name: "Style and position", exact: true }).click()
   const managedSettings = await openedSettings
   await managedSettings.waitForURL(`chrome-extension://${extensionId}/options.html#features`)
+  await managedSettings.locator("summary").filter({ hasText: "More options" }).click()
   await ruleSection(managedSettings).getByText(HOST, { exact: true }).waitFor()
   await removeDomain(managedSettings)
   await waitFor(() => storedConfig(context), config => JSON.stringify(config.features.videoExcludedSites) === JSON.stringify(RETAINED), "settings deletion did not remove the popup rule")
@@ -328,6 +334,7 @@ it("the popup cannot remove wider domain, wildcard or regex exclusions and disab
       await popup.getByRole("button", { name: "Manage rules", exact: true }).click()
       const settings = await nextSettings
       await settings.waitForURL(`chrome-extension://${extensionId}/options.html#features`)
+      await settings.locator("summary").filter({ hasText: "More options" }).click()
       await ruleSection(settings).getByText(rule.value, { exact: true }).waitFor()
     }
     await closePopup(popup)

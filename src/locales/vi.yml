@@ -6,11 +6,12 @@ languageCombobox:
   noLanguagesFound: Không tìm thấy ngôn ngữ
 popup:
   clearTranslationCache:
-    label: Xóa bộ nhớ đệm
-    description: Xóa bản dịch đã lưu cho tất cả các trang. Lần dịch tiếp theo sẽ gửi yêu cầu mới.
-    clearing: Đang xóa…
-    cleared: Đã xóa bộ nhớ đệm bản dịch
-    failed: Không thể xóa. Thử lại.
+    label: Xóa bộ nhớ đệm trang này
+    description: Chỉ xóa bản dịch văn bản, phụ đề và tóm tắt của trang này. Bản dịch
+      đang hiển thị được giữ lại.
+    clearing: Đang xóa bộ nhớ đệm trang…
+    cleared: Đã xóa bộ nhớ đệm trang
+    failed: Không thể xóa. Hãy thử lại.
   serviceSwitch:
     switchLabel: "Dịch vụ hiện tại: $1. Chuyển dịch vụ"
     title: Chuyển dịch vụ
@@ -52,11 +53,20 @@ popup:
     missingKey: chưa có khóa
   setup:
     title: Chưa có dịch vụ dịch
-    description: Dán cấu hình do agent của bạn tạo vào trang cài đặt là có thể dịch.
+    description: Chọn dịch vụ và nhập API Key trong Cài đặt để bắt đầu dịch.
     openSettings: Thiết lập trong cài đặt
+  recovery:
+    help: Có vấn đề với bản dịch?
+    quality: Điều chỉnh chất lượng dịch
+    retryFailed: Thử lại các đoạn bị lỗi
+    retranslate: Dịch lại trang này
+    retranslateDescription: Yêu cầu bản dịch mới cho trang này với dịch vụ và cài đặt hiện tại.
+    pending: Đang thử lại…
+    failed: Không thể hoàn tất. Mở lại cửa sổ tiện ích rồi thử lại.
 errorRecovery:
   title: Đã xảy ra sự cố
-  description: Chế độ khôi phục đang bật. Hãy tải lại trang hoặc đặt lại cài đặt rồi thử lại.
+  description: Chế độ khôi phục đang bật. Hãy tải lại trang hoặc đặt lại cài đặt
+    rồi thử lại.
   recoveryTitle: Tùy chọn khôi phục
   refreshPage: Tải lại trang
   resetAction: Đặt lại về cài đặt mặc định
@@ -86,14 +96,16 @@ options:
     keepPrimary: "Khi bản gốc là $1, giữ nguyên bản gốc."
     keepOriginal: Giữ nguyên bản gốc
     keepDescription: "Chế độ song ngữ chỉ hiển thị bản gốc một lần, không lặp lại."
-    sameLanguages: Ngôn ngữ chính và ngôn ngữ thứ hai giống nhau. Nội dung bằng ngôn ngữ này sẽ giữ nguyên.
+    sameLanguages: Ngôn ngữ chính và ngôn ngữ thứ hai giống nhau. Nội dung bằng ngôn
+      ngữ này sẽ giữ nguyên.
     previewMode: Chế độ xem trước
     previewNote: Hướng dịch thay đổi theo ngôn ngữ gốc.
     previewKeepNote: "Nội dung được giữ nguyên chỉ hiển thị một lần, không thêm vùng bản dịch."
     previewOnlyKeepNote: Nội dung giữ nguyên vẫn hiển thị trong chế độ chỉ bản dịch.
     shownOnce: Hiển thị một lần
     applied: Các quy tắc này áp dụng cho mọi tính năng dịch.
-    sampleUnavailable: Chưa có văn bản mẫu cho ngôn ngữ này. Bản dịch thực tế sẽ dùng ngôn ngữ bạn chọn.
+    sampleUnavailable: Chưa có văn bản mẫu cho ngôn ngữ này. Bản dịch thực tế sẽ
+      dùng ngôn ngữ bạn chọn.
     saveFailed: Không thể lưu ngôn ngữ dịch. Vui lòng thử lại.
   version: Phiên bản
   title: Cài đặt
@@ -115,7 +127,8 @@ options:
     removeCurrentHint: Hãy chuyển sang dịch vụ khác trước
     back: Quay lại dịch vụ dịch
     editTitle: Sửa $1
-    scope: "Dịch vụ hiện tại dùng để dịch trang, đoạn văn và phụ đề. Bản dịch hiện có được giữ khi chuyển dịch vụ."
+    scope: "Dịch vụ hiện tại dùng để dịch trang, đoạn văn và phụ đề. Bản dịch hiện
+      có được giữ khi chuyển dịch vụ."
     useAfterAdd: Dùng dịch vụ này sau khi thêm
     useAfterAddHint: Bỏ chọn để tiếp tục dùng dịch vụ hiện tại.
     removed: Đã xóa $1.
@@ -132,7 +145,8 @@ options:
     reconfigure: Cấu hình lại
     empty:
       title: Chưa có dịch vụ dịch
-      description: Đưa hướng dẫn cho agent của bạn. Agent sẽ dùng khóa của bạn để kiểm tra cấu hình dịch vụ rồi đặt vào bộ nhớ tạm; hãy dán vào bên dưới.
+      description: Chọn dịch vụ, nhập API Key và mô hình. Bạn cũng có thể dán cấu hình
+        đã được agent kiểm tra.
     copyInstructions: Sao chép hướng dẫn cho agent
     copied: Đã sao chép
     edit: Sửa
@@ -153,7 +167,8 @@ options:
       current: Hiện tại
       after: Sau khi
       connection: Kết nối
-    unchanged: "Giống dịch vụ hiện tại. Đã chọn toàn bộ: dán để thay thế, hoặc sửa một trường."
+    unchanged: "Giống dịch vụ hiện tại. Đã chọn toàn bộ: dán để thay thế, hoặc sửa
+      một trường."
     failedNotSaved: Thất bại, không lưu gì
     editorLabel: Cấu hình dịch vụ dịch
     placeholder: '{ "type": "deepseek", "apiKey": "…", "model": "…" }'
@@ -220,9 +235,10 @@ options:
     web: Dịch trang web
     shared: Dùng chung cho trang web và phụ đề
     context:
-      title: Dùng bản tóm tắt trang
+      title: Sử dụng ngữ cảnh bài viết
       description: Tham khảo bản tóm tắt khi dịch từng đoạn để hỗ trợ hiểu chủ đề bài viết.
-      note: Bản tóm tắt dùng 2.000 ký tự đầu của nội dung; lần tạo đầu tiên cần thêm một yêu cầu đến dịch vụ dịch.
+      note: Bản tóm tắt dùng 2.000 ký tự đầu của nội dung; lần tạo đầu tiên cần thêm
+        một yêu cầu đến dịch vụ dịch.
       purpose: Cho bản dịch từng đoạn tham khảo chủ đề bài viết.
     prompt:
       title: Lời nhắc dịch
@@ -231,14 +247,20 @@ options:
       edit: Sửa
       system: Prompt hệ thống
       template: Mẫu prompt
-      tokens: "{{input}} là văn bản cần dịch và phải được giữ lại.\n{{targetLanguage}} là ngôn ngữ đích được xác định cho đoạn này theo quy tắc ngôn ngữ dịch của bạn."
+      tokens: "{{input}} là văn bản cần dịch và phải được giữ lại.
+
+        {{targetLanguage}} là ngôn ngữ đích được xác định cho đoạn này theo quy
+        tắc ngôn ngữ dịch của bạn."
       missingInput: "Giữ {{input}} trong mẫu để chèn văn bản cần dịch."
       restore: Khôi phục mặc định
       cancel: Hủy
       apply: Áp dụng
-      description: "Thiết lập giọng điệu, thuật ngữ và cách diễn đạt cho cả trang web và phụ đề."
-      background: Dịch trang web tham khảo tiêu đề và bản tóm tắt đã bật; dịch phụ đề chỉ cung cấp văn bản phụ đề cần dịch.
-      systemDescription: "Cho mô hình biết cách dịch, ví dụ “dùng ngôn ngữ tự nhiên” hoặc “giữ thuật ngữ chuyên môn”."
+      description: "Thiết lập giọng điệu, thuật ngữ và cách diễn đạt cho cả trang web
+        và phụ đề."
+      background: Dịch trang web tham khảo tiêu đề và bản tóm tắt đã bật; dịch phụ đề
+        chỉ cung cấp văn bản phụ đề cần dịch.
+      systemDescription: "Cho mô hình biết cách dịch, ví dụ “dùng ngôn ngữ tự nhiên”
+        hoặc “giữ thuật ngữ chuyên môn”."
       purpose: Điều chỉnh giọng điệu và cách dùng từ của bản dịch.
       variables:
         title: Thông tin trang có thể sử dụng
@@ -246,17 +268,29 @@ options:
         description: Mô tả trang
         content: 2.000 ký tự đầu của nội dung
         summary: Bản tóm tắt trang (cần bật tóm tắt)
-        note: "Tiêu đề và bản tóm tắt đã bật được cung cấp tự động, không cần điền lại. Dùng biến để thêm thông tin khác trên các dòng riêng; dịch phụ đề sẽ bỏ qua những dòng không có giá trị."
+        note: "Tiêu đề và bản tóm tắt đã bật được cung cấp tự động, không cần điền lại.
+          Dùng biến để thêm thông tin khác trên các dòng riêng; dịch phụ đề sẽ
+          bỏ qua những dòng không có giá trị."
   shortcut:
     title: Phím tắt
     togglePage: Dịch trang này / Hiển thị bản gốc
 translation:
   sameLanguage: Ngôn ngữ nguồn và đích phải khác nhau
-  noApiKey: Hãy thêm API Key trước. Nhấp vào biểu tượng Readomi trên thanh công cụ để cài đặt.
+  noApiKey: Hãy thêm API Key trước. Nhấp vào biểu tượng Readomi trên thanh công cụ
+    để cài đặt.
   failed: Dịch thất bại
   retry: Thử lại
   invalidResult: Ngôn ngữ hoặc nội dung bản dịch không đáp ứng yêu cầu. Vui lòng thử lại.
   unknownError: Đã xảy ra sự cố
+  errorReasons:
+    key: Khóa không hợp lệ hoặc bị từ chối truy cập. Hãy sửa dịch vụ dịch trong Cài
+      đặt.
+    rate: Quá nhiều yêu cầu. Hãy thử lại sau hoặc đổi dịch vụ.
+    timeout: Dịch vụ phản hồi quá thời gian. Hãy thử lại.
+    network: Không thể kết nối. Hãy kiểm tra mạng và địa chỉ dịch vụ.
+    service: Dịch vụ tạm thời không khả dụng. Hãy thử lại sau hoặc đổi dịch vụ.
+    quality: Định dạng bản dịch chưa đầy đủ. Hãy thử lại.
+    unknown: Hãy kiểm tra dịch vụ hoặc thử lại. Xem chi tiết lỗi để biết nguyên nhân.
 agentInstructions:
   noConfiguration: (chưa có)
   text: |
@@ -456,19 +490,28 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: Chọn dịch vụ, nhập API Key và mô hình, rồi kiểm tra kết nối để bắt đầu dịch.
+  advanced: Tham số khác
+  compatible: Dịch vụ tương thích OpenAI
 configBackup:
-  title: Sao lưu
+  title: Sao lưu và bộ nhớ đệm
   backup: Sao lưu
   restore: Khôi phục
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: Lưu các cài đặt hiện tại.
   exportAction: Xuất
@@ -488,13 +531,17 @@ features:
   hoverStream: Hiển thị bản dịch dần khi rê chuột
   hoverStreamDescription: Hiển thị bản dịch dần để giảm thời gian chờ.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +558,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -546,7 +594,8 @@ subtitleStyle:
   commonSizes: Cỡ chữ thường dùng
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: Cỡ chữ không đổi khi thay đổi kích thước cửa sổ.
   fontSizeModes:
     video: Scale with video
@@ -558,7 +607,9 @@ subtitleStyle:
   dragHint: Drag subtitles to move them
   previewDragHint: Kéo phụ đề để đổi vị trí; dùng phím mũi tên để tinh chỉnh.
   previewDragLabel: Phụ đề có thể kéo
-  adjustmentHint: Kéo phụ đề trên video để điều chỉnh vị trí; nhấp vào biểu tượng Readomi trên thanh công cụ của trình phát để chỉnh kiểu hiển thị và cỡ chữ. Các thay đổi được lưu tự động.
+  adjustmentHint: Kéo phụ đề trên video để điều chỉnh vị trí; nhấp vào biểu tượng
+    Readomi trên thanh công cụ của trình phát để chỉnh kiểu hiển thị và cỡ chữ.
+    Các thay đổi được lưu tự động.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +640,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: Khôi phục mặc định
   restoreFailed: Không thể khôi phục mặc định. Hãy thử lại.
@@ -597,11 +649,17 @@ translationShortcuts:
   modeHint: Chỉ thay đổi cách hiển thị bản dịch trang web.
   subtitles: Toggle video subtitles
   subtitlesHint: Bật hoặc tắt dịch video trên trang hiện tại.
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: Dùng Option (⌥) trên macOS và Alt trên Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cách kích hoạt dịch
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +682,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +710,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -677,7 +738,8 @@ siteRuleAgent:
   entry: Điều chỉnh trang này bằng agent
   title: Điều chỉnh trang này
   problem: Cần điều chỉnh chỗ nào?
-  problemPlaceholder: "Không bắt buộc, ví dụ bản dịch khi di chuột không hoạt động hoặc thiếu đường dọc."
+  problemPlaceholder: "Không bắt buộc, ví dụ bản dịch khi di chuột không hoạt động
+    hoặc thiếu đường dọc."
   copyInstructions: Sao chép hướng dẫn cho agent
   paste: Đã có quy tắc? Dán cấu hình
   candidate: Đã nhận quy tắc đề xuất
@@ -712,7 +774,8 @@ siteRuleAgent:
   close: Đóng
   collapse: Thu gọn
   expand: Mở rộng bảng điều chỉnh
-  temporary: Bản xem trước chỉ áp dụng cho tab này. Quy tắc đã lưu áp dụng cho các trang phù hợp.
+  temporary: Bản xem trước chỉ áp dụng cho tab này. Quy tắc đã lưu áp dụng cho các
+    trang phù hợp.
   summary: Thêm hoặc cập nhật $1 quy tắc người dùng; tạm dừng $2.
   contentCount: Có $1 vùng nội dung đọc phù hợp trên trang này.
   copied: Đã sao chép
@@ -727,7 +790,28 @@ siteRuleAgent:
   enabled: Đã bật
   disabled: Đã tạm dừng
   userAction: Kiểm tra bản xem trước trên trang rồi tự nhấn Lưu quy tắc.
-  hoverTriggerHelp: Chưa hỗ trợ giữ chuột trên liên kết. Hãy chọn phím kích hoạt dịch khi di chuột trong cửa sổ bật lên.
+  hoverTriggerHelp: Chưa hỗ trợ giữ chuột trên liên kết. Hãy chọn phím kích hoạt
+    dịch khi di chuột trong cửa sổ bật lên.
   scopeHelp: Trang này nằm ngoài phạm vi quy tắc. Hãy quay lại trang phù hợp.
   requestFailed: Yêu cầu dịch thất bại. Kết quả vẫn chưa được xác nhận.
   modify: Chỉnh sửa cấu hình
+cacheManagement:
+  title: Bộ nhớ đệm bản dịch
+  clearAll: Xóa toàn bộ bộ nhớ đệm
+  clear: Xóa
+  description: Các bản ghi quá 7 ngày được tự động xóa. Xóa bộ nhớ đệm vẫn giữ bản
+    dịch đang hiển thị và cài đặt dịch vụ.
+  pending: Đang xóa toàn bộ bộ nhớ đệm…
+  success: Đã xóa toàn bộ bản dịch và tóm tắt trong bộ nhớ đệm.
+  failed: Không thể xóa bộ nhớ đệm. Hãy thử lại.
+subtitleStatus:
+  none: Không phát hiện video trên trang này.
+  off: Bật dịch phụ đề để đọc phụ đề có sẵn trong trình phát.
+  excluded: Trang web này đã được loại trừ khỏi dịch phụ đề.
+  disabled: Hãy bật phụ đề gốc trong trình phát trước.
+  missing: Không tìm thấy phụ đề phù hợp. Readomi dịch phụ đề có sẵn.
+  waiting: Đang chờ nội dung phụ đề…
+  ready: Bản dịch phụ đề đã sẵn sàng.
+  delayed: Dịch phụ đề đang chậm. Bạn vẫn có thể đọc phụ đề gốc.
+  failed: Dịch phụ đề thất bại. Hãy kiểm tra dịch vụ hoặc thử lại.
+  retry: Thử lại dịch phụ đề

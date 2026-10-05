@@ -10,7 +10,9 @@ import { getContainingShadowRoot, getOwnerDocument } from "../../dom/node"
 import { translateTextForPage } from "../translate-variants"
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { ensurePresetStyles } from "./style-injector"
-import { trackTranslationFinished, trackTranslationStarted } from "./translation-progress"
+import { trackTranslationCancelled, trackTranslationFinished, trackTranslationStarted } from "./translation-progress"
+
+const spinnerGenerations = new WeakMap<HTMLElement, number>()
 
 /**
  * Create a lightweight spinner element without React/Shadow DOM overhead
@@ -78,7 +80,7 @@ export function createSpinnerInside(translatedWrapperNode: HTMLElement): HTMLEle
   ensurePresetStyles(root)
   const spinner = createLightweightSpinner(ownerDoc)
   translatedWrapperNode.appendChild(spinner)
-  trackTranslationStarted()
+  spinnerGenerations.set(spinner, trackTranslationStarted())
   return spinner
 }
 
@@ -131,7 +133,10 @@ export async function getTranslatedTextAndRemoveSpinner(
   }
   finally {
     spinner.remove()
-    trackTranslationFinished(succeeded)
+    if (signal?.aborted)
+      trackTranslationCancelled(spinnerGenerations.get(spinner))
+    else
+      trackTranslationFinished(succeeded, spinnerGenerations.get(spinner))
   }
 
   return translatedText

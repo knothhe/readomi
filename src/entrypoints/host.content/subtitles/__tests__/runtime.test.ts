@@ -6,6 +6,15 @@ import { translateTextCore } from "@/utils/host/translate/translate-text"
 import * as appearance from "@/utils/subtitles/appearance"
 import { bootstrapVideoSubtitles, readActiveCueText } from "../runtime"
 
+const statusHandlers = vi.hoisted(() => new Map<string, () => unknown>())
+vi.mock("@/utils/message", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/utils/message")>()
+  return { ...original, onMessage: (type: string, handler: () => unknown) => {
+    statusHandlers.set(type, handler)
+    return () => statusHandlers.delete(type)
+  } }
+})
+
 let update: (config: Config | null) => void
 vi.mock("@/utils/config/storage", () => ({ subscribeLocalConfig: (callback: typeof update) => {
   update = callback
@@ -73,6 +82,34 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("reports the detected player's state and restores original captions while waiting or failing in translation-only mode", async () => {
+    const read = () => statusHandlers.get("getSubtitleStatus")!()
+    update(DEFAULT_CONFIG)
+    expect(read()).toEqual({ hasVideo: true, state: "off" })
+    vi.mocked(translateTextCore).mockReturnValue(new Promise(() => {}))
+    update({ ...config, features: { ...config.features, subtitleMode: "translationOnly" } })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(read()).toEqual({ hasVideo: true, state: "waiting" })
+    expect(shadow.querySelector<HTMLElement>(".original")!.hidden).toBe(false)
+    expect(shadow.querySelector(".original")!.textContent).toBe("Hello")
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(read()).toEqual({ hasVideo: true, state: "delayed" })
+    // Replace the language to discard the pending cue and exercise a failure.
+    vi.mocked(translateTextCore).mockRejectedValue(new Error("network failure"))
+    update({ ...config, language: { ...config.language, targetCode: "eng" }, features: { ...config.features, subtitleMode: "translationOnly" } })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(read()).toEqual({ hasVideo: true, state: "failed" })
+    expect(shadow.querySelector<HTMLElement>(".original")!.hidden).toBe(false)
+    vi.mocked(translateTextCore).mockResolvedValue("Recovered caption")
+    statusHandlers.get("retrySubtitleTranslation")!()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(read()).toEqual({ hasVideo: true, state: "ready" })
+    expect(shadow.querySelector(".translated")!.textContent).toBe("Recovered caption")
+    expect(shadow.querySelector<HTMLElement>(".original")!.hidden).toBe(true)
+    video.remove()
+    expect(read()).toEqual({ hasVideo: false, state: "off" })
+  })
+
   it.each(["bilingual", "translationOnly"] as const)("shows preserved original once in %s mode", async (subtitleMode) => {
     track.activeCues = [{ text: "原文保持可读。" }]
     vi.mocked(translateTextCore).mockResolvedValue("")

@@ -266,7 +266,7 @@ describe("tap-or-hold hover translation", () => {
 
   it.each([
     { targetCode: "jpn" as const },
-    { secondaryCode: "original" as const },
+    { secondaryCode: "eng" as const },
   ])("clears completed paragraphs after language rules change: %s", (patch) => {
     const previous = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true } }
     const next = { ...previous, language: { ...previous.language, ...patch } }

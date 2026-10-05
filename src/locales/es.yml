@@ -6,17 +6,19 @@ languageCombobox:
   noLanguagesFound: No se encontraron idiomas
 popup:
   clearTranslationCache:
-    label: Vaciar caché
-    description: Elimina las traducciones guardadas de todas las páginas. La próxima traducción enviará una nueva solicitud.
-    clearing: Vaciando…
-    cleared: Caché de traducción vaciada
-    failed: Error al vaciar. Reintentar.
+    label: Borrar caché de esta página
+    description: Borra solo la caché de texto, subtítulos y resúmenes de esta
+      página. Las traducciones visibles se conservan.
+    clearing: Borrando caché de esta página…
+    cleared: Caché de esta página borrada
+    failed: No se pudo borrar. Inténtalo de nuevo.
   serviceSwitch:
     switchLabel: "Servicio actual: $1. Cambiar servicio"
     title: Cambiar servicio
     manage: Gestionar servicios
     switched: Se cambió a $1
-    switchedDescription: Las nuevas traducciones usan el nuevo servicio. Las existentes se conservan.
+    switchedDescription: Las nuevas traducciones usan el nuevo servicio. Las
+      existentes se conservan.
     failed: No se pudo guardar el servicio actual
     failedDescription: Se sigue usando $1. Intenta cambiar de nuevo.
     retry: Reintentar
@@ -52,11 +54,23 @@ popup:
     missingKey: sin clave
   setup:
     title: Aún no hay servicio de traducción
-    description: Pega en la página de ajustes la configuración que genera tu agente y podrás traducir.
+    description: Elige un servicio e introduce tu API Key en Ajustes para empezar a
+      traducir.
     openSettings: Configurar en ajustes
+  recovery:
+    help: ¿Problemas con la traducción?
+    quality: Ajustar calidad de traducción
+    retryFailed: Reintentar párrafos fallidos
+    retranslate: Volver a traducir esta página
+    retranslateDescription: Solicita nuevas traducciones de esta página con el
+      servicio y los ajustes actuales.
+    pending: Reintentando…
+    failed: No se pudo completar la acción. Abre de nuevo el panel e inténtalo otra
+      vez.
 errorRecovery:
   title: Algo salió mal
-  description: El modo de recuperación está activo. Actualiza la página o restablece la configuración y vuelve a intentarlo.
+  description: El modo de recuperación está activo. Actualiza la página o
+    restablece la configuración y vuelve a intentarlo.
   recoveryTitle: Opciones de recuperación
   refreshPage: Actualizar la página
   resetAction: Restablecer configuración predeterminada
@@ -86,26 +100,32 @@ options:
     keepPrimary: "Si el original está en $1, conservarlo."
     keepOriginal: Conservar original
     keepDescription: "El modo bilingüe muestra el original una vez, sin duplicarlo."
-    sameLanguages: El idioma principal y el segundo son iguales. El contenido en ese idioma conserva el original.
+    sameLanguages: El idioma principal y el segundo son iguales. El contenido en ese
+      idioma conserva el original.
     previewMode: Modo de vista previa
     previewNote: La dirección de traducción cambia según el idioma original.
-    previewKeepNote: "El contenido conservado se muestra una vez, sin ocupar espacio de traducción adicional."
+    previewKeepNote: "El contenido conservado se muestra una vez, sin ocupar espacio
+      de traducción adicional."
     previewOnlyKeepNote: El contenido conservado también se muestra en el modo de solo traducción.
     shownOnce: Se muestra una vez
     applied: Estas reglas se aplican a todas las funciones de traducción.
-    sampleUnavailable: No hay texto de ejemplo para este idioma. Las traducciones usarán el idioma seleccionado.
+    sampleUnavailable: No hay texto de ejemplo para este idioma. Las traducciones
+      usarán el idioma seleccionado.
     saveFailed: No se pudieron guardar los idiomas de traducción. Inténtalo de nuevo.
   version: Versión
   title: Configuración
   preview: Vista previa
   service:
     addPreview: Se añadirá
-    editHint: Guardar los cambios conserva el servicio actual y las traducciones existentes.
-    saveHint: Se guarda tras una comprobación correcta. Cancelar conserva los servicios existentes.
+    editHint: Guardar los cambios conserva el servicio actual y las traducciones
+      existentes.
+    saveHint: Se guarda tras una comprobación correcta. Cancelar conserva los
+      servicios existentes.
     failedAdd: Falló la conexión. No se añadió el servicio.
     retryAdd: Reintentar y añadir
     draftKept: La configuración se conserva. Los servicios existentes siguen en uso.
-    agentHint: Entrega las instrucciones a tu agente y pega su configuración verificada abajo.
+    agentHint: Entrega las instrucciones a tu agente y pega su configuración
+      verificada abajo.
     add: Añadir servicio
     added: Servicios añadidos
     listLabel: Servicios de traducción añadidos
@@ -115,7 +135,8 @@ options:
     removeCurrentHint: Cambia primero a otro servicio
     back: Volver a los servicios de traducción
     editTitle: Editar $1
-    scope: "El servicio actual traduce páginas, párrafos y subtítulos. Las traducciones existentes se conservan al cambiar."
+    scope: "El servicio actual traduce páginas, párrafos y subtítulos. Las
+      traducciones existentes se conservan al cambiar."
     useAfterAdd: Usar este servicio después de añadirlo
     useAfterAddHint: Déjalo sin marcar para seguir usando el servicio actual.
     removed: $1 eliminado.
@@ -132,7 +153,8 @@ options:
     reconfigure: Volver a configurar
     empty:
       title: Aún no hay servicio de traducción
-      description: Pasa las instrucciones a tu agente. Verificará la configuración del servicio con tu clave y la dejará en el portapapeles; pégala abajo.
+      description: Elige un servicio e introduce tu API Key y modelo. También puedes
+        pegar una configuración verificada por tu agente.
     copyInstructions: Copiar instrucciones para tu agente
     copied: Copiado
     edit: Editar
@@ -153,7 +175,8 @@ options:
       current: Actual
       after: Después
       connection: Conexión
-    unchanged: "Igual que el servicio actual. Está seleccionado: pega para sustituirlo o cambia un solo campo."
+    unchanged: "Igual que el servicio actual. Está seleccionado: pega para
+      sustituirlo o cambia un solo campo."
     failedNotSaved: Falló, no se guardó nada
     editorLabel: Configuración del servicio de traducción
     placeholder: '{ "type": "deepseek", "apiKey": "…", "model": "…" }'
@@ -164,7 +187,8 @@ options:
     title: Apariencia
     preferences: Preferencias de interfaz
     colorTheme: Color del tema
-    description: Se aplica a la interfaz, los marcadores de traducción y el icono de la barra de herramientas.
+    description: Se aplica a la interfaz, los marcadores de traducción y el icono de
+      la barra de herramientas.
     default: Predeterminado
     saveFailed: No se guardó el color. Inténtalo de nuevo.
     colors:
@@ -220,9 +244,11 @@ options:
     web: Traducción web
     shared: Compartido por web y subtítulos
     context:
-      title: Usar resumen de la página
-      description: Consulta un resumen del artículo al traducir cada párrafo para ayudar a entender su tema.
-      note: El resumen usa los primeros 2.000 caracteres del texto; generarlo por primera vez requiere una solicitud adicional al servicio de traducción.
+      title: Usar contexto del artículo
+      description: Consulta un resumen del artículo al traducir cada párrafo para
+        ayudar a entender su tema.
+      note: El resumen usa los primeros 2.000 caracteres del texto; generarlo por
+        primera vez requiere una solicitud adicional al servicio de traducción.
       purpose: Permite que los párrafos tengan en cuenta el tema del artículo.
     prompt:
       title: Prompt de traducción
@@ -231,14 +257,21 @@ options:
       edit: Editar
       system: Prompt del sistema
       template: Plantilla del prompt
-      tokens: "{{input}} es el texto que se traducirá y debe conservarse.\n{{targetLanguage}} es el idioma de destino de este segmento, determinado por tus reglas de idiomas de traducción."
-      missingInput: "Conserva {{input}} en la plantilla para insertar el texto que se traducirá."
+      tokens: "{{input}} es el texto que se traducirá y debe conservarse.
+
+        {{targetLanguage}} es el idioma de destino de este segmento, determinado
+        por tus reglas de idiomas de traducción."
+      missingInput: "Conserva {{input}} en la plantilla para insertar el texto que se
+        traducirá."
       restore: Restablecer el predeterminado
       cancel: Cancelar
       apply: Aplicar
-      description: "Define el tono, la terminología y la expresión tanto para páginas web como para subtítulos."
-      background: La traducción web usa el título y el resumen activado; los subtítulos solo envían el texto que se traducirá.
-      systemDescription: "Indica al modelo cómo traducir, por ejemplo, “usar lenguaje natural” o “conservar términos técnicos”."
+      description: "Define el tono, la terminología y la expresión tanto para páginas
+        web como para subtítulos."
+      background: La traducción web usa el título y el resumen activado; los
+        subtítulos solo envían el texto que se traducirá.
+      systemDescription: "Indica al modelo cómo traducir, por ejemplo, “usar lenguaje
+        natural” o “conservar términos técnicos”."
       purpose: Ajusta el tono y las palabras de la traducción.
       variables:
         title: Información disponible de la página
@@ -246,17 +279,32 @@ options:
         description: Descripción de la página
         content: Primeros 2.000 caracteres del texto
         summary: Resumen de la página (requiere activar resúmenes)
-        note: El título y los resúmenes activados se incluyen automáticamente; no hace falta repetirlos. Inserta otra información con variables en líneas separadas; en los subtítulos se omiten las líneas sin valores disponibles.
+        note: El título y los resúmenes activados se incluyen automáticamente; no hace
+          falta repetirlos. Inserta otra información con variables en líneas
+          separadas; en los subtítulos se omiten las líneas sin valores
+          disponibles.
   shortcut:
     title: Atajo
     togglePage: Traducir esta página / Mostrar original
 translation:
   sameLanguage: Los idiomas de origen y destino deben ser diferentes
-  noApiKey: Primero añade una clave API. Haz clic en el icono de Readomi en la barra de herramientas para configurarla.
+  noApiKey: Primero añade una clave API. Haz clic en el icono de Readomi en la
+    barra de herramientas para configurarla.
   failed: Error de traducción
   retry: Reintentar
-  invalidResult: El idioma o el contenido de la traducción no cumple los requisitos. Vuelve a intentarlo.
+  invalidResult: El idioma o el contenido de la traducción no cumple los
+    requisitos. Vuelve a intentarlo.
   unknownError: Algo salió mal
+  errorReasons:
+    key: Clave no válida o acceso denegado. Actualiza el servicio de traducción en
+      Ajustes.
+    rate: Demasiadas solicitudes. Inténtalo más tarde o cambia de servicio.
+    timeout: El servicio agotó el tiempo de espera. Inténtalo de nuevo.
+    network: No se puede conectar. Comprueba la red y la dirección del servicio.
+    service: El servicio no está disponible. Inténtalo más tarde o cambia de servicio.
+    quality: El formato de la traducción está incompleto. Inténtalo de nuevo.
+    unknown: Comprueba el servicio o vuelve a intentarlo. Consulta los detalles del
+      error.
 agentInstructions:
   noConfiguration: (aún ninguna)
   text: |
@@ -456,19 +504,29 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: Elige un servicio, introduce tu API Key y modelo y comprueba la conexión
+    para empezar a traducir.
+  advanced: Más parámetros
+  compatible: Servicio compatible con OpenAI
 configBackup:
-  title: Copia de seguridad
+  title: Copia de seguridad y caché
   backup: Copia de seguridad
   restore: Restaurar
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: Guarda la configuración actual.
   exportAction: Exportar
@@ -484,17 +542,22 @@ configBackup:
 features:
   title: Subtítulos de vídeo
   hover: Hover translation
-  hoverDescription: Sitúa el cursor sobre un párrafo y pulsa la tecla de activación para traducir.
+  hoverDescription: Sitúa el cursor sobre un párrafo y pulsa la tecla de
+    activación para traducir.
   hoverStream: Traducción progresiva al pasar el cursor
   hoverStreamDescription: Muestra la traducción progresivamente para reducir la espera.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +574,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -536,7 +600,8 @@ subtitleStyle:
   backgroundDescription: Add a dark backdrop to keep subtitles readable in bright scenes.
   backgroundOpacity: Background depth
   backgroundOpacityDescription: Higher values make the background darker.
-  backgroundZeroDescription: "0% significa sin fondo. Cuanto mayor sea el valor, más oscuro será el fondo."
+  backgroundZeroDescription: "0% significa sin fondo. Cuanto mayor sea el valor,
+    más oscuro será el fondo."
   lighterBackground: Lighten subtitle background
   darkerBackground: Darken subtitle background
   noBackground: No background
@@ -546,7 +611,8 @@ subtitleStyle:
   commonSizes: Tamaños habituales
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: El tamaño de letra no cambia al redimensionar la ventana.
   fontSizeModes:
     video: Scale with video
@@ -556,9 +622,13 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
-  previewDragHint: Arrastra los subtítulos para moverlos; usa las flechas para ajustar con precisión.
+  previewDragHint: Arrastra los subtítulos para moverlos; usa las flechas para
+    ajustar con precisión.
   previewDragLabel: Subtítulos que se pueden arrastrar
-  adjustmentHint: Arrastra los subtítulos sobre el vídeo para moverlos; haz clic en el icono de Readomi en la barra de herramientas del reproductor para ajustar el estilo y el tamaño de letra. Los cambios se guardan automáticamente.
+  adjustmentHint: Arrastra los subtítulos sobre el vídeo para moverlos; haz clic
+    en el icono de Readomi en la barra de herramientas del reproductor para
+    ajustar el estilo y el tamaño de letra. Los cambios se guardan
+    automáticamente.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +659,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: Restablecer valores predeterminados
   restoreFailed: No se pudieron restablecer los valores predeterminados. Inténtalo de nuevo.
@@ -597,11 +668,17 @@ translationShortcuts:
   modeHint: Solo cambia cómo se muestran las traducciones de páginas web.
   subtitles: Toggle video subtitles
   subtitlesHint: Activa o desactiva la traducción de vídeo en esta página.
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: Usa Option (⌥) en macOS y Alt en Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cómo funcionan los activadores
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +701,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +729,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -677,7 +757,8 @@ siteRuleAgent:
   entry: Adaptar este sitio con un agente
   title: Adaptar este sitio
   problem: ¿Qué necesita ajustarse?
-  problemPlaceholder: "Opcional, por ejemplo, la traducción al pasar el cursor no funciona o falta la línea vertical."
+  problemPlaceholder: "Opcional, por ejemplo, la traducción al pasar el cursor no
+    funciona o falta la línea vertical."
   copyInstructions: Copiar instrucciones para el agente
   paste: ¿Ya tienes reglas? Pega la configuración
   candidate: Reglas propuestas recibidas
@@ -712,22 +793,49 @@ siteRuleAgent:
   close: Cerrar
   collapse: Contraer
   expand: Expandir panel de adaptación
-  temporary: La vista previa solo afecta a esta pestaña. Las reglas guardadas se aplican a las páginas que coincidan.
+  temporary: La vista previa solo afecta a esta pestaña. Las reglas guardadas se
+    aplican a las páginas que coincidan.
   summary: Añadir o actualizar $1 reglas de usuario; pausar $2.
   contentCount: Se encontraron $1 áreas legibles en esta página.
   copied: Copiado
   copyFailed: No se pudo copiar. Selecciona el texto y cópialo manualmente.
-  operationFailed: No se pudo completar la acción. La configuración se conserva; inténtalo de nuevo.
+  operationFailed: No se pudo completar la acción. La configuración se conserva;
+    inténtalo de nuevo.
   openFailed: No se pudo abrir el panel. Actualiza la página e inténtalo de nuevo.
   unsupported: Abre una página web normal antes de adaptar un sitio.
   manage: Administrar reglas del sitio
-  settingsHelp: Abre el menú de Readomi en el sitio web y elige «Adaptar este sitio con un agente».
+  settingsHelp: Abre el menú de Readomi en el sitio web y elige «Adaptar este
+    sitio con un agente».
   advanced: Edición avanzada de JSON
   delete: Eliminar regla
   enabled: Activada
   disabled: Pausada
   userAction: Revisa la vista previa en la página y haz clic en Guardar reglas.
-  hoverTriggerHelp: Mantener pulsado el ratón sobre enlaces aún no es compatible. Elige un activador de teclado en el menú.
-  scopeHelp: Esta página queda fuera del alcance de la regla. Vuelve a una página que coincida.
+  hoverTriggerHelp: Mantener pulsado el ratón sobre enlaces aún no es compatible.
+    Elige un activador de teclado en el menú.
+  scopeHelp: Esta página queda fuera del alcance de la regla. Vuelve a una página
+    que coincida.
   requestFailed: La solicitud de traducción falló. El resultado sigue sin confirmar.
   modify: Editar configuración
+cacheManagement:
+  title: Caché de traducción
+  clearAll: Borrar toda la caché
+  clear: Borrar
+  description: Los registros de más de 7 días se borran automáticamente. Borrar la
+    caché conserva las traducciones visibles y la configuración del servicio.
+  pending: Borrando toda la caché…
+  success: Se borró toda la caché de traducciones y resúmenes.
+  failed: No se pudo borrar la caché. Inténtalo de nuevo.
+subtitleStatus:
+  none: No se detectó ningún vídeo en esta página.
+  off: Activa la traducción de subtítulos para leer los subtítulos existentes del
+    reproductor.
+  excluded: La traducción de subtítulos está excluida en este sitio.
+  disabled: Activa primero los subtítulos originales del reproductor.
+  missing: No se encontraron subtítulos utilizables. Readomi traduce subtítulos
+    existentes.
+  waiting: Esperando texto de subtítulos…
+  ready: La traducción de subtítulos está lista.
+  delayed: La traducción va lenta. Los subtítulos originales siguen disponibles.
+  failed: Falló la traducción de subtítulos. Comprueba el servicio o reintenta.
+  retry: Reintentar traducción de subtítulos

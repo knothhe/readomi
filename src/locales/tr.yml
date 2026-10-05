@@ -6,11 +6,12 @@ languageCombobox:
   noLanguagesFound: Dil bulunamadı
 popup:
   clearTranslationCache:
-    label: Önbelleği temizle
-    description: Tüm sayfaların kayıtlı çevirilerini temizler. Sonraki çeviri yeni bir istek gönderir.
-    clearing: Temizleniyor…
-    cleared: Çeviri önbelleği temizlendi
-    failed: Temizlenemedi. Tekrar dene.
+    label: Bu sayfanın önbelleğini temizle
+    description: Yalnızca bu sayfanın metin, altyazı ve özet önbelleğini temizler.
+      Görünen çeviriler korunur.
+    clearing: Sayfa önbelleği temizleniyor…
+    cleared: Sayfa önbelleği temizlendi
+    failed: Temizlenemedi. Tekrar deneyin.
   serviceSwitch:
     switchLabel: "Geçerli hizmet: $1. Hizmeti değiştir"
     title: Hizmeti değiştir
@@ -52,11 +53,20 @@ popup:
     missingKey: anahtar yok
   setup:
     title: Henüz çeviri hizmeti yok
-    description: Ajanınızın oluşturduğu yapılandırmayı ayarlar sayfasına yapıştırın, çeviriye başlayın.
+    description: Çeviriye başlamak için Ayarlar’da bir hizmet seçip API Key girin.
     openSettings: Ayarlarda yapılandır
+  recovery:
+    help: Çeviri sorunu mu var?
+    quality: Çeviri kalitesini ayarla
+    retryFailed: Başarısız paragrafları tekrar dene
+    retranslate: Bu sayfayı yeniden çevir
+    retranslateDescription: Bu sayfa için mevcut hizmet ve ayarlarla yeni çeviriler isteyin.
+    pending: Tekrar deneniyor…
+    failed: İşlem tamamlanamadı. Açılır paneli yeniden açıp tekrar deneyin.
 errorRecovery:
   title: Bir sorun oluştu
-  description: Kurtarma modu etkin. Sayfayı yenileyin veya ayarları sıfırlayıp tekrar deneyin.
+  description: Kurtarma modu etkin. Sayfayı yenileyin veya ayarları sıfırlayıp
+    tekrar deneyin.
   recoveryTitle: Kurtarma seçenekleri
   refreshPage: Sayfayı yenile
   resetAction: Varsayılan ayarlara sıfırla
@@ -100,12 +110,14 @@ options:
   preview: Önizleme
   service:
     addPreview: Eklenecek
-    editHint: Değişiklikleri kaydetmek geçerli hizmet seçimini ve mevcut çevirileri korur.
+    editHint: Değişiklikleri kaydetmek geçerli hizmet seçimini ve mevcut çevirileri
+      korur.
     saveHint: Başarılı kontrolden sonra kaydedilir. İptal mevcut hizmetleri korur.
     failedAdd: Bağlantı başarısız. Hizmet eklenmedi.
     retryAdd: Tekrar dene ve ekle
     draftKept: Girdiğiniz yapılandırma korunur. Mevcut hizmetler kullanılmaya devam eder.
-    agentHint: "Talimatları agent’a verin, ardından doğruladığı yapılandırmayı aşağıya yapıştırın."
+    agentHint: "Talimatları agent’a verin, ardından doğruladığı yapılandırmayı
+      aşağıya yapıştırın."
     add: Hizmet ekle
     added: Eklenen hizmetler
     listLabel: Eklenen çeviri hizmetleri
@@ -115,7 +127,8 @@ options:
     removeCurrentHint: Önce başka bir hizmete geçin
     back: Çeviri hizmetlerine dön
     editTitle: $1 düzenle
-    scope: "Geçerli hizmet sayfa, paragraf ve altyazı çevirisinde kullanılır. Geçiş yapıldığında mevcut çeviriler korunur."
+    scope: "Geçerli hizmet sayfa, paragraf ve altyazı çevirisinde kullanılır. Geçiş
+      yapıldığında mevcut çeviriler korunur."
     useAfterAdd: Ekledikten sonra bu hizmeti kullan
     useAfterAddHint: İşaretlenmezse geçerli hizmet kullanılmaya devam eder.
     removed: $1 kaldırıldı.
@@ -132,7 +145,8 @@ options:
     reconfigure: Yeniden yapılandır
     empty:
       title: Henüz çeviri hizmeti yok
-      description: Talimatları ajanınıza verin. Ajan, hizmet yapılandırmasını anahtarınızla doğrulayıp panoya koyar; aşağıya yapıştırın.
+      description: Bir hizmet seçip API Key ve model girin. Agent tarafından
+        doğrulanmış bir yapılandırmayı da yapıştırabilirsiniz.
     copyInstructions: Ajan için talimatları kopyala
     copied: Kopyalandı
     edit: Düzenle
@@ -153,7 +167,8 @@ options:
       current: Şu an
       after: Sonra
       connection: Bağlantı
-    unchanged: "Mevcut hizmetle aynı. Tümü seçili: değiştirmek için yapıştırın ya da tek bir alanı düzenleyin."
+    unchanged: "Mevcut hizmetle aynı. Tümü seçili: değiştirmek için yapıştırın ya da
+      tek bir alanı düzenleyin."
     failedNotSaved: Başarısız, hiçbir şey kaydedilmedi
     editorLabel: Çeviri hizmeti yapılandırması
     placeholder: '{ "type": "deepseek", "apiKey": "…", "model": "…" }'
@@ -220,9 +235,11 @@ options:
     web: Web çevirisi
     shared: Web ve video altyazıları için ortak
     context:
-      title: Sayfa özetini kullan
-      description: Her paragrafı çevirirken konuyu anlamaya yardımcı olmak için yazının özetine başvurur.
-      note: "Özet, metnin ilk 2.000 karakterini kullanır; ilk kez oluşturulması çeviri hizmetine ek bir istek gerektirir."
+      title: Makale bağlamını kullan
+      description: Her paragrafı çevirirken konuyu anlamaya yardımcı olmak için
+        yazının özetine başvurur.
+      note: "Özet, metnin ilk 2.000 karakterini kullanır; ilk kez oluşturulması çeviri
+        hizmetine ek bir istek gerektirir."
       purpose: Paragraf çevirilerinde yazının konusunu dikkate alır.
     prompt:
       title: Çeviri istemi
@@ -231,14 +248,20 @@ options:
       edit: Düzenle
       system: Sistem promptu
       template: Prompt şablonu
-      tokens: "{{input}} çevrilecek metindir ve korunmalıdır.\n{{targetLanguage}} bu bölüm için çeviri dili kurallarınızın belirlediği hedef dildir."
+      tokens: "{{input}} çevrilecek metindir ve korunmalıdır.
+
+        {{targetLanguage}} bu bölüm için çeviri dili kurallarınızın belirlediği
+        hedef dildir."
       missingInput: "Çevrilecek metni eklemek için şablonda {{input}} alanını koruyun."
       restore: Varsayılana döndür
       cancel: İptal
       apply: Uygula
-      description: "Web sayfaları ve altyazılar için kullanılacak tonu, terimleri ve anlatımı belirleyin."
-      background: Web çevirisi başlığı ve etkin özeti kullanır; altyazı çevirisine yalnızca çevrilecek altyazı metni iletilir.
-      systemDescription: Modele nasıl çevireceğini söyleyin; örneğin “doğal konuşma dili kullan” veya “teknik terimleri koru”.
+      description: "Web sayfaları ve altyazılar için kullanılacak tonu, terimleri ve
+        anlatımı belirleyin."
+      background: Web çevirisi başlığı ve etkin özeti kullanır; altyazı çevirisine
+        yalnızca çevrilecek altyazı metni iletilir.
+      systemDescription: Modele nasıl çevireceğini söyleyin; örneğin “doğal konuşma
+        dili kullan” veya “teknik terimleri koru”.
       purpose: Çevirinin tonunu ve sözcüklerini ayarlayın.
       variables:
         title: Kullanılabilir sayfa bilgileri
@@ -246,17 +269,32 @@ options:
         description: Sayfa açıklaması
         content: Metnin ilk 2.000 karakteri
         summary: Sayfa özeti (özetler etkin olmalı)
-        note: Başlık ve etkin özetler otomatik sağlanır; tekrar yazmanız gerekmez. Diğer sayfa bilgilerini değişkenlerle ayrı satırlara ekleyin; altyazı çevirisi değeri olmayan satırları atlar.
+        note: Başlık ve etkin özetler otomatik sağlanır; tekrar yazmanız gerekmez. Diğer
+          sayfa bilgilerini değişkenlerle ayrı satırlara ekleyin; altyazı
+          çevirisi değeri olmayan satırları atlar.
   shortcut:
     title: Kısayol
     togglePage: Bu sayfayı çevir / Orijinali göster
 translation:
   sameLanguage: Kaynak ve hedef diller farklı olmalıdır
-  noApiKey: Önce bir API anahtarı ekleyin. Ayarlamak için araç çubuğundaki Readomi simgesine tıklayın.
+  noApiKey: Önce bir API anahtarı ekleyin. Ayarlamak için araç çubuğundaki Readomi
+    simgesine tıklayın.
   failed: Çeviri başarısız oldu
   retry: Yeniden dene
-  invalidResult: Çevirinin dili veya içeriği gereksinimleri karşılamıyor. Lütfen yeniden deneyin.
+  invalidResult: Çevirinin dili veya içeriği gereksinimleri karşılamıyor. Lütfen
+    yeniden deneyin.
   unknownError: Bir sorun oluştu
+  errorReasons:
+    key: Anahtar geçersiz veya erişim reddedildi. Ayarlar’da çeviri hizmetini
+      güncelleyin.
+    rate: Çok fazla istek var. Daha sonra tekrar deneyin veya hizmeti değiştirin.
+    timeout: Hizmet zaman aşımına uğradı. Tekrar deneyin.
+    network: Bağlanılamıyor. Ağınızı ve hizmet adresini kontrol edin.
+    service: Hizmet geçici olarak kullanılamıyor. Daha sonra tekrar deneyin veya
+      hizmeti değiştirin.
+    quality: Çeviri biçimi eksik. Tekrar deneyin.
+    unknown: Çeviri hizmetini kontrol edin veya tekrar deneyin. Daha fazla bilgi
+      için hata ayrıntılarına bakın.
 agentInstructions:
   noConfiguration: (henüz yok)
   text: |
@@ -456,19 +494,29 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: Bir hizmet seçin, API Key ve model girin, ardından çeviriye başlamak için
+    bağlantıyı kontrol edin.
+  advanced: Diğer parametreler
+  compatible: OpenAI uyumlu hizmet
 configBackup:
-  title: Yedek
+  title: Yedekleme ve önbellek
   backup: Yedekleme
   restore: Geri yükleme
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: Geçerli ayarları kaydedin.
   exportAction: Dışa aktar
@@ -488,13 +536,17 @@ features:
   hoverStream: Üzerine gelince çeviriyi akışla göster
   hoverStreamDescription: Beklemeyi azaltmak için çeviriyi aşamalı gösterir.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +563,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -546,7 +599,8 @@ subtitleStyle:
   commonSizes: Sık kullanılan boyutlar
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: Pencere yeniden boyutlandırıldığında yazı boyutu sabit kalır.
   fontSizeModes:
     video: Scale with video
@@ -556,9 +610,12 @@ subtitleStyle:
   previewOriginal: A new idea.
   previewTranslation: 新的想法。
   dragHint: Drag subtitles to move them
-  previewDragHint: Konumu ayarlamak için altyazıları sürükleyin; ince ayar için ok tuşlarını kullanın.
+  previewDragHint: Konumu ayarlamak için altyazıları sürükleyin; ince ayar için ok
+    tuşlarını kullanın.
   previewDragLabel: Sürüklenebilir altyazılar
-  adjustmentHint: Konumlarını ayarlamak için videodaki altyazıları sürükleyin; stili ve yazı boyutunu değiştirmek için oynatıcı araç çubuğundaki Readomi simgesine tıklayın. Değişiklikler otomatik olarak kaydedilir.
+  adjustmentHint: Konumlarını ayarlamak için videodaki altyazıları sürükleyin;
+    stili ve yazı boyutunu değiştirmek için oynatıcı araç çubuğundaki Readomi
+    simgesine tıklayın. Değişiklikler otomatik olarak kaydedilir.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +646,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: Varsayılanları geri yükle
   restoreFailed: Varsayılanlar geri yüklenemedi. Tekrar deneyin.
@@ -597,11 +655,17 @@ translationShortcuts:
   modeHint: Yalnızca web çevirilerinin görüntülenme biçimini değiştirir.
   subtitles: Toggle video subtitles
   subtitlesHint: Bu sayfada video çevirisini açar veya kapatır.
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: "macOS üzerinde Option (⌥), Windows / Linux üzerinde Alt kullanın."
   hover: Hover translation trigger
   hoverHelp: Çeviri nasıl başlatılır
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +688,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +716,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -677,7 +744,8 @@ siteRuleAgent:
   entry: Bu siteyi bir agent ile uyarlayın
   title: Bu siteyi uyarlayın
   problem: Neyin düzeltilmesi gerekiyor?
-  problemPlaceholder: "İsteğe bağlı, örneğin üzerine gelince çevirinin çalışmaması veya dikey çizginin eksik olması."
+  problemPlaceholder: "İsteğe bağlı, örneğin üzerine gelince çevirinin çalışmaması
+    veya dikey çizginin eksik olması."
   copyInstructions: Agent talimatlarını kopyala
   paste: Kurallarınız var mı? Yapılandırmayı yapıştırın
   candidate: Aday kurallar alındı
@@ -687,7 +755,8 @@ siteRuleAgent:
   starting: Önizleme başlatılıyor
   restoring: Önizleme geri yükleniyor
   paused: Önizleme duraklatıldı
-  pausedHelp: Devam etmek için $1 sitesine dönün. Bu site kayıtlı yapılandırmasını kullanır.
+  pausedHelp: Devam etmek için $1 sitesine dönün. Bu site kayıtlı yapılandırmasını
+    kullanır.
   invalid: Geçersiz aday kurallar
   previewFailed: Önizleme başlatılamadı
   noContent: Eşleşen okunabilir içerik yok
@@ -712,7 +781,8 @@ siteRuleAgent:
   close: Kapat
   collapse: Daralt
   expand: Uyarlama panelini genişlet
-  temporary: Önizleme yalnızca bu sekmeyi etkiler. Kaydedilen kurallar eşleşen sayfalara uygulanır.
+  temporary: Önizleme yalnızca bu sekmeyi etkiler. Kaydedilen kurallar eşleşen
+    sayfalara uygulanır.
   summary: $1 kullanıcı kuralı ekle veya güncelle; $2 kuralı duraklat.
   contentCount: Bu sayfada $1 okunabilir bölge eşleşti.
   copied: Kopyalandı
@@ -721,13 +791,37 @@ siteRuleAgent:
   openFailed: Panel açılamadı. Web sayfasını yenileyip yeniden deneyin.
   unsupported: Siteyi uyarlamadan önce normal bir web sayfası açın.
   manage: Site kurallarını yönet
-  settingsHelp: Web sitesinde Readomi açılır penceresini açıp “Bu siteyi bir agent ile uyarlayın” seçeneğini seçin.
+  settingsHelp: Web sitesinde Readomi açılır penceresini açıp “Bu siteyi bir agent
+    ile uyarlayın” seçeneğini seçin.
   advanced: Gelişmiş JSON düzenleme
   delete: Kuralı sil
   enabled: Etkin
   disabled: Duraklatıldı
-  userAction: Web sayfasındaki önizlemeyi inceleyin ve Kuralları kaydet düğmesine kendiniz tıklayın.
-  hoverTriggerHelp: Bağlantılarda fareyi basılı tutma henüz desteklenmiyor. Açılır pencereden klavyeyle üzerine gelme tetikleyicisi seçin.
+  userAction: Web sayfasındaki önizlemeyi inceleyin ve Kuralları kaydet düğmesine
+    kendiniz tıklayın.
+  hoverTriggerHelp: Bağlantılarda fareyi basılı tutma henüz desteklenmiyor. Açılır
+    pencereden klavyeyle üzerine gelme tetikleyicisi seçin.
   scopeHelp: Bu sayfa kural kapsamının dışında. Eşleşen bir sayfaya dönün.
   requestFailed: Çeviri isteği başarısız oldu. Sonuç henüz doğrulanmadı.
   modify: Yapılandırmayı düzenle
+cacheManagement:
+  title: Çeviri önbelleği
+  clearAll: Tüm önbelleği temizle
+  clear: Temizle
+  description: 7 günden eski kayıtlar otomatik temizlenir. Önbelleği temizlemek
+    görünen çevirileri ve hizmet ayarlarını korur.
+  pending: Tüm önbellek temizleniyor…
+  success: Tüm çeviri ve özet önbelleği temizlendi.
+  failed: Önbellek temizlenemedi. Tekrar deneyin.
+subtitleStatus:
+  none: Bu sayfada video algılanmadı.
+  off: Oynatıcının mevcut altyazılarını okumak için altyazı çevirisini
+    etkinleştirin.
+  excluded: Bu sitede altyazı çevirisi hariç tutuldu.
+  disabled: Önce oynatıcının özgün altyazılarını açın.
+  missing: Kullanılabilir altyazı bulunamadı. Readomi mevcut altyazıları çevirir.
+  waiting: Altyazı metni bekleniyor…
+  ready: Altyazı çevirisi hazır.
+  delayed: Altyazı çevirisi yavaş. Özgün altyazılar okunabilir durumda.
+  failed: Altyazı çevirisi başarısız oldu. Hizmeti kontrol edin veya tekrar deneyin.
+  retry: Altyazı çevirisini tekrar dene

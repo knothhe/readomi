@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { configAtom, replaceConfigAtom } from "@/utils/atoms/config"
 import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "@/utils/config/backup"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
+import { sendMessage } from "@/utils/message"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
 
 export function BackupSection() {
@@ -17,6 +18,24 @@ export function BackupSection() {
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [cacheState, setCacheState] = useState<"idle" | "pending" | "success" | "failed">("idle")
+  const cachePendingRef = useRef(false)
+  const clearCache = async () => {
+    if (cachePendingRef.current)
+      return
+    cachePendingRef.current = true
+    setCacheState("pending")
+    try {
+      await sendMessage("clearTranslationCache")
+      setCacheState("success")
+    }
+    catch {
+      setCacheState("failed")
+    }
+    finally {
+      cachePendingRef.current = false
+    }
+  }
   const requestVersionRef = useRef(0)
   const download = () => {
     const blob = new Blob([exportConfigBackup(store.get(configAtom))], { type: "application/json" })
@@ -119,6 +138,14 @@ export function BackupSection() {
           </div>
         )}
         {saved && <p role="status" className="text-xs text-success">{i18n.t("configBackup.saved")}</p>}
+        <SettingsGroup caption={i18n.t("cacheManagement.title")}>
+          <SettingsRow
+            label={i18n.t("cacheManagement.clearAll")}
+            description={i18n.t("cacheManagement.description")}
+            control={<Button variant="outline" size="sm" disabled={cacheState === "pending"} onClick={() => void clearCache()}>{i18n.t(cacheState === "pending" ? "cacheManagement.pending" : "cacheManagement.clear")}</Button>}
+          />
+          {(cacheState === "failed" || cacheState === "success") && <p role={cacheState === "failed" ? "alert" : "status"} className="text-xs text-muted-foreground">{i18n.t(cacheState === "failed" ? "cacheManagement.failed" : "cacheManagement.success")}</p>}
+        </SettingsGroup>
       </div>
     </SettingsSection>
   )

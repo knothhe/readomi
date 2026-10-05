@@ -16,6 +16,7 @@ import { LanguageSection } from ".."
 
 const configured: Config = {
   ...DEFAULT_CONFIG,
+  language: { ...DEFAULT_CONFIG.language, secondaryCode: "eng" },
   ui: { language: "zh-CN" },
   providersConfig: DEFAULT_CONFIG.providersConfig.map(provider => ({ ...provider, apiKey: "existing-key", headers: { "X-Test": "kept" } })),
   features: { ...DEFAULT_CONFIG.features, hoverHotkey: "backtick", videoSubtitles: true, subtitleMode: "translationOnly" },
@@ -48,7 +49,7 @@ describe("translation language settings and popup", () => {
     vi.restoreAllMocks()
   })
 
-  it("shows default directions and saves only the selected language field", async () => {
+  it("shows configured bidirectional rules and saves only the selected language field", async () => {
     const { store } = await renderLanguages()
     expect(screen.getByRole("button", { name: "主要语言" })).toHaveTextContent("简体中文")
     expect(screen.getByRole("button", { name: "第二语言" })).toHaveTextContent("英语")

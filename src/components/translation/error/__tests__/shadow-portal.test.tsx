@@ -44,9 +44,9 @@ describe("translationError", () => {
   it("localizes translation quality failures while retaining the retry action", () => {
     const { container } = renderError({ name: "TranslationQualityError", message: "wrong-route: secondary, expected primary" })
 
-    expect(container).toHaveTextContent("translation.failed · translation.invalidResult")
+    expect(container).toHaveTextContent("translation.failed · translation.errorReasons.quality")
     expect(container).not.toHaveTextContent("wrong-route")
-    expect(screen.getByTitle("translation.invalidResult")).toBeInTheDocument()
+    expect(screen.getByText("translation.invalidResult")).not.toBeVisible()
     expect(screen.getByRole("button", { name: "translation.retry" })).toBeInTheDocument()
   })
 })

@@ -6,11 +6,13 @@ languageCombobox:
   noLanguagesFound: No languages found
 popup:
   clearTranslationCache:
-    label: Clear cache
-    description: Clear saved translations for all pages. The next translation will make a fresh request.
-    clearing: Clearing…
-    cleared: Translation cache cleared
-    failed: Could not clear. Retry.
+    label: Clear this page’s cache
+    description: Clear saved text, subtitle and context summary caches for this page
+      only. Existing translations stay visible; new translations request fresh
+      results.
+    clearing: Clearing this page’s cache…
+    cleared: This page’s cache was cleared
+    failed: Could not clear this page’s cache. Try again.
   serviceSwitch:
     switchLabel: "Current service: $1. Switch service"
     title: Switch service
@@ -52,8 +54,17 @@ popup:
     missingKey: no key yet
   setup:
     title: No translation service yet
-    description: Paste the configuration your agent generates on the settings page, and you can translate.
+    description: Choose a service and enter your API key in Settings to start translating.
     openSettings: Set up in settings
+  recovery:
+    help: Translation problems?
+    quality: Adjust translation quality
+    retryFailed: Retry failed paragraphs
+    retranslate: Retranslate this page
+    retranslateDescription: Request fresh translations for this page with the
+      current service and settings.
+    pending: Retrying…
+    failed: Could not complete the action. Reopen the popup and try again.
 errorRecovery:
   title: Something went wrong
   description: Recovery mode is active. Refresh the page or reset settings and try again.
@@ -86,26 +97,30 @@ options:
     keepPrimary: "When the source is in $1, keep the original."
     keepOriginal: Keep original
     keepDescription: "Bilingual mode shows the original once, without a duplicate translation."
-    sameLanguages: The primary and second languages are the same. Content in this language stays in the original.
+    sameLanguages: The primary and second languages are the same. Content in this
+      language stays in the original.
     previewMode: Preview display mode
     previewNote: The translation direction changes with the source language.
     previewKeepNote: Preserved content appears once without an extra translation area.
     previewOnlyKeepNote: Preserved content is still shown in translation-only mode.
     shownOnce: Shown once
     applied: These rules apply to every translation feature.
-    sampleUnavailable: No sample text is available for this language. Actual translations will use your selected language.
+    sampleUnavailable: No sample text is available for this language. Actual
+      translations will use your selected language.
     saveFailed: Could not save translation languages. Please try again.
   version: Version
   title: Settings
   preview: Preview
   service:
     addPreview: To be added
-    editHint: Saving changes keeps the current service selection and existing translations.
+    editHint: Saving changes keeps the current service selection and existing
+      translations.
     saveHint: Saved after a successful check. Canceling keeps existing services.
     failedAdd: Connection failed. Service was not added.
     retryAdd: Retry and add
     draftKept: Your configuration is kept. Existing services remain in use.
-    agentHint: "Hand the instructions to your agent, then paste its verified configuration below."
+    agentHint: "Hand the instructions to your agent, then paste its verified
+      configuration below."
     add: Add service
     added: Added services
     listLabel: Added translation services
@@ -115,7 +130,8 @@ options:
     removeCurrentHint: Switch to another service first
     back: Back to translation services
     editTitle: Edit $1
-    scope: "The current service is used for page, paragraph and subtitle translation. Existing translations are kept when switching."
+    scope: "The current service is used for page, paragraph and subtitle
+      translation. Existing translations are kept when switching."
     useAfterAdd: Use this service after adding
     useAfterAddHint: Leave unchecked to keep using the current service.
     removed: $1 removed.
@@ -132,7 +148,8 @@ options:
     reconfigure: Reconfigure
     empty:
       title: No translation service yet
-      description: Hand the instructions to your agent. It verifies the service configuration with your key and puts it on the clipboard; paste it below.
+      description: Choose a service and enter your API key and model. You can also
+        paste a configuration verified by your agent.
     copyInstructions: Copy instructions for your agent
     copied: Copied
     edit: Edit
@@ -153,7 +170,8 @@ options:
       current: Current
       after: After
       connection: Connection
-    unchanged: "Same as the current service. It is selected: paste to replace it, or change a single field."
+    unchanged: "Same as the current service. It is selected: paste to replace it, or
+      change a single field."
     failedNotSaved: Failed, nothing saved
     editorLabel: Translation service configuration
     placeholder: '{ "type": "deepseek", "apiKey": "…", "model": "…" }'
@@ -220,9 +238,12 @@ options:
     web: Web translation
     shared: Shared by web and video subtitles
     context:
-      title: Use page summary
-      description: Refer to an article summary when translating each paragraph to help understand its topic.
-      note: "The summary uses the first 2,000 characters of page text; generating it for the first time requires an extra request to your translation service."
+      title: Use article context
+      description: Refer to an article summary when translating each paragraph to help
+        understand its topic.
+      note: "The summary uses the first 2,000 characters of page text; generating it
+        for the first time requires an extra request to your translation
+        service."
       purpose: Let paragraph translations use the article topic.
     prompt:
       title: Translation prompt
@@ -231,14 +252,20 @@ options:
       edit: Edit
       system: System prompt
       template: Prompt template
-      tokens: "{{input}} is the text to translate and must be kept.\n{{targetLanguage}} is the target language determined for this segment by your translation language rules."
+      tokens: "{{input}} is the text to translate and must be kept.
+
+        {{targetLanguage}} is the target language determined for this segment by
+        your translation language rules."
       missingInput: "Keep {{input}} in the template to insert the text to translate."
       restore: Restore default
       cancel: Cancel
       apply: Apply
-      description: "Set the tone, terminology and wording used for both webpages and subtitles."
-      background: Web translation uses the title and enabled summary; subtitle translation provides only the subtitle text to translate.
-      systemDescription: "Tell the model how to translate, such as “use natural speech” or “keep technical terms”."
+      description: "Set the tone, terminology and wording used for both webpages and
+        subtitles."
+      background: Web translation uses the title and enabled summary; subtitle
+        translation provides only the subtitle text to translate.
+      systemDescription: "Tell the model how to translate, such as “use natural
+        speech” or “keep technical terms”."
       purpose: Adjust the tone and wording of translations.
       variables:
         title: Available page information
@@ -246,7 +273,9 @@ options:
         description: Page description
         content: "First 2,000 characters of page text"
         summary: Page summary (requires summaries enabled)
-        note: Titles and enabled summaries are provided automatically; no need to repeat them. Insert other page information with variables on separate lines; subtitle translation omits lines with unavailable values.
+        note: Titles and enabled summaries are provided automatically; no need to repeat
+          them. Insert other page information with variables on separate lines;
+          subtitle translation omits lines with unavailable values.
   shortcut:
     title: Shortcut
     togglePage: Translate this page / Show original
@@ -255,8 +284,18 @@ translation:
   noApiKey: Add an API key first. Click the Readomi icon in the toolbar to set it up.
   failed: Translation failed
   retry: Retry
-  invalidResult: The translation language or content does not meet the requirements. Please retry.
+  invalidResult: The translation language or content does not meet the
+    requirements. Please retry.
   unknownError: Something went wrong
+  errorReasons:
+    key: Invalid key or access denied. Update your translation service in Settings.
+    rate: Too many requests. Try again later or switch services.
+    timeout: The service timed out. Try again.
+    network: Cannot connect. Check your network and service address.
+    service: The service is temporarily unavailable. Try again later or switch services.
+    quality: The translation format is incomplete. Try again.
+    unknown: Check your translation service or try again. See error details for more
+      information.
 agentInstructions:
   noConfiguration: (none yet)
   text: |
@@ -456,19 +495,29 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to keep the existing key."
+  keyHint: "For local services without authentication, enter local. Leave blank to
+    keep the existing key."
   model: Model
   api: Request format
   save: Test and save
   body: Request parameters (thinking effort, etc.)
-  bodyHint: "Enter the JSON object inside body, without wrapping it in body again. Leave blank to use service defaults. Parameters are merged into every request and override matching fields."
-  bodyExample: "Thinking parameter example (adjust according to your model’s documentation):"
+  bodyHint: "Enter the JSON object inside body, without wrapping it in body again.
+    Leave blank to use service defaults. Parameters are merged into every
+    request and override matching fields."
+  bodyExample: "Thinking parameter example (adjust according to your model’s
+    documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
+  intro: Choose a service, enter your API key and model, then check the connection
+    to start translating.
+  advanced: More parameters
+  compatible: OpenAI-compatible service
 configBackup:
-  title: Backup
+  title: Backup & cache
   backup: Backup
   restore: Restore
-  description: Exports include API keys and custom headers. Keep them private. Import accepts this extension’s configuration files and replaces all settings.
+  description: Exports include API keys and custom headers. Keep them private.
+    Import accepts this extension’s configuration files and replaces all
+    settings.
   export: Export configuration
   exportDescription: Save your current settings.
   exportAction: Export
@@ -488,13 +537,17 @@ features:
   hoverStream: Stream hover translations
   hoverStreamDescription: Show translations gradually to reduce waiting.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoDescription: Uses the current translation service. Supports enabled YouTube
+    captions and HTML5 subtitle tracks. Videos without subtitles are not
+    supported yet.
   videoControls: Show controls on videos
-  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding
+    controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation
-  description: Matching sites will not start video translation; web page translation is unaffected.
+  description: Matching sites will not start video translation; web page
+    translation is unaffected.
   ruleType: Rule type
   ruleLabel: Site rule
   add: Add site
@@ -511,7 +564,8 @@ videoSiteRules:
   hints:
     domain: Enter example.com to exclude that domain and all its subdomains.
     pattern: Use *.example.com/watch/* to restrict the domain and path.
-    regex: Matches the full URL, ignoring case. Example ^https://([^.]+\.)?example\.com/
+    regex: Matches the full URL, ignoring case. Example
+      ^https://([^.]+\.)?example\.com/
 
 videoTranslationControls:
   title: Video translation
@@ -546,7 +600,8 @@ subtitleStyle:
   commonSizes: Common sizes
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the window and fullscreen.
+  relativeFontDescription: Size is a percentage of video width and scales with the
+    window and fullscreen.
   fixedFontDescription: The font size stays fixed when the window resizes.
   fontSizeModes:
     video: Scale with video
@@ -558,7 +613,9 @@ subtitleStyle:
   dragHint: Drag subtitles to move them
   previewDragHint: Drag subtitles to reposition them; use arrow keys for fine adjustments.
   previewDragLabel: Draggable subtitles
-  adjustmentHint: Drag subtitles on the video to move them; click the Readomi icon in the player toolbar to adjust the style and font size. Changes are saved automatically.
+  adjustmentHint: Drag subtitles on the video to move them; click the Readomi icon
+    in the player toolbar to adjust the style and font size. Changes are saved
+    automatically.
   smaller: Decrease subtitle size
   larger: Increase subtitle size
   reset: Restore defaults
@@ -589,7 +646,8 @@ modelDiscovery:
   select: Select a model
   empty: The service returned no usable models. Enter a model ID manually.
   failed: Could not fetch models. Retry or enter a model ID manually.
-  noKey: Enter an API key and address first. An existing service can reuse its saved key.
+  noKey: Enter an API key and address first. An existing service can reuse its
+    saved key.
 translationShortcuts:
   restoreDefaults: Restore defaults
   restoreFailed: Could not restore defaults. Try again.
@@ -597,11 +655,17 @@ translationShortcuts:
   modeHint: Only changes how web translations are displayed.
   subtitles: Toggle video subtitles
   subtitlesHint: Turn video translation on or off for this page.
-  hint: Click to record a key combination; Delete or Backspace clears it. The subtitle toggle applies to this page and requires video subtitle translation to be enabled.
+  hint: Click to record a key combination; Delete or Backspace clears it. The
+    subtitle toggle applies to this page and requires video subtitle translation
+    to be enabled.
   platformHint: Use Option (⌥) on macOS and Alt on Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: How triggers work
-  hoverHint: Hover over a paragraph and tap and release the trigger key to translate, or hold it for 500 ms to translate automatically. Each key press triggers once. The left mouse button requires a 500 ms hold. Trigger again to restore the original. Text fields are excluded; key combinations or mouse dragging cancel the trigger.
+  hoverHint: Hover over a paragraph and tap and release the trigger key to
+    translate, or hold it for 500 ms to translate automatically. Each key press
+    triggers once. The left mouse button requires a 500 ms hold. Trigger again
+    to restore the original. Text fields are excluded; key combinations or mouse
+    dragging cancel the trigger.
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -624,7 +688,8 @@ siteRules:
   title: Site rules
   backToReading: Back to Web reading
   builtIn: Built-in rules
-  builtInDescription: Built-in rules apply automatically. Disable a rule here if a site displays incorrectly.
+  builtInDescription: Built-in rules apply automatically. Disable a rule here if a
+    site displays incorrectly.
   enabledCount: Enabled $1 / $2 rules
   search: "Search by site, rule name or URL"
   matchCount: $1 matching rules
@@ -651,12 +716,14 @@ siteRules:
   copied: Copied
   copyFailed: Could not copy. Try again.
   emptyTitle: No custom rules yet
-  emptyDescription: Built-in rules handle common sites automatically. Add a rule when you need a specific adjustment.
+  emptyDescription: Built-in rules handle common sites automatically. Add a rule
+    when you need a specific adjustment.
   add: Add rules
   edit: Edit rules
   customCount: "Saved rules: $1"
   editorTitle: Edit custom rules
-  editorDescription: "Write a JSON array. Save to apply changes, or cancel to restore the saved rules."
+  editorDescription: "Write a JSON array. Save to apply changes, or cancel to
+    restore the saved rules."
   cancel: Cancel
   validating: Checking…
   valid: Rules are valid and ready to save
@@ -721,13 +788,35 @@ siteRuleAgent:
   openFailed: Could not open the panel. Refresh the webpage and try again.
   unsupported: Open a regular webpage before adapting a site.
   manage: Manage site rules
-  settingsHelp: Open the Readomi popup on the website and choose “Adapt this site with an agent”.
+  settingsHelp: Open the Readomi popup on the website and choose “Adapt this site
+    with an agent”.
   advanced: Advanced JSON editing
   delete: Delete rule
   enabled: Enabled
   disabled: Paused
   userAction: Review the preview on the webpage, then click Save rules yourself.
-  hoverTriggerHelp: Mouse hold on links is not supported yet. Choose a keyboard hover trigger in the popup.
+  hoverTriggerHelp: Mouse hold on links is not supported yet. Choose a keyboard
+    hover trigger in the popup.
   scopeHelp: This page is outside the rule scope. Return to a matching page.
   requestFailed: The translation request failed. Its result remains unconfirmed.
   modify: Edit configuration
+cacheManagement:
+  title: Translation cache
+  clearAll: Clear all caches
+  clear: Clear
+  description: Records older than 7 days are cleared automatically. Clearing
+    caches keeps visible translations and service settings.
+  pending: Clearing all caches…
+  success: All translation and summary caches were cleared.
+  failed: Could not clear the caches. Try again.
+subtitleStatus:
+  none: No video detected on this page.
+  off: Enable subtitle translation to read the player’s existing captions.
+  excluded: Subtitle translation is excluded on this website.
+  disabled: Turn on the player’s original captions first.
+  missing: No usable captions found. Readomi translates existing captions.
+  waiting: Waiting for caption text…
+  ready: Subtitle translation is ready.
+  delayed: Subtitle translation is slow. Original captions remain readable.
+  failed: Subtitle translation failed. Check the service or try again.
+  retry: Retry subtitle translation

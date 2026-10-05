@@ -34,6 +34,23 @@ import { serviceLimitsKey, ServiceLimitsStore } from "@/utils/request/service-li
 // The background is the only translation-cache writer. Keep mutations in one
 // order so a pre-clear result cannot finish writing after the clear commits.
 let translationCacheGeneration = 0
+const pageCacheGenerations = new Map<string, number>()
+const cacheGenerationFor = (pageKey?: string) => `${translationCacheGeneration}:${pageKey ? pageCacheGenerations.get(pageKey) ?? 0 : 0}`
+
+async function pageCacheKey(pageUrl?: string): Promise<string | undefined> {
+  return pageUrl ? sha256Hex(pageUrl) : undefined
+}
+
+function requestPageUrl(tabUrl?: string, pageUrl?: string) {
+  // Content scripts use the top-level tab URL, including embedded players.
+  // Requests initiated by an extension page may provide their target page.
+  return tabUrl && /^(?:https?|file):/i.test(tabUrl) ? tabUrl : pageUrl
+}
+
+async function scopeTranslation<T extends { hash: string, pageUrl?: string }>(data: T, tabUrl?: string) {
+  const pageKey = await pageCacheKey(requestPageUrl(tabUrl, data.pageUrl))
+  return { ...data, pageKey, hash: pageKey ? await sha256Hex(pageKey, data.hash) : data.hash }
+}
 let translationCacheMutationTail: Promise<void> = Promise.resolve()
 let translationCacheClearBarrier: Promise<void> = Promise.resolve()
 
@@ -47,11 +64,31 @@ function mutateTranslationCache(operation: () => Promise<void>): Promise<void> {
 
 function clearTranslationCache(): Promise<void> {
   translationCacheGeneration++
-  const clearing = mutateTranslationCache(() => cacheDb.translationCache.clear())
+  pageCacheGenerations.clear()
+  const clearing = mutateTranslationCache(async () => {
+    await cacheDb.translationCache.clear()
+    await cacheDb.articleSummaryCache.clear()
+  })
   // New reads wait for the clear attempt; a failed attempt must not disable
   // unrelated future translation requests.
   translationCacheClearBarrier = clearing.catch(() => {})
   return clearing
+}
+
+async function clearPageTranslationCache(tabId: number, url: string): Promise<void> {
+  const tab = await browser.tabs.get(tabId)
+  if (tab.url !== url)
+    throw new Error("The page changed. Reopen the popup and try again.")
+  const pageKey = await pageCacheKey(url)
+  if (!pageKey)
+    return
+  pageCacheGenerations.set(pageKey, (pageCacheGenerations.get(pageKey) ?? 0) + 1)
+  const clearing = mutateTranslationCache(async () => {
+    await cacheDb.translationCache.deleteByPage(pageKey)
+    await cacheDb.articleSummaryCache.deleteByPage(pageKey)
+  })
+  translationCacheClearBarrier = clearing.catch(() => {})
+  await clearing
 }
 
 export function parseBatchResult(result: string): string[] {
@@ -78,25 +115,25 @@ function cachedTranslation(cached: TranslationCacheRecord): TranslationResult {
     : { action: "translate", text: cached.translation, targetCode: cached.targetCode }
 }
 
-function cacheTranslation(key: string, result: TranslationResult, generation: number): Promise<void> {
+function cacheTranslation(key: string, result: TranslationResult, generation: string, pageKey?: string): Promise<void> {
   return mutateTranslationCache(async () => {
-    if (generation !== translationCacheGeneration)
+    if (generation !== cacheGenerationFor(pageKey))
       return
-    await cacheDb.translationCache.put({ key, translation: result.text, action: result.action, targetCode: result.targetCode, protocolVersion: TRANSLATION_PROTOCOL_VERSION, createdAt: new Date() })
+    await cacheDb.translationCache.put({ key, ...(pageKey ? { pageKey } : {}), translation: result.text, action: result.action, targetCode: result.targetCode, protocolVersion: TRANSLATION_PROTOCOL_VERSION, createdAt: new Date() })
   })
 }
 
-async function getCachedTranslation(key: string, source: string, language: LanguagePolicyConfig, generation: number): Promise<TranslationResult | undefined> {
+async function getCachedTranslation(key: string, source: string, language: LanguagePolicyConfig, generation: string, pageKey?: string): Promise<TranslationResult | undefined> {
   await translationCacheClearBarrier
   const cached = await cacheDb.translationCache.get(key)
-  if (!cached || generation !== translationCacheGeneration)
+  if (!cached || generation !== cacheGenerationFor(pageKey))
     return undefined
   const result = cachedTranslation(cached)
   if (cached.protocolVersion === TRANSLATION_PROTOCOL_VERSION && hasCacheableTranslation(source, result, language))
     return result
   // Retire only the unusable entry; summaries and other valid translations stay intact.
   await mutateTranslationCache(async () => {
-    if (generation === translationCacheGeneration)
+    if (generation === cacheGenerationFor(pageKey))
       await cacheDb.translationCache.delete(key)
   })
   return undefined
@@ -123,6 +160,7 @@ async function getOrGenerateWebPageSummary(
   webContent: string,
   providerConfig: ProviderConfig,
   requestQueue: RequestQueue,
+  pageKey?: string,
 ): Promise<string | null> {
   const preparedText = cleanText(webContent)
   if (!preparedText) {
@@ -130,7 +168,9 @@ async function getOrGenerateWebPageSummary(
   }
 
   const textHash = await sha256Hex(preparedText)
-  const cacheKey = await sha256Hex(webTitle, textHash, JSON.stringify(providerConfig))
+  const generation = cacheGenerationFor(pageKey)
+  const cacheKey = await sha256Hex(webTitle, textHash, JSON.stringify(providerConfig), ...(pageKey ? [pageKey] : []))
+  await translationCacheClearBarrier
 
   const cached = await cacheDb.articleSummaryCache.get(cacheKey)
   if (cached) {
@@ -149,10 +189,15 @@ async function getOrGenerateWebPageSummary(
       return ""
     }
 
-    await cacheDb.articleSummaryCache.put({
-      key: cacheKey,
-      summary,
-      createdAt: new Date(),
+    await mutateTranslationCache(async () => {
+      if (generation !== cacheGenerationFor(pageKey))
+        return
+      await cacheDb.articleSummaryCache.put({
+        key: cacheKey,
+        ...(pageKey ? { pageKey } : {}),
+        summary,
+        createdAt: new Date(),
+      })
     })
 
     logger.info("Generated and cached new summary")
@@ -160,7 +205,7 @@ async function getOrGenerateWebPageSummary(
   }
 
   try {
-    const summary = await requestQueue.enqueue(thunk, Date.now(), cacheKey)
+    const summary = await requestQueue.enqueue(thunk, Date.now(), `${generation}:${cacheKey}`)
     return summary || null
   }
   catch (error) {
@@ -177,8 +222,8 @@ export interface TranslateBatchData<TContext = unknown> {
   scheduleAt: number
   context?: TContext
   customPromptsConfig?: Config["translate"]["customPromptsConfig"]
-  /** Temporary queue identity; persistent cache keys remain unchanged. */
-  cacheGeneration?: number
+  /** Cache generation used to keep cleared requests out of the active queue. */
+  cacheGeneration?: string
 }
 
 /**
@@ -287,6 +332,7 @@ export function setUpWebPageTranslationQueue() {
   const { requestQueueFor, batchQueue } = createTranslationQueues(getTranslatePrompt, limits)
 
   onMessage("clearTranslationCache", clearTranslationCache)
+  onMessage("clearPageTranslationCache", ({ data }) => clearPageTranslationCache(data.tabId, data.url))
 
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== HOVER_STREAM_PORT)
@@ -298,14 +344,15 @@ export function setUpWebPageTranslationQueue() {
       if (!controller.signal.aborted)
         port.postMessage(message)
     }
-    port.onMessage.addListener((data: HoverStreamRequest) => {
+    port.onMessage.addListener((rawData: HoverStreamRequest) => {
       if (started || controller.signal.aborted)
         return
       started = true
-      const cacheGeneration = translationCacheGeneration
       void (async () => {
         try {
-          const cached = await getCachedTranslation(data.hash, data.text, data.langConfig, cacheGeneration)
+          const data = await scopeTranslation(rawData, port.sender?.tab?.url)
+          const cacheGeneration = cacheGenerationFor(data.pageKey)
+          const cached = await getCachedTranslation(data.hash, data.text, data.langConfig, cacheGeneration, data.pageKey)
           controller.signal.throwIfAborted()
           if (cached) {
             if (cached.targetCode)
@@ -359,7 +406,7 @@ export function setUpWebPageTranslationQueue() {
           }, Date.now(), `hover:${cacheGeneration}:${data.hash}:${getRandomUUID()}`, 120_000)
           controller.signal.throwIfAborted()
           if (hasCacheableTranslation(data.text, result, data.langConfig))
-            await cacheTranslation(data.hash, result, cacheGeneration)
+            await cacheTranslation(data.hash, result, cacheGeneration, data.pageKey)
           reply({ type: "done", result })
         }
         catch (error) {
@@ -370,12 +417,12 @@ export function setUpWebPageTranslationQueue() {
   })
 
   onMessage("enqueueTranslateRequest", async (message) => {
-    const cacheGeneration = translationCacheGeneration
-    const { data: { text, langConfig, providerConfig, scheduleAt, hash, customPromptsConfig, webTitle, webDescription, webContent, webSummary } } = message
+    const { text, langConfig, providerConfig, scheduleAt, hash, customPromptsConfig, webTitle, webDescription, webContent, webSummary, pageKey } = await scopeTranslation(message.data, message.sender?.tab?.url)
+    const cacheGeneration = cacheGenerationFor(pageKey)
 
     // Check cache first
     if (hash) {
-      const cached = await getCachedTranslation(hash, text, langConfig, cacheGeneration)
+      const cached = await getCachedTranslation(hash, text, langConfig, cacheGeneration, pageKey)
       if (cached)
         return cached
     }
@@ -394,19 +441,20 @@ export function setUpWebPageTranslationQueue() {
 
     // Cache the translation result if successful
     if (hash && hasCacheableTranslation(text, result, langConfig))
-      await cacheTranslation(hash, result, cacheGeneration)
+      await cacheTranslation(hash, result, cacheGeneration, pageKey)
 
     return result
   })
 
   onMessage("getOrGenerateWebPageSummary", async (message) => {
-    const { webTitle, webContent, providerConfig } = message.data
+    const { webTitle, webContent, providerConfig, pageUrl } = message.data
+    const pageKey = await pageCacheKey(requestPageUrl(message.sender?.tab?.url, pageUrl))
 
     if (!webTitle || !webContent) {
       return null
     }
 
     await limits.load()
-    return await getOrGenerateWebPageSummary(webTitle, webContent, providerConfig, requestQueueFor(providerConfig))
+    return await getOrGenerateWebPageSummary(webTitle, webContent, providerConfig, requestQueueFor(providerConfig), pageKey)
   })
 }

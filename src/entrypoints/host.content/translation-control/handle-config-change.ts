@@ -14,9 +14,10 @@ export function handleTranslationModeChange(
   const rulesChanged = newConfig && oldConfig && JSON.stringify(newConfig.siteRules) !== JSON.stringify(oldConfig.siteRules)
   const languageChanged = newConfig && oldConfig && JSON.stringify(newConfig.language) !== JSON.stringify(oldConfig.language)
   const promptChanged = newConfig && oldConfig && JSON.stringify(newConfig.translate.customPromptsConfig) !== JSON.stringify(oldConfig.translate.customPromptsConfig)
+  const contextChanged = newConfig && oldConfig && newConfig.translate.enableAIContentAware !== oldConfig.translate.enableAIContentAware
 
   // restart() keeps the page translation on for the tab: unlike stop(), it does not tell the background that translation is off.
-  if ((modeChanged || rulesChanged || languageChanged || promptChanged) && manager.isActive) {
+  if ((modeChanged || rulesChanged || languageChanged || promptChanged || contextChanged) && manager.isActive) {
     void manager.restart()
   }
 }

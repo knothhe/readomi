@@ -6,11 +6,11 @@ languageCombobox:
   noLanguagesFound: 没有找到语言
 popup:
   clearTranslationCache:
-    label: 清空缓存
-    description: 清空所有页面已保存的译文，下次翻译会重新请求。
-    clearing: 清空中…
-    cleared: 翻译缓存已清空
-    failed: 清空失败，请重试。
+    label: 清理当前页缓存
+    description: 只清理当前页面的文字、字幕与上下文摘要缓存；已有译文保留，下次翻译会重新请求。
+    clearing: 正在清理当前页缓存…
+    cleared: 当前页缓存已清理
+    failed: 清理失败，请重试。
   serviceSwitch:
     switchLabel: 当前服务：$1，切换服务
     title: 切换服务
@@ -52,8 +52,16 @@ popup:
     missingKey: 未配置
   setup:
     title: 还没有翻译服务
-    description: 在设置页贴入 agent 生成的配置，就能翻译。
+    description: 在设置中选择服务并填写 API Key，就能开始翻译。
     openSettings: 去设置里配置
+  recovery:
+    help: 翻译有问题？
+    quality: 调整译文质量
+    retryFailed: 重试失败段落
+    retranslate: 重新翻译此页
+    retranslateDescription: 使用当前服务与设置，重新请求本页译文。
+    pending: 正在重试…
+    failed: 操作未完成，请重新打开弹窗后重试。
 errorRecovery:
   title: 应用发生异常
   description: 已进入恢复模式。刷新页面或重置设置后再试。
@@ -132,7 +140,7 @@ options:
     reconfigure: 重新配置
     empty:
       title: 还没有翻译服务
-      description: 把说明交给你的 agent。它用你的密钥验证好翻译服务的配置，放进剪贴板，你贴到下面。
+      description: 选择服务，填写 API Key 和模型；也可以粘贴 agent 验证好的配置。
     copyInstructions: 复制给 agent 的说明
     copied: 已复制
     edit: 修改
@@ -220,7 +228,7 @@ options:
     web: 网页翻译
     shared: 网页与视频字幕共用
     context:
-      title: 使用网页摘要
+      title: 结合文章上下文
       description: 先参考文章摘要，再翻译每个段落，帮助理解文章主题。
       note: "摘要取自正文前 2,000 个字符；首次生成需要额外请求翻译服务。"
       purpose: 让段落翻译参考文章主题。
@@ -231,7 +239,9 @@ options:
       edit: 修改
       system: 系统提示词
       template: 提示词模板
-      tokens: "{{input}} 是本次要翻译的文字，必须保留。\n{{targetLanguage}} 是本段按翻译语言规则确定的目标语言。"
+      tokens: "{{input}} 是本次要翻译的文字，必须保留。
+
+        {{targetLanguage}} 是本段按翻译语言规则确定的目标语言。"
       missingInput: "请在模板中保留 {{input}}，用于放入待翻译文字。"
       restore: 恢复默认
       cancel: 取消
@@ -257,6 +267,14 @@ translation:
   retry: 重试
   invalidResult: 译文的语言或内容不符合要求，请重试。
   unknownError: 出了点问题
+  errorReasons:
+    key: 密钥无效或没有访问权限，请在设置中修改翻译服务。
+    rate: 请求过多，请稍后重试或切换服务。
+    timeout: 服务响应超时，请重试。
+    network: 无法连接翻译服务，请检查网络与服务地址。
+    service: 翻译服务暂时不可用，请稍后重试或切换服务。
+    quality: 译文格式不完整，请重试。
+    unknown: 请检查翻译服务或重试，可展开错误详情查看原因。
 agentInstructions:
   noConfiguration: （尚未配置）
   text: |
@@ -464,8 +482,11 @@ manualService:
   bodyHint: 填写 body 内的 JSON 对象，无需再包一层 body；留空使用服务默认值。参数会合并进每次请求，并覆盖同名字段。
   bodyExample: 思考参数示例（请按模型文档调整）：
   bodyInvalid: 请输入有效的 JSON 对象（不能是数组、字符串或 null）。
+  intro: 选择服务，填写 API Key 和模型，检查成功后即可翻译。
+  advanced: 更多参数
+  compatible: OpenAI 兼容服务
 configBackup:
-  title: 备份
+  title: 备份与缓存
   backup: 备份
   restore: 恢复
   description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
@@ -601,7 +622,8 @@ translationShortcuts:
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: 悬停翻译触发方式
   hoverHelp: 触发方式说明
-  hoverHint: 鼠标停在段落上，点按触发键并松开即可翻译；按住 500 毫秒也会自动翻译，同一次按键只触发一次。鼠标左键需要长按 500 毫秒。再次触发恢复原文；输入框中不触发，组合键或拖动鼠标会取消触发。
+  hoverHint: 鼠标停在段落上，点按触发键并松开即可翻译；按住 500 毫秒也会自动翻译，同一次按键只触发一次。鼠标左键需要长按 500
+    毫秒。再次触发恢复原文；输入框中不触发，组合键或拖动鼠标会取消触发。
   alt: Option / Alt
   control: Control
   shift: Shift
@@ -731,3 +753,22 @@ siteRuleAgent:
   scopeHelp: 当前页面不在规则范围内，请返回适用页面。
   requestFailed: 翻译请求失败，译文效果仍待确认。
   modify: 修改配置
+cacheManagement:
+  title: 翻译缓存
+  clearAll: 清空所有缓存
+  clear: 清空
+  description: 缓存会自动清理超过 7 天的记录。清空缓存不会移除当前页面的译文或翻译服务配置。
+  pending: 正在清空所有缓存…
+  success: 所有翻译与摘要缓存已清空。
+  failed: 清空失败，请重试。
+subtitleStatus:
+  none: 当前页面未检测到视频。
+  off: 启用字幕翻译，读取播放器已有字幕。
+  excluded: 此网站已排除字幕翻译。
+  disabled: 请先在播放器中开启原字幕。
+  missing: 未找到可用字幕；Readomi 翻译已有字幕。
+  waiting: 正在等待字幕文字…
+  ready: 字幕已就绪。
+  delayed: 字幕翻译较慢，原字幕仍可阅读。
+  failed: 字幕翻译失败，请检查翻译服务或重试。
+  retry: 重试字幕翻译

@@ -12,7 +12,7 @@ export const DEFAULT_CONFIG: Config = {
   language: {
     sourceCode: "auto",
     targetCode: "cmn",
-    secondaryCode: "eng",
+    secondaryCode: "original",
     level: "intermediate",
   },
   providersConfig: DEFAULT_PROVIDER_CONFIG_LIST,

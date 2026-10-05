@@ -110,9 +110,10 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
   hashComponents.push(...extraHashTags)
 
   const hash = await sha256Hex(...hashComponents)
+  const pageUrl = typeof window === "undefined" ? undefined : window.location.href
   options.signal?.throwIfAborted()
   if (options.onPartial) {
-    return requestHoverStream({ text: preparedText, langConfig, providerConfig, hash, context: normalizedWebPageContext, customPromptsConfig }, options)
+    return requestHoverStream({ text: preparedText, langConfig, providerConfig, hash, pageUrl, context: normalizedWebPageContext, customPromptsConfig }, options)
   }
   const result = await sendMessage("enqueueTranslateRequest", {
     text: preparedText,
@@ -120,6 +121,7 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     providerConfig,
     scheduleAt: Date.now(),
     hash,
+    pageUrl,
     customPromptsConfig,
     webTitle: normalizedWebPageContext?.webTitle,
     webDescription: normalizedWebPageContext?.webDescription,

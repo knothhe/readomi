@@ -43,6 +43,7 @@ async function chooseMode(popup, label, mode) {
   const name = mode === "bilingual" ? "Bilingual" : "Translation only"
   await group.getByRole("button", { name, exact: true }).click()
   await group.getByRole("button", { name, exact: true, pressed: true }).waitFor()
+  await waitFor(() => storedConfig(context), config => label === "Web text display mode" ? config.translate.mode === mode : config.features.subtitleMode === mode, "the display mode is persisted")
 }
 
 async function openArticle(suffix) {
@@ -144,17 +145,23 @@ it("shares automatic language rules across settings and popup, isolates cached p
   await settings.getByRole("heading", { name: "Translation languages", exact: true }).waitFor()
   const popup = await context.newPage()
   await popup.goto(`chrome-extension://${extensionId}/popup.html`)
+  await popup.locator("summary").filter({ hasText: "Video subtitles" }).click()
   assert.equal((await storedConfig(context)).language.targetCode, "cmn")
-  assert.equal((await storedConfig(context)).language.secondaryCode, "eng")
+  assert.equal((await storedConfig(context)).language.secondaryCode, "original")
   assert.equal(await popup.getByRole("button", { name: "Primary language", exact: true }).getAttribute("data-value"), "cmn")
-  assert.equal(await popup.getByRole("button", { name: "Second language", exact: true }).getAttribute("data-value"), "eng")
+  assert.equal(await popup.getByRole("button", { name: "Second language", exact: true }).getAttribute("data-value"), "original")
 
   const { design, world, curious } = LANGUAGE_RULES_FIXTURES
+  const preservedDefault = await translateArticle("default-preserved", { "en-before": design.zh, "en-after": curious.zh })
+  await assertPreserved(preservedDefault, "zh-middle", world.zh)
+  await preservedDefault.close()
+  await chooseLanguage(settings, "Second language", "eng")
+  await waitFor(() => popup.getByRole("button", { name: "Second language", exact: true }).getAttribute("data-value"), value => value === "eng", "the explicit secondary language is saved")
   const defaultExpectations = { "en-before": design.zh, "zh-middle": world.en, "en-after": curious.zh }
   const first = await translateArticle("default", defaultExpectations)
   const afterFirst = service.translationRequests().length
   await first.close()
-  const cached = await translateArticle("default-copy", defaultExpectations)
+  const cached = await translateArticle("default", defaultExpectations)
   assert.equal(service.translationRequests().length, afterFirst, "the same language policy reuses cached results")
   await cached.close()
 

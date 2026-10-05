@@ -26,7 +26,7 @@ export function SiteRuleAgentEntry() {
   }
 
   return (
-    <div className="flex flex-col gap-1.5 border-t border-border pt-2.5">
+    <div className="flex flex-col gap-1.5">
       <button
         type="button"
         className="text-left text-[12px] leading-5 text-muted-foreground hover:text-primary disabled:opacity-50"

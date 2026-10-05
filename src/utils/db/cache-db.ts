@@ -8,6 +8,7 @@ import type { LangCodeISO6393 } from "@/definitions"
 
 export interface TranslationCacheRecord {
   key: string
+  pageKey?: string
   translation: string
   action?: "translate" | "preserve"
   targetCode?: LangCodeISO6393
@@ -17,14 +18,15 @@ export interface TranslationCacheRecord {
 }
 
 export interface ArticleSummaryCacheRecord {
-  key: string // sha256Hex(webTitle, textContentHash, JSON.stringify(providerConfig))
+  key: string // Digest of page scope, article content and service configuration.
+  pageKey?: string
   summary: string
   createdAt: Date
 }
 
 // Keep the legacy name so installed builds retain their cached translations.
 const DB_NAME = "JiandaoDB"
-const DB_VERSION = 50
+const DB_VERSION = 51
 const STORES = ["translationCache", "articleSummaryCache"] as const
 type StoreName = typeof STORES[number]
 
@@ -48,6 +50,8 @@ function openDatabase(): Promise<IDBDatabase> {
           : db.createObjectStore(name, { keyPath: "key" })
         if (!store.indexNames.contains("createdAt"))
           store.createIndex("createdAt", "createdAt")
+        if (!store.indexNames.contains("pageKey"))
+          store.createIndex("pageKey", "pageKey")
       }
     }
     req.onsuccess = () => {
@@ -96,6 +100,23 @@ class CacheTable<T extends { key: string, createdAt: Date }> {
       transaction.onabort = () => reject(transaction.error ?? new Error("Cache clear transaction was aborted"))
       transaction.onerror = () => reject(transaction.error ?? new Error("Cache clear transaction failed"))
       store.clear()
+    })
+  }
+
+  async deleteByPage(pageKey: string): Promise<void> {
+    const store = await this.store("readwrite")
+    await new Promise<void>((resolve, reject) => {
+      const transaction = store.transaction
+      transaction.oncomplete = () => resolve()
+      transaction.onabort = () => reject(transaction.error ?? new Error("Page cache clear was aborted"))
+      transaction.onerror = () => reject(transaction.error ?? new Error("Page cache clear failed"))
+      const cursor = store.index("pageKey").openCursor(IDBKeyRange.only(pageKey))
+      cursor.onsuccess = () => {
+        if (cursor.result) {
+          cursor.result.delete()
+          cursor.result.continue()
+        }
+      }
     })
   }
 

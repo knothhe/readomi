@@ -27,6 +27,17 @@ async function setUp() {
   return launched
 }
 
+async function waitForSaved(predicate) {
+  const deadline = Date.now() + 15000
+  while (Date.now() < deadline) {
+    const config = await storedConfig(context)
+    if (predicate(config))
+      return config
+    await new Promise(resolve => setTimeout(resolve, 50))
+  }
+  throw new Error("The selected setting was not saved")
+}
+
 async function selectSetting(page, label, option) {
   await page.getByRole("combobox", { name: label, exact: true }).click()
   await page.getByRole("option", { name: option, exact: true }).click()
@@ -121,7 +132,8 @@ it("updates hover and page shortcuts live, switches display mode and toggles cap
   await article.keyboard.press("Control")
   await article.locator(".readomi-translated-block-content").waitFor({ state: "detached" })
   await selectSetting(page, "Hover translation trigger", "Backtick (`)")
-  await page.waitForFunction(async () => (await globalThis.chrome.storage.local.get("config")).config.features.hoverHotkey === "backtick")
+  await waitForSaved(config => config.features.hoverHotkey === "backtick")
+  await waitForSaved(config => config.features.hoverHotkey === "backtick")
   assert.equal((await storedConfig(context)).features.hoverHotkey, "backtick")
   await article.bringToFront()
   await paragraph.hover()
@@ -166,7 +178,7 @@ it("manual setup and local backup restore work without an account", async () => 
   const manifest = JSON.parse(await readFile(new URL("../../.output/chrome-mv3/manifest.json", import.meta.url), "utf8"))
   await page.getByText(`Version ${manifest.version}`, { exact: true }).waitFor()
   await page.getByRole("button", { name: "Manual setup", exact: true }).click()
-  await selectSetting(page, "Service type", "openai-compatible")
+  await selectSetting(page, "Service type", "OpenAI-compatible service")
   await page.getByLabel("Name", { exact: true }).fill(doc.name)
   await page.getByLabel("API URL", { exact: true }).fill(doc.baseURL)
   await page.getByLabel("API Key", { exact: true }).fill(doc.apiKey)
@@ -209,10 +221,10 @@ it("manual setup and local backup restore work without an account", async () => 
   const modes = features.getByRole("group", { name: "Size mode", exact: true })
   assert.equal(await custom.evaluate(element => element.open), false)
   await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await page.waitForFunction(async () => (await globalThis.chrome.storage.local.get("config")).config.features.subtitleStyle.fontSizeMode === "fixed")
+  await waitForSaved(config => config.features.subtitleStyle.fontSizeMode === "fixed")
   assert.equal(await custom.evaluate(element => element.open), false, "changing the main size mode does not open custom settings")
   await presets.getByRole("button", { name: "Focus", exact: true }).click()
-  await page.waitForFunction(async () => (await globalThis.chrome.storage.local.get("config")).config.features.subtitleStyle.preset === "study")
+  await waitForSaved(config => config.features.subtitleStyle.preset === "study")
   assert.equal(await custom.evaluate(element => element.open), false, "selecting a preset keeps fine controls collapsed")
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, {
     ...restored.features.subtitleStyle,
@@ -230,7 +242,7 @@ it("manual setup and local backup restore work without an account", async () => 
   assert.equal(await sizeSlider.getAttribute("max"), "80")
   assert.equal(await sizeSlider.inputValue(), "24")
   await sizeSlider.press("End")
-  await page.waitForFunction(async () => (await globalThis.chrome.storage.local.get("config")).config.features.subtitleStyle.fontSize === 80)
+  await waitForSaved(config => config.features.subtitleStyle.fontSize === 80)
   await sizeSlider.blur()
   assert.equal(await sizeNumber.inputValue(), "80")
   assert.equal(await features.locator(".subtitle-preview-caption").evaluate(element => element.style.fontSize), "80px")
@@ -243,8 +255,8 @@ it("manual setup and local backup restore work without an account", async () => 
   await page.screenshot({ path: "/tmp/readomi-subtitle-settings-dark.png", fullPage: true })
   await presets.getByRole("button", { name: "Transparent", exact: true }).click()
   await features.getByRole("group", { name: "Common sizes", exact: true }).getByRole("button", { name: "20 px", exact: true }).click()
-  await page.waitForFunction(async () => {
-    const style = (await globalThis.chrome.storage.local.get("config")).config.features.subtitleStyle
+  await waitForSaved((config) => {
+    const style = config.features.subtitleStyle
     return style.preset === "clear" && style.fontSizeMode === "fixed" && style.fontSize === 20 && style.backgroundOpacity === 0
   })
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, { ...restored.features.subtitleStyle, fontSizeMode: "fixed" })
@@ -269,6 +281,7 @@ it("hover translates and restores one paragraph without enabling whole-page tran
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
   await page.goto(`chrome-extension://${extensionId}/popup.html`)
+  await page.locator("summary").filter({ hasText: "Video subtitles" }).click()
   await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
   await page.getByRole("switch", { name: "Hover translation", exact: true, checked: true }).waitFor()
   const article = await context.newPage()
@@ -289,7 +302,7 @@ it("hover translates and restores one paragraph without enabling whole-page tran
   await article.locator(".readomi-translated-block-content").waitFor({ state: "detached" })
   // Turning the popup switch off stops hover translation on the existing tab.
   await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
-  await page.waitForFunction(async () => !(await globalThis.chrome.storage.local.get("config")).config.features.hoverTranslation)
+  await waitForSaved(config => !config.features.hoverTranslation)
   await article.bringToFront()
   await paragraph.hover()
   await article.keyboard.press("Alt")
@@ -302,6 +315,7 @@ it("caption DOM translates locally and closing the feature restores the player",
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
   await page.goto(`chrome-extension://${extensionId}/popup.html`)
+  await page.locator("summary").filter({ hasText: "Video subtitles" }).click()
   await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
   await page.getByRole("switch", { name: "Video subtitle translation", checked: true }).waitFor()
   const article = await context.newPage()

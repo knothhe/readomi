@@ -7,6 +7,7 @@ import type {
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
+import type { SubtitleStatus } from "@/types/subtitle-status"
 import type { TranslationProgress } from "@/types/translation-progress"
 import type { TranslationResult } from "@/utils/host/translate/translation-result"
 import type { LanguagePolicyConfig } from "@/utils/language-policy"
@@ -42,14 +43,19 @@ interface ProtocolMap {
   pageTranslationStateChanged: (data: { tabId: number, enabled: boolean }) => void
   // ask host to start page translation
   askManagerToTogglePageTranslation: (data: { enabled: boolean }) => void
+  refreshPageTranslation: (data: { url: string, failedOnly: boolean }) => Promise<void>
+  getSubtitleStatus: () => SubtitleStatus
+  getTabSubtitleStatus: (data: { tabId: number }) => Promise<SubtitleStatus>
+  retrySubtitleTranslation: () => void
   // translation progress (content script -> background -> popup)
   reportTranslationProgress: (data: TranslationProgress) => void
   getTranslationProgressByTabId: (data: { tabId: number }) => TranslationProgress | null
   translationProgressChanged: (data: { tabId: number, progress: TranslationProgress }) => void
   // request
   clearTranslationCache: () => Promise<void>
-  enqueueTranslateRequest: (data: { text: string, langConfig: LanguagePolicyConfig, providerConfig: ProviderConfig, scheduleAt: number, hash: string, customPromptsConfig?: Config["translate"]["customPromptsConfig"], webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<TranslationResult>
-  getOrGenerateWebPageSummary: (data: { webTitle: string, webContent: string, providerConfig: ProviderConfig }) => Promise<string | null>
+  clearPageTranslationCache: (data: { tabId: number, url: string }) => Promise<void>
+  enqueueTranslateRequest: (data: { text: string, langConfig: LanguagePolicyConfig, providerConfig: ProviderConfig, scheduleAt: number, hash: string, pageUrl?: string, customPromptsConfig?: Config["translate"]["customPromptsConfig"], webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<TranslationResult>
+  getOrGenerateWebPageSummary: (data: { webTitle: string, webContent: string, providerConfig: ProviderConfig, pageUrl?: string }) => Promise<string | null>
   backgroundGenerateText: (data: BackgroundGenerateTextPayload) => Promise<BackgroundGenerateTextResponse>
 }
 
@@ -140,15 +146,15 @@ export function onMessage<T extends MessageType>(type: T, handler: Handler<T>): 
  */
 export async function sendMessage<T extends MessageType>(
   type: T,
-  ...args: DataOf<T> extends undefined ? [data?: DataOf<T>, tabId?: number] : [data: DataOf<T>, tabId?: number]
+  ...args: DataOf<T> extends undefined ? [data?: DataOf<T>, tabId?: number, frameId?: number] : [data: DataOf<T>, tabId?: number, frameId?: number]
 ): Promise<ResponseOf<T>> {
-  const [data, tabId] = args
+  const [data, tabId, frameId] = args
   const envelope: Envelope = { kind: ENVELOPE, type, data }
   let reply: Reply | undefined
   try {
     reply = tabId === undefined
       ? await browser.runtime.sendMessage(envelope)
-      : await browser.tabs.sendMessage(tabId, envelope)
+      : frameId === undefined ? await browser.tabs.sendMessage(tabId, envelope) : await browser.tabs.sendMessage(tabId, envelope, { frameId })
     if (reply === undefined)
       throw new Error(`No handler answered ${type}`)
   }

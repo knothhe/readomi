@@ -73,7 +73,11 @@ async function renderSettings(config: Config = DEFAULT_CONFIG, section = "servic
   return { ...view, store }
 }
 
-const editor = () => screen.getByLabelText("options.service.editorLabel") as HTMLTextAreaElement
+function editor() {
+  if (!screen.queryByLabelText("options.service.editorLabel"))
+    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+  return screen.getByLabelText("options.service.editorLabel") as HTMLTextAreaElement
+}
 const applyButton = () => screen.getByRole("button", { name: /^options\.service\.check(?:Add|Save)$/ })
 
 function currentServiceMenu() {
@@ -597,8 +601,11 @@ describe("settings page", () => {
   it("shows an empty editor right away when no service is configured", async () => {
     await renderSettings()
 
-    expect(screen.getByText("options.service.agentHint")).toBeInTheDocument()
-    expect(editor().value).toBe("")
+    expect(screen.getByRole("button", { name: "manualService.manual" })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByText("manualService.intro")).toBeVisible()
+    expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
+    expect(screen.getByLabelText("manualService.model")).toHaveValue("")
+    expect(screen.getByLabelText("manualService.url")).not.toBeVisible()
     expect(applyButton()).toBeDisabled()
     expect(screen.getByRole("heading", { name: "options.service.add" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "options.service.cancel" })).toBeEnabled()
@@ -634,6 +641,7 @@ describe("settings page", () => {
     expect(screen.queryByRole("button", { name: "manualService.agent" })).toBeNull()
     editCurrentService()
     const agent = screen.getByRole("button", { name: "manualService.agent" })
+    fireEvent.click(agent)
     const manual = screen.getByRole("button", { name: "manualService.manual" })
     expect(agent).toHaveAttribute("aria-pressed", "true")
     expect(manual).toHaveAttribute("aria-pressed", "false")

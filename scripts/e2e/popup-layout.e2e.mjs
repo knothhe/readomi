@@ -81,7 +81,7 @@ it("fits every UI language without scrolling, and keeps the footer reachable in 
     test.diagnostic(`${locale}: entire popup fits within 320 × 600`)
   }
 
-  await popup.setViewportSize({ width: 320, height: 480 })
+  await popup.setViewportSize({ width: 320, height: 320 })
   const shorter = await dimensions(popup)
   assert.ok(shorter.scrollHeight > shorter.clientHeight, JSON.stringify(shorter))
   await popup.locator("footer").scrollIntoViewIfNeeded()

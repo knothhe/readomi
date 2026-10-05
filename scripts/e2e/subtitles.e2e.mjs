@@ -192,6 +192,7 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     const popup = await context.newPage()
     await popup.setViewportSize({ width: 320, height: 460 })
     await popup.goto(`chrome-extension://${extensionId}/popup.html`)
+    await popup.locator("summary").filter({ hasText: "Video subtitles" }).click()
     const webMode = popup.getByRole("group", { name: "Web text display mode" })
     const subtitleMode = popup.getByRole("group", { name: "Subtitle display mode" })
     await webMode.getByRole("button", { name: "Translation only", exact: true }).click()
@@ -206,6 +207,7 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     assert.equal(finalConfig.translate.mode, "bilingual")
     assert.deepEqual(finalConfig.features.subtitleStyle, moved)
     await popup.reload()
+    await popup.locator("summary").filter({ hasText: "Video subtitles" }).click()
     await popup.waitForFunction(() => {
       const groups = [...document.querySelectorAll("[role=\"group\"]")]
       const selected = label => groups.find(group => group.getAttribute("aria-label") === label)?.querySelector("[aria-pressed=\"true\"]")?.textContent

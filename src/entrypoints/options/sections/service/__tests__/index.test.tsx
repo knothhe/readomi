@@ -28,7 +28,11 @@ async function renderService(config: Config = configured) {
   const view = render(<Provider store={store}><ServiceSection /></Provider>)
   return { ...view, store }
 }
-const editor = () => screen.getByRole("textbox", { name: "options.service.editorLabel" }) as HTMLTextAreaElement
+function editor() {
+  if (!screen.queryByRole("textbox", { name: "options.service.editorLabel" }))
+    fireEvent.click(screen.getByRole("button", { name: "manualService.agent" }))
+  return screen.getByRole("textbox", { name: "options.service.editorLabel" }) as HTMLTextAreaElement
+}
 const row = (name: string) => screen.getByRole("heading", { name }).closest("article")!
 function menu(name: string) {
   const serviceRow = row(name)
@@ -167,7 +171,7 @@ describe("multiple translation services", () => {
     expect(checkConnection).not.toHaveBeenCalled()
   })
 
-  it("initial setup opens the agent form and saves its first checked service", async () => {
+  it("initial setup allows choosing the agent form and saves its first checked service", async () => {
     const { store } = await renderService(DEFAULT_CONFIG)
     expect(editor()).toHaveValue("")
     fireEvent.change(editor(), { target: { value: JSON.stringify({ type: "deepseek", name: "First", apiKey: "key", model: "model" }) } })

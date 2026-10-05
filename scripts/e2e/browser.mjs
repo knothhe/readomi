@@ -156,7 +156,7 @@ export async function configureService(page, extensionId, doc) {
   await page.goto(`chrome-extension://${extensionId}/options.html#service`)
   const section = page.locator("#service")
   await section.waitFor()
-  if (!await section.getByLabel("Translation service configuration").isVisible()) {
+  if (!await section.locator(".settings-service-editor").isVisible()) {
     const current = section.locator(".settings-service-row[data-current='true']")
     await current.locator("summary").click()
     await current.getByRole("button", { name: "Edit", exact: true }).click()
@@ -173,6 +173,18 @@ export async function configureService(page, extensionId, doc) {
 export async function storedConfig(context) {
   const worker = context.serviceWorkers()[0] ?? await context.waitForEvent("serviceworker")
   return worker.evaluate(async () => (await chrome.storage.local.get("config")).config)
+}
+
+/** Wait for committed storage rather than an optimistically selected UI value. */
+export async function waitForStoredConfig(context, predicate) {
+  const deadline = Date.now() + 15_000
+  while (Date.now() < deadline) {
+    const config = await storedConfig(context)
+    if (predicate(config))
+      return config
+    await new Promise(resolve => setTimeout(resolve, 50))
+  }
+  throw new Error("The selected configuration was not saved")
 }
 
 /**

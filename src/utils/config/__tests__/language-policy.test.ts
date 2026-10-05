@@ -9,8 +9,8 @@ import { getLocalConfig } from "../storage"
 describe("translation language configuration compatibility", () => {
   beforeEach(() => fakeBrowser.reset())
 
-  it("uses Simplified Chinese and English for new configurations", () => {
-    expect(DEFAULT_CONFIG.language).toMatchObject({ targetCode: "cmn", secondaryCode: "eng" })
+  it("preserves Simplified Chinese for new reading configurations", () => {
+    expect(DEFAULT_CONFIG.language).toMatchObject({ targetCode: "cmn", secondaryCode: "original" })
   })
 
   it("adds the second language to older configs without resetting language or provider preferences", async () => {

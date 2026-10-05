@@ -1,4 +1,5 @@
 import { i18n } from "#imports"
+import { describeTranslationError } from "@/utils/error/translation-error"
 import { getRequestErrorMeta } from "@/utils/request/retry-policy"
 import { RetryButton } from "./retry-button"
 
@@ -20,13 +21,17 @@ export function TranslationError({ nodes, error }: { nodes: ChildNode[], error: 
   const detail = describeError(error)
 
   return (
-    <div className="notranslate inline-flex max-w-full items-center gap-2 text-sm text-muted-foreground">
-      <span className="truncate" title={detail}>
+    <div className="notranslate inline-flex max-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      <span>
         {i18n.t("translation.failed")}
         {" · "}
-        {detail}
+        {describeTranslationError(error)}
       </span>
       <RetryButton nodes={nodes} />
+      <details className="max-w-full text-xs">
+        <summary className="cursor-pointer">{i18n.t("errorRecovery.errorDetails")}</summary>
+        <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all">{detail}</pre>
+      </details>
     </div>
   )
 }
