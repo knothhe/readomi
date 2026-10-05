@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="zh-CN" style="color-scheme:dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>视频字幕 · 暗色专注 · 自定义展开 — Readomi</title>
-<style>html,body{margin:0;min-width:0;min-height:1080px;background:light-dark(#faf8f4,#242321)}body{width:100%}</style></head><body>
+<html lang="zh-CN" style="color-scheme:light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>视频字幕 · 视频控件关闭 — Readomi</title>
+<style>html,body{margin:0;min-width:0;min-height:900px;background:light-dark(#faf8f4,#242321)}body{width:100%}</style></head><body>
 <!-- Final settings design. This state supersedes the corresponding Settings-Refresh / Settings-Subtitle board. Bottom saves 88% and renders at the player-compatible 98% anchor. Preview grows by measured caption height + 24 px without shrinking text; its caption width is frame width - 16 px. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-service" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"></rect><rect x="4" y="14" width="16" height="6" rx="2"></rect><path d="M7 7h.01M7 17h.01M12 7h5M12 17h5"></path></symbol>
@@ -381,7 +381,7 @@
           <div class="rd-section-label">翻译与样式</div>
           <div class="rd-group" data-video-primary>
             <div class="rd-row"><div><div class="rd-label">视频字幕翻译</div><p class="rd-help">复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="视频字幕翻译" data-video checked></div>
-            <div class="rd-row"><div><div class="rd-label">在视频上显示控件</div><p class="rd-help">仅在 YouTube 和 X 的支持播放器中显示。关闭后不影响字幕翻译。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="在视频上显示控件" data-video-controls checked></div>
+            <div class="rd-row"><div><div class="rd-label">在视频上显示控件</div><p class="rd-help">仅在 YouTube 和 X 的支持播放器中显示。关闭后不影响字幕翻译。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="在视频上显示控件" data-video-controls></div>
             <div class="rd-row rd-stack"><span class="rd-label">字幕显示方式</span><div class="rd-seg" role="group" aria-label="字幕显示方式"><button type="button" class="cursor-interaction" data-submode="bilingual" aria-pressed="true">双语对照</button><button type="button" class="cursor-interaction" data-submode="only" aria-pressed="false">仅译文</button></div></div>
             <div class="rd-row rd-choice-row"><div class="rd-label-line"><span class="rd-label">字幕预设</span><span class="rd-help" data-preset-modified>已调整</span></div><div class="rd-preset-grid" role="group" aria-label="字幕预设">
               <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>清透</strong><small>3% · 无背景</small></button>
@@ -426,7 +426,7 @@
     (() => {
       const root=document.getElementById('readomi-settings-light');
       const models=[];
-      const BOARD_STATE={"customOpen": true, "subpreset": "study", "relative": 3.75, "fixed": 24, "opacity": 65, "theme": "dark"};
+      const BOARD_STATE={};
 
       function createLocalIcons(){
         const names={server:'service','book-open':'reading',captions:'video',sparkles:'quality',keyboard:'shortcut','sun-moon':'appearance',archive:'backup','chevron-right':'arrow',x:'close'};
@@ -455,7 +455,7 @@
       const defaultShortcuts={page:'Alt+E',mode:'Alt+M',video:'Alt+V'};
       const shortcutLabels={page:'翻译此页 / 显示原文',mode:'切换双语 / 仅译文',video:'切换视频字幕'};
       const saved=BOARD_STATE;
-      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,videoControls:true,submode:'bilingual',subpreset:'clear',relative:3,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
+      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,videoControls:false,submode:'bilingual',subpreset:'clear',relative:3,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
       if(!presets[state.subpreset]) state.subpreset='clear';
       if(!styleLabels[state.style]) state.style='line';
       if(!Array.isArray(state.rules)) state.rules=[];

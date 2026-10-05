@@ -287,6 +287,9 @@
     #readomi-settings-light .rd-pages > .rd-view:is([data-page="service"],[data-page="quality"],[data-page="shortcut"],[data-page="appearance"],[data-page="backup"]) { max-width:760px; }
     #readomi-settings-light .rd-main:has(.rd-pages > .rd-view:is([data-page="service"],[data-page="quality"],[data-page="shortcut"],[data-page="appearance"],[data-page="backup"]):not([hidden])) .rd-heading { max-width:760px; }
     #readomi-settings-light .rd-narrow { max-width:760px; }
+
+    #readomi-settings-light .rd-row:has([data-video-controls]) .rd-help { max-width:310px; margin-top:4px; line-height:1.65; }
+    @media(max-width:600px) { #readomi-settings-light .rd-row:has([data-video-controls]) { flex-wrap:wrap; gap:12px; } #readomi-settings-light .rd-row:has([data-video-controls]) .rd-help { max-width:none; } #readomi-settings-light [data-video-controls] { margin-left:auto; } }
   </style>
   <div class="rd-stage" aria-label="Readomi 设置页">
     <section data-scheme="inline" aria-label="按需展开方案">
@@ -378,6 +381,7 @@
           <div class="rd-section-label">翻译与样式</div>
           <div class="rd-group" data-video-primary>
             <div class="rd-row"><div><div class="rd-label">视频字幕翻译</div><p class="rd-help">复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="视频字幕翻译" data-video checked></div>
+            <div class="rd-row"><div><div class="rd-label">在视频上显示控件</div><p class="rd-help">仅在 YouTube 和 X 的支持播放器中显示。关闭后不影响字幕翻译。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="在视频上显示控件" data-video-controls checked></div>
             <div class="rd-row rd-stack"><span class="rd-label">字幕显示方式</span><div class="rd-seg" role="group" aria-label="字幕显示方式"><button type="button" class="cursor-interaction" data-submode="bilingual" aria-pressed="true">双语对照</button><button type="button" class="cursor-interaction" data-submode="only" aria-pressed="false">仅译文</button></div></div>
             <div class="rd-row rd-choice-row"><div class="rd-label-line"><span class="rd-label">字幕预设</span><span class="rd-help" data-preset-modified>已调整</span></div><div class="rd-preset-grid" role="group" aria-label="字幕预设">
               <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>清透</strong><small>3% · 无背景</small></button>
@@ -451,7 +455,7 @@
       const defaultShortcuts={page:'Alt+E',mode:'Alt+M',video:'Alt+V'};
       const shortcutLabels={page:'翻译此页 / 显示原文',mode:'切换双语 / 仅译文',video:'切换视频字幕'};
       const saved=BOARD_STATE;
-      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,submode:'bilingual',subpreset:'clear',relative:3,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
+      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,videoControls:true,submode:'bilingual',subpreset:'clear',relative:3,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
       if(!presets[state.subpreset]) state.subpreset='clear';
       if(!styleLabels[state.style]) state.style='line';
       if(!Array.isArray(state.rules)) state.rules=[];
@@ -549,7 +553,7 @@
         if(scheme==='editor'){qa('[data-main-video-part]').forEach(el=>el.hidden=editorOpen);q('[data-custom-editor]').hidden=!editorOpen;if(editorOpen&&state.page==='video')q('.rd-heading h1').textContent='自定义字幕样式';}
         if(scheme==='dialog'){qa('[data-custom-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.customTab===state.customTab)));qa('[data-custom-panel]').forEach(panel=>panel.hidden=panel.dataset.customPanel!==state.customTab);}
         ['mode','style','submode','sizemode','theme'].forEach(key=>qa('[data-'+key+']').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[key]===state[key]))));
-        q('[data-hover]').checked=state.hover;q('[data-bold]').checked=state.bold;q('[data-video]').checked=state.video;q('[data-stream-row]').hidden=!state.hover;
+        q('[data-hover]').checked=state.hover;q('[data-bold]').checked=state.bold;q('[data-video]').checked=state.video;q('[data-video-controls]').checked=state.videoControls;q('[data-stream-row]').hidden=!state.hover;
         q('[data-style-row]').hidden=state.mode==='only';
         const original=q('[data-original]');original.hidden=state.mode==='only';const sentence='Reading and experience train your model of the world.';original.replaceChildren();
         sentence.split(' ').forEach((word,index)=>{if(index)original.append(' ');const span=document.createElement('span');if(state.bold){const b=document.createElement('strong');const n=Math.ceil(word.length/2);b.textContent=word.slice(0,n);span.append(b,word.slice(n));}else span.textContent=word;original.append(span);});
@@ -634,7 +638,7 @@
       });
       function addRule(){const rule=normalizeRule(state.ruleType,q('[data-excluded-input]').value);if(!rule)ruleError='请输入有效的网站规则。';else if(state.rules.some(r=>r.type===rule.type&&r.value===rule.value))ruleError='这条规则已存在。';else{state.rules.push(rule);q('[data-excluded-input]').value='';ruleError='';rulesSaved=true;}renderRules();persist();}
       q('[data-excluded-form]').addEventListener('submit',event=>{event.preventDefault();addRule();});
-      shell.addEventListener('change',event=>{const el=event.target;if(el.hasAttribute('data-hover'))state.hover=el.checked;if(el.hasAttribute('data-bold'))state.bold=el.checked;if(el.hasAttribute('data-video'))state.video=el.checked;if(el.hasAttribute('data-subsize')||el.hasAttribute('data-size-number')){setSize(el.value);el.value=currentSize();}if(el.hasAttribute('data-opacity')||el.hasAttribute('data-opacity-number')){state.opacity=Math.max(0,Math.min(100,Math.round(Number(el.value)||0)));el.value=state.opacity;}if(el.hasAttribute('data-excluded-type')){state.ruleType=el.value;ruleError='';}render();persist();});
+      shell.addEventListener('change',event=>{const el=event.target;if(el.hasAttribute('data-hover'))state.hover=el.checked;if(el.hasAttribute('data-bold'))state.bold=el.checked;if(el.hasAttribute('data-video'))state.video=el.checked;if(el.hasAttribute('data-video-controls'))state.videoControls=el.checked;if(el.hasAttribute('data-subsize')||el.hasAttribute('data-size-number')){setSize(el.value);el.value=currentSize();}if(el.hasAttribute('data-opacity')||el.hasAttribute('data-opacity-number')){state.opacity=Math.max(0,Math.min(100,Math.round(Number(el.value)||0)));el.value=state.opacity;}if(el.hasAttribute('data-excluded-type')){state.ruleType=el.value;ruleError='';}render();persist();});
       shell.addEventListener('input',event=>{const el=event.target;if(el.hasAttribute('data-subsize')||el.hasAttribute('data-size-number')){if(el.value!==''){setSize(el.value);render();persist();}}if(el.hasAttribute('data-opacity')||el.hasAttribute('data-opacity-number')){if(el.value!==''){state.opacity=Math.max(0,Math.min(100,Math.round(Number(el.value)||0)));render();persist();}}if(el.hasAttribute('data-excluded-input')){ruleError='';renderRules();}});
       shell.addEventListener('keydown',event=>{
         if(event.target.dataset.customTab&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();state.customTab=state.customTab==='font'?'background':'font';render();q('[data-custom-tab="'+state.customTab+'"]').focus();persist();return;}
