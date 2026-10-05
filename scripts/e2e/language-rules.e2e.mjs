@@ -145,7 +145,6 @@ it("shares automatic language rules across settings and popup, isolates cached p
   await settings.getByRole("heading", { name: "Translation languages", exact: true }).waitFor()
   const popup = await context.newPage()
   await popup.goto(`chrome-extension://${extensionId}/popup.html`)
-  await popup.locator("summary").filter({ hasText: "Video subtitles" }).click()
   assert.equal((await storedConfig(context)).language.targetCode, "cmn")
   assert.equal((await storedConfig(context)).language.secondaryCode, "original")
   assert.equal(await popup.getByRole("button", { name: "Primary language", exact: true }).getAttribute("data-value"), "cmn")

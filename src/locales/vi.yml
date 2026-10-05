@@ -7,8 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: Xóa bộ nhớ đệm trang này
-    description: Chỉ xóa bản dịch văn bản, phụ đề và tóm tắt của trang này. Bản dịch
-      đang hiển thị được giữ lại.
+    description: Xóa bộ nhớ đệm trang này, giữ bản dịch đang hiển thị.
     clearing: Đang xóa bộ nhớ đệm trang…
     cleared: Đã xóa bộ nhớ đệm trang
     failed: Không thể xóa. Hãy thử lại.

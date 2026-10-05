@@ -275,10 +275,11 @@ it("retries failed paragraphs and retranslates an already translated page", asyn
   assert.equal(await blocks.count(), 5)
 })
 
-it("keeps video settings collapsed on articles and opens them for a detected player with subtitle status", async () => {
-  const { popup, article } = await setup()
-  const section = popup.locator("details").filter({ has: popup.locator("summary").filter({ hasText: "Video subtitles" }) })
-  assert.equal(await section.evaluate(element => element.open), false)
+it("keeps video settings directly visible on articles and reports a detected player’s subtitle status", async () => {
+  const { popup, article, worker } = await setup()
+  const section = popup.getByRole("region", { name: "Video subtitles", exact: true })
+  await section.getByRole("switch", { name: "Video subtitle translation", exact: true }).waitFor()
+  assert.equal(await popup.locator("summary").filter({ hasText: "Video subtitles" }).count(), 0)
   await article.evaluate(() => {
     const video = document.createElement("video")
     video.style.cssText = "display:block;width:640px;height:360px"
@@ -288,11 +289,23 @@ it("keeps video settings collapsed on articles and opens them for a detected pla
     track.addCue(new VTTCue(0, 60, "A readable subtitle."))
   })
   await popup.getByText("Enable subtitle translation to read the player’s existing captions.", { exact: true }).waitFor()
-  assert.equal(await section.evaluate(element => element.open), true)
+  assert.equal(await section.isVisible(), true)
   await section.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
   await popup.getByText("Subtitle translation is ready.", { exact: true }).waitFor({ timeout: 20_000 })
   await screenshot(popup, "popup-video-ready.png")
-  await section.locator("summary").click()
-  await new Promise(resolve => setTimeout(resolve, 1800))
-  assert.equal(await section.evaluate(element => element.open), false, "polling respects the reader’s manual collapse")
+  assert.equal(await section.isVisible(), true, "subtitle settings remain directly accessible")
+  await worker.evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    config.ui.language = "zh-CN"
+    config.appearance.mode = "dark"
+    await chrome.storage.local.set({ config })
+  })
+  await popup.getByText("翻译有问题？", { exact: true }).click()
+  await popup.getByRole("button", { name: "调整译文质量", exact: true }).waitFor()
+  assert.equal(await popup.getByRole("button", { name: "清理当前页缓存", exact: true }).getAttribute("title"), "清理当前页缓存，保留已有译文。")
+  await screenshot(popup, "popup-help-actions-dark.png")
+  if (process.env.E2E_ARTIFACTS) {
+    const help = popup.locator("details").filter({ has: popup.locator("summary").filter({ hasText: "翻译有问题？" }) })
+    await help.screenshot({ path: resolve(process.env.E2E_ARTIFACTS, "popup-help-actions-detail.png") })
+  }
 })

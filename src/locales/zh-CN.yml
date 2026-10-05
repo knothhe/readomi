@@ -7,7 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: 清理当前页缓存
-    description: 只清理当前页面的文字、字幕与上下文摘要缓存；已有译文保留，下次翻译会重新请求。
+    description: 清理当前页缓存，保留已有译文。
     clearing: 正在清理当前页缓存…
     cleared: 当前页缓存已清理
     failed: 清理失败，请重试。

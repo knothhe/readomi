@@ -23,7 +23,6 @@ async function show(url = "https://video.example.com/watch/1", rules: VideoSiteR
   store.set(configAtom, config)
   store.set(activeTabAtom, { id: 7, url, translatable: /^(?:https?|file):/.test(url) })
   render(<Provider store={store}><VideoTranslationControl /></Provider>)
-  fireEvent.click(screen.getByText("popup.videoSubtitles", { selector: "summary" }))
   await waitFor(() => expect(screen.getByRole("switch", { name: "features.video" })).toBeChecked())
   return config
 }

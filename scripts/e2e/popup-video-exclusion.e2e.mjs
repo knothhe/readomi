@@ -142,10 +142,6 @@ async function openPopup(host, popupUrl, test) {
     }
   }
   await popup.waitForURL(popupUrl)
-  const videoSection = popup.locator("details").filter({ has: popup.locator("summary").filter({ hasText: /Video subtitles|视频字幕/ }) })
-  await videoSection.waitFor()
-  if (!await videoSection.evaluate(element => element.open))
-    await videoSection.locator("summary").click()
   await popup.getByRole("switch", { name: /Exclude this site from video translation|此网站不翻译视频/, exact: true }).waitFor()
   await waitFor(() => popup.evaluate(() => window.e2eActiveTabQueries), queries => queries?.some(tabs => tabs.some(tab => tab.id === target.id && tab.url === target.url)), "popup bootstrap did not query the actual active host tab")
   const proof = `${mode} queried host tab ${target.id}: ${target.url}`

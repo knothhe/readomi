@@ -7,8 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: Borrar caché de esta página
-    description: Borra solo la caché de texto, subtítulos y resúmenes de esta
-      página. Las traducciones visibles se conservan.
+    description: Borra la caché de esta página; conserva las traducciones visibles.
     clearing: Borrando caché de esta página…
     cleared: Caché de esta página borrada
     failed: No se pudo borrar. Inténtalo de nuevo.

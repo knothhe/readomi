@@ -7,9 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: Clear this page’s cache
-    description: Clear saved text, subtitle and context summary caches for this page
-      only. Existing translations stay visible; new translations request fresh
-      results.
+    description: Clear this page’s cache; keep visible translations.
     clearing: Clearing this page’s cache…
     cleared: This page’s cache was cleared
     failed: Could not clear this page’s cache. Try again.

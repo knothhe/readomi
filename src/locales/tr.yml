@@ -7,8 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: Bu sayfanın önbelleğini temizle
-    description: Yalnızca bu sayfanın metin, altyazı ve özet önbelleğini temizler.
-      Görünen çeviriler korunur.
+    description: Bu sayfanın önbelleğini temizle; görünen çevirileri koru.
     clearing: Sayfa önbelleği temizleniyor…
     cleared: Sayfa önbelleği temizlendi
     failed: Temizlenemedi. Tekrar deneyin.

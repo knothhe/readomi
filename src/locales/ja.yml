@@ -7,7 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: このページのキャッシュを削除
-    description: このページの本文・字幕・要約キャッシュだけを削除します。表示中の訳文は残り、次の翻訳で再取得します。
+    description: このページのキャッシュを削除し、表示中の訳文は保持します。
     clearing: このページのキャッシュを削除中…
     cleared: このページのキャッシュを削除しました
     failed: 削除できませんでした。もう一度お試しください。

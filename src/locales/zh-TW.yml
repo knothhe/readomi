@@ -7,7 +7,7 @@ languageCombobox:
 popup:
   clearTranslationCache:
     label: 清理目前頁面快取
-    description: 只清理目前頁面的文字、字幕與上下文摘要快取；已有譯文保留，下次翻譯會重新請求。
+    description: 清理目前頁面快取，保留已有譯文。
     clearing: 正在清理目前頁面快取…
     cleared: 目前頁面快取已清理
     failed: 清理失敗，請重試。
