@@ -6,6 +6,10 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Hover-Multi-Paragraph-Waiting.html", title: "悬停 · 两段同时等待", x: 0, y: 152900, w: 880, h: 720 },
+    { file: "Hover-Multi-Paragraph-Streaming.html", title: "悬停 · 两段独立流式翻译", x: 960, y: 152900, w: 880, h: 720 },
+    { file: "Hover-Multi-Paragraph-Mixed.html", title: "悬停 · 一段完成，另一段继续翻译", x: 1920, y: 152900, w: 880, h: 720 },
+    { file: "Hover-Multi-Paragraph-Only-Streaming.html", title: "悬停 · 仅译文两段独立流式翻译", x: 2880, y: 152900, w: 880, h: 720 },
     { file: "Settings-Light-Video-Controls-Off.html", title: "视频字幕 · 关闭视频控件，字幕翻译保持开启", x: 0, y: 151800, w: 1280, h: 900 },
     { file: "Popup-Content-Fits.html", title: "弹窗 · 中文不可用页面 · 内容完整显示，无滚动条", x: 0, y: 150800, w: 320, h: 600 },
     { file: "Popup-Content-Scroll.html", title: "弹窗 · 高度不足 · 细滚动条与透明轨道", x: 400, y: 150800, w: 320, h: 480 },
@@ -281,6 +285,7 @@ window.READOMI_CANVAS = {
     {"file": "Page-Reddit-Reading-Waiting.html", "title": "Reddit · 原文后图片前 · 等待位置与流式/完成一致", "x": 0, "y": 148550, "w": 1200, "h": 900},
   ],
   notes: [
+    { text: "悬停多段连续触发：A 未完成时可以触发 B，各段独立等待、输出与完成；仅译文同样适用。重复触发正在处理的段落不重复请求，完成后再次触发恢复原文。Escape 取消所有未完成任务，已完成译文保留；不增加设置或产品文案。", x: 0, y: 152740, maxW: 3760 },
     { text: "反引号悬停键冲突：开启悬停翻译并选择反引号，鼠标指向可翻译正文且当前不在编辑或输入法组合上下文时，捕获阶段认领反引号直到松开，阻止网站抢走字符并聚焦消息框。点按或长按仍只翻译一次；已聚焦输入框时保留正常输入。其他触发方式沿用现有行为，无需域名判断、新设置或新文案。", x: 0, y: 149840, maxW: 2000 },
     {"text": "Threads / Reddit 内置适配展示目标：首页 hover 与网页翻译同效果；Threads 整帖一次请求、同一译文容器保留多段结构。Reddit 首页保留完整标题与摘录/正文，原文之后、媒体之前，通过 text-body named slot 只显示一个竖线译文容器包含翻译标题与正文，等待/流式/完成位置一致，每帖一次请求，不把图片、点赞、分享元数据纳入译文；详情保持原设计。本次撤回首页标题/摘录分别插入译文的旧稿目标，流式与完成均按整帖展示，实际行为待用户确认。", "x": 0, "y": 146220, "maxW": 2600},
     { text: "弹窗清空缓存：底部服务名、词首强调与设置保持原位，以次级文字入口清空所有页面已保存的译文。等待时按钮禁用；成功或失败文案原位显示，3秒后回到默认，失败也可直接重试。当前页面与已有译文保留，下次翻译重新请求；不清网页摘要、设置或密钥。", x: 0, y: 128840, maxW: 1520 },
