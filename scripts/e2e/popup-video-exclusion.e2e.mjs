@@ -269,8 +269,9 @@ it("popup exclusion reads the actual active host, restores subtitles and synchro
   await expectSwitch(popup, true)
   await ruleSection(settings).getByText(HOST, { exact: true }).waitFor()
   const openedSettings = context.waitForEvent("page")
-  await popup.getByRole("button", { name: "Style and position", exact: true }).click()
+  await popup.getByRole("button", { name: "Settings", exact: true }).click()
   const managedSettings = await openedSettings
+  await managedSettings.getByRole("link", { name: "Video subtitles", exact: true }).click()
   await managedSettings.waitForURL(`chrome-extension://${extensionId}/options.html#features`)
   await managedSettings.locator("summary").filter({ hasText: "More options" }).click()
   await ruleSection(managedSettings).getByText(HOST, { exact: true }).waitFor()

@@ -5,9 +5,7 @@ import { i18n } from "#imports"
 import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { sendMessage } from "@/utils/message"
-import { openOptionsPage } from "@/utils/navigation"
 import { formatHotkey } from "@/utils/os"
-import { formatSubtitleFontSize, isSubtitlePresetModified, subtitlePositionName } from "@/utils/subtitles/appearance"
 import { activeTabAtom } from "../atoms"
 import { DisplayModeControl } from "./display-mode-control"
 import { TranslationControlRow } from "./translation-control-row"
@@ -71,8 +69,6 @@ function VideoControls() {
   const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
   const id = useId()
   const shortcut = features.subtitlesShortcut.trim() ? formatHotkey(features.subtitlesShortcut) : null
-  const style = features.subtitleStyle
-  const summary = [isSubtitlePresetModified(style) ? i18n.t("subtitleStyle.modified") : i18n.t(`subtitleStyle.presets.${style.preset}`), formatSubtitleFontSize(style), i18n.t(`subtitleStyle.positions.${subtitlePositionName(style.position)}`)].join(" · ")
 
   return (
     <section aria-label={i18n.t("popup.videoSubtitles")} className="flex flex-col gap-2 border-t border-border pt-2.5">
@@ -89,20 +85,10 @@ function VideoControls() {
           />
         )}
       />
-      {status && <p role="status" className="rounded-md bg-muted px-2.5 py-2 text-[11px] leading-4 text-muted-foreground">{i18n.t(status.hasVideo ? `subtitleStatus.${status.state}` : "subtitleStatus.none")}</p>}
+      {status?.hasVideo && <p role="status" className="rounded-md bg-muted px-2.5 py-2 text-[11px] leading-4 text-muted-foreground">{i18n.t(`subtitleStatus.${status.state}`)}</p>}
       {status?.state === "failed" && <button type="button" disabled={retrying} onClick={() => void retry()} className="w-fit text-[12px] text-brand hover:underline disabled:opacity-60">{i18n.t(retrying ? "popup.recovery.pending" : "subtitleStatus.retry")}</button>}
       {retryFailed && <p role="alert" className="text-[11px] text-destructive">{i18n.t("popup.recovery.failed")}</p>}
       <DisplayModeControl value={features.subtitleMode} label={i18n.t("features.mode")} onChange={subtitleMode => void setFeatures({ subtitleMode })} />
-      <div className="flex items-center justify-between gap-2 px-0.5 py-0.5 text-[11px] leading-4">
-        <span className="min-w-0 truncate text-muted-foreground" title={summary}>{summary}</span>
-        <button
-          type="button"
-          onClick={() => void openOptionsPage({ section: "features" })}
-          className="shrink-0 rounded text-brand outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          {i18n.t("subtitleStyle.adjust")}
-        </button>
-      </div>
       <VideoSiteExclusionControl />
     </section>
   )

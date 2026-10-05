@@ -280,6 +280,9 @@ it("keeps video settings directly visible on articles and reports a detected pla
   const section = popup.getByRole("region", { name: "Video subtitles", exact: true })
   await section.getByRole("switch", { name: "Video subtitle translation", exact: true }).waitFor()
   assert.equal(await popup.locator("summary").filter({ hasText: "Video subtitles" }).count(), 0)
+  await new Promise(resolve => setTimeout(resolve, 100))
+  assert.equal(await section.getByRole("status").count(), 0, "pages without videos have no subtitle status notice")
+  assert.equal(await section.getByRole("button", { name: "Style and position", exact: true }).count(), 0)
   await article.evaluate(() => {
     const video = document.createElement("video")
     video.style.cssText = "display:block;width:640px;height:360px"

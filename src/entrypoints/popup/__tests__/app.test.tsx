@@ -181,8 +181,7 @@ describe("popup app", () => {
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual(config.features))
     expect(toggle).toHaveAttribute("aria-checked", "false")
 
-    fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.adjust" }))
-    expect(openOptionsPage).toHaveBeenCalledWith({ section: "features" })
+    expect(screen.queryByRole("button", { name: "subtitleStyle.adjust" })).toBeNull()
   })
 
   it("edits web and subtitle modes independently without enabling either translation", async () => {
