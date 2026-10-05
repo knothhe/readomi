@@ -16,6 +16,7 @@ let cleanup: () => void
 let pageListeners: AbortController
 beforeEach(async () => {
   vi.useFakeTimers()
+  vi.mocked(translateWalkedElement).mockReset()
   pageListeners = new window.AbortController()
   vi.mocked(getLocalConfig).mockResolvedValue({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, hoverTranslation: true } })
   document.body.innerHTML = "<p>Hello reader.</p><input>"
@@ -447,5 +448,174 @@ describe("tap-or-hold hover translation", () => {
     document.querySelector("input")!.dispatchEvent(new KeyboardEvent("keyup", { key: "Alt", bubbles: true }))
     await vi.advanceTimersByTimeAsync(600)
     expect(translateWalkedElement).not.toHaveBeenCalled()
+  })
+})
+
+describe("independent hover translation tasks", () => {
+  function pendingTranslations() {
+    const tasks: { element: HTMLElement, signal: AbortSignal, finish: () => void }[] = []
+    vi.mocked(translateWalkedElement).mockImplementation((element, _walkId, _config, _toggle, signal) => new Promise<void>((resolve) => {
+      tasks.push({ element, signal: signal!, finish: resolve })
+      signal!.addEventListener("abort", () => resolve(), { once: true })
+    }))
+    return tasks
+  }
+  function secondParagraph() {
+    const paragraph = document.createElement("p")
+    paragraph.textContent = "Another paragraph stays independent."
+    document.body.append(paragraph)
+    return paragraph
+  }
+  async function tap(element: Element, key = "Alt") {
+    element.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }))
+    down(key)
+    up(key)
+    await vi.advanceTimersByTimeAsync(0)
+  }
+
+  it.each(keyboardTriggers)("accepts a new paragraph while the first %s translation is pending", async (hotkey, key) => {
+    setConfig({ ...backtickConfig, features: { ...backtickConfig.features, hoverHotkey: hotkey } })
+    const tasks = pendingTranslations()
+    const first = document.querySelector("p")!
+    const second = secondParagraph()
+    await tap(first, key)
+    await tap(second, key)
+    expect(tasks.map(task => task.element)).toEqual([first, second])
+    expect(tasks.every(task => !task.signal.aborted)).toBe(true)
+    tasks[0].finish()
+    await vi.advanceTimersByTimeAsync(0)
+    await tap(second, key)
+    expect(tasks).toHaveLength(2)
+    expect(tasks[1].signal.aborted).toBe(false)
+    // The completed first paragraph may be triggered again independently.
+    await tap(first, key)
+    expect(tasks).toHaveLength(3)
+    expect(tasks[1].signal.aborted).toBe(false)
+  })
+
+  it("accepts consecutive mouse holds without cancelling earlier paragraphs", async () => {
+    setConfig({ ...backtickConfig, features: { ...backtickConfig.features, hoverHotkey: "clickAndHold" } })
+    const tasks = pendingTranslations()
+    for (const paragraph of [document.querySelector("p")!, secondParagraph()]) {
+      paragraph.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }))
+      await vi.advanceTimersByTimeAsync(500)
+      paragraph.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))
+    }
+    expect(tasks).toHaveLength(2)
+    expect(tasks.every(task => !task.signal.aborted)).toBe(true)
+  })
+
+  it("keeps both accepted targets when configuration reads resolve in reverse order", async () => {
+    const tasks = pendingTranslations()
+    const first = document.querySelector("p")!
+    const second = secondParagraph()
+    const reads: ((config: typeof DEFAULT_CONFIG) => void)[] = []
+    vi.mocked(getLocalConfig).mockImplementation(() => new Promise(resolve => reads.push(resolve)))
+    await tap(first)
+    await tap(second)
+    const config = { ...backtickConfig, features: { ...backtickConfig.features, hoverHotkey: "alt" as const } }
+    reads[1](config)
+    await vi.advanceTimersByTimeAsync(0)
+    reads[0](config)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(tasks.map(task => task.element)).toEqual([second, first])
+    expect(tasks.every(task => !task.signal.aborted)).toBe(true)
+  })
+
+  it("does not walk the same paragraph, an inline child or an overlapping ancestor twice", async () => {
+    const tasks = pendingTranslations()
+    const first = document.querySelector("p")!
+    first.innerHTML = "Reading <em>another idea</em> together."
+    const parent = document.createElement("section")
+    first.replaceWith(parent)
+    parent.append(first, secondParagraph())
+    await tap(first)
+    await tap(first.querySelector("em")!)
+    await tap(parent)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].signal.aborted).toBe(false)
+  })
+
+  it("continues claiming backtick while a pending replacement hides its original", async () => {
+    setConfig(backtickConfig)
+    const tasks = pendingTranslations()
+    const first = document.querySelector("p")!
+    await tap(first, "`")
+    first.style.visibility = "hidden"
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    expect(backtick("keyup").defaultPrevented).toBe(true)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].signal.aborted).toBe(false)
+  })
+
+  it("resolves visible shadow preview text back to its pending paragraph", async () => {
+    setConfig(backtickConfig)
+    const tasks = pendingTranslations()
+    const first = document.querySelector("p")!
+    await tap(first, "`")
+    const preview = document.createElement("span")
+    preview.className = "readomi-translated-content-wrapper"
+    preview.dataset.readomiInlinePreview = "true"
+    first.append(preview)
+    first.style.visibility = "hidden"
+    const shadow = preview.attachShadow({ mode: "open" })
+    shadow.innerHTML = "<div style='display:block;visibility:visible'>正在逐步显示译文</div>"
+    shadow.querySelector("div")!.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, composed: true }))
+    expect(backtick("keydown").defaultPrevented).toBe(true)
+    expect(backtick("keyup").defaultPrevented).toBe(true)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].signal.aborted).toBe(false)
+  })
+
+  it("deduplicates a declared group by its owner while another group starts", async () => {
+    const tasks = pendingTranslations()
+    const first = document.querySelector("p")!
+    const second = secondParagraph()
+    first.className = second.className = "card"
+    first.innerHTML = "<span class='source'>First source paragraph.</span><span class='source'>Second source paragraph.</span>"
+    second.innerHTML = "<span class='source'>Another card's source paragraph.</span>"
+    setConfig({ ...backtickConfig, siteRules: { ...backtickConfig.siteRules, userRules: [{
+      id: "cards", matches: "*://*/*", includeSelectors: [".source"],
+      translationGroups: [{ containerSelector: ".card", sourceSelectors: [".source"] }],
+    }] } })
+    await tap(first.children[0], "`")
+    await tap(first.children[1], "`")
+    await tap(second.children[0], "`")
+    expect(tasks.map(task => task.element)).toEqual([first, second])
+    expect(tasks.every(task => !task.signal.aborted)).toBe(true)
+  })
+
+  it("a paragraph's cancel action leaves another paragraph running", async () => {
+    const tasks = pendingTranslations()
+    await tap(document.querySelector("p")!)
+    await tap(secondParagraph())
+    const request = vi.mocked(translateWalkedElement).mock.calls[0][5]!
+    request.cancel!()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(tasks[0].signal.aborted).toBe(true)
+    expect(tasks[1].signal.aborted).toBe(false)
+  })
+
+  it.each(["escape", "route", "settings", "cleanup"])("cancels all pending paragraphs on %s and allows no deferred starts", async (reason) => {
+    const tasks = pendingTranslations()
+    await tap(document.querySelector("p")!)
+    await tap(secondParagraph())
+    let resolveConfig!: (config: typeof DEFAULT_CONFIG) => void
+    vi.mocked(getLocalConfig).mockReturnValue(new Promise(resolve => resolveConfig = resolve))
+    await tap(secondParagraph())
+    if (reason === "escape")
+      down("Escape")
+    else if (reason === "route")
+      window.dispatchEvent(new CustomEvent("extension:URLChange"))
+    else if (reason === "settings")
+      setConfig(DEFAULT_CONFIG)
+    else
+      cleanup()
+    resolveConfig({ ...backtickConfig, features: { ...backtickConfig.features, hoverHotkey: "alt" } })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(tasks).toHaveLength(2)
+    expect(tasks.every(task => task.signal.aborted)).toBe(true)
   })
 })

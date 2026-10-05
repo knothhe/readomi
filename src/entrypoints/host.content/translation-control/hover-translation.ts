@@ -31,25 +31,47 @@ export function bindHoverTranslation(target: Document = document) {
   let consumedKey: string | null = null
   let hovered: Element | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
-  let session = 0
+  let generation = 0
   let press: { hotkey: Config["features"]["hoverHotkey"], trigger: () => void } | null = null
   const pressedKeys = new Set<string>()
-  let busy = false
-  let activeTranslation: AbortController | undefined
-  let activeCompletion: Promise<void> | undefined
+  const activeTranslations = new Map<HTMLElement, AbortController>()
   let mouseStart: { x: number, y: number } | null = null
   const controller = new AbortController()
   const cancel = () => {
-    session++
     press = null
     mouseStart = null
     clearTimeout(timer)
     timer = undefined
   }
+  const abortTranslations = () => {
+    for (const request of activeTranslations.values())
+      request.abort()
+  }
+  // A parent walk can touch an active child, including inside a shadow root.
+  // Keep overlapping walks out until the old preview and renderer settle.
+  const contains = (parent: Element, child: Element): boolean => {
+    let current: Element | null = child
+    while (current) {
+      if (current === parent)
+        return true
+      const root = current.getRootNode()
+      current = current.parentElement ?? (root instanceof ShadowRoot ? root.host : null)
+    }
+    return false
+  }
+  const overlapsTranslation = (block: Element) => [...activeTranslations.keys()]
+    .some(active => contains(active, block) || contains(block, active))
   const move = (event: MouseEvent) => {
     if (mouseStart && Math.hypot(event.clientX - mouseStart.x, event.clientY - mouseStart.y) > 6)
       cancel()
-    const candidate = event.composedPath()[0]
+    let candidate = event.composedPath()[0]
+    // Preview text lives in a shadow root. Route it back to its owned wrapper
+    // so repeat triggers resolve to the paragraph rather than preview internals.
+    if (candidate instanceof Element) {
+      const root = candidate.getRootNode()
+      if (root instanceof ShadowRoot && root.host.hasAttribute("data-readomi-inline-preview"))
+        candidate = root.host
+    }
     hovered = candidate instanceof Element ? candidate : null
   }
   const translate = async (element: Element, config: Config) => {
@@ -78,12 +100,10 @@ export function bindHoverTranslation(target: Document = document) {
       })
       return
     }
-    if (!validateTranslationConfigAndToast(config))
+    if (overlapsTranslation(block) || !validateTranslationConfigAndToast(config))
       return
-    activeTranslation?.abort()
-    busy = true
     const request = new AbortController()
-    activeTranslation = request
+    activeTranslations.set(block, request)
     const signal = AbortSignal.any([controller.signal, request.signal])
     let preview: ReturnType<typeof createInlineHoverStreamPreview>
     const disposePreview = () => preview?.dispose()
@@ -147,7 +167,6 @@ export function bindHoverTranslation(target: Document = document) {
       if (preview && requests.length && results.every(result => result.status === "fulfilled") && !signal.aborted) {
         // Finish the smooth reveal before the canonical paragraph renderer
         // takes over. The reader stays at the same paragraph throughout.
-        busy = false
         const apply = await preview.finish(results.map(result => result.value))
         if (!apply)
           request.abort()
@@ -177,16 +196,13 @@ export function bindHoverTranslation(target: Document = document) {
       signal.removeEventListener("abort", disposePreview)
       preview?.dispose()
       releaseStyles()
-      if (activeTranslation === request) {
-        activeTranslation = undefined
-        busy = false
-      }
+      if (activeTranslations.get(block) === request)
+        activeTranslations.delete(block)
     }
   }
   const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null) => {
-    if (!element || press || busy || controller.signal.aborted || !isExtensionContextValid())
+    if (!element || press || controller.signal.aborted || !isExtensionContextValid())
       return
-    const token = ++session
     let triggered = false
     const trigger = () => {
       // Claim the press before reading storage, so keyup cannot trigger it twice.
@@ -194,21 +210,10 @@ export function bindHoverTranslation(target: Document = document) {
         return
       triggered = true
       const candidate = hotkey === "clickAndHold" ? element : hovered ?? element
+      const token = generation
       void getHostConfig().then(async (config) => {
-        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === session && !busy && !controller.signal.aborted && candidate.isConnected) {
-          // Finish restoring the previous paragraph before walking another one.
-          // This matters when a completed replacement preview is dismissed by
-          // another hover: its saved original must not outlive the next walk.
-          activeTranslation?.abort()
-          await activeCompletion
-          if (token !== session || busy || controller.signal.aborted || !candidate.isConnected)
-            return
-          const completion = translate(candidate, config)
-          activeCompletion = completion
-          await completion
-          if (activeCompletion === completion)
-            activeCompletion = undefined
-        }
+        if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === generation && !controller.signal.aborted && candidate.isConnected)
+          await translate(candidate, config)
       }).catch((error) => {
         if (!controller.signal.aborted && isExtensionContextValid() && !isExtensionContextInvalidatedError(error))
           logger.error("Hover configuration failed", error)
@@ -218,6 +223,7 @@ export function bindHoverTranslation(target: Document = document) {
     timer = setTimeout(trigger, 500)
   }
   const reset = () => {
+    generation++
     pressedKeys.clear()
     cancel()
   }
@@ -232,11 +238,15 @@ export function bindHoverTranslation(target: Document = document) {
   const canConsumeBacktick = (event: KeyboardEvent, element: Element | null) => {
     const config = currentConfig
     if (!config?.features.hoverTranslation || config.features.hoverHotkey !== "backtick"
-      || !element?.isConnected || press || busy || controller.signal.aborted || !isExtensionContextValid()
+      || !element?.isConnected || press || controller.signal.aborted || !isExtensionContextValid()
       || event.isComposing || event.composedPath().some(isEditableTarget) || isEditableTarget(target.activeElement)) {
       return false
     }
     const block = findNearestAncestorBlockNodeFor(element, config)
+    // Replacement previews may hide the original. A repeat over that active
+    // paragraph still belongs to Readomi, even though it starts no new request.
+    if (isHTMLElement(block) && activeTranslations.has(block))
+      return true
     if (!isHTMLElement(block) || block === target.body || block === target.documentElement
       || hasNoWalkAncestor(block, config) || isWalkBlockedElement(block, config)
       || block.closest("input,textarea,[contenteditable]:not([contenteditable='false']),video,[data-readomi-subtitles]")
@@ -270,7 +280,7 @@ export function bindHoverTranslation(target: Document = document) {
       return
     if (event.key === "Escape") {
       reset()
-      activeTranslation?.abort()
+      abortTranslations()
       return
     }
     pressedKeys.add(event.code || event.key)
@@ -339,7 +349,7 @@ export function bindHoverTranslation(target: Document = document) {
       || JSON.stringify(next.providersConfig) !== JSON.stringify(previous.providersConfig)
     ))) {
       reset()
-      activeTranslation?.abort()
+      abortTranslations()
     }
   })
   // Watch first: a delayed initial read must not overwrite a newer setting.
@@ -352,7 +362,7 @@ export function bindHoverTranslation(target: Document = document) {
   })
   const handleRouteChange = () => {
     reset()
-    activeTranslation?.abort()
+    abortTranslations()
     removeAllTranslatedWrapperNodes(target)
   }
   target.defaultView?.addEventListener("extension:URLChange", handleRouteChange)
@@ -369,7 +379,7 @@ export function bindHoverTranslation(target: Document = document) {
   return () => {
     unwatch()
     resetKeyboard()
-    activeTranslation?.abort()
+    abortTranslations()
     controller.abort()
     target.defaultView?.removeEventListener("extension:URLChange", handleRouteChange)
     target.removeEventListener("mouseover", move, true)
