@@ -69,7 +69,6 @@ it("page translation gives complete paragraphs the same line style regardless of
     await translation.waitFor()
     assert.equal(await borderWidth(translation), "0px", `${id} remains inline`)
   }
-  await page.screenshot({ path: "/tmp/readomi-paragraph-layout-ready.png", fullPage: true })
   await pressTranslateShortcut(page)
   await page.locator(".readomi-translated-content-wrapper").first().waitFor({ state: "detached" })
   assert.equal(await page.locator("#single-source").textContent(), "The EU AI Act requires generative AI providers to make generated text identifiable in a machine-readable way.")
