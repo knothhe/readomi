@@ -5,6 +5,11 @@ import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "../backu
 const configured = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "sk-backup", headers: { Authorization: "secret" }, connectionCheck: { ok: true, checkedAt: 1 } })) }
 
 describe("local configuration backups", () => {
+  it("preserves explicitly hidden video controls through a backup round trip", () => {
+    const config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, videoControls: false } }
+    expect(parseConfigBackup(exportConfigBackup(config))).toEqual(config)
+  })
+
   it("round trips custom CSS without rewriting it", () => {
     const config = {
       ...configured,

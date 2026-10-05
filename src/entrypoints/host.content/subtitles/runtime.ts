@@ -308,7 +308,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
   const pendingAppearance = new Map<number, Partial<SubtitleStyle>>()
   let controls: VideoTranslationControls | null = null
   const syncControls = () => {
-    if (!excluded && shouldShowVideoControls(video)) {
+    if (config.features.videoControls && !excluded && shouldShowVideoControls(video)) {
       controls ??= createVideoTranslationControls(video, {
         enabled,
         appearance: config.features.subtitleStyle,

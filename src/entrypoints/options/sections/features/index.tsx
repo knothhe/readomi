@@ -14,6 +14,7 @@ export function FeaturesSection() {
       <SubtitleStyleEditor footer={<VideoSiteRulesEditor />}>
         <>
           <SettingsRow label={i18n.t("features.video")} description={i18n.t("features.videoDescription")} control={<Switch aria-label={i18n.t("features.video")} checked={features.videoSubtitles} onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })} />} />
+          <SettingsRow label={i18n.t("features.videoControls")} description={i18n.t("features.videoControlsDescription")} control={<Switch aria-label={i18n.t("features.videoControls")} checked={features.videoControls} onCheckedChange={videoControls => void setFeatures({ videoControls })} />} />
           <SettingsRow
             className="subtitle-display-row"
             label={i18n.t("features.mode")}

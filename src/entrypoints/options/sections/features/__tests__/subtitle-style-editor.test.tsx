@@ -38,6 +38,19 @@ const modes = () => within(screen.getByRole("group", { name: "subtitleStyle.font
 const savedStyle = (store: ReturnType<typeof createStore>) => store.get(configAtom).features.subtitleStyle
 
 describe("subtitle settings", () => {
+  it("persists control visibility independently of subtitle translation and appearance", async () => {
+    const { store } = await renderFeatures()
+    const toggle = screen.getByRole("switch", { name: "features.videoControls" })
+    expect(toggle).toHaveAttribute("aria-checked", "true")
+    const changeVisibility = async (videoControls: boolean) => {
+      fireEvent.click(toggle)
+      await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", String(videoControls)))
+      await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({ ...DEFAULT_CONFIG.features, videoControls }))
+      expect(store.get(configAtom).providersConfig).toEqual(DEFAULT_CONFIG.providersConfig)
+    }
+    await changeVisibility(false)
+    await changeVisibility(true)
+  })
   it("keeps size mode in the main group and fine controls collapsed until requested", async () => {
     const { container, store } = await renderFeatures()
     const custom = container.querySelector<HTMLDetailsElement>(".subtitle-custom")!

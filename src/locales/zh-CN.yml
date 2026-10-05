@@ -489,6 +489,8 @@ features:
   hoverStreamDescription: 逐步显示译文，减少等待。
   video: 视频字幕翻译
   videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
+  videoControls: 在视频上显示控件
+  videoControlsDescription: 仅在 YouTube 和 X 的支持播放器中显示。关闭后不影响字幕翻译。
   mode: 字幕显示方式
 videoSiteRules:
   title: 不翻译的网站

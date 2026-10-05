@@ -113,6 +113,12 @@ it("X controls stay in the native bottom row through advertisements, auto-hide a
     && state.tools.right <= state.row.right + 0.5
     && state.dock.top > state.video.top + state.video.height / 2
   await waitFor(read, visibleBottomSlot, "Readomi did not occupy the bottom row before the native right tools")
+  const visibilitySwitch = launched.page.getByRole("switch", { name: "Show controls on videos", exact: true })
+  await visibilitySwitch.click()
+  await waitFor(read, state => state.count === 0, "settings did not hide X controls while translation was globally off")
+  assert.equal(await page.locator("[data-readomi-controls-anchor]").count(), 0)
+  await visibilitySwitch.click()
+  await waitFor(read, visibleBottomSlot, "settings did not restore X controls while translation was globally off")
   assert.equal((await read()).advertisementContainsHost, false, "the earlier advertisement More button does not receive Readomi")
   await screenshot(page, "readomi-x-ad-bottom-toolbar")
 

@@ -489,6 +489,8 @@ features:
   hoverStreamDescription: Muestra la traducción progresivamente para reducir la espera.
   video: Video subtitle translation
   videoDescription: Uses the current translation service. Supports enabled YouTube captions and HTML5 subtitle tracks. Videos without subtitles are not supported yet.
+  videoControls: Show controls on videos
+  videoControlsDescription: Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.
   mode: Subtitle display mode
 videoSiteRules:
   title: Sites without video translation

@@ -66,6 +66,7 @@ export const configSchema = z.preprocess(fillMissingShortcutDefaults, z.object({
     modeShortcut: pageTranslationShortcutSchema.default(DEFAULT_MODE_SHORTCUT_KEY),
     subtitlesShortcut: pageTranslationShortcutSchema.default(DEFAULT_SUBTITLES_SHORTCUT_KEY),
     videoSubtitles: z.boolean().default(false),
+    videoControls: z.boolean().default(true),
     videoExcludedSites: z.array(videoSiteRuleSchema).default([]),
     subtitleStyle: subtitleStyleSchema.default(DEFAULT_SUBTITLE_STYLE),
     subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
