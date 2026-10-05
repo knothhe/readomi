@@ -6,6 +6,11 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Reading-Refinement-Setup-Empty.html", title: "首次配置 · 空白", x: 0, y: 165000, w: 1280, h: 900 },
+    { file: "Reading-Refinement-Popup-Recovery-Pending.html", title: "弹窗 · 重试处理中", x: 1360, y: 165000, w: 320, h: 650 },
+    { file: "Reading-Refinement-Popup-Recovery-Error.html", title: "弹窗 · 重试未完成", x: 2720, y: 165000, w: 320, h: 650 },
+    { file: "Reading-Refinement-Popup-Video-Excluded.html", title: "弹窗 · 字幕被站点规则排除", x: 4080, y: 165000, w: 320, h: 650 },
+    { file: "Reading-Refinement-Popup-Cache-Hover.html", title: "弹窗 · 当前页缓存解释", x: 0, y: 166250, w: 320, h: 650 },
     { file: "Reading-Refinement-Popup-Video-Off.html", title: "弹窗 · 有视频但字幕翻译关闭", x: 0, y: 164000, w: 320, h: 650 },
     { file: "Reading-Refinement-Popup.html", title: "弹窗 · 阅读优先 · 中文保持原文", x: 0, y: 155000, w: 320, h: 560 },
     { file: "Reading-Refinement-Popup-Help.html", title: "弹窗 · 翻译问题操作", x: 1360, y: 155000, w: 320, h: 560 },
