@@ -3,7 +3,6 @@ import type { Config } from "@/types/config/config"
 import { useAtom } from "jotai"
 import { useId } from "react"
 import { i18n } from "#imports"
-import { IconCheck } from "@/components/icons"
 import { toast } from "@/components/toast"
 import { TranslationLanguagePicker } from "@/components/translation-language-picker"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
@@ -59,10 +58,6 @@ export function LanguageSection() {
           </div>
         </div>
       </div>
-      <p className="language-settings-foot">
-        <IconCheck className="size-3.5 text-success" aria-hidden="true" />
-        {i18n.t("options.language.applied")}
-      </p>
     </SettingsSection>
   )
 }

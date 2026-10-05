@@ -75,17 +75,7 @@
   font-size: 11px;
 }
 
-.language-settings-foot {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--rf-muted-foreground);
-  font-size: 11px;
-  line-height: 1.7;
-}
-
 @media (max-width: 600px) {
   .language-settings-rule-heading { gap: 10px; }
   .language-settings-picker { flex-basis: 142px; }
-  .language-settings-foot { display: none; }
 }
