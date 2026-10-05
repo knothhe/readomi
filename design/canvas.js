@@ -6,6 +6,7 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Reading-Refinement-Backup.html", title: "备份 · 独立页面", x: 0, y: 167250, w: 1280, h: 900 },
     { file: "Reading-Refinement-Popup-Help-Dark.html", title: "弹窗 · 深色问题操作按钮", x: 1360, y: 166250, w: 320, h: 650 },
     { file: "Reading-Refinement-Setup-Empty.html", title: "首次配置 · 空白", x: 0, y: 165000, w: 1280, h: 900 },
     { file: "Reading-Refinement-Popup-Recovery-Pending.html", title: "弹窗 · 重试处理中", x: 1360, y: 165000, w: 320, h: 650 },
@@ -30,10 +31,10 @@ window.READOMI_CANVAS = {
     { file: "Reading-Refinement-Setup-Advanced.html", title: "首次配置 · 展开连接参数", x: 2720, y: 158750, w: 1280, h: 1050 },
     { file: "Reading-Refinement-Languages.html", title: "翻译语言 · 默认保持主要语言", x: 4080, y: 158750, w: 1280, h: 900 },
     { file: "Reading-Refinement-Context.html", title: "译文质量 · 结合文章上下文", x: 0, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Default.html", title: "备份与缓存 · Default", x: 1360, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Pending.html", title: "备份与缓存 · Pending", x: 2720, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Success.html", title: "备份与缓存 · Success", x: 4080, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Failed.html", title: "备份与缓存 · Failed", x: 0, y: 161250, w: 1280, h: 900 },
+    { file: "Reading-Refinement-Cache-Default.html", title: "翻译缓存 · Default", x: 1360, y: 160000, w: 1280, h: 900 },
+    { file: "Reading-Refinement-Cache-Pending.html", title: "翻译缓存 · Pending", x: 2720, y: 160000, w: 1280, h: 900 },
+    { file: "Reading-Refinement-Cache-Success.html", title: "翻译缓存 · Success", x: 4080, y: 160000, w: 1280, h: 900 },
+    { file: "Reading-Refinement-Cache-Failed.html", title: "翻译缓存 · Failed", x: 0, y: 161250, w: 1280, h: 900 },
     { file: "Reading-Refinement-Error-Key.html", title: "段落翻译 · Key", x: 1360, y: 161250, w: 960, h: 620 },
     { file: "Reading-Refinement-Error-Rate.html", title: "段落翻译 · Rate", x: 2720, y: 161250, w: 960, h: 620 },
     { file: "Reading-Refinement-Error-Timeout.html", title: "段落翻译 · Timeout", x: 4080, y: 161250, w: 960, h: 620 },
