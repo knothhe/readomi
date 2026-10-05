@@ -68,6 +68,7 @@ export function VideoSiteExclusionControl() {
           aria-busy={busy || undefined}
           checked={busy ? save.checked : excluded}
           disabled={!domain || busy || managed}
+          style={busy ? { cursor: "default", opacity: 1 } : undefined}
           onCheckedChange={next => void change(next)}
         />
       </div>

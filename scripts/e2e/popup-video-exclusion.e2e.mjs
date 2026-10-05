@@ -228,6 +228,11 @@ it("popup exclusion reads the actual active host, restores subtitles and synchro
     height: await popup.evaluate(() => document.documentElement.scrollHeight),
   })
   const savedLayout = await layout()
+  const appearance = () => toggle.evaluate((button) => {
+    const style = getComputedStyle(button)
+    return { cursor: style.cursor, opacity: style.opacity }
+  })
+  const savedAppearance = await appearance()
   assert.equal(await popup.getByRole("switch", { name: "Video subtitle translation", exact: true }).getAttribute("aria-checked"), "true")
   // Hold the real local storage operation, then release it; this exposes the
   // saving state without faking persistence or changing the target hostname.
@@ -248,6 +253,7 @@ it("popup exclusion reads the actual active host, restores subtitles and synchro
   await toggle.click()
   await popup.getByText("Saving…", { exact: true }).waitFor()
   assert.deepEqual(await layout(), savedLayout, "saving feedback must not move controls or resize the popup")
+  assert.deepEqual(await appearance(), savedAppearance, "saving must not flash a disabled cursor or dim the switch")
   assert.equal(await toggle.isDisabled(), true)
   assert.equal(await toggle.getAttribute("aria-checked"), "false", "saving retains the last persisted switch state")
   await toggle.evaluate(button => button.click())
@@ -258,6 +264,7 @@ it("popup exclusion reads the actual active host, restores subtitles and synchro
   await expectSwitch(popup, true)
   await expectCompactExclusion(popup, toggle)
   assert.deepEqual(await layout(), savedLayout, "finishing the save must not move controls or resize the popup")
+  assert.deepEqual(await appearance(), savedAppearance, "finishing the save must retain the normal cursor and opacity")
   assert.deepEqual(await storedConfig(context), expected([...RETAINED, DOMAIN]), "site exclusion preserves the global toggle, provider, language, appearance and unrelated rules")
   await waitFor(async () => [...await readHost(), ...await readChild()], captions => captions.length === 0, "exclusion did not stop the host and its subdomain")
   assert.equal(await host.evaluate(() => window.e2eTrack.mode), "showing")
