@@ -6,6 +6,11 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Popup-Design-A-Help.html", title: "弹窗 · 紧凑列表 · 帮助展开", x: 1600, y: 196500, w: 320, h: 560 },
+    { file: "Popup-Design-A-Dark.html", title: "弹窗 · 紧凑列表 · 深色", x: 2000, y: 196500, w: 320, h: 560 },
+    { file: "Popup-Design-A-Disabled.html", title: "弹窗 · 紧凑列表 · 网站禁用", x: 2400, y: 196500, w: 320, h: 560 },
+    { file: "Popup-Design-A-Setup.html", title: "弹窗 · 紧凑列表 · 未配置", x: 2800, y: 196500, w: 320, h: 560 },
+    { file: "Popup-Design-A.html", title: "弹窗 · 紧凑列表 · 已采用", x: 0, y: 196500, w: 320, h: 480 },
     { file: "Popup-Site-Enabling.html", title: "弹窗 · 网站扩展 · 重新启用保存中", x: 2000, y: 195400, w: 320, h: 650 },
     { file: "Popup-Site-Enabled.html", title: "弹窗 · 网站扩展 · 启用", x: 0, y: 195400, w: 320, h: 650 },
     { file: "Popup-Site-Disabled.html", title: "弹窗 · 网站扩展 · 禁用", x: 400, y: 195400, w: 320, h: 650 },

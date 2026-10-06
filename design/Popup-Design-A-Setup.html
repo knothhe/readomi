@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>弹窗 · 紧凑列表 · 未配置 — Readomi</title><style>html{color-scheme:light dark}body{margin:0;width:320px;background:light-dark(#faf8f5,#1c1917)}
+#readomi-popup-options .rm-window{--rm-bg:light-dark(#faf8f5,#1c1917);--rm-ink:light-dark(#302b29,#eae3dc);--rm-sub:light-dark(#716862,#a69b93);--rm-card:light-dark(#ffffff,#26211e);--rm-soft:light-dark(#f1ebe6,#2e2723);--rm-line:light-dark(#e8e0db,#40352e);--rm-brand:light-dark(#b6533e,#e9ab91);--rm-on-brand:light-dark(#fff8ec,#1c1917);--rm-off:light-dark(#d9cdc4,#4a3c32);--rm-green:light-dark(#3f8f5a,#5db57a);--rm-row-height:42px;width:320px;max-width:100%;background:var(--rm-bg);color:var(--rm-ink);border:1px solid var(--rm-line);border-radius:14px;font:13px/1.45 -apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif;overflow:visible;box-sizing:border-box}
+#readomi-popup-options .rm-window *{box-sizing:border-box}
+#readomi-popup-options .rm-window :where(button,select){font:inherit;color:inherit}
+#readomi-popup-options .rm-window button{cursor:inherit}
+#readomi-popup-options .rm-main{padding:18px 16px 12px}
+#readomi-popup-options .rm-language-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+#readomi-popup-options .rm-language-head strong{font-size:12px;font-weight:500}
+#readomi-popup-options .rm-language-head small{font-size:11px;color:var(--rm-sub)}
+#readomi-popup-options .rm-language-row{display:grid;grid-template-columns:minmax(0,1fr) 14px 114px;gap:10px;align-items:center;min-height:40px;color:var(--rm-sub);font-size:12px}
+#readomi-popup-options .rm-language-row>span{white-space:nowrap}
+#readomi-popup-options .rm-window i[data-lucide],#readomi-popup-options .rm-window svg{width:16px;height:16px;flex-shrink:0}
+#readomi-popup-options .rm-language-row select{width:100%;height:32px;border:1px solid var(--rm-line);border-radius:8px;padding:0 8px;background:var(--rm-card);color:var(--rm-ink);font-size:13px;font-weight:500}
+#readomi-popup-options .rm-feature-list{margin-top:16px}
+#readomi-popup-options .rm-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:var(--rm-row-height)}
+#readomi-popup-options .rm-copy{display:flex;align-items:center;gap:8px;min-width:0}
+#readomi-popup-options .rm-copy>span:first-child{white-space:nowrap}
+#readomi-popup-options .rm-key{color:var(--rm-sub);font-size:11px;white-space:nowrap;border:0;background:transparent;padding:0}
+#readomi-popup-options .rm-translate{height:28px;min-width:62px;flex-shrink:0;padding:0 12px;border:0;border-radius:14px;background:var(--rm-brand);color:var(--rm-on-brand);font-size:12px;font-weight:500}
+#readomi-popup-options .rm-switch{width:32px;height:18px;border:0;border-radius:20px;flex-shrink:0;padding:2px;background:var(--rm-off)}
+#readomi-popup-options .rm-switch:after{content:"";display:block;width:14px;height:14px;border-radius:50%;background:var(--rm-card)}
+#readomi-popup-options .rm-switch[aria-checked="true"]{background:var(--rm-brand)}
+#readomi-popup-options .rm-switch[aria-checked="true"]:after{transform:translateX(14px)}
+#readomi-popup-options .rm-utility{margin-top:14px}
+#readomi-popup-options .rm-site{font-size:12px;min-height:36px}
+#readomi-popup-options .rm-help{color:var(--rm-sub);font-size:12px;margin-top:4px}
+#readomi-popup-options .rm-help summary{min-height:28px;display:flex;align-items:center;gap:6px;list-style:none;cursor:inherit}
+#readomi-popup-options .rm-help summary::-webkit-details-marker{display:none}
+#readomi-popup-options .rm-help summary i,#readomi-popup-options .rm-help summary svg{width:12px;height:12px}
+#readomi-popup-options .rm-help[open] summary i,#readomi-popup-options .rm-help[open] summary svg{transform:rotate(90deg)}
+#readomi-popup-options .rm-help-action{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:32px;border:0;background:transparent;color:var(--rm-ink);padding:0 2px;text-align:left;font-size:12px}
+#readomi-popup-options .rm-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px;padding:8px 12px 8px 16px;border-top:1px solid var(--rm-line)}
+#readomi-popup-options .rm-service{position:relative;min-width:0}
+#readomi-popup-options .rm-service summary{display:flex;align-items:center;gap:6px;list-style:none;color:var(--rm-sub);font-size:12px;min-height:28px;cursor:inherit}
+#readomi-popup-options .rm-service summary::-webkit-details-marker{display:none}
+#readomi-popup-options .rm-service-name{max-width:142px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#readomi-popup-options .rm-dot{width:6px;height:6px;border-radius:50%;background:var(--rm-green);flex-shrink:0}
+#readomi-popup-options .rm-service summary svg,#readomi-popup-options .rm-service summary i{width:12px;height:12px}
+#readomi-popup-options .rm-service-menu{position:absolute;z-index:3;bottom:34px;left:0;width:200px;padding:5px;border:1px solid var(--rm-line);border-radius:10px;background:var(--rm-card)}
+#readomi-popup-options .rm-service-menu button{display:block;width:100%;text-align:left;border:0;border-radius:6px;background:transparent;padding:8px;font-size:12px}
+#readomi-popup-options .rm-service-menu button:hover{background:var(--rm-soft)}
+#readomi-popup-options .rm-tools{display:flex;align-items:center;gap:2px;flex-shrink:0}
+#readomi-popup-options .rm-icon{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:var(--rm-sub)}
+#readomi-popup-options .rm-icon:hover{background:var(--rm-soft);color:var(--rm-ink)}
+#readomi-popup-options .rm-icon[aria-pressed="true"]{background:var(--rm-soft);color:var(--rm-brand)}
+#readomi-popup-options .rm-emphasis{font:16px Georgia,serif}
+#readomi-popup-options .rm-emphasis b{font-weight:700}
+#readomi-popup-options .rm-emphasis small{font-size:12px}
+#readomi-popup-options .rm-window button:focus-visible,#readomi-popup-options .rm-window select:focus-visible,#readomi-popup-options .rm-window summary:focus-visible{outline:2px solid var(--rm-brand);outline-offset:3px}
+
+#readomi-popup-options .rm-window{border:0;border-radius:0;width:320px}
+.rm-site-status{margin:0;color:var(--rm-sub);font-size:11px;line-height:16px}.rm-setup{display:flex;flex-direction:column;gap:10px;padding:14px;margin-bottom:8px;border:1px solid var(--rm-line);border-radius:12px;background:var(--rm-card)}.rm-setup strong{font-size:14px;line-height:20px;font-weight:600}.rm-setup p{margin:4px 0 0;font-size:12px;line-height:17px;color:var(--rm-sub)}.rm-setup button{height:40px;border:0;border-radius:9px;background:var(--rm-brand);color:var(--rm-on-brand);font-size:14px;font-weight:600}
+</style></head><body><div id="readomi-popup-options"><div class="rm-window rm-compact" aria-label="紧凑列表弹窗">
+      <main class="rm-main">
+        <section aria-label="翻译语言" style="opacity:.6">
+          <div class="rm-language-head"><strong>翻译语言</strong><small>自动识别原文</small></div>
+          <div class="rm-language-row"><span>其他语言</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg><select aria-label="主要语言" data-primary><option>简体中文</option><option>英语</option><option>日语</option></select></div>
+          <div class="rm-language-row"><span data-condition>简体中文</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg><select aria-label="第二语言"><option>英语</option><option>保持原文</option><option>日语</option></select></div>
+        </section>
+        <section class="rm-feature-list" aria-label="翻译功能"><div class="rm-setup"><div><strong>还没有翻译服务</strong><p>在设置中选择服务并填写 API Key，就能开始翻译。</p></div><button>去设置里配置</button></div>
+          
+          <div class="rm-row"><span class="rm-copy"><span>悬停翻译</span><button class="rm-key cursor-interaction" aria-label="悬停翻译触发方式">反引号 (`)</button></span><button class="rm-switch cursor-interaction" role="switch" aria-label="悬停翻译" aria-checked="true"></button></div>
+          <div class="rm-row"><span class="rm-copy"><span>视频字幕</span><span class="rm-key">⌥ V</span></span><button class="rm-switch cursor-interaction" role="switch" aria-label="视频字幕翻译" aria-checked="true"></button></div>
+        </section>
+        <div class="rm-utility">
+          <div class="rm-row rm-site"><span>在此网站禁用扩展</span><button class="rm-switch cursor-interaction" role="switch" aria-label="在此网站禁用扩展" aria-checked="false"></button></div>
+          <details class="rm-help"><summary class="cursor-interaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg>翻译有问题？</summary><div class="rm-help-body"><button class="rm-help-action cursor-interaction">调整译文质量<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg></button><button class="rm-help-action cursor-interaction">用 Agent 适配此网站<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(-45deg)"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg></button></div></details>
+        </div>
+      </main>
+      <footer class="rm-footer">
+        <details class="rm-service"><summary class="cursor-interaction"><span class="rm-dot" style="background:#c7863c"></span><span class="rm-service-name">OpenAI · 未配置</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6l6 -6"/></svg></summary><div class="rm-service-menu"><button class="cursor-interaction" data-service>GPT-Luna Magpie</button><button class="cursor-interaction" data-service>DeepSeek</button><button class="cursor-interaction" data-service>Gemini</button></div></details>
+        <div class="rm-tools"><button class="rm-icon cursor-interaction" aria-label="清理翻译缓存" title="清理翻译缓存" data-cache><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M9 6V3h6v3"/><path d="M6 6l1 15h10l1-15"/><path d="M10 10v7"/><path d="M14 10v7"/></svg></button><button class="rm-icon rm-emphasis cursor-interaction" aria-label="英文词首加粗" aria-pressed="false" title="英文词首加粗"><b>A</b><small>b</small></button><button class="rm-icon cursor-interaction" aria-label="设置" title="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg></button></div>
+      </footer>
+    </div></div></body></html>
