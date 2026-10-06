@@ -122,6 +122,19 @@ options:
       ниже."
     add: Добавить сервис
     added: Добавленные сервисы
+    order:
+      handle: Изменить порядок $1
+      hint: "Перетащите для изменения порядка; пробел — начать, стрелки — переместить, пробел — подтвердить, Esc — отменить"
+      locked: Изменение порядка временно недоступно
+      failed: Не удалось сохранить порядок. Восстановлен прежний порядок.
+      retry: Повторить
+      before: Поместить перед $1
+      end: Поместить в конец
+      moving: Перемещение $1
+      adjust: Переместить
+      space: Пробел
+      confirm: Подтвердить
+      position: Элемент $1 из $2
     listLabel: Добавленные сервисы перевода
     actions: Действия для $1
     use: Использовать этот сервис
@@ -594,8 +607,22 @@ subtitleStyle:
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: Размер исходного текста
+  originalFontScaleValue: Значение размера исходного текста
+  originalFontScaleDefault: По умолчанию 1:1
+  originalFontScaleDescription: Относительно перевода; при 100% обе строки одинакового размера.
+  originalFontScaleSummary: Оригинал $1%
+  originalFontScalePresets: Стандартные размеры исходного текста
+  originalFontScaleOnly: Вернитесь к двуязычным субтитрам, чтобы применить $1%.
+  originalFontScaleBilingualOnly: Применяется только к двуязычным субтитрам
+  originalFontScaleInvalid: Введите значение от 50% до 150% с шагом 5%.
+  originalFontScaleSaveFailed: Соотношение не сохранено
+  originalFontScaleSaveFailedDescription: Изменение осталось в предпросмотре; сохранённое соотношение по-прежнему $1.
+  originalFontScaleRetry: Повторить сохранение
+  previewBilingualFontSize: Оригинал $1 px · Перевод $2 px
+  previewTranslatedFontSize: Перевод $1 px
   commonSizes: Частые размеры
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.

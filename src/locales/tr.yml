@@ -119,6 +119,19 @@ options:
       aşağıya yapıştırın."
     add: Hizmet ekle
     added: Eklenen hizmetler
+    order:
+      handle: $1 sırasını değiştir
+      hint: "Sıralamak için sürükleyin; başlatmak için Boşluk, taşımak için ok tuşları, onaylamak için Boşluk, iptal etmek için Esc"
+      locked: Sıralama geçici olarak kullanılamıyor
+      failed: Sıralama kaydedilemedi. Önceki sıralama geri yüklendi.
+      retry: Yeniden dene
+      before: $1 öncesine yerleştir
+      end: Listenin sonuna yerleştir
+      moving: $1 taşınıyor
+      adjust: Taşı
+      space: Boşluk
+      confirm: Onayla
+      position: $2 öğeden $1. öğe
     listLabel: Eklenen çeviri hizmetleri
     actions: $1 işlemleri
     use: Bu hizmeti kullan
@@ -595,8 +608,22 @@ subtitleStyle:
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: Orijinal metin boyutu
+  originalFontScaleValue: Orijinal metin boyutu değeri
+  originalFontScaleDefault: Varsayılan 1:1
+  originalFontScaleDescription: Çeviriye göre ayarlanır; %100 olduğunda iki satır aynı boyuttadır.
+  originalFontScaleSummary: Orijinal %$1
+  originalFontScalePresets: Sık kullanılan orijinal metin boyutları
+  originalFontScaleOnly: "%$1 değerini kullanmak için iki dilli görünüme dönün."
+  originalFontScaleBilingualOnly: Yalnızca iki dilli altyazılara uygulanır
+  originalFontScaleInvalid: "%50 ile %150 arasında, %5 adımlarla bir değer girin."
+  originalFontScaleSaveFailed: Oran kaydedilmedi
+  originalFontScaleSaveFailedDescription: Değişiklik önizlemede korunuyor; kaydedilen oran hâlâ $1.
+  originalFontScaleRetry: Kaydetmeyi yeniden dene
+  previewBilingualFontSize: Orijinal $1 px · Çeviri $2 px
+  previewTranslatedFontSize: Çeviri $1 px
   commonSizes: Sık kullanılan boyutlar
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.

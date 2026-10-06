@@ -116,6 +116,19 @@ options:
     agentHint: 説明を agent に渡し、確認済みの設定を以下に貼り付けてください。
     add: サービスを追加
     added: 追加済みサービス
+    order:
+      handle: $1 を並べ替え
+      hint: ドラッグで並べ替え。スペースで開始、矢印キーで移動、スペースで確定、Esc でキャンセル
+      locked: 一時的に並べ替えできません
+      failed: 順序を保存できませんでした。元の順序に戻しました。
+      retry: 再試行
+      before: $1 の前に配置
+      end: 末尾に配置
+      moving: $1 を移動中
+      adjust: 位置を変更
+      space: スペース
+      confirm: 確定
+      position: $2 件中 $1 件目
     listLabel: 追加済みの翻訳サービス
     actions: $1 の操作
     use: このサービスを使用
@@ -575,8 +588,22 @@ subtitleStyle:
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: 原文の文字サイズ
+  originalFontScaleValue: 原文の文字サイズの値
+  originalFontScaleDefault: 既定 1:1
+  originalFontScaleDescription: 訳文を基準に、100% で原文と訳文が同じ大きさになります。
+  originalFontScaleSummary: 原文 $1%
+  originalFontScalePresets: 原文サイズのプリセット
+  originalFontScaleOnly: 対訳表示に戻すと $1% が適用されます。
+  originalFontScaleBilingualOnly: 対訳字幕にのみ適用
+  originalFontScaleInvalid: 50%～150% の範囲で、5% 刻みの値を入力してください。
+  originalFontScaleSaveFailed: 比率を保存できませんでした
+  originalFontScaleSaveFailedDescription: 調整内容はプレビューに保持されています。保存済みの比率は $1 です。
+  originalFontScaleRetry: 保存を再試行
+  previewBilingualFontSize: 原文 $1 px · 訳文 $2 px
+  previewTranslatedFontSize: 訳文 $1 px
   commonSizes: よく使うサイズ
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.

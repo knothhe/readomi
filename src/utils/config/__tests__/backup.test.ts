@@ -5,6 +5,15 @@ import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "../backu
 const configured = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(p => ({ ...p, apiKey: "sk-backup", headers: { Authorization: "secret" }, connectionCheck: { ok: true, checkedAt: 1 } })) }
 
 describe("local configuration backups", () => {
+  it("round trips subtitle ratios and defaults old backups to equal lines", () => {
+    const config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, subtitleStyle: { ...DEFAULT_CONFIG.features.subtitleStyle, originalFontScale: 125 } } }
+    expect(parseConfigBackup(exportConfigBackup(config)).features.subtitleStyle).toEqual(config.features.subtitleStyle)
+    const old = JSON.parse(exportConfigBackup(config))
+    delete old.config.features.subtitleStyle.originalFontScale
+    expect(parseConfigBackup(JSON.stringify(old)).features.subtitleStyle).toEqual({ ...config.features.subtitleStyle, originalFontScale: 100 })
+    old.config.features.subtitleStyle.originalFontScale = 175
+    expect(() => parseConfigBackup(JSON.stringify(old))).toThrow()
+  })
   it("preserves explicitly hidden video controls through a backup round trip", () => {
     const config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, videoControls: false } }
     expect(parseConfigBackup(exportConfigBackup(config))).toEqual(config)

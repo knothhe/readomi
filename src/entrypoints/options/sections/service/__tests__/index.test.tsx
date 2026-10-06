@@ -49,7 +49,71 @@ describe("multiple translation services", () => {
     vi.mocked(checkConnection).mockReset().mockResolvedValue({ ok: true, checkedAt: 2_000 })
     vi.mocked(fetchProviderModels).mockReset().mockResolvedValue(["model-a"])
   })
-  afterEach(cleanup)
+  afterEach(() => {
+    cleanup()
+    vi.restoreAllMocks()
+  })
+
+  it("previews keyboard sorting, cancels with Escape and preserves the current service", async () => {
+    const { store } = await renderService()
+    const handle = row("Service B").parentElement!.querySelector(".settings-service-drag-handle")!
+    fireEvent.keyDown(handle, { key: " " })
+    fireEvent.keyDown(handle, { key: "ArrowUp" })
+    expect(screen.getAllByRole("heading", { level: 2 }).map(element => element.textContent)).toEqual(["Service B", "Service A"])
+    expect(store.get(configAtom)).toEqual(configured)
+    expect(screen.getByRole("status")).toHaveTextContent("options.service.order.moving")
+    fireEvent.keyDown(handle, { key: "Escape" })
+    expect(screen.getAllByRole("heading", { level: 2 }).map(element => element.textContent)).toEqual(["Service A", "Service B"])
+    expect(screen.queryByRole("status")).toBeNull()
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(configured)
+  })
+
+  it("locks sorting during a pending save and quietly persists the order", async () => {
+    const { store } = await renderService()
+    const setItem = storage.setItem.bind(storage)
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    vi.spyOn(storage, "setItem").mockImplementationOnce(async (...args) => {
+      await gate
+      return setItem(...args)
+    })
+    const handle = row("Service B").parentElement!.querySelector(".settings-service-drag-handle")!
+    fireEvent.keyDown(handle, { key: " " })
+    fireEvent.keyDown(handle, { key: "Home" })
+    fireEvent.keyDown(handle, { key: " " })
+    expect(screen.queryByRole("status")).toBeNull()
+    expect(screen.queryByRole("alert")).toBeNull()
+    for (const button of document.querySelectorAll(".settings-service-drag-handle"))
+      expect(button).toBeDisabled()
+    await act(async () => {
+      release()
+    })
+    await waitFor(() => expect(handle).not.toBeDisabled())
+    expect(store.get(configAtom).providersConfig).toEqual([second, first])
+    expect(store.get(configAtom).translate.providerId).toBe(first.id)
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual({ ...configured, providersConfig: [second, first] })
+    expect(screen.queryByRole("status")).toBeNull()
+    expect(screen.queryByRole("alert")).toBeNull()
+    expect(checkConnection).not.toHaveBeenCalled()
+  })
+
+  it("shows only a failed-sort prompt, restores order and retries the intended move", async () => {
+    const { store } = await renderService()
+    vi.spyOn(storage, "setItem").mockRejectedValueOnce(new Error("Storage unavailable"))
+    const handle = row("Service A").parentElement!.querySelector(".settings-service-drag-handle")!
+    fireEvent.keyDown(handle, { key: " " })
+    fireEvent.keyDown(handle, { key: "End" })
+    fireEvent.keyDown(handle, { key: " " })
+    expect(await screen.findByRole("alert")).toHaveTextContent("options.service.order.failed")
+    expect(screen.getAllByRole("heading", { level: 2 }).map(element => element.textContent)).toEqual(["Service A", "Service B"])
+    expect(store.get(configAtom)).toEqual(configured)
+    fireEvent.click(screen.getByRole("button", { name: "options.service.order.retry" }))
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull())
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.providersConfig).toEqual([second, first]))
+    expect(store.get(configAtom).translate.providerId).toBe(first.id)
+  })
 
   it("lists services without requests, marks current and prevents removing it", async () => {
     const { container, store } = await renderService()
@@ -60,7 +124,7 @@ describe("multiple translation services", () => {
     expect(container).not.toHaveTextContent(first.apiKey)
     const actions = menu("Service A")
     expect(actions.getByRole("button", { name: "options.service.remove" })).toBeDisabled()
-    expect(actions.getByRole("button", { name: "options.service.use" })).toBeDisabled()
+    expect(within(row("Service A")).getByRole("radio")).toHaveAttribute("aria-checked", "true")
     expect(checkConnection).not.toHaveBeenCalled()
     expect(store.get(configAtom)).toEqual(configured)
   })
@@ -135,7 +199,7 @@ describe("multiple translation services", () => {
 
   it("selects and removes services explicitly, and only tests on request", async () => {
     const { store } = await renderService()
-    fireEvent.click(menu("Service B").getByRole("button", { name: "options.service.use" }))
+    fireEvent.click(within(row("Service B")).getByRole("radio"))
     await waitFor(() => expect(store.get(configAtom).translate.providerId).toBe(second.id))
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.translate.providerId).toBe(second.id))
     expect(checkConnection).not.toHaveBeenCalled()
@@ -155,6 +219,39 @@ describe("multiple translation services", () => {
     expect(screen.getByText("options.service.keyMissing")).toBeVisible()
     expect(checkConnection).not.toHaveBeenCalled()
     expect(store.get(configAtom)).toEqual(configured)
+  })
+
+  it("switches services with arrow keys without testing the connection", async () => {
+    const { store } = await renderService()
+    const firstRadio = within(row("Service A")).getByRole("radio")
+    firstRadio.focus()
+    fireEvent.keyDown(firstRadio, { key: "ArrowDown" })
+    const secondRadio = within(row("Service B")).getByRole("radio")
+    await waitFor(() => expect(secondRadio).toHaveAttribute("aria-checked", "true"))
+    expect(secondRadio).toHaveFocus()
+    expect(secondRadio).toHaveAttribute("tabindex", "0")
+    expect(firstRadio).toHaveAttribute("tabindex", "-1")
+    expect(store.get(configAtom).translate.providerId).toBe(second.id)
+    expect(checkConnection).not.toHaveBeenCalled()
+  })
+
+  it("reveals the targeted connection details with a masked key and collapses them", async () => {
+    const { store } = await renderService()
+    expect(screen.queryByText(first.baseURL)).toBeNull()
+    fireEvent.click(menu("Service B").getByRole("button", { name: "options.service.connectionDetails" }))
+    const details = row("Service B").querySelector(".settings-service-connection") as HTMLDetailsElement
+    expect(details).toHaveAttribute("open")
+    expect(within(details).getByText(second.baseURL)).toBeVisible()
+    expect(details).toHaveTextContent("sk-…-key")
+    expect(details).not.toHaveTextContent(first.apiKey)
+    expect(details).not.toHaveTextContent(second.apiKey)
+    await act(async () => {
+      details.open = false
+      fireEvent(details, new Event("toggle"))
+    })
+    await waitFor(() => expect(row("Service B").querySelector(".settings-service-connection")).toBeNull())
+    expect(store.get(configAtom)).toEqual(configured)
+    expect(checkConnection).not.toHaveBeenCalled()
   })
 
   it("returns to the list when another page removes the edited service", async () => {

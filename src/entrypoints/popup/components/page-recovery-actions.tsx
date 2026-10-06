@@ -4,9 +4,8 @@ import { i18n } from "#imports"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
 import { sendMessage } from "@/utils/message"
 import { activeTabAtom, translationProgressAtom } from "../atoms"
-import { PopupHelpAction } from "./popup-help-action"
 
-export function PageRecoveryActions({ presentation = "inline" }: { presentation?: "inline" | "buttons" }) {
+export function PageRecoveryActions() {
   const tab = useAtomValue(activeTabAtom)
   const progress = useAtomValue(translationProgressAtom)
   const provider = useAtomValue(featureProviderConfigAtom("translate"))
@@ -33,19 +32,18 @@ export function PageRecoveryActions({ presentation = "inline" }: { presentation?
     }
   }
   const disabled = pending || !tab.translatable || !provider?.apiKey?.trim()
-  const Action = presentation === "buttons" ? PopupHelpAction : "button"
-  const actionClass = presentation === "buttons" ? undefined : "rounded text-brand hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
+  const actionClass = "rounded text-brand hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
   return (
     <div className="flex flex-col gap-1.5">
-      <div className={presentation === "buttons" ? "flex flex-col gap-2" : "flex items-center justify-between gap-2 text-[12px] leading-5"}>
+      <div className="flex items-center justify-between gap-2 text-[12px] leading-5">
         {(progress?.failed ?? 0) > 0 && (
-          <Action type="button" disabled={disabled} onClick={() => void run(true)} className={actionClass}>
+          <button type="button" disabled={disabled} onClick={() => void run(true)} className={actionClass}>
             {i18n.t(pending ? "popup.recovery.pending" : "popup.recovery.retryFailed")}
-          </Action>
+          </button>
         )}
-        <Action type="button" disabled={disabled} onClick={() => void run(false)} title={i18n.t("popup.recovery.retranslateDescription")} className={actionClass}>
+        <button type="button" disabled={disabled} onClick={() => void run(false)} title={i18n.t("popup.recovery.retranslateDescription")} className={actionClass}>
           {i18n.t(pending ? "popup.recovery.pending" : "popup.recovery.retranslate")}
-        </Action>
+        </button>
       </div>
       {failed && <p role="alert" className="text-[11px] text-destructive">{i18n.t("popup.recovery.failed")}</p>}
     </div>

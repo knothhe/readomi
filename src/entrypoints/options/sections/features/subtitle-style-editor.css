@@ -212,7 +212,7 @@
 
 .subtitle-preview-original {
   margin-bottom: 4px;
-  font-size: 0.85em;
+  font-size: var(--readomi-original-font-scale, 1em);
 }
 
 .subtitle-preview-size {
@@ -295,4 +295,62 @@
   .subtitle-settings-group .subtitle-font-row .settings-row-heading {
     flex-wrap: wrap;
   }
+}
+
+.subtitle-original-size-row .settings-row-heading {
+  justify-content: flex-start;
+}
+
+.subtitle-original-default {
+  margin-left: 6px;
+  color: var(--rf-muted-foreground);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.subtitle-original-size-row .subtitle-control-help {
+  font-size: 11px;
+}
+
+.subtitle-original-presets button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.subtitle-original-error {
+  color: var(--rf-primary);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.subtitle-original-save-error {
+  padding: 10px 12px;
+  border: 1px solid var(--rf-primary);
+  border-radius: 7px;
+  background: var(--rf-primary-tint);
+  color: var(--rf-primary);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.subtitle-original-save-error strong {
+  font-size: 12px;
+}
+
+.subtitle-original-save-error p {
+  margin: 3px 0 8px;
+}
+
+.subtitle-original-save-error button {
+  padding: 4px 10px;
+  border: 1px solid var(--rf-border);
+  border-radius: 5px;
+  background: var(--rf-card);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.subtitle-original-size-row :is(input, button):focus-visible {
+  outline: 3px solid var(--rf-ring);
+  outline-offset: 3px;
 }

@@ -82,6 +82,23 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("updates the original ratio live without changing translated text, base size or position", async () => {
+    update(config)
+    await vi.advanceTimersByTimeAsync(1000)
+    const box = shadow.querySelector<HTMLElement>(".box")!
+    const translated = shadow.querySelector(".translated")!.textContent
+    const fontSize = box.style.fontSize
+    expect(box.style.getPropertyValue("--readomi-original-font-scale")).toBe("1em")
+    for (const originalFontScale of [85, 125, 100]) {
+      update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, originalFontScale } } })
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(box.style.getPropertyValue("--readomi-original-font-scale")).toBe(`${originalFontScale / 100}em`)
+      expect(box.style.fontSize).toBe(fontSize)
+      expect(shadow.querySelector(".translated")!.textContent).toBe(translated)
+      expect(config.features.subtitleStyle.position).toEqual(DEFAULT_CONFIG.features.subtitleStyle.position)
+    }
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+  })
   it("reports the detected player's state and restores original captions while waiting or failing in translation-only mode", async () => {
     const read = () => statusHandlers.get("getSubtitleStatus")!()
     update(DEFAULT_CONFIG)

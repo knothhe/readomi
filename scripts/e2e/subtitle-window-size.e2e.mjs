@@ -1,7 +1,7 @@
 /* global chrome -- settings callbacks run in the extension page. */
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -69,7 +69,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
     assert.equal(await previewFormats.getByRole("button", { name: label, exact: true }).getAttribute("aria-pressed"), "true")
     assert.deepEqual(await storedConfig(context), previewConfig, "preview format changes remain local")
     const size = await previewSize()
-    assert.equal(await settings.locator(".subtitle-preview-size").textContent(), `Preview size: ${Number(size.fontSize.toFixed(2))} px`)
+    assert.equal(await settings.locator(".subtitle-preview-size").textContent(), `Original ${Number(size.fontSize.toFixed(2))} px · Translation ${Number(size.fontSize.toFixed(2))} px`)
     if (aspect === "portrait") {
       assert.ok(size.width <= 285.1)
       assert.ok(await settings.locator(".subtitle-preview-original").evaluate((original) => {
@@ -123,6 +123,8 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
     if (!computed)
       return {}
     const model = await cdp.send("DOM.getBoxModel", { nodeId: box.nodeId }).catch(() => null)
+    const originalComputed = original ? await cdp.send("CSS.getComputedStyleForNode", { nodeId: original.nodeId }).catch(() => null) : null
+    const originalFontSize = Number.parseFloat(originalComputed?.computedStyle.find(p => p.name === "font-size")?.value)
     const { computedStyle } = computed
     const quad = model?.model.border
     const controlsHost = find(root, node => attr(node, "data-readomi-video-controls") !== undefined)
@@ -139,7 +141,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       menuDock ? cdp.send("DOM.getBoxModel", { nodeId: menuDock.nodeId }).catch(() => null) : null,
       menuReset ? cdp.send("DOM.getBoxModel", { nodeId: menuReset.nodeId }).catch(() => null) : null,
     ])
-    return { controlsHidden, controlsInert: controlsHost && attr(controlsHost, "inert") !== undefined, dockTop: dockModel?.model.border[1], menuPanel: rectangle(panelModel?.model.border), menuDock: rectangle(menuDockModel?.model.border), menuReset: rectangle(resetModel?.model.border), fontSize: Number.parseFloat(computedStyle.find(p => p.name === "font-size").value), backgroundColor: computedStyle.find(p => p.name === "background-color").value, original: text(original), translation: text(translation), bottom: quad?.[5], bounds: rectangle(quad), hidden: attr(box, "class")?.split(" ").includes("empty") }
+    return { originalFontSize, controlsHidden, controlsInert: controlsHost && attr(controlsHost, "inert") !== undefined, dockTop: dockModel?.model.border[1], menuPanel: rectangle(panelModel?.model.border), menuDock: rectangle(menuDockModel?.model.border), menuReset: rectangle(resetModel?.model.border), fontSize: Number.parseFloat(computedStyle.find(p => p.name === "font-size").value), backgroundColor: computedStyle.find(p => p.name === "background-color").value, original: text(original), translation: text(translation), bottom: quad?.[5], bounds: rectangle(quad), hidden: attr(box, "class")?.split(" ").includes("empty") }
   }
   const waitFor = async (predicate) => {
     const deadline = Date.now() + 15000
@@ -259,7 +261,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       return toolbar.firstElementChild === toolbar.querySelector("button[aria-label='Pause']") && host?.previousElementSibling === toolbar.querySelector("span") && host?.nextElementSibling === toolbar.querySelector("button[aria-label='Fullscreen']")
     }), true, "Readomi joins the native X right tools after playback and time, before fullscreen")
   }
-  const ready = await waitFor(state => !state.hidden && Math.abs(state.fontSize - 18) < 0.05 && colorOpacity(state.backgroundColor) === 0 && state.translation?.includes("【译】"))
+  const ready = await waitFor(state => !state.hidden && Math.abs(state.originalFontSize - state.fontSize) < 0.05 && Math.abs(state.fontSize - 18) < 0.05 && colorOpacity(state.backgroundColor) === 0 && state.translation?.includes("【译】"))
   assert.equal(ready.original, "A new idea.", "the complete X source wins over its showing clone")
   await waitForInlineToolbar()
   await page.waitForFunction(() => Object.values(window.e2eSubtitleTracks).every(track => track.mode === "hidden"))
@@ -499,6 +501,75 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, position, "all four presets preserve a manually selected position in both controls")
   assert.equal(service.completions().length, requests, "manual size, background and preset changes reuse the current translation")
   await page.screenshot({ path: "/tmp/readomi-subtitle-preset-video-study.png" })
+
+  // Original size is independent of the translated size and remains saved across modes.
+  const ratioSlider = settings.getByRole("slider", { name: "Original text size", exact: true })
+  const ratioInput = settings.getByRole("spinbutton", { name: "Original text size value", exact: true })
+  const ratioChoices = settings.getByRole("group", { name: "Common original text sizes", exact: true })
+  assert.equal(await ratioSlider.getAttribute("min"), "50")
+  assert.equal(await ratioSlider.getAttribute("max"), "150")
+  assert.equal(await ratioSlider.getAttribute("step"), "5")
+  assert.equal(await ratioSlider.evaluate(input => input.closest(".settings-row").previousElementSibling.classList.contains("subtitle-font-row")), true)
+  await ratioChoices.getByRole("button", { name: "85%", exact: true }).click()
+  await waitForStyle({ originalFontScale: 85 })
+  await waitFor(state => Math.abs(state.originalFontSize - state.fontSize * 0.85) < 0.05 && state.translation === ready.translation)
+  await ratioSlider.press("ArrowRight")
+  await waitForStyle({ originalFontScale: 90 })
+  await waitFor(state => Math.abs(state.originalFontSize - state.fontSize * 0.9) < 0.05)
+  await ratioInput.fill("125")
+  await ratioInput.press("Enter")
+  await waitForStyle({ originalFontScale: 125 })
+  await waitFor(state => Math.abs(state.originalFontSize - state.fontSize * 1.25) < 0.05)
+  const ratioConfig = await storedConfig(context)
+  await ratioInput.fill("175")
+  await ratioInput.press("Enter")
+  assert.equal(await ratioInput.getAttribute("aria-invalid"), "true")
+  assert.deepEqual(await storedConfig(context), ratioConfig, "invalid numeric drafts do not save")
+  await ratioInput.press("Escape")
+  assert.equal(await ratioInput.inputValue(), "125")
+  await presets.getByRole("button", { name: "Transparent", exact: true }).click()
+  await waitForStyle({ originalFontScale: 125, preset: "clear" })
+  await waitFor(state => Math.abs(state.originalFontSize - 11.25) < 0.05 && state.fontSize === 9)
+  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
+  await waitForStyle({ originalFontScale: 125, fontSizeMode: "fixed" })
+  await waitFor(state => state.originalFontSize === 25 && state.fontSize === 20)
+  const display = settings.getByRole("group", { name: "Subtitle display mode", exact: true })
+  await display.getByRole("button", { name: "Translation only", exact: true }).click()
+  assert.equal(await ratioSlider.isDisabled(), true)
+  assert.equal(await ratioInput.isDisabled(), true)
+  await display.getByRole("button", { name: "Bilingual", exact: true }).click()
+  assert.equal(await ratioSlider.isEnabled(), true)
+  await waitForStoredConfig(context, config => config.features.subtitleMode === "bilingual")
+  await settings.reload()
+  await customOptions.click()
+  assert.equal(await ratioInput.inputValue(), "125", "reload restores the saved original ratio")
+  await settings.setViewportSize({ width: 390, height: 900 })
+  assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+  await settings.screenshot({ path: "/tmp/readomi-subtitle-ratio-implemented-mobile.png", fullPage: true })
+  await settings.setViewportSize({ width: 1280, height: 900 })
+  await ratioChoices.getByRole("button", { name: "1:1", exact: true }).click()
+  await waitForStyle({ originalFontScale: 100 })
+  await waitFor(state => state.originalFontSize === 20 && state.fontSize === 20)
+  await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
+  await settings.locator(".subtitle-position-reset").click()
+  await waitForStyle({ fontSizeMode: "video", originalFontScale: 100, position: { x: 50, y: 88 } })
+  // Exercise the actual Chinese catalog and record the chosen A layout at its default values.
+  await settings.evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    await chrome.storage.local.set({ config: { ...config, ui: { ...config.ui, language: "zh-CN" } } })
+  })
+  await settings.reload()
+  await customOptions.click()
+  assert.equal(await settings.getByRole("slider", { name: "原文相对字号", exact: true }).inputValue(), "100")
+  assert.equal(await settings.locator(".subtitle-original-size-row .settings-row-control").count(), 0, "the original ratio has no duplicate top-right readout")
+  for (const [width, name] of [[390, "mobile"], [1280, "desktop"]]) {
+    await settings.setViewportSize({ width, height: 900 })
+    await waitForPreview(await storedConfig(context).then(config => config.features.subtitleStyle))
+    assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+    await settings.evaluate(() => scrollTo(0, 0))
+    await settings.screenshot({ path: `/tmp/readomi-subtitle-ratio-implemented-${name}.png`, fullPage: true })
+  }
+  assert.equal(service.completions().length, requests, "changing only the original ratio reuses translations")
 
   await page.evaluate(() => {
     const reply = document.createElement("article")

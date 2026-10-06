@@ -7,13 +7,16 @@ export const SUBTITLE_FONT_SIZE_MAX = 80
 export const SUBTITLE_RELATIVE_FONT_SIZE_MIN = 1.25
 export const SUBTITLE_RELATIVE_FONT_SIZE_MAX = 25
 export const SUBTITLE_RELATIVE_FONT_SIZE_STEP = 0.25
+export const SUBTITLE_ORIGINAL_FONT_SCALE_MIN = 50
+export const SUBTITLE_ORIGINAL_FONT_SCALE_MAX = 150
+export const SUBTITLE_ORIGINAL_FONT_SCALE_STEP = 5
 export const SUBTITLE_PRESET_STYLES = {
   clear: { fontSize: 20, relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
   compact: { fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
   study: { fontSize: 24, relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
   cinema: { fontSize: 28, relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
 } as const
-export const DEFAULT_SUBTITLE_STYLE = { preset: "clear" as const, ...SUBTITLE_PRESET_STYLES.clear, relativeFontSizeBasis: "shortSide" as const, fontSizeMode: "video" as const, position: { x: 50, y: 88 } }
+export const DEFAULT_SUBTITLE_STYLE = { preset: "clear" as const, ...SUBTITLE_PRESET_STYLES.clear, originalFontScale: 100, relativeFontSizeBasis: "shortSide" as const, fontSizeMode: "video" as const, position: { x: 50, y: 88 } }
 
 const currentSubtitleStyleSchema = z.object({
   preset: z.enum(SUBTITLE_PRESETS).default("clear"),
@@ -21,6 +24,7 @@ const currentSubtitleStyleSchema = z.object({
   relativeFontSize: z.number().min(SUBTITLE_RELATIVE_FONT_SIZE_MIN).max(SUBTITLE_RELATIVE_FONT_SIZE_MAX).default(DEFAULT_SUBTITLE_STYLE.relativeFontSize),
   relativeFontSizeBasis: z.literal("shortSide").default("shortSide"),
   fontSizeMode: z.enum(SUBTITLE_FONT_SIZE_MODES).default("video"),
+  originalFontScale: z.number().min(SUBTITLE_ORIGINAL_FONT_SCALE_MIN).max(SUBTITLE_ORIGINAL_FONT_SCALE_MAX).multipleOf(SUBTITLE_ORIGINAL_FONT_SCALE_STEP).default(DEFAULT_SUBTITLE_STYLE.originalFontScale),
   backgroundEnabled: z.boolean().default(DEFAULT_SUBTITLE_STYLE.backgroundEnabled),
   backgroundOpacity: z.number().min(0).max(100).default(DEFAULT_SUBTITLE_STYLE.backgroundOpacity),
   position: z.object({

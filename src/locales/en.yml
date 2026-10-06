@@ -121,6 +121,19 @@ options:
       configuration below."
     add: Add service
     added: Added services
+    order:
+      handle: Reorder $1
+      hint: Drag to reorder; Space to start, arrow keys to move, Space to confirm, Esc to cancel
+      locked: Reordering is temporarily unavailable
+      failed: Order could not be saved. The previous order has been restored.
+      retry: Retry
+      before: Place before $1
+      end: Place at the end
+      moving: Moving $1
+      adjust: Move
+      space: Space
+      confirm: Confirm
+      position: Item $1 of $2
     listLabel: Added translation services
     actions: Actions for $1
     use: Use this service
@@ -595,8 +608,22 @@ subtitleStyle:
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: Original text size
+  originalFontScaleValue: Original text size value
+  originalFontScaleDefault: Default 1:1
+  originalFontScaleDescription: Relative to the translation; 100% makes both lines the same size.
+  originalFontScaleSummary: Original $1%
+  originalFontScalePresets: Common original text sizes
+  originalFontScaleOnly: Switch back to bilingual to use $1%.
+  originalFontScaleBilingualOnly: Applies to bilingual subtitles only
+  originalFontScaleInvalid: Enter a value from 50% to 150% in steps of 5%.
+  originalFontScaleSaveFailed: Ratio not saved
+  originalFontScaleSaveFailedDescription: Your adjustment remains in the preview; the saved ratio is still $1.
+  originalFontScaleRetry: Retry saving
+  previewBilingualFontSize: Original $1 px · Translation $2 px
+  previewTranslatedFontSize: Translation $1 px
   commonSizes: Common sizes
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.

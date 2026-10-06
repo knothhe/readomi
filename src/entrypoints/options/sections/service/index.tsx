@@ -10,14 +10,15 @@ import { configAtom } from "@/utils/atoms/config"
 import { removeProviderAtom, saveProviderAtom, saveProviderCheckAtom, selectProviderAtom } from "@/utils/atoms/service"
 import { clearClipboard, copyText } from "@/utils/clipboard"
 import { deepEqual } from "@/utils/object"
-import { getRequestHost } from "@/utils/providers/request"
+import { resolveBaseURL, resolveRequestApi } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
 import { formatRelativeTime } from "@/utils/relative-time"
 import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
-import { applySetupDocument, describeSetupDocument, exportSetupDocument, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
+import { applySetupDocument, describeSetupDocument, exportSetupDocument, maskApiKey, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
 import { cn } from "@/utils/styles/utils"
 import { getUILocale } from "@/utils/ui-language"
 import { ManualServiceForm } from "./manual-form"
+import { SortableServiceList } from "./sortable-service-list"
 import { UseAfterAdd } from "./use-after-add"
 import "./style.css"
 
@@ -58,24 +59,18 @@ export function ServiceSection() {
       <div className="settings-service-page-heading">
         <h1 className="settings-page-title">{!showingEditor ? i18n.t("options.service.title") : current ? i18n.t("options.service.editTitle", [current.name]) : i18n.t("options.service.add")}</h1>
         {!showingEditor && (
-          <Button variant="outline" className="h-8 text-xs font-normal" onClick={() => openEditor("add")}>
+          <button type="button" className="settings-service-add" onClick={() => openEditor("add")}>
             <span aria-hidden="true">＋</span>
             {i18n.t("options.service.add")}
-          </Button>
+          </button>
         )}
       </div>
       {!showingEditor
         ? (
             <div className="settings-service-content">
-              <h2 className="settings-service-caption">
-                {i18n.t("options.service.added")}
-                {" "}
-                <span>{providers.length}</span>
-              </h2>
-              <div className="settings-service-list" aria-label={i18n.t("options.service.listLabel")}>
-                {providers.map(provider => <ServiceRow key={provider.id} provider={provider} active={provider.id === config.translate.providerId} onEdit={() => openEditor(provider.id)} onFeedback={setFeedback} />)}
-                {providers.length === 0 && <p className="settings-service-empty">{i18n.t("options.service.empty.title")}</p>}
-              </div>
+              <SortableServiceList providers={providers}>
+                {provider => <ServiceRow provider={provider} active={provider.id === config.translate.providerId} onEdit={() => openEditor(provider.id)} onFeedback={setFeedback} />}
+              </SortableServiceList>
               <p className="settings-service-scope">{i18n.t("options.service.scope")}</p>
               {feedback && <p role="status" className="settings-service-feedback">{feedback}</p>}
             </div>
@@ -162,6 +157,7 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
   const menuRef = useRef<HTMLDetailsElement>(null)
   const [busy, setBusy] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
   const [now] = useState(Date.now)
   const status = checkStatus(provider.connectionCheck, Math.max(now, provider.connectionCheck?.checkedAt ?? now))
 
@@ -204,16 +200,24 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
 
   return (
     <article className="settings-service-row" data-current={active}>
-      <span className="settings-service-mark" aria-hidden="true">{provider.name.charAt(0).toUpperCase()}</span>
-      <div className="settings-service-copy">
-        <div className="settings-service-name-line">
-          <h2>{provider.name}</h2>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={active}
+        aria-label={`${provider.name} · ${provider.model}`}
+        tabIndex={active ? 0 : -1}
+        disabled={!provider.enabled}
+        aria-disabled={busy || !provider.enabled}
+        className="settings-service-choose"
+        onClick={() => !busy && !active && void act("use")}
+      >
+        <span className="settings-service-radio" aria-hidden="true" />
+        <span className="settings-service-name-line">
+          <span role="heading" aria-level={2} title={provider.name}>{provider.name}</span>
           {active && <span className="settings-service-badge">{i18n.t("options.service.label.current")}</span>}
-        </div>
-        <p className="settings-service-model">{provider.model}</p>
-        <p className="settings-service-host">{getRequestHost(provider)}</p>
-        {provider.connectionCheck?.error && <code className="settings-service-error">{provider.connectionCheck.error}</code>}
-      </div>
+        </span>
+        <span className="settings-service-model" title={provider.model}>{provider.model}</span>
+      </button>
       <div className="settings-service-row-end">
         <span className={cn("settings-service-status", testing ? "text-muted-foreground" : status.tone)} data-testid="service-status" aria-live="polite" title={status.when ?? undefined}>
           <Dot className={testing ? "bg-muted-foreground/50" : status.dot} />
@@ -239,14 +243,43 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
         >
           <summary aria-label={i18n.t("options.service.actions", [provider.name])}><span aria-hidden="true">•••</span></summary>
           <div className="settings-service-menu-panel">
-            <button type="button" disabled={busy || active || !provider.enabled} onClick={() => void act("use")}>{i18n.t("options.service.use")}</button>
-            <button type="button" disabled={busy} onClick={() => void act("test")}>{i18n.t("options.service.test")}</button>
             <button type="button" disabled={busy} onClick={onEdit}>{i18n.t("options.service.edit")}</button>
+            <button type="button" disabled={busy} onClick={() => void act("test")}>{i18n.t("options.service.test")}</button>
+            <button
+              type="button"
+              aria-expanded={showDetails}
+              aria-controls={`service-details-${provider.id}`}
+              onClick={() => {
+                setShowDetails(value => !value)
+                if (menuRef.current)
+                  menuRef.current.open = false
+              }}
+            >
+              {i18n.t("options.service.connectionDetails")}
+            </button>
             <div className="settings-service-menu-separator" />
             <button type="button" className="text-destructive" disabled={busy || active} title={active ? i18n.t("options.service.removeCurrentHint") : undefined} onClick={() => void act("remove")}>{i18n.t("options.service.remove")}</button>
           </div>
         </details>
       </div>
+      {showDetails && (
+        <details id={`service-details-${provider.id}`} className="settings-service-connection" open onToggle={event => !event.currentTarget.open && setShowDetails(false)}>
+          <summary>{i18n.t("options.service.connectionDetails")}</summary>
+          <dl>
+            <dt>{i18n.t("manualService.url")}</dt>
+            <dd>{resolveBaseURL(provider) || "—"}</dd>
+            <dt>{i18n.t("manualService.key")}</dt>
+            <dd>{provider.apiKey ? maskApiKey(provider.apiKey) : "—"}</dd>
+            <dt>{i18n.t("manualService.type")}</dt>
+            <dd>{provider.provider}</dd>
+            <dt>{i18n.t("manualService.api")}</dt>
+            <dd>{resolveRequestApi(provider)}</dd>
+            <dt>{i18n.t("options.service.label.connection")}</dt>
+            <dd>{[status.label, status.when].filter(Boolean).join(" · ")}</dd>
+          </dl>
+          {provider.connectionCheck?.error && <code className="settings-service-error">{provider.connectionCheck.error}</code>}
+        </details>
+      )}
     </article>
   )
 }

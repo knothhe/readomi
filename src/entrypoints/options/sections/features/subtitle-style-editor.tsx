@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
 import { useAtom, useSetAtom } from "jotai"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
 import { SUBTITLE_FONT_SIZE_MODES, SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
@@ -10,6 +10,7 @@ import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitleP
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 import { SettingsSlider } from "../../components/settings-slider"
+import { SubtitleOriginalSizeControl } from "./subtitle-original-size-control"
 import "./subtitle-style-editor.css"
 
 const PREVIEW_ASPECT_RATIOS = { landscape: 9 / 16, portrait: 16 / 9, square: 1 } as const
@@ -18,7 +19,22 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
   const [features] = useAtom(configFieldsAtomMap.features)
   const setConfig = useSetAtom(writeConfigAtom)
   const setStyle = (patch: Partial<SubtitleStyle>) => void setConfig({ features: { subtitleStyle: patch } })
-  const style = features.subtitleStyle
+  const [originalFontScaleDraft, setOriginalFontScaleDraft] = useState<number | null>(null)
+  const [originalFontScaleFailed, setOriginalFontScaleFailed] = useState(false)
+  const originalFontScaleWriteRef = useRef(0)
+  const style = useMemo(() => originalFontScaleDraft === null ? features.subtitleStyle : { ...features.subtitleStyle, originalFontScale: originalFontScaleDraft }, [features.subtitleStyle, originalFontScaleDraft])
+  const setOriginalFontScale = (originalFontScale: number) => {
+    const version = ++originalFontScaleWriteRef.current
+    setOriginalFontScaleDraft(originalFontScale)
+    setOriginalFontScaleFailed(false)
+    void setConfig({ features: { subtitleStyle: { originalFontScale } } }).then(() => {
+      if (version === originalFontScaleWriteRef.current)
+        setOriginalFontScaleDraft(null)
+    }).catch(() => {
+      if (version === originalFontScaleWriteRef.current)
+        setOriginalFontScaleFailed(true)
+    })
+  }
   const size = subtitleSizeSettings(style)
   const modified = isSubtitlePresetModified(style)
   const position = subtitlePositionName(style.position)
@@ -45,8 +61,11 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
       // The frame can grow to fit large text; sizing still uses the selected video's aspect ratio.
       const fontSize = resolveSubtitleFontSize(style, width, width * PREVIEW_ASPECT_RATIOS[previewAspect])
       caption.style.fontSize = `${fontSize}px`
-      if (fontSizeOutputRef.current)
-        fontSizeOutputRef.current.textContent = i18n.t("subtitleStyle.previewFontSize", [Number(fontSize.toFixed(2))])
+      if (fontSizeOutputRef.current) {
+        fontSizeOutputRef.current.textContent = features.subtitleMode === "bilingual"
+          ? i18n.t("subtitleStyle.previewBilingualFontSize", [Number((fontSize * style.originalFontScale / 100).toFixed(2)), Number(fontSize.toFixed(2))])
+          : i18n.t("subtitleStyle.previewTranslatedFontSize", [Number(fontSize.toFixed(2))])
+      }
       const captionRect = caption.getBoundingClientRect()
       // Keep the real font size readable even when the sample exceeds the selected frame.
       frame.style.minHeight = `${Math.ceil(captionRect.height + 24)}px`
@@ -147,6 +166,8 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
               <span className="subtitle-custom-values">
                 {formatSubtitleFontSize(style)}
                 {" · "}
+                {i18n.t("subtitleStyle.originalFontScaleSummary", [style.originalFontScale])}
+                {" · "}
                 {backgroundSummary}
                 <span className="subtitle-custom-position">{` · ${i18n.t(`subtitleStyle.positions.${position}`)}`}</span>
               </span>
@@ -181,6 +202,14 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                   onValueChange={value => setStyle(subtitleSizePatch(style, value))}
                 />
               </SettingsRow>
+              <SubtitleOriginalSizeControl
+                value={style.originalFontScale}
+                savedValue={features.subtitleStyle.originalFontScale}
+                disabled={features.subtitleMode === "translationOnly"}
+                failed={originalFontScaleFailed}
+                onChange={setOriginalFontScale}
+                onRetry={() => setOriginalFontScale(style.originalFontScale)}
+              />
               <SettingsRow label={i18n.t("subtitleStyle.backgroundOpacity")} control={<output className="subtitle-depth-value">{`${depth}%`}</output>}>
                 <SettingsSlider
                   className="subtitle-precise-slider"
@@ -261,7 +290,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
         <p className="subtitle-preview-summary">
           {i18n.t(`subtitleStyle.presets.${style.preset}`)}
           {modified && ` (${i18n.t("subtitleStyle.modified")})`}
-          {` · ${formatSubtitleFontSize(style)} · ${backgroundSummary} · ${i18n.t(`subtitleStyle.positions.${position}`)}`}
+          {` · ${formatSubtitleFontSize(style)} · ${i18n.t("subtitleStyle.originalFontScaleSummary", [style.originalFontScale])} · ${backgroundSummary} · ${i18n.t(`subtitleStyle.positions.${position}`)}`}
         </p>
       </aside>
     </div>

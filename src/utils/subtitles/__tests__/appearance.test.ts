@@ -78,7 +78,7 @@ describe("subtitle appearance configuration", () => {
     for (const fontSizeMode of ["video", "fixed"] as const) {
       const position = { x: 60, y: 65 }
       const migrated = subtitleStyleSchema.parse({ preset, fontSize: 38, fontSizeMode, position })
-      expect(migrated).toEqual({ preset, fontSize: 38, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", fontSizeMode, backgroundEnabled, backgroundOpacity, position })
+      expect(migrated).toEqual({ preset, fontSize: 38, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", originalFontScale: 100, fontSizeMode, backgroundEnabled, backgroundOpacity, position })
       expect(resolveSubtitleFontSize(migrated, 1280)).toBeCloseTo(fontSizeMode === "video" ? 76 : 38)
     }
     expect(subtitleStyleSchema.parse({ preset, fontSize: 20 }).fontSizeMode).toBe("video")
@@ -89,6 +89,30 @@ describe("subtitle appearance configuration", () => {
     expect(subtitleStyleSchema.parse(style)).toEqual(style)
     expect(subtitleTextStyle(style).background).toBe("transparent")
     expect(subtitleTextStyle({ ...style, backgroundEnabled: true }).background).toBe("rgba(15,20,35,0)")
+  })
+  it("defaults old styles to equal lines and preserves an independently saved original ratio", () => {
+    const old = structuredClone(DEFAULT_CONFIG)
+    Reflect.deleteProperty(old.features.subtitleStyle, "originalFontScale")
+    expect(configSchema.parse(old).features.subtitleStyle.originalFontScale).toBe(100)
+    const style = { ...DEFAULT_CONFIG.features.subtitleStyle, originalFontScale: 85 }
+    expect(subtitleStyleSchema.parse(style)).toEqual(style)
+    expect(subtitleTextStyle(style)["--readomi-original-font-scale"]).toBe("0.85em")
+    expect(subtitleTextStyle(DEFAULT_CONFIG.features.subtitleStyle)["--readomi-original-font-scale"]).toBe("1em")
+    for (const preset of ["clear", "compact", "study", "cinema"] as const) {
+      const next = { ...style, ...subtitlePresetPatch(preset) }
+      expect(next.originalFontScale).toBe(85)
+      expect(isSubtitlePresetModified(next)).toBe(false)
+    }
+  })
+  it.each([50, 85, 100, 125, 150])("accepts the original ratio %s in both size modes", (originalFontScale) => {
+    for (const fontSizeMode of ["video", "fixed"] as const) {
+      const style = subtitleStyleSchema.parse({ ...DEFAULT_CONFIG.features.subtitleStyle, originalFontScale, fontSizeMode })
+      expect(subtitleTextStyle(style)["--readomi-original-font-scale"]).toBe(`${originalFontScale / 100}em`)
+      expect(resolveSubtitleFontSize(style)).toBe(fontSizeMode === "video" ? 18 : 20)
+    }
+  })
+  it.each([49, 151, 86, 102.5, Number.NaN, Number.POSITIVE_INFINITY])("rejects invalid original ratio %s", (originalFontScale) => {
+    expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, originalFontScale }).success).toBe(false)
   })
   it("exposes independent size controls and matching units for each mode", () => {
     const style = { ...DEFAULT_CONFIG.features.subtitleStyle, relativeFontSize: 3.125, fontSize: 38 }
@@ -163,7 +187,7 @@ describe("subtitle appearance configuration", () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, old)
     await saveSubtitleStyle({ backgroundEnabled: false, backgroundOpacity: 0 })
     const saved = await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)
-    expect(saved).toEqual({ ...old, features: { ...old.features, subtitleStyle: { ...old.features.subtitleStyle, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", fontSizeMode: "video", backgroundEnabled: false, backgroundOpacity: 0 } } })
+    expect(saved).toEqual({ ...old, features: { ...old.features, subtitleStyle: { ...old.features.subtitleStyle, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", originalFontScale: 100, fontSizeMode: "video", backgroundEnabled: false, backgroundOpacity: 0 } } })
   })
   it("serializes background style patches with other configuration writes and merges each into the latest value", async () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)

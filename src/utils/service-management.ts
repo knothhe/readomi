@@ -65,6 +65,23 @@ export function removeProvider(config: Config, providerId: string): Config {
   return { ...config, providersConfig: config.providersConfig.filter(provider => provider.id !== providerId) }
 }
 
+export interface MoveProviderAction {
+  providerId: string
+  /** null moves the service to the end. */
+  beforeId: string | null
+}
+
+/** Move only one ID against the latest config, retaining concurrent edits and additions. */
+export function moveProvider(config: Config, { providerId, beforeId }: MoveProviderAction): Config {
+  const provider = config.providersConfig.find(candidate => candidate.id === providerId)
+  if (!provider || beforeId === providerId || (beforeId !== null && !config.providersConfig.some(candidate => candidate.id === beforeId)))
+    throw new Error("The service being moved or its destination no longer exists")
+  const providersConfig = config.providersConfig.filter(candidate => candidate.id !== providerId)
+  const index = beforeId === null ? providersConfig.length : providersConfig.findIndex(candidate => candidate.id === beforeId)
+  providersConfig.splice(index, 0, provider)
+  return { ...config, providersConfig }
+}
+
 /** Ignore a completed check if the service was edited or removed while it was running. */
 export function saveProviderCheck(config: Config, tested: ProviderConfig, check: ConnectionCheck): Config {
   const existing = config.providersConfig.find(provider => provider.id === tested.id)

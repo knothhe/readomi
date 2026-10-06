@@ -127,6 +127,19 @@ options:
       verificada abajo.
     add: Añadir servicio
     added: Servicios añadidos
+    order:
+      handle: Reordenar $1
+      hint: "Arrastra para reordenar; Espacio para empezar, flechas para mover, Espacio para confirmar y Esc para cancelar"
+      locked: No se puede reordenar temporalmente
+      failed: No se pudo guardar el orden. Se ha restaurado el orden anterior.
+      retry: Reintentar
+      before: Colocar antes de $1
+      end: Colocar al final
+      moving: Moviendo $1
+      adjust: Mover
+      space: Espacio
+      confirm: Confirmar
+      position: Elemento $1 de $2
     listLabel: Servicios de traducción añadidos
     actions: Acciones de $1
     use: Usar este servicio
@@ -607,8 +620,22 @@ subtitleStyle:
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: Tamaño del texto original
+  originalFontScaleValue: Valor del tamaño del texto original
+  originalFontScaleDefault: Predeterminado 1:1
+  originalFontScaleDescription: Respecto a la traducción; al 100% ambas líneas tienen el mismo tamaño.
+  originalFontScaleSummary: Original $1%
+  originalFontScalePresets: Tamaños habituales del texto original
+  originalFontScaleOnly: Vuelve al modo bilingüe para usar $1%.
+  originalFontScaleBilingualOnly: Solo se aplica a subtítulos bilingües
+  originalFontScaleInvalid: Introduce un valor del 50% al 150% en pasos del 5%.
+  originalFontScaleSaveFailed: Proporción no guardada
+  originalFontScaleSaveFailedDescription: El ajuste se conserva en la vista previa; la proporción guardada sigue siendo $1.
+  originalFontScaleRetry: Reintentar guardar
+  previewBilingualFontSize: Original $1 px · Traducción $2 px
+  previewTranslatedFontSize: Traducción $1 px
   commonSizes: Tamaños habituales
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.

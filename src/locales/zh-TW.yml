@@ -116,6 +116,19 @@ options:
     agentHint: 把說明交給你的 agent，再將它驗證好的設定貼到下面。
     add: 新增服務
     added: 已新增的服務
+    order:
+      handle: 拖曳排序 $1
+      hint: 拖曳排序；空白鍵開始，方向鍵移動，空白鍵確認，Esc 取消
+      locked: 暫時無法調整順序
+      failed: 排序未儲存，已恢復原順序。
+      retry: 重試
+      before: 放在 $1 前
+      end: 放在清單末尾
+      moving: 正在移動 $1
+      adjust: 調整位置
+      space: 空白鍵
+      confirm: 確認
+      position: 第 $1 項，共 $2 項
     listLabel: 已新增的翻譯服務
     actions: $1 的操作
     use: 使用此服務
@@ -575,8 +588,22 @@ subtitleStyle:
   backgroundSummary: $1% 背景
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: 原文相對字級
+  originalFontScaleValue: 原文相對字級數值
+  originalFontScaleDefault: 預設 1:1
+  originalFontScaleDescription: 以譯文字級為基準，100% 時原文與譯文等大。
+  originalFontScaleSummary: 原文 $1%
+  originalFontScalePresets: 常用原文比例
+  originalFontScaleOnly: 切回雙語對照後沿用 $1%。
+  originalFontScaleBilingualOnly: 僅雙語對照生效
+  originalFontScaleInvalid: 請輸入 50%～150% 之間、以 5% 為步長的數值。
+  originalFontScaleSaveFailed: 比例未儲存
+  originalFontScaleSaveFailedDescription: 預覽保留本次調整；已儲存的比例仍為 $1。
+  originalFontScaleRetry: 重試儲存
+  previewBilingualFontSize: 原文 $1 px · 譯文 $2 px
+  previewTranslatedFontSize: 譯文 $1 px
   commonSizes: 常用字級
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: 字級為影片顯示區域短邊的百分比，隨視窗和全螢幕縮放。
   fixedFontDescription: 字級保持固定，不隨視窗縮放。

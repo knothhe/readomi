@@ -119,6 +119,19 @@ options:
     agentHint: Gửi hướng dẫn cho agent rồi dán cấu hình đã được xác minh vào bên dưới.
     add: Thêm dịch vụ
     added: Dịch vụ đã thêm
+    order:
+      handle: Sắp xếp lại $1
+      hint: "Kéo để sắp xếp; Phím cách để bắt đầu, phím mũi tên để di chuyển, Phím cách để xác nhận, Esc để hủy"
+      locked: Tạm thời không thể thay đổi thứ tự
+      failed: Không thể lưu thứ tự. Đã khôi phục thứ tự trước đó.
+      retry: Thử lại
+      before: Đặt trước $1
+      end: Đặt ở cuối danh sách
+      moving: Đang di chuyển $1
+      adjust: Di chuyển
+      space: Phím cách
+      confirm: Xác nhận
+      position: Mục $1 trên $2
     listLabel: Dịch vụ dịch đã thêm
     actions: Thao tác cho $1
     use: Dùng dịch vụ này
@@ -590,8 +603,22 @@ subtitleStyle:
   backgroundSummary: $1% background
   preset: Subtitle preset
   fontSize: Subtitle size
+  originalFontScale: Cỡ chữ gốc
+  originalFontScaleValue: Giá trị cỡ chữ gốc
+  originalFontScaleDefault: Mặc định 1:1
+  originalFontScaleDescription: So với bản dịch; 100% khiến hai dòng có cùng cỡ chữ.
+  originalFontScaleSummary: Bản gốc $1%
+  originalFontScalePresets: Cỡ chữ gốc thường dùng
+  originalFontScaleOnly: Chuyển lại chế độ song ngữ để dùng $1%.
+  originalFontScaleBilingualOnly: Chỉ áp dụng cho phụ đề song ngữ
+  originalFontScaleInvalid: Nhập giá trị từ 50% đến 150%, theo bước 5%.
+  originalFontScaleSaveFailed: Chưa lưu tỷ lệ
+  originalFontScaleSaveFailedDescription: Điều chỉnh được giữ trong bản xem trước; tỷ lệ đã lưu vẫn là $1.
+  originalFontScaleRetry: Thử lưu lại
+  previewBilingualFontSize: Bản gốc $1 px · Bản dịch $2 px
+  previewTranslatedFontSize: Bản dịch $1 px
   commonSizes: Cỡ chữ thường dùng
-  fontDescription: Scales both lines, with the original slightly smaller.
+  fontDescription: Scales both lines, with equal sizes by default.
   fontSizeMode: Size mode
   relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.

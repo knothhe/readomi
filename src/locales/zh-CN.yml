@@ -116,6 +116,19 @@ options:
     agentHint: 把说明交给你的 agent，再将它验证好的配置粘贴到下面。
     add: 添加服务
     added: 已添加的服务
+    order:
+      handle: 拖动排序 $1
+      hint: 拖动排序；空格开始，方向键移动，空格确认，Esc 取消
+      locked: 暂时无法调整顺序
+      failed: 排序未保存，已恢复原顺序。
+      retry: 重试
+      before: 放在 $1 前
+      end: 放在列表末尾
+      moving: 正在移动 $1
+      adjust: 调整位置
+      space: 空格
+      confirm: 确认
+      position: 第 $1 项，共 $2 项
     listLabel: 已添加的翻译服务
     actions: $1 的操作
     use: 使用此服务
@@ -564,8 +577,22 @@ subtitleStyle:
   backgroundSummary: $1% 背景
   preset: 字幕预设
   fontSize: 字幕字号
+  originalFontScale: 原文相对字号
+  originalFontScaleValue: 原文相对字号数值
+  originalFontScaleDefault: 默认 1:1
+  originalFontScaleDescription: 以译文字号为基准，100% 时原文与译文等大。
+  originalFontScaleSummary: 原文 $1%
+  originalFontScalePresets: 常用原文比例
+  originalFontScaleOnly: 切回双语对照后沿用 $1%。
+  originalFontScaleBilingualOnly: 仅双语对照生效
+  originalFontScaleInvalid: 请输入 50%～150% 之间、以 5% 为步长的数值。
+  originalFontScaleSaveFailed: 比例未保存
+  originalFontScaleSaveFailedDescription: 预览保留本次调整；已保存的比例仍为 $1。
+  originalFontScaleRetry: 重试保存
+  previewBilingualFontSize: 原文 $1 px · 译文 $2 px
+  previewTranslatedFontSize: 译文 $1 px
   commonSizes: 常用字号
-  fontDescription: 同时缩放原文和译文，原文略小。
+  fontDescription: 同时缩放原文和译文，默认两行等大。
   fontSizeMode: 字号方式
   relativeFontDescription: 字号为视频显示区域短边的百分比，随窗口和全屏缩放。
   fixedFontDescription: 字号保持固定，不随窗口缩放。

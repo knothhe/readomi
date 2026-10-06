@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { storage } from "#imports"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { configAtom, writeConfigAtom } from "../config"
-import { removeProviderAtom, saveProviderAtom, saveProviderCheckAtom, selectProviderAtom } from "../service"
+import { moveProviderAtom, removeProviderAtom, saveProviderAtom, saveProviderCheckAtom, selectProviderAtom } from "../service"
 
 const key = `local:${CONFIG_STORAGE_KEY}` as const
 const active: ProviderConfig = { ...DEFAULT_CONFIG.providersConfig[0], apiKey: "active-key" }
@@ -25,6 +25,39 @@ afterEach(async () => {
 })
 
 describe("service management writes", () => {
+  it("moves a service against fresh storage while retaining edits, hidden entries, additions and selection", async () => {
+    const store = await setup()
+    const hidden = { ...second, id: "hidden", name: "Hidden", apiKey: undefined }
+    const added = { ...second, id: "added", name: "Added" }
+    const edited = { ...second, model: "edited-model" }
+    const latest = { ...configured, providersConfig: [active, hidden, edited, added], translate: { ...configured.translate, providerId: second.id }, language: { ...configured.language, targetCode: "jpn" } }
+    await storage.setItem(key, latest)
+    await store.set(moveProviderAtom, { providerId: second.id, beforeId: active.id })
+    expect(await storage.getItem(key)).toEqual({ ...latest, providersConfig: [edited, active, hidden, added] })
+    await store.set(moveProviderAtom, { providerId: second.id, beforeId: null })
+    expect(await storage.getItem(key)).toEqual({ ...latest, providersConfig: [active, hidden, added, edited] })
+  })
+
+  it("does not resurrect a service or destination removed by another page", async () => {
+    const store = await setup()
+    const latest = { ...configured, providersConfig: [active] }
+    await storage.setItem(key, latest)
+    await expect(store.set(moveProviderAtom, { providerId: second.id, beforeId: active.id })).rejects.toThrow("no longer exists")
+    expect(store.get(configAtom)).toEqual(latest)
+    expect(await storage.getItem(key)).toEqual(latest)
+  })
+
+  it("restores the previous order on storage failure, then saves a retry without switching", async () => {
+    const store = await setup()
+    vi.spyOn(storage, "setItem").mockRejectedValueOnce(new Error("Storage unavailable"))
+    const action = { providerId: second.id, beforeId: active.id }
+    await expect(store.set(moveProviderAtom, action)).rejects.toThrow("Storage unavailable")
+    expect(store.get(configAtom)).toEqual(configured)
+    expect(await storage.getItem(key)).toEqual(configured)
+    await store.set(moveProviderAtom, action)
+    expect(await storage.getItem(key)).toEqual({ ...configured, providersConfig: [second, active] })
+  })
+
   it("saves a checked inactive edit against latest config without undoing a popup switch or settings change", async () => {
     const store = await setup()
     const latest: Config = { ...configured, language: { ...configured.language, targetCode: "jpn" }, translate: { ...configured.translate, providerId: second.id } }

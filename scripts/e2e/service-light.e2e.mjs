@@ -4,7 +4,7 @@ import { mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import process from "node:process"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, pressTranslateShortcut, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -84,7 +84,7 @@ it("manages independent services and switches future translations from the popup
   // The current service remains selected until the reader chooses another one.
   const currentRow = serviceRow(section, active.name)
   await currentRow.locator("summary").click()
-  assert.equal(await currentRow.getByRole("button", { name: "Use this service", exact: true }).isDisabled(), true)
+  assert.equal(await currentRow.getByRole("radio").getAttribute("aria-checked"), "true")
   assert.equal(await currentRow.getByRole("button", { name: "Remove service", exact: true }).isDisabled(), true)
   assert.equal(await currentRow.getByRole("button", { name: "Remove service", exact: true }).getAttribute("title"), "Switch to another service first")
 
@@ -218,10 +218,198 @@ it("manages independent services and switches future translations from the popup
   // Once the reader has switched, the previous service can be removed independently.
   await action(section, active.name, "Remove service")
   await serviceRow(section, active.name).waitFor({ state: "detached" })
+  await waitForStoredConfig(context, config => !config.providersConfig.some(provider => provider.id === active.id))
   const final = await storedConfig(context)
   assert.equal(final.translate.providerId, second.id)
   assert.equal(final.providersConfig.some(provider => provider.id === active.id), false)
   assert.equal(final.providersConfig.find(provider => provider.id === second.id).model, "manual-model")
   await serviceRow(section, second.name).locator("summary").click()
   assert.equal(await serviceRow(section, second.name).getByRole("button", { name: "Remove service", exact: true }).isDisabled(), true)
+})
+
+it("retains radio focus while saving and through consecutive keyboard service switches", async () => {
+  service = await startFakeService()
+  const launched = await launchBrowser()
+  context = launched.context
+  const { page, extensionId } = launched
+  await configureService(page, extensionId, setupDocumentFor(service.origin))
+  const initial = await storedConfig(context)
+  const first = initial.providersConfig[0]
+  const second = { ...first, id: "keyboard-second", name: "Second gateway" }
+  const third = { ...first, id: "keyboard-third", name: "Third gateway" }
+  const requests = service.completions().length
+  await context.serviceWorkers()[0].evaluate(config => chrome.storage.local.set({ config }), { ...initial, providersConfig: [first, second, third] })
+  const section = page.locator("#service")
+  const radio = name => serviceRow(section, name).getByRole("radio")
+  await radio(third.name).waitFor()
+  await page.evaluate(() => {
+    const original = chrome.storage.local.set.bind(chrome.storage.local)
+    chrome.storage.local.set = async (...args) => {
+      chrome.storage.local.set = original
+      await new Promise((resolve) => {
+        globalThis.releaseServiceSwitch = resolve
+      })
+      return original(...args)
+    }
+  })
+  await radio(first.name).focus()
+  await page.keyboard.press("ArrowDown")
+  await page.waitForFunction(() => typeof globalThis.releaseServiceSwitch === "function")
+  assert.equal(await radio(second.name).evaluate(element => element === document.activeElement), true, "pending saves keep radio focus")
+  assert.equal(await radio(second.name).getAttribute("aria-disabled"), "true")
+  assert.equal((await storedConfig(context)).translate.providerId, first.id, "the save is still pending")
+  await page.evaluate(() => globalThis.releaseServiceSwitch())
+  await waitForStoredConfig(context, config => config.translate.providerId === second.id)
+  for (const [key, provider] of [["ArrowDown", third], ["Home", first], ["End", third]]) {
+    await page.keyboard.press(key)
+    await waitForStoredConfig(context, config => config.translate.providerId === provider.id)
+    assert.equal(await radio(provider.name).evaluate(element => element === document.activeElement), true, `${key} keeps focus on the selected service`)
+    assert.equal(await radio(provider.name).getAttribute("tabindex"), "0")
+  }
+  assert.equal(service.completions().length, requests, "keyboard service selection sends no translation requests")
+})
+
+it("reorders with mouse, keyboard and touch; locks pending saves and only reports failure", async () => {
+  service = await startFakeService()
+  const launched = await launchBrowser()
+  context = launched.context
+  const { page, extensionId } = launched
+  await page.setViewportSize({ width: 1280, height: 960 })
+  await configureService(page, extensionId, setupDocumentFor(service.origin))
+  const initial = await storedConfig(context)
+  const active = initial.providersConfig[0]
+  const second = { ...active, id: "sort-second", name: "Second gateway", model: "second-model" }
+  const third = { ...active, id: "sort-third", name: "Third gateway", model: "third-model" }
+  const configured = { ...initial, providersConfig: [active, second, third] }
+  await context.serviceWorkers()[0].evaluate(config => chrome.storage.local.set({ config }), configured)
+  const section = page.locator("#service")
+  await section.getByRole("heading", { name: third.name, exact: true }).waitFor()
+  const order = () => section.locator(".settings-service-row [role=heading]").allTextContents()
+  const handle = name => section.getByRole("button", { name: `Reorder ${name}`, exact: true })
+  const persistedOrder = expected => waitForStoredConfig(context, config => JSON.stringify(config.providersConfig.map(provider => provider.id)) === JSON.stringify(expected))
+
+  await page.mouse.move(1200, 700)
+  assert.equal(await handle(second.name).evaluate(element => getComputedStyle(element).opacity), "0")
+  const beforeHover = await serviceRow(section, second.name).getByRole("radio").boundingBox()
+  await serviceRow(section, second.name).hover()
+  assert.equal(await handle(second.name).evaluate(element => getComputedStyle(element).opacity), "0.85")
+  assert.deepEqual(await serviceRow(section, second.name).getByRole("radio").boundingBox(), beforeHover, "revealing the handle does not move the text")
+  await screenshot(page, "service-sort-hover")
+
+  // A mouse gesture previews only; releasing persists and keeps the current ID.
+  const source = await handle(second.name).boundingBox()
+  const destination = await serviceRow(section, active.name).boundingBox()
+  await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(source.x + source.width / 2, destination.y + 8, { steps: 8 })
+  assert.deepEqual(await order(), [second.name, active.name, third.name])
+  assert.deepEqual((await storedConfig(context)).providersConfig.map(provider => provider.id), [active.id, second.id, third.id])
+  await page.mouse.move(source.x + source.width / 2, destination.y + 36)
+  await screenshot(page, "service-sort-dragging")
+  await page.mouse.up()
+  await persistedOrder([second.id, active.id, third.id])
+  assert.equal((await storedConfig(context)).translate.providerId, active.id)
+  assert.equal(await section.getByRole("alert").count(), 0)
+  assert.equal(await section.locator(".settings-service-order-keyboard").count(), 0)
+  await page.reload()
+  await section.getByRole("heading", { name: third.name, exact: true }).waitFor()
+  assert.deepEqual(await order(), [second.name, active.name, third.name], "the order survives reload")
+
+  // Keyboard cancellation writes nothing and retains focus after moving DOM nodes.
+  await handle(third.name).focus()
+  await handle(third.name).press("Space")
+  await handle(third.name).press("Home")
+  assert.deepEqual(await order(), [third.name, second.name, active.name])
+  assert.equal(await handle(third.name).evaluate(element => element === document.activeElement), true)
+  await handle(third.name).press("Escape")
+  assert.deepEqual(await order(), [second.name, active.name, third.name])
+  assert.deepEqual((await storedConfig(context)).providersConfig.map(provider => provider.id), [second.id, active.id, third.id])
+
+  // Hold the actual isolated-profile storage write to verify quiet locking.
+  await page.evaluate(() => {
+    const original = chrome.storage.local.set.bind(chrome.storage.local)
+    chrome.storage.local.set = async (...args) => {
+      chrome.storage.local.set = original
+      await new Promise((resolve) => {
+        globalThis.releaseOrderSave = resolve
+      })
+      return original(...args)
+    }
+  })
+  await handle(active.name).press("Space")
+  await handle(active.name).press("Home")
+  await handle(active.name).press("Space")
+  await page.waitForFunction(() => typeof globalThis.releaseOrderSave === "function")
+  assert.deepEqual(await order(), [active.name, second.name, third.name])
+  for (const name of [active.name, second.name, third.name])
+    assert.equal(await handle(name).isDisabled(), true)
+  assert.equal(await section.getByRole("alert").count(), 0)
+  assert.equal(await section.locator(".settings-service-order-keyboard").count(), 0)
+  await screenshot(page, "service-sort-saving")
+  await page.evaluate(() => {
+    globalThis.releaseOrderSave()
+  })
+  await persistedOrder([active.id, second.id, third.id])
+  await handle(active.name).waitFor({ state: "visible" })
+  await page.waitForFunction(() => !document.querySelector(".settings-service-drag-handle").disabled)
+  assert.equal(await section.getByRole("alert").count(), 0)
+
+  // A rejected write rolls back and exposes one retry of the intended move.
+  await page.evaluate(() => {
+    const original = chrome.storage.local.set.bind(chrome.storage.local)
+    chrome.storage.local.set = async () => {
+      chrome.storage.local.set = original
+      throw new Error("E2E simulated order save failure")
+    }
+  })
+  await handle(third.name).press("Space")
+  await handle(third.name).press("Home")
+  await handle(third.name).press("Space")
+  await section.getByRole("alert").waitFor()
+  assert.deepEqual(await order(), [active.name, second.name, third.name])
+  await screenshot(page, "service-sort-failed")
+  await section.getByRole("button", { name: "Retry", exact: true }).click()
+  await persistedOrder([third.id, active.id, second.id])
+  await section.getByRole("alert").waitFor({ state: "detached" })
+
+  // Narrow touch entry remains discoverable without hover, and a real touch moves it.
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.mouse.move(380, 700)
+  assert.equal(await handle(second.name).evaluate(element => getComputedStyle(element).opacity), "0.48")
+  await fitsViewport(page)
+  const touchSource = await handle(second.name).boundingBox()
+  const touchDestination = await serviceRow(section, third.name).boundingBox()
+  const cdp = await context.newCDPSession(page)
+  await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true })
+  const x = touchSource.x + touchSource.width / 2
+  const y = touchSource.y + touchSource.height / 2
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] })
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: touchDestination.y + 8 }] })
+  await screenshot(page, "service-sort-mobile-dragging")
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] })
+  await persistedOrder([second.id, third.id, active.id])
+  assert.equal((await storedConfig(context)).translate.providerId, active.id)
+  await fitsViewport(page)
+  await screenshot(page, "service-sort-mobile-saved")
+  await cdp.detach()
+
+  if (process.env.SETTINGS_ARTIFACTS) {
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await context.serviceWorkers()[0].evaluate(async (ids) => {
+      const { config } = await chrome.storage.local.get("config")
+      const names = ["DeepSeek", "Gemini", "Anthropic"]
+      const models = ["deepseek-chat", "gemini-3.5-flash-lite", "claude-haiku-4-5"]
+      await chrome.storage.local.set({ config: {
+        ...config,
+        ui: { ...config.ui, language: "zh-CN" },
+        providersConfig: config.providersConfig.map((provider) => {
+          const index = ids.indexOf(provider.id)
+          return { ...provider, name: names[index], model: models[index] }
+        }),
+      } })
+    }, [active.id, second.id, third.id])
+    await section.getByRole("heading", { name: "Gemini", exact: true }).waitFor()
+    await serviceRow(section, "Gemini").hover()
+    await screenshot(page, "service-sort-zh-hover")
+  }
 })

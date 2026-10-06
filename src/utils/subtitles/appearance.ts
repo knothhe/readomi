@@ -73,16 +73,17 @@ export function subtitleVideoSize(video: HTMLVideoElement, rect = video.getBound
 /** Shared presentation for the settings preview and the in-video renderer. */
 export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640, videoHeight = videoWidth * 9 / 16) {
   return {
-    fontSize: `${resolveSubtitleFontSize(style, videoWidth, videoHeight)}px`,
-    fontWeight: style.preset === "compact" ? "500" : "600",
-    lineHeight: "1.4",
-    color: "#fff",
-    textAlign: "center" as const,
-    whiteSpace: "pre-line" as const,
-    textShadow: "0 2px 4px #000,0 0 2px #000",
-    background: style.backgroundEnabled ? `rgba(15,20,35,${style.backgroundOpacity / 100})` : "transparent",
-    borderRadius: style.backgroundEnabled ? "8px" : "0",
-    padding: style.backgroundEnabled ? style.preset === "compact" ? "8px 14px" : "10px 16px" : "0",
+    "--readomi-original-font-scale": `${style.originalFontScale / 100}em`,
+    "fontSize": `${resolveSubtitleFontSize(style, videoWidth, videoHeight)}px`,
+    "fontWeight": style.preset === "compact" ? "500" : "600",
+    "lineHeight": "1.4",
+    "color": "#fff",
+    "textAlign": "center" as const,
+    "whiteSpace": "pre-line" as const,
+    "textShadow": "0 2px 4px #000,0 0 2px #000",
+    "background": style.backgroundEnabled ? `rgba(15,20,35,${style.backgroundOpacity / 100})` : "transparent",
+    "borderRadius": style.backgroundEnabled ? "8px" : "0",
+    "padding": style.backgroundEnabled ? style.preset === "compact" ? "8px 14px" : "10px 16px" : "0",
   }
 }
 

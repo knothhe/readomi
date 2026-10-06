@@ -1,7 +1,7 @@
 import type { ConnectionCheck, ProviderConfig } from "@/types/config/provider"
-import type { SaveProviderAction } from "@/utils/service-management"
+import type { MoveProviderAction, SaveProviderAction } from "@/utils/service-management"
 import { atom } from "jotai"
-import { removeProvider, saveProvider, saveProviderCheck, selectProvider } from "@/utils/service-management"
+import { moveProvider, removeProvider, saveProvider, saveProviderCheck, selectProvider } from "@/utils/service-management"
 import { mutateConfigAtom } from "./config"
 
 export const saveProviderAtom = atom(null, (_get, set, action: SaveProviderAction) =>
@@ -14,6 +14,10 @@ export const selectProviderAtom = atom(null, (_get, set, providerId: string) =>
 
 export const removeProviderAtom = atom(null, (_get, set, providerId: string) =>
   set(mutateConfigAtom, config => removeProvider(config, providerId)),
+)
+
+export const moveProviderAtom = atom(null, (_get, set, action: MoveProviderAction) =>
+  set(mutateConfigAtom, config => moveProvider(config, action)),
 )
 
 export const saveProviderCheckAtom = atom(null, (_get, set, { provider, check }: { provider: ProviderConfig, check: ConnectionCheck }) =>
