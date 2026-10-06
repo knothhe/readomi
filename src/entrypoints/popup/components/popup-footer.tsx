@@ -196,7 +196,20 @@ export function PopupFooter() {
         </div>
         {open && (
           <div ref={menuRef} id={menuId} role="menu" aria-label={i18n.t("popup.serviceSwitch.title")} onKeyDown={menuKeyDown} className="absolute right-3.5 bottom-[46px] left-3.5 z-50 rounded-[10px] border border-border bg-card p-1.25 shadow-[0_8px_32px_#302b2924]">
-            <h2 className="px-2.5 pt-2 pb-2.25 text-[11px] leading-4 font-medium text-muted-foreground">{i18n.t("popup.serviceSwitch.title")}</h2>
+            <div className="flex items-center justify-between gap-2 px-2.5 pt-2 pb-2.25">
+              <h2 className="text-[11px] leading-4 font-medium text-muted-foreground">{i18n.t("popup.serviceSwitch.title")}</h2>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  close()
+                  void openOptionsPage({ section: "service" })
+                }}
+                className="shrink-0 text-[11px] leading-4 text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {i18n.t("popup.serviceSwitch.manage")}
+              </button>
+            </div>
             <div className="max-h-64 overflow-y-auto">
               {providers.map(provider => (
                 <button
@@ -216,18 +229,6 @@ export function PopupFooter() {
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                close()
-                void openOptionsPage({ section: "service" })
-              }}
-              className="mt-1.25 flex w-full items-center justify-between border-t border-border px-2.5 pt-2.75 pb-1.75 text-[12px] leading-4 text-muted-foreground hover:text-primary focus-visible:text-primary focus-visible:outline-none"
-            >
-              {i18n.t("popup.serviceSwitch.manage")}
-              <IconChevronDown aria-hidden="true" className="size-3.25 -rotate-90" stroke={1.75} />
-            </button>
           </div>
         )}
       </footer>

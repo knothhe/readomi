@@ -112,6 +112,7 @@ it("manages independent services and switches future translations from the popup
 
   // Two models at the same endpoint are independent services; adding leaves the selection alone.
   await section.getByRole("button", { name: "Add service", exact: true }).click()
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const editor = section.getByLabel("Translation service configuration", { exact: true })
   const secondDocument = setupDocumentFor(service.origin, { name: "Second gateway", model: "second-model" })
   await editor.fill(JSON.stringify(secondDocument, null, 2))
@@ -128,6 +129,7 @@ it("manages independent services and switches future translations from the popup
 
   // Both editing methods target the inactive service's ID and retain its stored key.
   await action(section, second.name, "Edit")
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const document = JSON.parse(await editor.inputValue())
   assert.equal(document.model, second.model)
   assert.equal(document.apiKey, "…-key")
@@ -157,6 +159,7 @@ it("manages independent services and switches future translations from the popup
 
   // A failed connection check retains the draft and never changes either saved service.
   await section.getByRole("button", { name: "Add service", exact: true }).click()
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const rejected = JSON.stringify(setupDocumentFor(service.origin, { name: "Rejected gateway", model: "rejected-model" }), null, 2)
   await editor.fill(rejected)
   await section.getByRole("button", { name: "Check and add", exact: true }).click()

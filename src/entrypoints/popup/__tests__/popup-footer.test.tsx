@@ -101,6 +101,8 @@ describe("popup service switch", () => {
     const secondOption = screen.getByRole("menuitemradio", { name: /Gemini/ })
     expect(secondOption).toHaveFocus()
     fireEvent.keyDown(secondOption, { key: "End" })
+    expect(secondOption).toHaveFocus()
+    fireEvent.keyDown(secondOption, { key: "Home" })
     expect(screen.getByRole("menuitem", { name: "popup.serviceSwitch.manage" })).toHaveFocus()
     fireEvent.keyDown(document.activeElement!, { key: "Escape" })
     expect(screen.queryByRole("menu")).toBeNull()
