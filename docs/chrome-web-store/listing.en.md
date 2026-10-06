@@ -38,7 +38,14 @@ Settings, API keys and caches stay in your browser and are not synced to a devel
 
 Hover and video subtitle translation are off by default. Video translation requires existing captions and does not transcribe videos without subtitles. Chrome internal pages and other browser-restricted pages cannot display injected translations.
 
-Readomi is independently maintained and builds on open-source code from Jiandao and Read Frog. It is not affiliated with or officially partnered with either upstream team.
+ORIGINS AND CUSTOMIZATION
+Readomi is adapted from Xuanwo/jiandao and mengxi-ream/read-frog. It primarily removes Read Frog's floating toolbar, text-to-speech, custom AI actions, hosted accounts, configuration sync, analytics and other features, while adding features I need on top of jiandao. I want to keep the features as simple as possible and provide a localized user experience, so I have customized it around my own experience.
+
+Another important reason is that I believe, in the AI era, anyone can customize basic capabilities such as translation to suit their needs. If you like the streamlined features Readomi currently offers, you are welcome to use it. If you need features that Readomi intentionally removed from Read Frog, you can use Read Frog or other similar products.
+
+Thank you to Read Frog and jiandao for their open-source contributions. Without them, there would be no Readomi.
+
+Readomi is independently maintained. It is not affiliated with or officially partnered with either upstream team.
 
 Source and support: https://github.com/knothhe/readomi
 Privacy policy: https://github.com/knothhe/readomi/blob/main/PRIVACY.md

@@ -8,7 +8,13 @@ Readomi is a local-first reading companion focused on translation. Translations 
 
 Fork chain: **[Read Frog](https://github.com/mengxi-ream/read-frog) → [Jiandao](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/readomi)**.
 
-Readomi directly forks Jiandao, which forks Read Frog. Thanks to the authors and contributors of both upstream projects. Readomi is independently maintained and developed in this repository, with its own product direction, releases and support. It is not affiliated with or officially partnered with either upstream team.
+Readomi is adapted from Xuanwo/jiandao and mengxi-ream/read-frog. It primarily removes Read Frog's floating toolbar, text-to-speech, custom AI actions, hosted accounts, configuration sync, analytics and other features, while adding features I need on top of jiandao. I want to keep the features as simple as possible and provide a localized user experience, so I have customized it around my own experience.
+
+Another important reason is that I believe, in the AI era, anyone can customize basic capabilities such as translation to suit their needs. If you like the streamlined features Readomi currently offers, you are welcome to use it. If you need features that Readomi intentionally removed from Read Frog, you can use Read Frog or other similar products.
+
+Thank you to Read Frog and jiandao for their open-source contributions. Without them, there would be no Readomi.
+
+Readomi is independently maintained and developed in this repository, with its own product direction, releases and support. It is not affiliated with or officially partnered with either upstream team.
 
 ## Features
 

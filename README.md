@@ -8,7 +8,13 @@ Readomi 是一个本地优先的浏览器阅读助手，以翻译为主要功能
 
 Fork 链：**[Read Frog（陪读蛙）](https://github.com/mengxi-ream/read-frog) → [Jiandao（简道翻译）](https://github.com/Xuanwo/jiandao) → [Readomi](https://github.com/knothhe/readomi)**。
 
-Readomi 直接 fork 自简道翻译；简道翻译 fork 自陪读蛙。感谢两个上游项目的作者与贡献者。Readomi 此后由本仓库独立维护和迭代，产品方向、发布和问题反馈由本项目负责，与上游团队没有隶属或官方合作关系。
+Readomi 修改自 Xuanwo/jiandao 和 mengxi-ream/read-frog，主要移除了 Read Frog 的悬浮工具栏、朗读、自定义 AI 动作、托管账号、配置同步和统计等功能，并在 jiandao 的基础上添加了作者需要的功能。我希望尽可能保持功能简洁，并提供本地化的使用体验，因此基于个人体验进行了定制。
+
+另一个重要原因是，我认为在 AI 时代，翻译这类基础能力人人都可以按需定制。如果你喜欢 Readomi 目前提供的精简功能，欢迎使用；如果你需要 Readomi 有意从 Read Frog 中移除的功能，可以使用 Read Frog 或其他同类产品。
+
+感谢 Read Frog 和 jiandao 的开源贡献。没有它们，就没有 Readomi。
+
+Readomi 此后由本仓库独立维护和迭代，产品方向、发布和问题反馈由本项目负责，与上游团队没有隶属或官方合作关系。
 
 ## 特点
 

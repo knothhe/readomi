@@ -38,7 +38,17 @@ Readomi 没有内置托管翻译服务。首次使用需要自行配置模型服
 
 悬停翻译和视频字幕翻译默认关闭。视频翻译依赖已有字幕，不包含无字幕视频的语音识别。Chrome 内部页面及其他受浏览器限制的页面无法注入翻译界面。
 
-Readomi 独立维护，基于 Jiandao 和 Read Frog 的开源代码继续开发，与上游团队没有隶属或官方合作关系。源码与反馈地址见下方链接。
+【项目来源与定制理念】
+Readomi 修改自 Xuanwo/jiandao 和 mengxi-ream/read-frog，主要移除了 Read Frog 的悬浮工具栏、朗读、自定义 AI 动作、托管账号、配置同步和统计等功能，并在 jiandao 的基础上添加了作者需要的功能。我希望尽可能保持功能简洁，并提供本地化的使用体验，因此基于个人体验进行了定制。
+
+另一个重要原因是，我认为在 AI 时代，翻译这类基础能力人人都可以按需定制。如果你喜欢 Readomi 目前提供的精简功能，欢迎使用；如果你需要 Readomi 有意从 Read Frog 中移除的功能，可以使用 Read Frog 或其他同类产品。
+
+感谢 Read Frog 和 jiandao 的开源贡献。没有它们，就没有 Readomi。
+
+Readomi 独立维护，与上游团队没有隶属或官方合作关系。源码与反馈地址见下方链接。
+
+源码与支持: https://github.com/knothhe/readomi
+隐私政策: https://github.com/knothhe/readomi/blob/main/PRIVACY.md
 
 ## 链接与分发建议
 
