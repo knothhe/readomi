@@ -6,6 +6,12 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Popup-Site-Enabling.html", title: "弹窗 · 网站扩展 · 重新启用保存中", x: 2000, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Site-Enabled.html", title: "弹窗 · 网站扩展 · 启用", x: 0, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Site-Disabled.html", title: "弹窗 · 网站扩展 · 禁用", x: 400, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Site-Saving.html", title: "弹窗 · 网站扩展 · 保存中", x: 800, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Site-Failed.html", title: "弹窗 · 网站扩展 · 保存失败", x: 1200, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Site-Unavailable.html", title: "弹窗 · 网站扩展 · 页面不可用", x: 1600, y: 195400, w: 320, h: 650 },
     { file: "Store-Origins-zh-CN.html", title: "商店与 README · 项目来源与定制理念 · 中文", x: 0, y: 194300, w: 1120, h: 900 },
     { file: "Store-Origins-en.html", title: "商店与 README · 项目来源与定制理念 · 英文", x: 1200, y: 194300, w: 1120, h: 900 },
     { file: "Settings-Multi-Service-Switched-Keyboard.html", title: "翻译服务 · 键盘切换为 Gemini · 保留焦点", x: 1360, y: 193200, w: 1280, h: 900 },
