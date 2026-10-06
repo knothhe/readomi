@@ -6,6 +6,13 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Page-Input-Translation-Cancelled.html", title: "输入框翻译 · 失焦取消 · 原文保留", x: 1360, y: 171000, w: 720, h: 900 },
+    { file: "Settings-Input-Translation.html", title: "输入框翻译 · 设置", x: 0, y: 169000, w: 1280, h: 900 },
+    { file: "Settings-Input-Translation-Off.html", title: "输入框翻译 · Off", x: 1360, y: 169000, w: 1280, h: 900 },
+    { file: "Page-Input-Translation-Pending.html", title: "输入框翻译 · Pending", x: 2720, y: 169000, w: 720, h: 900 },
+    { file: "Page-Input-Translation-Ready.html", title: "输入框翻译 · Ready", x: 0, y: 170000, w: 720, h: 900 },
+    { file: "Page-Input-Translation-Preserved.html", title: "输入框翻译 · Preserved", x: 1360, y: 170000, w: 720, h: 900 },
+    { file: "Page-Input-Translation-Failed.html", title: "输入框翻译 · Failed", x: 2720, y: 170000, w: 720, h: 900 },
     { file: "Reading-Refinement-Backup.html", title: "备份 · 独立页面", x: 0, y: 167250, w: 1280, h: 900 },
     { file: "Reading-Refinement-Popup-Help-Dark.html", title: "弹窗 · 深色问题操作按钮", x: 1360, y: 166250, w: 320, h: 650 },
     { file: "Reading-Refinement-Setup-Empty.html", title: "首次配置 · 空白", x: 0, y: 165000, w: 1280, h: 900 },
@@ -320,6 +327,7 @@ window.READOMI_CANVAS = {
     {"file": "Page-Reddit-Reading-Waiting.html", "title": "Reddit · 原文后图片前 · 等待位置与流式/完成一致", "x": 0, "y": 148550, "w": 1200, "h": 900},
   ],
   notes: [
+    { text: "输入框翻译默认开启；同一输入框内三次独立空格相邻间隔不超过 300 毫秒触发。输入法组合、长按、修饰键、密码与只读字段不触发。使用当前服务、共用提示词与主要/第二语言规则，保留段落；成功后原地替换并支持撤销。等待时保留输入，加载提示始终贴在输入框内部右下角，距右侧与底部各 12 px，并随输入框滚动、调整尺寸或页面布局移动；仅在内容、焦点与设置未改变时替换；任何失焦立即取消，即使随后回到同一输入框也不应用旧结果。已注入网页翻译的 iframe 中，普通与富文本输入框均按同样规则原地替换；失败保留原文。", x: 0, y: 168740, maxW: 4000 },
     { text: "完整语义段落（正文、标题、列表项、引用与图注）在深入单个 span 插入译文时保留原段落布局；包含链接与不包含链接的段落显示一致。局部短语、链接、按钮与 flex 容器继续使用行内布局；站点显式样式规则优先。流式与完成使用同一布局，不增加设置或产品文案。", x: 0, y: 153740, maxW: 2000 },
     { text: "悬停多段连续触发：A 未完成时可以触发 B，各段独立等待、输出与完成；仅译文同样适用。重复触发正在处理的段落不重复请求，完成后再次触发恢复原文。Escape 取消所有未完成任务，已完成译文保留；不增加设置或产品文案。", x: 0, y: 152740, maxW: 3760 },
     { text: "反引号悬停键冲突：开启悬停翻译并选择反引号，鼠标指向可翻译正文且当前不在编辑或输入法组合上下文时，捕获阶段认领反引号直到松开，阻止网站抢走字符并聚焦消息框。点按或长按仍只翻译一次；已聚焦输入框时保留正常输入。其他触发方式沿用现有行为，无需域名判断、新设置或新文案。", x: 0, y: 149840, maxW: 2000 },
