@@ -36,6 +36,15 @@ describe("reading settings", () => {
   beforeEach(() => fakeBrowser.reset())
   afterEach(cleanup)
 
+  it("enables input translation by default and persists the toggle without changing language rules", async () => {
+    const { store } = await renderReading()
+    const toggle = screen.getByRole("switch", { name: "inputTranslation.title" })
+    expect(toggle).toBeChecked()
+    fireEvent.click(toggle)
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.inputTranslation).toBe(false))
+    expect(store.get(configAtom).language).toEqual(DEFAULT_CONFIG.language)
+  })
+
   it("offers every supported translation style and preserves custom CSS while a preset is selected", async () => {
     const config: Config = { ...DEFAULT_CONFIG, translate: { ...DEFAULT_CONFIG.translate, translationNodeStyle: { preset: "line", isCustom: true, customCSS } } }
     const { store } = await renderReading(config)

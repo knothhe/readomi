@@ -23,6 +23,7 @@ import { bootstrapVideoSubtitles } from "./subtitles/runtime"
 import { bindTranslationShortcutKey } from "./translation-control/bind-translation-shortcut"
 import { watchConfigChanges } from "./translation-control/handle-config-change"
 import { bindHoverTranslation } from "./translation-control/hover-translation"
+import { bindInputTranslation } from "./translation-control/input-translation"
 import { PageTranslationManager } from "./translation-control/page-translation"
 
 export async function bootstrapHostContent(ctx: ContentScriptContext) {
@@ -163,6 +164,10 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
 
   const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager, document, () => ctx.isInvalid)
   track(cleanupTranslationShortcut)
+  if (ctx.isInvalid)
+    return
+
+  track(await bindInputTranslation(document, () => ctx.isInvalid))
   if (ctx.isInvalid)
     return
 

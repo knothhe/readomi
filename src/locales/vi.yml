@@ -89,7 +89,7 @@ options:
     auto: Tự nhận diện bản gốc
     automaticSource: Tự nhận diện ngôn ngữ gốc
     autoDescription: Mô hình xác định ngôn ngữ theo từng đoạn văn hoặc đoạn phụ đề.
-    scope: Dịch trang · Dịch khi di chuột · Phụ đề video
+    scope: Dịch trang · Dịch khi di chuột · Dịch ô nhập · Phụ đề video
     toPrimary: "Khi bản gốc là ngôn ngữ khác, dịch sang $1."
     toSecondary: "Khi bản gốc là $1, dịch sang $2."
     keepPrimary: "Khi bản gốc là $1, giữ nguyên bản gốc."
@@ -813,3 +813,11 @@ subtitleStatus:
   delayed: Dịch phụ đề đang chậm. Bạn vẫn có thể đọc phụ đề gốc.
   failed: Dịch phụ đề thất bại. Hãy kiểm tra dịch vụ hoặc thử lại.
   retry: Thử lại dịch phụ đề
+
+inputTranslation:
+  title: Dịch ô nhập
+  description: Nhấn nhanh phím cách ba lần trong ô nhập để thay thế văn bản theo cài đặt ngôn ngữ dịch; khoảng cách giữa các lần nhấn không quá 300 ms.
+  languages: Ngôn ngữ khác được dịch sang ngôn ngữ chính; ngôn ngữ chính được dịch sang ngôn ngữ thứ hai. Giữ nguyên văn bản sẽ không thay đổi ô nhập.
+  pending: Đang dịch ô nhập…
+  failed: Dịch ô nhập thất bại. Văn bản gốc đã được giữ lại.
+  replaceFailed: Không thể thay thế nội dung. Vui lòng dịch thủ công trong trình soạn thảo này.

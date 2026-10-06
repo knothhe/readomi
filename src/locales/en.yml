@@ -89,7 +89,7 @@ options:
     auto: Detect source automatically
     automaticSource: Automatic source language detection
     autoDescription: The model identifies the language of each paragraph or subtitle segment.
-    scope: Page translation · Hover translation · Video subtitles
+    scope: Page translation · Hover translation · Input translation · Video subtitles
     toPrimary: "When the source is in another language, translate into $1."
     toSecondary: "When the source is in $1, translate into $2."
     keepPrimary: "When the source is in $1, keep the original."
@@ -817,3 +817,11 @@ subtitleStatus:
   delayed: Subtitle translation is slow. Original captions remain readable.
   failed: Subtitle translation failed. Check the service or try again.
   retry: Retry subtitle translation
+
+inputTranslation:
+  title: Input translation
+  description: Quickly press Space three times in an input to replace its text using your translation language settings; allow at most 300 ms between presses.
+  languages: Other languages translate into your primary language; your primary language translates into your secondary language. Keep original leaves the input unchanged.
+  pending: Translating input…
+  failed: Input translation failed. Your original text was kept.
+  replaceFailed: Could not replace the input. Please translate manually in this editor.

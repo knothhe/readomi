@@ -89,7 +89,7 @@ options:
     auto: Kaynağı otomatik algıla
     automaticSource: Kaynak dilini otomatik algılama
     autoDescription: Model her paragrafın veya altyazı bölümünün dilini belirler.
-    scope: Sayfa çevirisi · Üzerine gelince çeviri · Video altyazıları
+    scope: Sayfa çevirisi · Üzerine gelince çeviri · Giriş çevirisi · Video altyazıları
     toPrimary: Kaynak başka bir dildeyse $1 diline çevir.
     toSecondary: Kaynak $1 dilindeyse $2 diline çevir.
     keepPrimary: Kaynak $1 dilindeyse özgün metni koru.
@@ -823,3 +823,11 @@ subtitleStatus:
   delayed: Altyazı çevirisi yavaş. Özgün altyazılar okunabilir durumda.
   failed: Altyazı çevirisi başarısız oldu. Hizmeti kontrol edin veya tekrar deneyin.
   retry: Altyazı çevirisini tekrar dene
+
+inputTranslation:
+  title: Giriş çevirisi
+  description: Çeviri dili ayarlarınıza göre metni değiştirmek için giriş alanında boşluk tuşuna hızla üç kez basın; basışlar arasında en fazla 300 ms bırakın.
+  languages: "Diğer diller ana dilinize, ana diliniz ikinci dilinize çevrilir. Özgün metni koru seçeneği girdiyi değiştirmez."
+  pending: Girdi çevriliyor…
+  failed: Giriş çevirisi başarısız oldu. Özgün metin korundu.
+  replaceFailed: Girdi değiştirilemedi. Bu düzenleyicide lütfen elle çevirin.

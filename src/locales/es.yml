@@ -93,7 +93,7 @@ options:
     auto: Detectar original automáticamente
     automaticSource: Detección automática del idioma original
     autoDescription: El modelo identifica el idioma de cada párrafo o segmento de subtítulos.
-    scope: Traducción de páginas · Traducción al pasar el cursor · Subtítulos de vídeo
+    scope: Traducción de páginas · Traducción al pasar el cursor · Traducción de entrada · Subtítulos de vídeo
     toPrimary: "Si el original está en otro idioma, tradúcelo a $1."
     toSecondary: "Si el original está en $1, tradúcelo a $2."
     keepPrimary: "Si el original está en $1, conservarlo."
@@ -837,3 +837,11 @@ subtitleStatus:
   delayed: La traducción va lenta. Los subtítulos originales siguen disponibles.
   failed: Falló la traducción de subtítulos. Comprueba el servicio o reintenta.
   retry: Reintentar traducción de subtítulos
+
+inputTranslation:
+  title: Traducción de entrada
+  description: Pulsa Espacio tres veces rápidamente en un campo para sustituir el texto según tus idiomas de traducción; deja como máximo 300 ms entre pulsaciones.
+  languages: Otros idiomas se traducen al principal y el principal al secundario. Conservar original mantiene el texto.
+  pending: Traduciendo entrada…
+  failed: La traducción falló. Se conservó el texto original.
+  replaceFailed: No se pudo sustituir el texto. Traduce manualmente en este editor.

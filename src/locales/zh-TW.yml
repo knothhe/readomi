@@ -88,7 +88,7 @@ options:
     auto: 自動辨識原文
     automaticSource: 自動辨識原文語言
     autoDescription: 模型依段落或字幕句段判斷原文語言。
-    scope: 網頁翻譯 · 懸停翻譯 · 影片字幕
+    scope: 網頁翻譯 · 懸停翻譯 · 輸入框翻譯 · 影片字幕
     toPrimary: 原文為其他語言時，譯成「$1」。
     toSecondary: 原文為「$1」時，譯成「$2」。
     keepPrimary: 原文為「$1」時，保留原文。
@@ -789,3 +789,11 @@ subtitleStatus:
   delayed: 字幕翻譯較慢，原字幕仍可閱讀。
   failed: 字幕翻譯失敗，請檢查翻譯服務或重試。
   retry: 重試字幕翻譯
+
+inputTranslation:
+  title: 輸入框翻譯
+  description: 在輸入框中快速按三次空白鍵，依翻譯語言設定原地替換文字；每次間隔不超過 300 毫秒。
+  languages: 其他語言譯成主要語言，主要語言譯成第二語言；選擇保留原文時不替換。
+  pending: 輸入框翻譯中…
+  failed: 輸入框翻譯失敗，原文已保留。
+  replaceFailed: 無法替換輸入，請在此編輯器中手動翻譯。

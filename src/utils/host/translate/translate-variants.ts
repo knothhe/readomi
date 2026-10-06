@@ -102,3 +102,15 @@ export async function translateTextForPageTitle(text: string): Promise<string> {
     },
   })
 }
+
+/** Typed text follows the shared language rules without borrowing page context. */
+export async function translateTextForInput(text: string, config: Config, signal?: AbortSignal): Promise<string> {
+  return translateTextCore({
+    text,
+    langConfig: config.language,
+    providerConfig: resolveProviderConfig(config, "translate"),
+    customPromptsConfig: config.translate.customPromptsConfig,
+    extraHashTags: ["inputTranslation"],
+    signal,
+  })
+}

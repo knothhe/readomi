@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { executeTranslate } from "@/utils/host/translate/execute-translate"
-import { translateTextForPage, translateTextForPageTitle } from "@/utils/host/translate/translate-variants"
+import { translateTextForInput, translateTextForPage, translateTextForPageTitle } from "@/utils/host/translate/translate-variants"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
 
 // Mock dependencies
@@ -84,6 +84,31 @@ describe("translate-text", () => {
       }))
       expect(mockGetOrCreateWebPageContext).toHaveBeenCalledTimes(1)
       expect(mockGetOrGenerateWebPageSummary).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe("translateTextForInput", () => {
+    it.each(["eng", "original", "cmn"] as const)("shares language rules with secondary %s and excludes webpage context", async (secondaryCode) => {
+      const config = { ...DEFAULT_CONFIG, language: { ...DEFAULT_CONFIG.language, secondaryCode } }
+      mockSendMessage.mockResolvedValue({ action: "translate", text: "第一段\n第二段", targetCode: "cmn" })
+      const result = await translateTextForInput("First paragraph\nSecond paragraph", config)
+      expect(result).toBe("第一段\n第二段")
+      expect(mockSendMessage).toHaveBeenCalledWith("enqueueTranslateRequest", expect.objectContaining({
+        text: "First paragraph\nSecond paragraph",
+        langConfig: config.language,
+        customPromptsConfig: config.translate.customPromptsConfig,
+        providerConfig: expect.objectContaining({ id: config.translate.providerId }),
+        webTitle: undefined,
+        webContent: undefined,
+        webSummary: undefined,
+      }))
+      expect(mockGetOrCreateWebPageContext).not.toHaveBeenCalled()
+      expect(mockGetOrGenerateWebPageSummary).not.toHaveBeenCalled()
+    })
+
+    it("returns an empty result for keep-original so the caller leaves the input alone", async () => {
+      mockSendMessage.mockResolvedValue({ action: "preserve", text: "" })
+      expect(await translateTextForInput("请保留这段文字。", DEFAULT_CONFIG)).toBe("")
     })
   })
 

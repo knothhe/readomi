@@ -59,6 +59,17 @@ export function ReadingSection({ onOpenSiteRules }: { onOpenSiteRules?: (event: 
                 )}
               />
             )}
+            <SettingsRow
+              label={i18n.t("inputTranslation.title")}
+              description={(
+                <>
+                  {i18n.t("inputTranslation.description")}
+                  <br />
+                  {i18n.t("inputTranslation.languages")}
+                </>
+              )}
+              control={<Switch aria-label={i18n.t("inputTranslation.title")} checked={features.inputTranslation} onCheckedChange={inputTranslation => void setFeatures({ inputTranslation })} />}
+            />
           </SettingsGroup>
           <details className="settings-reading-more">
             <summary>{i18n.t("options.reading.moreOptions")}</summary>

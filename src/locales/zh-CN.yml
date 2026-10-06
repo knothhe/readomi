@@ -88,7 +88,7 @@ options:
     auto: 自动识别原文
     automaticSource: 自动识别原文语言
     autoDescription: 模型按段落或字幕句段判断原文语言。
-    scope: 网页翻译 · 悬停翻译 · 视频字幕
+    scope: 网页翻译 · 悬停翻译 · 输入框翻译 · 视频字幕
     toPrimary: 原文为其他语言时，译成「$1」。
     toSecondary: 原文为「$1」时，译成「$2」。
     keepPrimary: 原文为「$1」时，保持原文。
@@ -772,3 +772,11 @@ subtitleStatus:
   delayed: 字幕翻译较慢，原字幕仍可阅读。
   failed: 字幕翻译失败，请检查翻译服务或重试。
   retry: 重试字幕翻译
+
+inputTranslation:
+  title: 输入框翻译
+  description: 在输入框中快速按三次空格，按翻译语言设置原地替换文字；每次间隔不超过 300 毫秒。
+  languages: 其他语言译成主要语言，主要语言译成第二语言；选择保持原文时不替换。
+  pending: 输入框翻译中…
+  failed: 输入框翻译失败，原文已保留。
+  replaceFailed: 无法替换输入，请在此编辑器中手动翻译。
