@@ -578,7 +578,7 @@ subtitleStyle:
   commonSizes: よく使うサイズ
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the
+  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.
   fixedFontDescription: ウィンドウの大きさを変えても文字サイズは固定です。
   fontSizeModes:
@@ -586,8 +586,14 @@ subtitleStyle:
     fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: A new idea.
-  previewTranslation: 新的想法。
+  previewAspectRatio: プレビュー画面
+  previewAspectRatios:
+    landscape: 横長
+    portrait: 縦長
+    square: 正方形
+  previewFontSize: プレビュー文字サイズ：$1 px
+  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
   dragHint: Drag subtitles to move them
   previewDragHint: 字幕をドラッグして位置を調整できます。矢印キーで微調整もできます。
   previewDragLabel: ドラッグできる字幕

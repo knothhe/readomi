@@ -14,7 +14,7 @@ import { setTranslationDirAndLang } from "@/utils/host/translate/translation-att
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 import { onMessage } from "@/utils/message"
-import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle } from "@/utils/subtitles/appearance"
+import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle, subtitleVideoSize } from "@/utils/subtitles/appearance"
 import { shouldShowVideoControls } from "@/utils/subtitles/control-sites"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
@@ -137,7 +137,8 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   let state: SubtitleStatus["state"] = "waiting"
   const positionCaption = () => {
     const videoRect = video.getBoundingClientRect()
-    box.style.fontSize = `${resolveSubtitleFontSize(appearance, videoRect.width)}px`
+    const videoSize = subtitleVideoSize(video, videoRect)
+    box.style.fontSize = `${resolveSubtitleFontSize(appearance, videoSize.width, videoSize.height)}px`
     const playerRect = !dragPosition && subtitlePositionName(appearance.position) === "bottom" ? youtubePlayer?.getBoundingClientRect() : undefined
     const rect = playerRect && playerRect.width > 0 && playerRect.height > 0 ? playerRect : videoRect
     renderedRect = rect

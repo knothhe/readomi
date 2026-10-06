@@ -231,7 +231,7 @@ it("manual setup and local backup restore work without an account", async () => 
     preset: "study",
     fontSizeMode: "fixed",
     fontSize: 24,
-    relativeFontSize: 3.75,
+    relativeFontSize: 6.25,
     backgroundEnabled: true,
     backgroundOpacity: 65,
   })

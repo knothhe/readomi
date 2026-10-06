@@ -597,7 +597,7 @@ subtitleStyle:
   commonSizes: Частые размеры
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the
+  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.
   fixedFontDescription: Размер шрифта не меняется при изменении размера окна.
   fontSizeModes:
@@ -605,8 +605,14 @@ subtitleStyle:
     fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: A new idea.
-  previewTranslation: 新的想法。
+  previewAspectRatio: Формат предпросмотра
+  previewAspectRatios:
+    landscape: Альбомный
+    portrait: Портретный
+    square: Квадрат
+  previewFontSize: "Размер в предпросмотре: $1 px"
+  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
   dragHint: Drag subtitles to move them
   previewDragHint: Перетащите субтитры для смены положения; используйте стрелки
     для точной настройки.

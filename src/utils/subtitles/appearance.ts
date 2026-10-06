@@ -51,16 +51,29 @@ export function subtitlePositionName(position: SubtitlePosition): keyof typeof S
   ) ?? "custom"
 }
 
-/** Relative sizes are a percentage of video width; fixed sizes are CSS pixels. */
-export function resolveSubtitleFontSize(style: SubtitleStyle, videoWidth = 640): number {
+/** Relative sizes are a percentage of the displayed video's shorter side. */
+export function resolveSubtitleFontSize(style: SubtitleStyle, videoWidth = 640, videoHeight = videoWidth * 9 / 16): number {
   const width = Number.isFinite(videoWidth) && videoWidth > 0 ? videoWidth : 640
-  return style.fontSizeMode === "video" ? style.relativeFontSize * width / 100 : style.fontSize
+  const height = Number.isFinite(videoHeight) && videoHeight > 0 ? videoHeight : width * 9 / 16
+  return style.fontSizeMode === "video" ? style.relativeFontSize * Math.min(width, height) / 100 : style.fontSize
+}
+
+/** Exclude contain/scale-down letterboxing while leaving caption positioning unchanged. */
+export function subtitleVideoSize(video: HTMLVideoElement, rect = video.getBoundingClientRect()) {
+  const size = { width: rect.width, height: rect.height }
+  if (video.videoWidth <= 0 || video.videoHeight <= 0 || rect.width <= 0 || rect.height <= 0)
+    return size
+  const fit = video.ownerDocument.defaultView?.getComputedStyle(video).objectFit
+  if (fit !== "contain" && fit !== "scale-down")
+    return size
+  const scale = Math.min(rect.width / video.videoWidth, rect.height / video.videoHeight, fit === "scale-down" ? 1 : Number.POSITIVE_INFINITY)
+  return { width: video.videoWidth * scale, height: video.videoHeight * scale }
 }
 
 /** Shared presentation for the settings preview and the in-video renderer. */
-export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640) {
+export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640, videoHeight = videoWidth * 9 / 16) {
   return {
-    fontSize: `${resolveSubtitleFontSize(style, videoWidth)}px`,
+    fontSize: `${resolveSubtitleFontSize(style, videoWidth, videoHeight)}px`,
     fontWeight: style.preset === "compact" ? "500" : "600",
     lineHeight: "1.4",
     color: "#fff",

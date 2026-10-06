@@ -1,16 +1,18 @@
 import type { ReactNode } from "react"
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
 import { useAtom, useSetAtom } from "jotai"
-import { useEffect, useLayoutEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
-import { SUBTITLE_FONT_SIZE_MODES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { SUBTITLE_FONT_SIZE_MODES, SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { configFieldsAtomMap, writeConfigAtom } from "@/utils/atoms/config"
 import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, resolveSubtitleFontSize, resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitleBackgroundPatch, subtitlePositionName, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 import { SettingsSlider } from "../../components/settings-slider"
 import "./subtitle-style-editor.css"
+
+const PREVIEW_ASPECT_RATIOS = { landscape: 9 / 16, portrait: 16 / 9, square: 1 } as const
 
 export function SubtitleStyleEditor({ children, footer }: { children: ReactNode, footer?: ReactNode }) {
   const [features] = useAtom(configFieldsAtomMap.features)
@@ -22,8 +24,10 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
   const position = subtitlePositionName(style.position)
   const depth = effectiveSubtitleBackgroundOpacity(style)
   const backgroundSummary = depth ? i18n.t("subtitleStyle.backgroundSummary", [depth]) : i18n.t("subtitleStyle.noBackground")
-  const commonSizes = style.fontSizeMode === "video" ? [2.5, 3, 3.75, 4.5] : [16, 20, 24, 28]
+  const commonSizes = ["compact", "clear", "study", "cinema"].map(preset => SUBTITLE_PRESET_STYLES[preset as keyof typeof SUBTITLE_PRESET_STYLES][style.fontSizeMode === "video" ? "relativeFontSize" : "fontSize"])
   const positions = Object.keys(SUBTITLE_POSITIONS) as (keyof typeof SUBTITLE_POSITIONS)[]
+  const [previewAspect, setPreviewAspect] = useState<keyof typeof PREVIEW_ASPECT_RATIOS>("landscape")
+  const fontSizeOutputRef = useRef<HTMLOutputElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const captionRef = useRef<HTMLDivElement>(null)
@@ -37,9 +41,14 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
         return
       const frame = frameRef.current
       const caption = captionRef.current
-      caption.style.fontSize = `${resolveSubtitleFontSize(style, previewRef.current.getBoundingClientRect().width)}px`
+      const width = previewRef.current.getBoundingClientRect().width
+      // The frame can grow to fit large text; sizing still uses the selected video's aspect ratio.
+      const fontSize = resolveSubtitleFontSize(style, width, width * PREVIEW_ASPECT_RATIOS[previewAspect])
+      caption.style.fontSize = `${fontSize}px`
+      if (fontSizeOutputRef.current)
+        fontSizeOutputRef.current.textContent = i18n.t("subtitleStyle.previewFontSize", [Number(fontSize.toFixed(2))])
       const captionRect = caption.getBoundingClientRect()
-      // Keep the real font size readable even when the bilingual sample exceeds 16:9.
+      // Keep the real font size readable even when the sample exceeds the selected frame.
       frame.style.minHeight = `${Math.ceil(captionRect.height + 24)}px`
       const rect = previewRef.current.getBoundingClientRect()
       const next = resolveSubtitlePosition(dragPositionRef.current ?? style.position, rect, captionRect)
@@ -53,7 +62,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
     observer.observe(frameRef.current!)
     observer.observe(captionRef.current!)
     return () => observer.disconnect()
-  }, [style, features.subtitleMode])
+  }, [style, features.subtitleMode, previewAspect])
 
   useEffect(() => {
     const caption = captionRef.current
@@ -218,7 +227,21 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
       </div>
       <aside className="options-preview-column">
         <h3 className="options-preview-title">{i18n.t("subtitleStyle.preview")}</h3>
-        <div ref={frameRef} aria-label={i18n.t("subtitleStyle.preview")} className="relative aspect-video overflow-hidden rounded-xl border border-border">
+        <SegmentedControl
+          aria-label={i18n.t("subtitleStyle.previewAspectRatio")}
+          className="subtitle-preview-aspects"
+          size="sm"
+          value={previewAspect}
+          options={(Object.keys(PREVIEW_ASPECT_RATIOS) as (keyof typeof PREVIEW_ASPECT_RATIOS)[]).map(value => ({ value, label: i18n.t(`subtitleStyle.previewAspectRatios.${value}`) }))}
+          onChange={setPreviewAspect}
+        />
+        <div
+          ref={frameRef}
+          aria-label={i18n.t("subtitleStyle.preview")}
+          className="subtitle-preview-frame relative overflow-hidden rounded-xl border border-border"
+          data-aspect={previewAspect}
+          style={{ aspectRatio: `1 / ${PREVIEW_ASPECT_RATIOS[previewAspect]}` }}
+        >
           <div ref={previewRef} className="subtitle-preview-scene absolute inset-0 h-full w-full">
             <div
               ref={captionRef}
@@ -226,13 +249,14 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
               tabIndex={0}
               aria-label={i18n.t("subtitleStyle.previewDragLabel")}
               className="subtitle-preview-caption absolute w-max -translate-x-1/2 -translate-y-full"
-              style={{ ...subtitleTextStyle(style), maxWidth: "calc(100% - 16px)", padding: "4px 7px", borderRadius: "5px", left: `${style.position.x}%`, top: `${style.position.y}%` }}
+              style={{ ...subtitleTextStyle(style), maxWidth: "80%", overflowWrap: "anywhere", padding: "4px 7px", borderRadius: "5px", left: `${style.position.x}%`, top: `${style.position.y}%` }}
             >
-              {features.subtitleMode === "bilingual" && <div className="text-[.82em]">{i18n.t("subtitleStyle.previewOriginal")}</div>}
+              {features.subtitleMode === "bilingual" && <div className="subtitle-preview-original">{i18n.t("subtitleStyle.previewOriginal")}</div>}
               <div>{i18n.t("subtitleStyle.previewTranslation")}</div>
             </div>
           </div>
         </div>
+        <output ref={fontSizeOutputRef} className="subtitle-control-help subtitle-preview-size" />
         <p className="subtitle-control-help subtitle-preview-help">{i18n.t("subtitleStyle.previewDragHint")}</p>
         <p className="subtitle-preview-summary">
           {i18n.t(`subtitleStyle.presets.${style.preset}`)}

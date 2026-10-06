@@ -300,7 +300,7 @@ it("player controls stop translation, retain per-video scope and preserve cached
   const fullscreenBounds = await page.locator("#first").boundingBox()
   assert.ok(fullscreen.controls[0].panel.left >= fullscreenBounds.x && fullscreen.controls[0].panel.right <= fullscreenBounds.x + fullscreenBounds.width)
   await inspector.click(0, "label", "Increase subtitle size")
-  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.relativeFontSize === 2.75, "fullscreen size action did not save")
+  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.relativeFontSize === 4.25, "fullscreen size action did not save")
   await page.evaluate(() => document.exitFullscreen())
   await page.setViewportSize({ width: 390, height: 700 })
   const { state: narrow, videoBounds } = await waitFor(async () => ({ state: await read(), videoBounds: await page.locator("#first video").boundingBox() }), ({ state, videoBounds }) => {
@@ -313,7 +313,7 @@ it("player controls stop translation, retain per-video scope and preserve cached
   const reset = await inspector.controlBounds(0, "Reset subtitle position")
   assert.ok(reset && reset.top >= narrow.controls[0].panel.top && reset.bottom <= narrow.controls[0].panel.bottom + 1, "the narrow panel exposes its last action without clipping")
   await inspector.click(0, "label", "Decrease subtitle size")
-  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.relativeFontSize === 2.5, "narrow size action did not save")
+  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.relativeFontSize === 4, "narrow size action did not save")
   await page.screenshot({ path: "/tmp/readomi-video-controls-mobile.png" })
   await inspector.click(0, "label", "Adjust subtitle preset")
   await page.setViewportSize({ width: 1280, height: 1000 })

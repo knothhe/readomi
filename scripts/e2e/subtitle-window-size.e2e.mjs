@@ -46,7 +46,9 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       const computed = getComputedStyle(scene.lastElementChild)
       const components = computed.backgroundColor.match(/[\d.]+/g)?.map(Number) ?? []
       const actualOpacity = components.length === 4 ? components[3] : computed.backgroundColor === "transparent" ? 0 : 1
-      const expectedSize = mode === "video" ? scene.getBoundingClientRect().width * size / 100 : size
+      const ratio = { landscape: 9 / 16, portrait: 16 / 9, square: 1 }[scene.parentElement.dataset.aspect]
+      const width = scene.getBoundingClientRect().width
+      const expectedSize = mode === "video" ? Math.min(width, width * ratio) * size / 100 : size
       return Math.abs(Number.parseFloat(computed.fontSize) - expectedSize) < 0.05 && Math.abs(actualOpacity - opacity) < 0.01
     }, {
       mode: style.fontSizeMode,
@@ -55,8 +57,30 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
     })
   }
   const desktopPreview = await previewSize()
-  assert.ok(Math.abs(desktopPreview.fontSize - desktopPreview.width * 3 / 100) < 0.05, "settings preview uses a percentage of the video window width")
+  assert.ok(Math.abs(desktopPreview.fontSize - desktopPreview.width * 9 / 16 * 5 / 100) < 0.05, "settings preview uses a percentage of the video window shorter side")
   assert.equal(colorOpacity(desktopPreview.backgroundColor), 0, "the default Transparent preset has no background")
+
+  const previewFormats = settings.getByRole("group", { name: "Preview format", exact: true })
+  const previewConfig = await storedConfig(context)
+  for (const [label, aspect] of [["Portrait", "portrait"], ["Square", "square"], ["Landscape", "landscape"]]) {
+    await previewFormats.getByRole("button", { name: label, exact: true }).click()
+    await waitForPreview(previewConfig.features.subtitleStyle)
+    assert.equal(await settings.locator(".subtitle-preview-frame").getAttribute("data-aspect"), aspect)
+    assert.equal(await previewFormats.getByRole("button", { name: label, exact: true }).getAttribute("aria-pressed"), "true")
+    assert.deepEqual(await storedConfig(context), previewConfig, "preview format changes remain local")
+    const size = await previewSize()
+    assert.equal(await settings.locator(".subtitle-preview-size").textContent(), `Preview size: ${Number(size.fontSize.toFixed(2))} px`)
+    if (aspect === "portrait") {
+      assert.ok(size.width <= 285.1)
+      assert.ok(await settings.locator(".subtitle-preview-original").evaluate((original) => {
+        const range = document.createRange()
+        range.selectNodeContents(original)
+        return range.getClientRects().length >= 2
+      }), "the portrait sample shows long-caption wrapping")
+    }
+    await previewFormats.evaluate(element => Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => undefined))))
+    await settings.screenshot({ path: `/tmp/readomi-settings-subtitle-preview-${aspect}.png`, fullPage: true })
+  }
 
   // Match X's post container, complete source and partial clone rendering track.
   // A stationary media clock isolates sizing from playback and translation timing.
@@ -131,10 +155,10 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await cdp.send("DOM.enable")
   await cdp.send("CSS.enable")
   const presetStyles = [
-    { preset: "clear", label: "Transparent", fontSize: 20, relativeFontSize: 3, backgroundEnabled: false, backgroundOpacity: 0 },
-    { preset: "compact", label: "Compact", fontSize: 16, relativeFontSize: 2.5, backgroundEnabled: true, backgroundOpacity: 35 },
-    { preset: "study", label: "Focus", fontSize: 24, relativeFontSize: 3.75, backgroundEnabled: true, backgroundOpacity: 65 },
-    { preset: "cinema", label: "Cinema", fontSize: 28, relativeFontSize: 4.5, backgroundEnabled: true, backgroundOpacity: 85 },
+    { preset: "clear", label: "Transparent", fontSize: 20, relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
+    { preset: "compact", label: "Compact", fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
+    { preset: "study", label: "Focus", fontSize: 24, relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
+    { preset: "cinema", label: "Cinema", fontSize: 28, relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
   ]
   // The dock and preset panel use a closed shadow root. CDP reads the
   // button's bounds, then a real pointer click exercises its product handler.
@@ -235,7 +259,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       return toolbar.firstElementChild === toolbar.querySelector("button[aria-label='Pause']") && host?.previousElementSibling === toolbar.querySelector("span") && host?.nextElementSibling === toolbar.querySelector("button[aria-label='Fullscreen']")
     }), true, "Readomi joins the native X right tools after playback and time, before fullscreen")
   }
-  const ready = await waitFor(state => !state.hidden && Math.abs(state.fontSize - 19.2) < 0.05 && colorOpacity(state.backgroundColor) === 0 && state.translation?.includes("【译】"))
+  const ready = await waitFor(state => !state.hidden && Math.abs(state.fontSize - 18) < 0.05 && colorOpacity(state.backgroundColor) === 0 && state.translation?.includes("【译】"))
   assert.equal(ready.original, "A new idea.", "the complete X source wins over its showing clone")
   await waitForInlineToolbar()
   await page.waitForFunction(() => Object.values(window.e2eSubtitleTracks).every(track => track.mode === "hidden"))
@@ -254,7 +278,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   const requests = service.completions().length
   assert.equal(initialStyle.fontSizeMode, "video")
   assert.equal(initialStyle.fontSize, 20)
-  assert.equal(initialStyle.relativeFontSize, 3)
+  assert.equal(initialStyle.relativeFontSize, 5)
   assert.equal(initialStyle.backgroundEnabled, false)
   assert.equal(initialStyle.backgroundOpacity, 0)
   for (const width of [320, 960, 640]) {
@@ -262,7 +286,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       player.style.width = `${width}px`
       player.style.height = `${width * 9 / 16}px`
     }, width)
-    await waitFor(state => Math.abs(state.fontSize - width * 3 / 100) < 0.05 && state.translation === ready.translation)
+    await waitFor(state => Math.abs(state.fontSize - width * 9 / 16 * 5 / 100) < 0.05 && state.translation === ready.translation)
     await waitForInlineToolbar()
     if (width === 320 || width === 640) {
       await clickPlayerControl(node => attr(node, "aria-label") === "Adjust subtitle preset")
@@ -279,11 +303,27 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       await waitForInlineToolbar()
     }
   }
+  // Portrait and square videos use width as their shorter side, independently of height.
+  await page.locator("#player").evaluate((player) => {
+    player.style.width = "285px"
+    player.style.height = "506.666667px"
+  })
+  await waitFor(state => Math.abs(state.fontSize - 14.25) < 0.05 && state.translation === ready.translation)
+  await page.screenshot({ path: "/tmp/readomi-subtitle-short-side-portrait.png" })
+  await page.locator("#player").evaluate((player) => {
+    player.style.width = "400px"
+    player.style.height = "400px"
+  })
+  await waitFor(state => Math.abs(state.fontSize - 20) < 0.05 && state.translation === ready.translation)
+  await page.locator("#player").evaluate((player) => {
+    player.style.width = "640px"
+    player.style.height = "360px"
+  })
   await page.locator("#player").getByRole("button", { name: "Fullscreen", exact: true }).click()
-  const fullscreenWidth = (await page.locator("#player video").boundingBox()).width
-  await waitFor(state => Math.abs(state.fontSize - fullscreenWidth * 3 / 100) < 0.05 && state.translation === ready.translation)
+  const fullscreenVideo = await page.locator("#player video").boundingBox()
+  await waitFor(state => Math.abs(state.fontSize - Math.min(fullscreenVideo.width, fullscreenVideo.height) * 5 / 100) < 0.05 && state.translation === ready.translation)
   await page.evaluate(() => document.exitFullscreen())
-  await waitFor(state => Math.abs(state.fontSize - 19.2) < 0.05)
+  await waitFor(state => Math.abs(state.fontSize - 18) < 0.05)
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, initialStyle, "window changes do not rewrite the saved baseline")
   await page.screenshot({ path: "/tmp/readomi-x-subtitle-responsive.png" })
 
@@ -303,9 +343,20 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await settings.screenshot({ path: "/tmp/readomi-subtitle-fixed-mobile.png", fullPage: true })
   await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Scale with video", exact: true }).click()
   await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.subtitleStyle.fontSizeMode === "video")
-  await waitFor(state => Math.abs(state.fontSize - 9.6) < 0.05 && state.translation === ready.translation)
+  await waitFor(state => Math.abs(state.fontSize - 9) < 0.05 && state.translation === ready.translation)
   const mobilePreview = await previewSize()
-  assert.ok(Math.abs(mobilePreview.fontSize - mobilePreview.width * 3 / 100) < 0.05, "relative preview matches narrow video windows")
+  assert.ok(Math.abs(mobilePreview.fontSize - mobilePreview.width * 9 / 16 * 5 / 100) < 0.05, "relative preview matches narrow video windows")
+  const mobilePreviewConfig = await storedConfig(context)
+  for (const label of ["Portrait", "Square", "Landscape"]) {
+    await previewFormats.getByRole("button", { name: label, exact: true }).click()
+    await waitForPreview(mobilePreviewConfig.features.subtitleStyle)
+    assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "preview formats fit narrow settings without horizontal overflow")
+    assert.deepEqual(await storedConfig(context), mobilePreviewConfig)
+    if (label === "Portrait") {
+      await previewFormats.evaluate(element => Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => undefined))))
+      await settings.screenshot({ path: "/tmp/readomi-settings-subtitle-preview-mobile.png", fullPage: true })
+    }
+  }
   await settings.screenshot({ path: "/tmp/readomi-subtitle-video-mobile.png", fullPage: true })
   assert.equal(service.completions().length, requests, "resizing and changing sizing mode reuse the current translation")
   assert.equal(service.translationRequests().some(messages => messages.at(-1).content.includes("Partial rendering clone")), false)
@@ -328,16 +379,16 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   const sizeSlider = settings.getByRole("slider", { name: "Subtitle size", exact: true })
   const sizeInput = settings.getByRole("spinbutton", { name: "Subtitle size", exact: true })
   assert.equal(await sizeSlider.getAttribute("min"), "1.25")
-  assert.equal(await sizeSlider.getAttribute("max"), "12.5")
+  assert.equal(await sizeSlider.getAttribute("max"), "25")
   assert.equal(await sizeSlider.getAttribute("step"), "0.25")
   assert.match(await sizeSlider.getAttribute("aria-valuetext"), /%/)
   await sizeSlider.press("ArrowRight")
-  await waitForStyle({ relativeFontSize: 3.25, fontSize: 20 })
-  await waitFor(state => Math.abs(state.fontSize - 10.4) < 0.05 && state.translation === ready.translation)
+  await waitForStyle({ relativeFontSize: 5.25, fontSize: 20 })
+  await waitFor(state => Math.abs(state.fontSize - 9.45) < 0.05 && state.translation === ready.translation)
   await sizeInput.fill("4.25")
   await sizeInput.press("Enter")
   await waitForPreview(await waitForStyle({ relativeFontSize: 4.25, fontSize: 20 }))
-  await waitFor(state => Math.abs(state.fontSize - 13.6) < 0.05 && state.translation === ready.translation)
+  await waitFor(state => Math.abs(state.fontSize - 7.65) < 0.05 && state.translation === ready.translation)
   await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
   await waitForStyle({ fontSizeMode: "fixed", relativeFontSize: 4.25, fontSize: 20 })
   assert.equal(await sizeSlider.getAttribute("min"), "8")
@@ -402,12 +453,12 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   for (const { label, ...presetStyle } of presetStyles) {
     await presets.getByRole("button", { name: label, exact: true }).click()
     await waitForPreview(await waitForStyle({ ...presetStyle, fontSizeMode: "video", position }))
-    await waitFor(state => Math.abs(state.fontSize - 320 * presetStyle.relativeFontSize / 100) < 0.05
+    await waitFor(state => Math.abs(state.fontSize - 180 * presetStyle.relativeFontSize / 100) < 0.05
       && Math.abs(colorOpacity(state.backgroundColor) - (presetStyle.backgroundEnabled ? presetStyle.backgroundOpacity / 100 : 0)) < 0.01
       && state.translation === ready.translation)
   }
   await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await waitForStyle({ preset: "cinema", fontSize: 28, relativeFontSize: 4.5, fontSizeMode: "fixed", position })
+  await waitForStyle({ preset: "cinema", fontSize: 28, relativeFontSize: 7.5, fontSizeMode: "fixed", position })
   await waitFor(state => state.fontSize === 28 && state.translation === ready.translation)
   await settings.screenshot({ path: "/tmp/readomi-subtitle-preset-fixed-cinema.png", fullPage: true })
 
@@ -441,10 +492,10 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       && state.translation === ready.translation)
   }
   await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
-  await waitForStyle({ preset: "cinema", relativeFontSize: 4.5, fontSizeMode: "video", position })
+  await waitForStyle({ preset: "cinema", relativeFontSize: 7.5, fontSizeMode: "video", position })
   await selectPlayerPreset("study")
-  await waitForStyle({ preset: "study", fontSize: 24, relativeFontSize: 3.75, fontSizeMode: "video", backgroundEnabled: true, backgroundOpacity: 65, position })
-  await waitFor(state => state.fontSize === 12 && Math.abs(colorOpacity(state.backgroundColor) - 0.65) < 0.01 && state.translation === ready.translation)
+  await waitForStyle({ preset: "study", fontSize: 24, relativeFontSize: 6.25, fontSizeMode: "video", backgroundEnabled: true, backgroundOpacity: 65, position })
+  await waitFor(state => state.fontSize === 11.25 && Math.abs(colorOpacity(state.backgroundColor) - 0.65) < 0.01 && state.translation === ready.translation)
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, position, "all four presets preserve a manually selected position in both controls")
   assert.equal(service.completions().length, requests, "manual size, background and preset changes reuse the current translation")
   await page.screenshot({ path: "/tmp/readomi-subtitle-preset-video-study.png" })

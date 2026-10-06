@@ -578,15 +578,21 @@ subtitleStyle:
   commonSizes: 常用字級
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: 字級為影片寬度的百分比，隨視窗和全螢幕縮放。
+  relativeFontDescription: 字級為影片顯示區域短邊的百分比，隨視窗和全螢幕縮放。
   fixedFontDescription: 字級保持固定，不隨視窗縮放。
   fontSizeModes:
     video: Scale with video
     fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: A new idea.
-  previewTranslation: 新的想法。
+  previewAspectRatio: 預覽畫面
+  previewAspectRatios:
+    landscape: 橫版
+    portrait: 直版
+    square: 正方形
+  previewFontSize: 預覽字級：$1 px
+  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
   dragHint: 在影片上拖曳字幕調整位置。
   previewDragHint: 拖曳字幕調整位置；方向鍵也可微調。
   previewDragLabel: 可拖曳的字幕

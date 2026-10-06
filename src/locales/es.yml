@@ -610,7 +610,7 @@ subtitleStyle:
   commonSizes: Tamaños habituales
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the
+  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.
   fixedFontDescription: El tamaño de letra no cambia al redimensionar la ventana.
   fontSizeModes:
@@ -618,8 +618,14 @@ subtitleStyle:
     fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: A new idea.
-  previewTranslation: 新的想法。
+  previewAspectRatio: Formato de vista previa
+  previewAspectRatios:
+    landscape: Horizontal
+    portrait: Vertical
+    square: Cuadrado
+  previewFontSize: "Tamaño de vista previa: $1 px"
+  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
   dragHint: Drag subtitles to move them
   previewDragHint: Arrastra los subtítulos para moverlos; usa las flechas para
     ajustar con precisión.

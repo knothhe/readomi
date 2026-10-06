@@ -567,15 +567,21 @@ subtitleStyle:
   commonSizes: 常用字号
   fontDescription: 同时缩放原文和译文，原文略小。
   fontSizeMode: 字号方式
-  relativeFontDescription: 字号为视频宽度的百分比，随窗口和全屏缩放。
+  relativeFontDescription: 字号为视频显示区域短边的百分比，随窗口和全屏缩放。
   fixedFontDescription: 字号保持固定，不随窗口缩放。
   fontSizeModes:
     video: 随视频窗口
     fixed: 固定字号
   position: 字幕位置
   preview: 字幕预览
-  previewOriginal: A new idea.
-  previewTranslation: 新的想法。
+  previewAspectRatio: 预览画面
+  previewAspectRatios:
+    landscape: 横版
+    portrait: 竖版
+    square: 正方形
+  previewFontSize: 预览字号：$1 px
+  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
   dragHint: 在视频上拖动字幕调整位置。
   previewDragHint: 拖动字幕调整位置；方向键也可精调。
   previewDragLabel: 可拖动的字幕

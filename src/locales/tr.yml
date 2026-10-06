@@ -598,7 +598,7 @@ subtitleStyle:
   commonSizes: Sık kullanılan boyutlar
   fontDescription: Scales both lines, with the original slightly smaller.
   fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of video width and scales with the
+  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
     window and fullscreen.
   fixedFontDescription: Pencere yeniden boyutlandırıldığında yazı boyutu sabit kalır.
   fontSizeModes:
@@ -606,8 +606,14 @@ subtitleStyle:
     fixed: Fixed size
   position: Subtitle position
   preview: Subtitle preview
-  previewOriginal: A new idea.
-  previewTranslation: 新的想法。
+  previewAspectRatio: Önizleme biçimi
+  previewAspectRatios:
+    landscape: Yatay
+    portrait: Dikey
+    square: Kare
+  previewFontSize: "Önizleme boyutu: $1 px"
+  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
   dragHint: Drag subtitles to move them
   previewDragHint: Konumu ayarlamak için altyazıları sürükleyin; ince ayar için ok
     tuşlarını kullanın.

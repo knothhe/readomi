@@ -85,7 +85,7 @@ describe("subtitle settings", () => {
     const { store } = await renderFeatures(original)
     openCustom()
     expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(5.9375)
-    expect(within(screen.getByRole("group", { name: "subtitleStyle.commonSizes" })).getAllByRole("button").map(button => button.textContent)).toEqual(["2.5%", "3%", "3.75%", "4.5%"])
+    expect(within(screen.getByRole("group", { name: "subtitleStyle.commonSizes" })).getAllByRole("button").map(button => button.textContent)).toEqual(["4%", "5%", "6.25%", "7.5%"])
     fireEvent.click(modes().getByRole("button", { name: "subtitleStyle.fontSizeModes.fixed" }))
     expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(38)
     fireEvent.click(screen.getByRole("button", { name: "24 px" }))
@@ -130,8 +130,8 @@ describe("subtitle settings", () => {
     const rowCount = container.querySelectorAll(".subtitle-settings-group .settings-row").length
     const modified = container.querySelector(".subtitle-adjusted-label")!
     expect(modified).toHaveAttribute("aria-hidden", "true")
-    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "5" } })
-    await waitFor(() => expect(savedStyle(store).relativeFontSize).toBe(5))
+    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "5.25" } })
+    await waitFor(() => expect(savedStyle(store).relativeFontSize).toBe(5.25))
     expect(modified).toHaveAttribute("aria-hidden", "false")
     for (const preset of ["compact", "study", "cinema", "clear"] as const) {
       fireEvent.click(presets().getByRole("button", { name: `subtitleStyle.presets.${preset}` }))
@@ -175,7 +175,7 @@ describe("subtitle settings", () => {
       expect(bottom).toBeLessThan(height)
       expect(caption.style.fontSize).toBe("80px")
     }
-    expect(caption.style.maxWidth).toBe("calc(100% - 16px)")
+    expect(caption.style.maxWidth).toBe("80%")
     expect(frame.style.minHeight).toBe("368px")
     expectCaptionFits()
 
@@ -210,5 +210,51 @@ describe("subtitle settings", () => {
     await waitFor(() => expect(savedStyle(store).position.x).toBe(48))
     expect(custom.open).toBe(false)
     expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.position.x).toBe(48)
+  })
+
+  it("switches preview formats locally and keeps live styles, display mode and position editing", async () => {
+    const originalRect = HTMLElement.prototype.getBoundingClientRect
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("subtitle-preview-scene")) {
+        const aspect = this.parentElement!.dataset.aspect
+        const width = aspect === "landscape" ? 640 : 285
+        const height = width * (aspect === "portrait" ? 16 / 9 : aspect === "square" ? 1 : 9 / 16)
+        return new DOMRect(0, 0, width, Math.max(height, Number.parseFloat(this.parentElement!.style.minHeight) || 0))
+      }
+      if (this.classList.contains("subtitle-preview-caption"))
+        return new DOMRect(0, 0, 180, 60)
+      return originalRect.call(this)
+    })
+    const { container, store } = await renderFeatures()
+    const initialConfig = store.get(configAtom)
+    const formats = within(screen.getByRole("group", { name: "subtitleStyle.previewAspectRatio" }))
+    const caption = screen.getByRole("group", { name: "subtitleStyle.previewDragLabel" })
+    const frame = container.querySelector(".subtitle-preview-frame")!
+    expect(caption.style.fontSize).toBe("18px")
+    for (const aspect of ["portrait", "square", "landscape"] as const) {
+      fireEvent.click(formats.getByRole("button", { name: `subtitleStyle.previewAspectRatios.${aspect}` }))
+      expect(frame).toHaveAttribute("data-aspect", aspect)
+      expect(formats.getByRole("button", { name: `subtitleStyle.previewAspectRatios.${aspect}` })).toHaveAttribute("aria-pressed", "true")
+      expect(caption.style.fontSize).toBe(aspect === "landscape" ? "18px" : "14.25px")
+      expect(store.get(configAtom)).toEqual(initialConfig)
+      expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(initialConfig)
+    }
+    fireEvent.click(formats.getByRole("button", { name: "subtitleStyle.previewAspectRatios.portrait" }))
+    fireEvent.click(presets().getByRole("button", { name: "subtitleStyle.presets.compact" }))
+    await waitFor(() => expect(savedStyle(store).preset).toBe("compact"))
+    expect(caption.style.fontSize).toBe("11.4px")
+    expect(caption.style.backgroundColor).toBe("rgba(15, 20, 35, 0.35)")
+    fireEvent.click(modes().getByRole("button", { name: "subtitleStyle.fontSizeModes.fixed" }))
+    await waitFor(() => expect(savedStyle(store).fontSizeMode).toBe("fixed"))
+    expect(caption.style.fontSize).toBe("16px")
+    fireEvent.click(formats.getByRole("button", { name: "subtitleStyle.previewAspectRatios.square" }))
+    expect(caption.style.fontSize).toBe("16px")
+    const current = store.get(configAtom)
+    act(() => store.set(configAtom, { ...current, features: { ...current.features, subtitleMode: "translationOnly" } }))
+    expect(screen.queryByText("subtitleStyle.previewOriginal")).toBeNull()
+    expect(screen.getByText("subtitleStyle.previewTranslation")).toBeInTheDocument()
+    fireEvent.keyDown(caption, { key: "ArrowLeft" })
+    await waitFor(() => expect(savedStyle(store).position.x).toBe(48))
+    expect(frame).toHaveAttribute("data-aspect", "square")
   })
 })

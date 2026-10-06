@@ -195,6 +195,32 @@
   cursor: grab;
 }
 
+.subtitle-preview-aspects {
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 14px;
+}
+
+.subtitle-preview-frame {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.subtitle-preview-frame:is([data-aspect="portrait"], [data-aspect="square"]) {
+  max-width: 285px;
+}
+
+.subtitle-preview-original {
+  margin-bottom: 4px;
+  font-size: 0.85em;
+}
+
+.subtitle-preview-size {
+  display: block;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
 .subtitle-preview-caption.dragging {
   cursor: grabbing;
 }
