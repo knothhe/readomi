@@ -62,6 +62,20 @@ describe("popup app", () => {
     await waitFor(() => expect(document.documentElement).toHaveClass("dark"))
   })
 
+  it("removes the video exclusion toggle and hides translation controls on a disabled website", async () => {
+    const config: Config = { ...configWithKey, features: { ...configWithKey.features, disabledSites: ["example.com"] } }
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+    renderPopup({ config })
+    expect(screen.queryByRole("switch", { name: "popup.videoSiteExclusion.label" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "popup.translate" })).toBeNull()
+    expect(screen.queryByRole("switch", { name: "features.video" })).toBeNull()
+    const toggle = screen.getByRole("switch", { name: "popup.siteDisable.label" })
+    expect(toggle).toBeChecked()
+    fireEvent.click(toggle)
+    await waitFor(() => expect(screen.getByRole("button", { name: "popup.translate" })).toBeEnabled())
+    expect(screen.getByRole("switch", { name: "popup.siteDisable.label" })).not.toBeChecked()
+  })
+
   it("points to the settings page instead of configuring anything while the service has no key", () => {
     renderPopup()
 

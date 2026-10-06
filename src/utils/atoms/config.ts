@@ -10,7 +10,7 @@ import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "../constants/config"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "../extension-context"
 import { logger } from "../logger"
 import { deepMerge } from "../object"
-import { isVideoTranslationExcluded, normalizeVideoSiteRule, videoDomainRuleForUrl } from "../subtitles/video-site-rules"
+import { siteHostname } from "../site-disable"
 import { storageAdapter } from "./storage-adapter"
 
 export const configAtom = atom<Config>(DEFAULT_CONFIG)
@@ -134,24 +134,14 @@ export const mutateConfigAtom = atom(null, (get, set, mutate: (config: Config) =
   }),
 )
 
-/** The popup edits one domain in the latest list without removing wider rules. */
-export const setVideoSiteExclusionAtom = atom(null, (get, set, { url, excluded }: { url: string, excluded: boolean }) => {
-  const domain = videoDomainRuleForUrl(url)
-  if (!domain)
-    throw new Error("This page has no video translation domain")
-  const apply = (config: Config): Config => {
-    const rules = config.features.videoExcludedSites
-    const videoExcludedSites = excluded
-      ? isVideoTranslationExcluded(url, rules) ? rules : [...rules, domain]
-      : rules.filter((rule) => {
-          const normalized = normalizeVideoSiteRule(rule)
-          return normalized?.type !== "domain" || normalized.value !== domain.value
-        })
-    return { ...config, features: { ...config.features, videoExcludedSites } }
-  }
-  return queueConfigWrite(get, set, apply(get(configAtom)), async () => {
-    const stored = await getLocalConfigForWrite()
-    return { next: apply(stored), stored }
+/** Mutate just this hostname against the latest storage value. */
+export const setSiteDisabledAtom = atom(null, (_get, set, { url, disabled }: { url: string, disabled: boolean }) => {
+  const hostname = siteHostname(url)
+  if (!hostname)
+    throw new Error("This page has no website hostname")
+  return set(mutateConfigAtom, (config) => {
+    const retained = config.features.disabledSites.filter(value => siteHostname(`https://${value}`) !== hostname)
+    return { ...config, features: { ...config.features, disabledSites: disabled ? [...retained, hostname] : retained } }
   })
 })
 

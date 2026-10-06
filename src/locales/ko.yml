@@ -22,13 +22,13 @@ popup:
     retry: 다시 시도
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: 이 사이트의 동영상 번역 제외
-    description: 하위 도메인을 포함하며 동영상 번역에만 적용됩니다.
-    managed: 다른 규칙으로 제외된 사이트입니다. 설정에서 변경하세요.
-    manage: 규칙 관리
+  siteDisable:
+    label: 이 사이트에서 확장 프로그램 비활성화
+    description: 현재 호스트의 모든 페이지에 즉시 적용됩니다.
+    disabled: 이 사이트에서 확장 프로그램이 비활성화되었습니다.
     saving: 저장 중…
-    unavailable: 이 페이지에서는 사용할 수 없습니다
+    failed: 저장하지 못했습니다. 다시 시도하세요.
+    unavailable: 이 페이지에서는 사용할 수 없음
   auto: 자동
   autoDetected: 자동 감지
   sourceLanguage: 원본 언어

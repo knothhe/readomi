@@ -22,12 +22,12 @@ popup:
     retry: Повторить
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: Не переводить видео на этом сайте
-    description: Включая поддомены; влияет только на перевод видео.
-    managed: Сайт исключён другим правилом. Измените его в настройках.
-    manage: Управление правилами
+  siteDisable:
+    label: Отключить расширение на этом сайте
+    description: Сразу применяется ко всем страницам этого домена.
+    disabled: Расширение отключено на этом сайте.
     saving: Сохранение…
+    failed: Не удалось сохранить. Попробуйте снова.
     unavailable: Недоступно на этой странице
   auto: авто
   autoDetected: Определён автоматически

@@ -10,8 +10,9 @@ import {
   isPageTranslationStateInUrlScope,
   setPageTranslationEnabled,
 } from "./page-translation-state"
+import { isTabSiteDisabled } from "./site-disable"
 
-function notifyPageTranslationStateChanged(tabId: number, enabled: boolean) {
+export function notifyPageTranslationStateChanged(tabId: number, enabled: boolean) {
   void sendMessage("notifyTranslationStateChanged", { enabled }, tabId)
     .catch(error => logger.warn("Failed to notify page translation state change", error))
   // The popup is often closed, so having no receiver is expected.
@@ -50,6 +51,8 @@ export function translationMessage() {
 
   onMessage("tryToSetEnablePageTranslationByTabId", async (msg) => {
     const { tabId, enabled } = msg.data
+    if (enabled && await isTabSiteDisabled(tabId))
+      return
     if (!enabled) {
       await setPageTranslationEnabled(tabId, false)
       notifyPageTranslationStateChanged(tabId, false)
@@ -61,6 +64,11 @@ export function translationMessage() {
     const tabId = msg.sender?.tab?.id
     const { enabled, url } = msg.data
     if (typeof tabId === "number") {
+      if (enabled && await isTabSiteDisabled(tabId)) {
+        await setPageTranslationEnabled(tabId, false)
+        notifyPageTranslationStateChanged(tabId, false)
+        return
+      }
       const senderFrameId = msg.sender?.frameId
 
       if (enabled && isIframe(senderFrameId)) {
@@ -88,7 +96,7 @@ export function translationMessage() {
 
   // === Helper Functions ===
   async function getTranslationState(tabId: number): Promise<boolean> {
-    return await getPageTranslationEnabled(tabId)
+    return !await isTabSiteDisabled(tabId) && await getPageTranslationEnabled(tabId)
   }
 
   // === Cleanup ===

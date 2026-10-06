@@ -35,6 +35,13 @@ afterEach(() => {
 })
 
 describe("youTube page-world subtitle bridge", () => {
+  it("restores native fetch and stops responding when the site runtime is disabled", async () => {
+    cleanup()
+    expect(window.fetch).toBe(fetchMock)
+    expect(await request()).toBeUndefined()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it("uses the signed URL observed from the player, parses the timeline and reuses its cache", async () => {
     await window.fetch("https://www.youtube.com/api/timedtext?v=video&lang=en&pot=player-proof")
     fetchMock.mockClear()

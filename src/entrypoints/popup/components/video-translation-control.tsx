@@ -6,7 +6,6 @@ import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { formatHotkey } from "@/utils/os"
 import { DisplayModeControl } from "./display-mode-control"
 import { TranslationControlRow } from "./translation-control-row"
-import { VideoSiteExclusionControl } from "./video-site-exclusion-control"
 
 /** Subtitle modes are edited here independently of web text, without opening Settings. */
 export function VideoTranslationControl() {
@@ -30,7 +29,6 @@ export function VideoTranslationControl() {
         )}
       />
       <DisplayModeControl value={features.subtitleMode} label={i18n.t("features.mode")} onChange={subtitleMode => void setFeatures({ subtitleMode })} />
-      <VideoSiteExclusionControl />
     </section>
   )
 }

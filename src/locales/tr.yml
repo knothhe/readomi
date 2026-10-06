@@ -22,12 +22,12 @@ popup:
     retry: Tekrar dene
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: Bu sitedeki videoları çevirme
-    description: Alt alan adlarını içerir; yalnızca video çevirisini etkiler.
-    managed: Site başka bir kuralla hariç tutuluyor. Ayarlardan düzenleyin.
-    manage: Kuralları yönet
+  siteDisable:
+    label: Bu sitede uzantıyı devre dışı bırak
+    description: Bu alan adındaki tüm sayfalara hemen uygulanır.
+    disabled: Uzantı bu sitede devre dışı.
     saving: Kaydediliyor…
+    failed: Kaydedilemedi. Tekrar deneyin.
     unavailable: Bu sayfada kullanılamıyor
   auto: otomatik
   autoDetected: Otomatik algılandı

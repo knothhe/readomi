@@ -42,15 +42,17 @@ function transcriptBody(body: string): string {
 
 /** Runs in the page world. Only subtitle text crosses the bridge, never provider credentials. */
 export function installYouTubeSubtitleBridge() {
+  let stopped = false
+  const controllers = new Set<AbortController>()
   const observed = new Map<string, URL>()
   const captured = new Map<string, { url: URL, body: string }>()
   const transcripts = new Map<string, string>()
   const failures = new Map<string, { at: number, url: string }>()
   const inflight = new Map<string, Promise<string>>()
-  const nativeFetch = window.fetch.bind(window)
+  const nativeFetch = window.fetch
   const observe = (value: string) => {
     const url = timedtextUrl(value)
-    if (!url?.searchParams.get("v"))
+    if (stopped || !url?.searchParams.get("v"))
       return
     const key = ["v", "lang", "kind", "tlang", "name"].map(p => url.searchParams.get(p) ?? "").join("|")
     observed.delete(key)
@@ -60,7 +62,7 @@ export function installYouTubeSubtitleBridge() {
   }
   const capture = (url: URL, body: string) => {
     const transcript = transcriptBody(body)
-    if (!transcript)
+    if (stopped || !transcript)
       return
     captured.set(url.href, { url, body: transcript })
     if (captured.size > 6)
@@ -72,7 +74,7 @@ export function installYouTubeSubtitleBridge() {
     const value = typeof input === "string" ? input : input instanceof URL ? input.href : input.url
     observe(value)
     const url = timedtextUrl(value)
-    const result = nativeFetch(input, init)
+    const result = nativeFetch.call(window, input, init)
     if (url) {
       void result.then(async (response) => {
         if (response.ok && response.clone)
@@ -122,9 +124,10 @@ export function installYouTubeSubtitleBridge() {
       return pending
     const load = async () => {
       const controller = new AbortController()
+      controllers.add(controller)
       const timeout = setTimeout(() => controller.abort(), 8000)
       try {
-        const response = await nativeFetch(url.href, { credentials: "include", signal: controller.signal })
+        const response = await nativeFetch.call(window, url.href, { credentials: "include", signal: controller.signal })
         const body = response.ok ? transcriptBody(await response.text()) : ""
         if (body) {
           transcripts.set(key, body)
@@ -141,6 +144,7 @@ export function installYouTubeSubtitleBridge() {
         return ""
       }
       finally {
+        controllers.delete(controller)
         clearTimeout(timeout)
         inflight.delete(key)
       }
@@ -153,7 +157,7 @@ export function installYouTubeSubtitleBridge() {
     if (event.source !== window || event.origin !== location.origin || event.data?.type !== YOUTUBE_SUBTITLE_REQUEST || typeof event.data.requestId !== "string" || typeof event.data.videoId !== "string")
       return
     const { requestId, videoId, knownKey } = event.data
-    const respond = (data: object) => window.postMessage({ type: YOUTUBE_SUBTITLE_RESPONSE, requestId, videoId, ...data }, location.origin)
+    const respond = (data: object) => !stopped && window.postMessage({ type: YOUTUBE_SUBTITLE_RESPONSE, requestId, videoId, ...data }, location.origin)
     void (async () => {
       const player = Array.from(document.querySelectorAll<YouTubePlayer>(".html5-video-player")).find(p => p.getPlayerResponse?.().videoDetails?.videoId === videoId)
       const response = player?.getPlayerResponse?.()
@@ -212,6 +216,9 @@ export function installYouTubeSubtitleBridge() {
   }
   window.addEventListener("message", onMessage)
   return () => {
+    stopped = true
+    controllers.forEach(controller => controller.abort())
+    controllers.clear()
     window.removeEventListener("message", onMessage)
     if (window.fetch === wrappedFetch)
       window.fetch = nativeFetch

@@ -13,6 +13,7 @@ import { logger } from "@/utils/logger"
 import { onMessage, sendMessage } from "@/utils/message"
 import { setHostPreviewConfig, subscribeHostConfig } from "@/utils/site-rules/preview-config"
 import { createSiteRulePreviewController } from "@/utils/site-rules/preview-controller"
+import { runWhileSiteEnabled } from "@/utils/site-runtime"
 import { resolveTheme } from "@/utils/theme"
 import { setUILanguage } from "@/utils/ui-language"
 import { areSamePageTranslationOrigin } from "@/utils/url"
@@ -29,44 +30,10 @@ export async function bootstrapHostContent(ctx: ContentScriptContext) {
   if (ctx.isInvalid)
     return
 
-  const cleanups: Array<() => void> = []
-  let stopped = false
-  const cleanup = () => {
-    if (stopped)
-      return
-    stopped = true
-    for (const dispose of cleanups.splice(0).reverse()) {
-      try {
-        dispose()
-      }
-      catch (error) {
-        logger.warn("Failed to clean up content script:", error)
-      }
-    }
-    window.__READOMI_HOST_INJECTED__ = false
-  }
-  // Register before the first await, so an update during startup also cleans up.
-  ctx.onInvalidated(cleanup)
-  const track = (dispose: () => void) => {
-    if (stopped)
-      dispose()
-    else
-      cleanups.push(dispose)
-  }
-  // WXT checks runtime.id in isInvalid; onInvalidated alone does not poll it.
-  const timer = ctx.setInterval(() => {}, 1000)
-  track(() => clearInterval(timer))
-  try {
-    await startHostContent(ctx, track)
-  }
-  catch (error) {
-    cleanup()
-    if (!ctx.isInvalid)
-      throw error
-  }
+  await runWhileSiteEnabled(ctx, (track, inactive) => startHostContent(ctx, track, inactive))
 }
 
-async function startHostContent(ctx: ContentScriptContext, track: (dispose: () => void) => void) {
+async function startHostContent(ctx: ContentScriptContext, track: (dispose: () => void) => void, inactive: () => boolean) {
   ensurePresetStyles(document)
   track(clearSiteRuleStyles)
   let colorTheme: ColorTheme = "terra"
@@ -87,7 +54,7 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   let cleanupHoverTranslation = () => {}
   let hoverBound = false
   track(() => cleanupHoverTranslation())
-  const cleanupVideoSubtitles = bootstrapVideoSubtitles(() => ctx.isInvalid)
+  const cleanupVideoSubtitles = bootstrapVideoSubtitles(() => inactive())
   track(cleanupVideoSubtitles)
 
   const cleanupUrlListener = setupUrlChangeListener()
@@ -101,9 +68,16 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
     rootMargin: `${PRELOAD_MARGIN_PX}px`,
     threshold: PRELOAD_THRESHOLD,
   })
-  track(() => manager.dispose())
+  track(() => {
+    if (!ctx.isInvalid) {
+      manager.stop()
+      removeAllTranslatedWrapperNodes(document)
+      flushBatchedOperations()
+    }
+    manager.dispose()
+  })
   track(onMessage("refreshPageTranslation", async ({ data }) => {
-    if (ctx.isInvalid || (window === window.top && location.href !== data.url))
+    if (inactive() || (window === window.top && location.href !== data.url))
       throw new Error("The page changed. Reopen the popup and try again.")
     if (data.failedOnly)
       await retryFailedTranslations(manager.requestSignal)
@@ -124,7 +98,7 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
       flushBatchedOperations()
       clearSiteRuleStyles()
       await setHostPreviewConfig(config)
-      if (ctx.isInvalid || !isCurrent())
+      if (inactive() || !isCurrent())
         return
       cleanupHoverTranslation = bindHoverTranslation()
       hoverBound = true
@@ -154,16 +128,16 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   track(() => wordPrefixEmphasis.setEnabled(false))
 
   await previewController.reload()
-  if (ctx.isInvalid)
+  if (inactive())
     return
   if (!hoverBound) {
     cleanupHoverTranslation = bindHoverTranslation()
     hoverBound = true
   }
 
-  const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager, document, () => ctx.isInvalid)
+  const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager, document, () => inactive())
   track(cleanupTranslationShortcut)
-  if (ctx.isInvalid)
+  if (inactive())
     return
 
   // For late-loading iframes: check if translation is already enabled for this tab
@@ -172,10 +146,10 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
     translationEnabled = await sendMessage("getEnablePageTranslationFromContentScript", undefined)
   }
   catch (error) {
-    if (!ctx.isInvalid)
+    if (!inactive())
       logger.error("Failed to check translation state:", error)
   }
-  if (ctx.isInvalid)
+  if (inactive())
     return
   if (translationEnabled) {
     pageTranslationWanted = true
@@ -183,7 +157,7 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   }
 
   const handleUrlChange = async (from: string, to: string) => {
-    if (!ctx.isInvalid && from !== to) {
+    if (!inactive() && from !== to) {
       logger.info("URL changed from", from, "to", to)
       if (previewController.getReport().session?.status === "previewing")
         return
@@ -201,7 +175,7 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   const handleExtensionUrlChange = (e: any) => {
     const { from, to } = e.detail
     void handleUrlChange(from, to).catch((error) => {
-      if (!ctx.isInvalid)
+      if (!inactive())
         logger.error("Failed to handle URL change:", error)
     })
   }

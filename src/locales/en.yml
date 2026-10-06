@@ -22,12 +22,12 @@ popup:
     retry: Retry
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: Exclude this site from video translation
-    description: Includes subdomains; only affects video translation.
-    managed: Managed by another rule. Adjust it in settings.
-    manage: Manage rules
+  siteDisable:
+    label: Disable extension on this site
+    description: Applies immediately to all pages on this hostname.
+    disabled: The extension is disabled on this site.
     saving: Saving…
+    failed: Could not save. Try again.
     unavailable: Unavailable on this page
   auto: auto
   autoDetected: Auto-detected

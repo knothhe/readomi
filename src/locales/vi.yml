@@ -22,12 +22,12 @@ popup:
     retry: Thử lại
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: Không dịch video trên trang này
-    description: Bao gồm tên miền phụ; chỉ ảnh hưởng đến dịch video.
-    managed: Trang này bị loại trừ bởi quy tắc khác. Hãy chỉnh trong cài đặt.
-    manage: Quản lý quy tắc
+  siteDisable:
+    label: Tắt tiện ích trên trang web này
+    description: Áp dụng ngay cho mọi trang trên tên miền này.
+    disabled: Tiện ích đã bị tắt trên trang web này.
     saving: Đang lưu…
+    failed: Không thể lưu. Hãy thử lại.
     unavailable: Không khả dụng trên trang này
   auto: tự động
   autoDetected: Tự động phát hiện

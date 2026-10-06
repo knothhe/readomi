@@ -22,12 +22,12 @@ popup:
     retry: 再試行
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: このサイトの動画を翻訳しない
-    description: サブドメインを含み、動画翻訳にのみ適用されます。
-    managed: 別のルールで除外されています。設定で調整してください。
-    manage: ルールを管理
+  siteDisable:
+    label: このサイトで拡張機能を無効にする
+    description: このホスト名のすべてのページにすぐに適用されます。
+    disabled: このサイトで拡張機能は無効です。
     saving: 保存中…
+    failed: 保存できませんでした。再試行してください。
     unavailable: このページでは利用できません
   auto: 自動
   autoDetected: 自動検出

@@ -17,6 +17,7 @@ import { isExtensionContextInvalidatedError, isExtensionContextValid, isMessageC
 import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-policy"
 
 interface ProtocolMap {
+  getTopFrameUrl: () => Promise<string>
   // navigation
   openOptionsPage: (data?: { section?: string }) => void
   openSiteRulePanel: () => void

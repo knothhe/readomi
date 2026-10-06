@@ -60,6 +60,7 @@ export const configSchema = z.preprocess(fillMissingShortcutDefaults, z.object({
   translate: translateConfigSchema,
   siteRules: siteRulesConfigSchema,
   features: z.object({
+    disabledSites: z.array(z.string()).default([]),
     inputTranslation: z.boolean().default(true),
     hoverTranslation: z.boolean().default(false),
     hoverStream: z.boolean().default(true),

@@ -22,12 +22,12 @@ popup:
     retry: 重試
   pageText: Web text
   videoSubtitles: Video subtitles
-  videoSiteExclusion:
-    label: 此網站不翻譯影片
-    description: 包含子網域，僅影響影片翻譯。
-    managed: 此網站已被其他規則排除，請在設定中調整。
-    manage: 管理規則
+  siteDisable:
+    label: 在此網站停用擴充功能
+    description: 僅影響目前網域下的所有頁面，立即生效。
+    disabled: 擴充功能已在此網站停用。
     saving: 正在儲存…
+    failed: 儲存失敗，請重試。
     unavailable: 目前頁面無法使用
   auto: 自動
   autoDetected: 自動偵測

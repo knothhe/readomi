@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { browser, storage } from "#imports"
+import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { getTranslationStateKey } from "@/utils/constants/storage-keys"
 
 const sendMessageMock = vi.fn()
@@ -9,6 +10,7 @@ const storageSetItemMock = vi.fn()
 const storageRemoveItemMock = vi.fn()
 const tabsOnRemovedAddListenerMock = vi.fn()
 const tabsQueryMock = vi.fn()
+const tabsGetMock = vi.fn()
 const webNavigationOnCommittedAddListenerMock = vi.fn()
 const injectHostContentIntoTabIframesMock = vi.fn()
 const updateActionIconMock = vi.fn()
@@ -73,6 +75,7 @@ describe("translationMessage", () => {
 
     browser.tabs.onRemoved.addListener = tabsOnRemovedAddListenerMock
     browser.tabs.query = tabsQueryMock
+    browser.tabs.get = tabsGetMock
     browser.webNavigation.onCommitted.addListener = webNavigationOnCommittedAddListenerMock
     storage.getItem = storageGetItemMock
     storage.setItem = storageSetItemMock
@@ -87,6 +90,22 @@ describe("translationMessage", () => {
     storageGetItemMock.mockResolvedValue(undefined)
     storageSetItemMock.mockResolvedValue(undefined)
     storageRemoveItemMock.mockResolvedValue(undefined)
+  })
+
+  it("rejects popup and late manager enable requests for a disabled website", async () => {
+    const config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, disabledSites: ["example.com"] } }
+    storageGetItemMock.mockImplementation(async (key: string) => key === `local:${CONFIG_STORAGE_KEY}` ? config : { enabled: true })
+    tabsGetMock.mockResolvedValue({ id: 42, url: "https://example.com/article" })
+    await setupSubject()
+    expect(await getHandler("getEnablePageTranslationByTabId")({ data: { tabId: 42 } })).toBe(false)
+    await getHandler("tryToSetEnablePageTranslationByTabId")({ data: { tabId: 42, enabled: true } })
+    expect(sendMessageMock).not.toHaveBeenCalledWith("askManagerToTogglePageTranslation", expect.anything(), 42)
+    await getHandler("setAndNotifyPageTranslationStateChangedByManager")({
+      data: { enabled: true, url: "https://example.com/article" },
+      sender: { tab: { id: 42 }, frameId: 0 },
+    })
+    expect(storageSetItemMock).toHaveBeenCalledWith(getTranslationStateKey(42), { enabled: false })
+    expect(injectHostContentIntoTabIframesMock).not.toHaveBeenCalled()
   })
 
   it("persists manager-enabled state and injects current iframes from the top frame", async () => {

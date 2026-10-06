@@ -46,6 +46,7 @@ describe("standalone input translation runtime", () => {
       resolve = done
     }))
     const startup = bootstrapInputTranslation(ctx)
+    await vi.waitFor(() => expect(bind).toHaveBeenCalledOnce())
     ctx.notifyInvalidated()
     resolve(dispose)
     await startup

@@ -21,7 +21,7 @@ export const DEFAULT_CONFIG: Config = {
     wordPrefixEmphasis: false,
   },
   siteRules: { userRules: [], disabledBuiltInRules: [] },
-  features: { inputTranslation: true, hoverTranslation: false, hoverStream: true, hoverHotkey: "alt", modeShortcut: DEFAULT_MODE_SHORTCUT_KEY, subtitlesShortcut: DEFAULT_SUBTITLES_SHORTCUT_KEY, videoSubtitles: false, videoControls: true, videoExcludedSites: [], subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
+  features: { disabledSites: [], inputTranslation: true, hoverTranslation: false, hoverStream: true, hoverHotkey: "alt", modeShortcut: DEFAULT_MODE_SHORTCUT_KEY, subtitlesShortcut: DEFAULT_SUBTITLES_SHORTCUT_KEY, videoSubtitles: false, videoControls: true, videoExcludedSites: [], subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
   translate: {
     providerId: "openai-default",
     mode: "bilingual",

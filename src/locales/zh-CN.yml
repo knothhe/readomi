@@ -22,12 +22,12 @@ popup:
     retry: 重试
   pageText: 网页文字
   videoSubtitles: 视频字幕
-  videoSiteExclusion:
-    label: 此网站不翻译视频
-    description: 含子域名，仅影响视频翻译。
-    managed: 此网站由其他规则排除，请在设置中调整。
-    manage: 管理规则
+  siteDisable:
+    label: 在此网站禁用扩展
+    description: 仅影响当前域名下的所有页面，立即生效。
+    disabled: 扩展已在此网站禁用。
     saving: 正在保存…
+    failed: 保存失败，请重试。
     unavailable: 当前页面不可用
   auto: 自动
   autoDetected: 自动检测
