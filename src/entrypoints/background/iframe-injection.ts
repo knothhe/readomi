@@ -5,9 +5,10 @@ import { getPageTranslationEnabled } from "./page-translation-state"
 
 const HOST_CONTENT_SCRIPT_FILE = "/content-scripts/host.js" as const
 const INPUT_INJECTOR_SCRIPT_FILE = "/content-scripts/input-injector.js" as const
+const INPUT_TRANSLATION_SCRIPT_FILE = "/content-scripts/input-translation.js" as const
 const IFRAME_FULL_RUNTIME_AUTO_INJECT_PATTERNS = ["browse.library.kiwix.org"] as const
 
-type IframeContentScriptFile = typeof HOST_CONTENT_SCRIPT_FILE | typeof INPUT_INJECTOR_SCRIPT_FILE
+type IframeContentScriptFile = typeof HOST_CONTENT_SCRIPT_FILE | typeof INPUT_INJECTOR_SCRIPT_FILE | typeof INPUT_TRANSLATION_SCRIPT_FILE
 
 const pendingScriptDocumentKeys = new Set<string>()
 const injectedDocumentKeysByFrameAndScript = new Map<string, string>()
@@ -117,9 +118,9 @@ async function injectHostContentIntoFrame(
   frames?: FrameInfo[],
 ) {
   const documentKey = getDocumentInjectionKey(details)
-  // Include documents that manifest matching cannot reach, such as srcdoc.
-  // The rich editor bridge must be ready before the isolated host binds keys.
-  const filesToInject = [INPUT_INJECTOR_SCRIPT_FILE, HOST_CONTENT_SCRIPT_FILE].filter((file) => {
+  // Include documents that manifest matching cannot reach.
+  // The rich editor bridge must be ready before the isolated input handler.
+  const filesToInject = [INPUT_INJECTOR_SCRIPT_FILE, INPUT_TRANSLATION_SCRIPT_FILE, HOST_CONTENT_SCRIPT_FILE].filter((file) => {
     const scriptDocumentKey = getScriptDocumentInjectionKey(details, file)
     const scriptFrameKey = getScriptFrameInjectionKey(details, file)
     return !pendingScriptDocumentKeys.has(scriptDocumentKey)

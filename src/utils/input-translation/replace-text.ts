@@ -3,6 +3,10 @@ import { INPUT_REPLACE_REQUEST, INPUT_REPLACE_RESPONSE, INPUT_REQUEST_ATTRIBUTE 
 
 /** Native editing keeps replacement in the browser's undo history. */
 export function replaceNativeInput(element: HTMLInputElement | HTMLTextAreaElement, text: string): boolean {
+  // Native insertion truncates at maxlength before reporting success. Reject
+  // oversized translations before selecting or changing the user's draft.
+  if (element.maxLength >= 0 && text.length > element.maxLength)
+    return false
   element.select()
   const original = element.value
   try {

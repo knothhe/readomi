@@ -161,7 +161,7 @@ it("keeps the pending indicator inside the input's bottom-right corner through r
   }
 })
 
-it("replaces rich input in normal and late srcdoc iframes after page translation is enabled", async () => {
+it("replaces rich input in normal and late srcdoc iframes without enabling page translation", async () => {
   service = await startFakeService({ languageRules: true })
   const launched = await launchBrowser()
   context = launched.context
@@ -178,9 +178,7 @@ it("replaces rich input in normal and late srcdoc iframes after page translation
   const normal = await (await page.locator("#normal-frame").elementHandle()).contentFrame()
   await normal.waitForURL("**/language-rules?input-frame")
   await page.bringToFront()
-  await page.locator("h1").click()
-  await page.keyboard.press("Alt+E")
-  await normal.locator(".readomi-translated-block-content").first().waitFor({ timeout: 15000 })
+  assert.equal(await page.locator(".readomi-translated-block-content").count(), 0)
   await normal.evaluate(() => {
     const editor = document.createElement("div")
     editor.id = "rich"
@@ -191,7 +189,7 @@ it("replaces rich input in normal and late srcdoc iframes after page translation
   await spaces(normal, "#rich", LANGUAGE_RULES_FIXTURES.world.en, page.keyboard)
   await value(normal, "#rich", LANGUAGE_RULES_FIXTURES.world.zh)
 
-  // This frame has an inherited origin and is reached by programmatic injection.
+  // The standalone handler and MAIN-world bridge also match inherited origins.
   await page.evaluate((prose) => {
     const iframe = document.createElement("iframe")
     iframe.id = "srcdoc-frame"
@@ -200,10 +198,52 @@ it("replaces rich input in normal and late srcdoc iframes after page translation
   }, LANGUAGE_RULES_FIXTURES.design.en)
   const srcdoc = await (await page.locator("#srcdoc-frame").elementHandle()).contentFrame()
   await srcdoc.waitForURL("about:srcdoc")
-  await srcdoc.locator(".readomi-translated-block-content").first().waitFor({ timeout: 15000 })
   await spaces(srcdoc, "#rich", LANGUAGE_RULES_FIXTURES.curious.en, page.keyboard)
   await value(srcdoc, "#rich", LANGUAGE_RULES_FIXTURES.curious.zh)
   assert.equal(await srcdoc.locator(".readomi-input-pending").count(), 0)
+
+  // Enabling page translation still injects the full host runtime, without
+  // creating a second input shortcut handler or replacement bridge.
+  await page.locator("h1").click()
+  await page.keyboard.press("Alt+E")
+  await normal.locator(".readomi-translated-block-content").first().waitFor({ timeout: 15000 })
+  await spaces(normal, "#rich", LANGUAGE_RULES_FIXTURES.design.en, page.keyboard)
+  await value(normal, "#rich", LANGUAGE_RULES_FIXTURES.design.zh)
+})
+
+it("preserves drafts when translated input exceeds maxlength and still replaces text within the limit", async () => {
+  service = await startFakeService({ languageRules: true })
+  const launched = await launchBrowser()
+  context = launched.context
+  const { page: settings, extensionId } = launched
+  await configureService(settings, extensionId, setupDocumentFor(service.origin))
+  const worker = context.serviceWorkers()[0]
+  await worker.evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    config.language.secondaryCode = "eng"
+    await chrome.storage.local.set({ config })
+  })
+  const page = await context.newPage()
+  await page.goto(`${service.origin}/article`)
+  const { world } = LANGUAGE_RULES_FIXTURES
+  await page.evaluate(() => {
+    document.body.insertAdjacentHTML("beforeend", "<input id=\"input\" maxlength=\"24\"><textarea id=\"textarea\" maxlength=\"24\"></textarea>")
+  })
+  for (const selector of ["#input", "#textarea"]) {
+    await spaces(page, selector, world.zh)
+    await page.getByRole("alert").filter({ hasText: "Could not replace the input" }).waitFor()
+    assert.equal(await page.locator(selector).inputValue(), `${world.zh}  `)
+    await page.getByRole("alert").filter({ hasText: "Could not replace the input" }).waitFor({ state: "detached" })
+  }
+  // Set each limit using a serializable fixture value in the page's own realm.
+  await page.evaluate((length) => {
+    for (const element of document.querySelectorAll("input, textarea"))
+      element.maxLength = length
+  }, world.en.length)
+  for (const selector of ["#input", "#textarea"]) {
+    await spaces(page, selector, world.zh)
+    await value(page, selector, world.en)
+  }
 })
 
 it("discards a pending translation after blur to body and refocus on the same editor", async () => {

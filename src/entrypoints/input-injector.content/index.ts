@@ -9,6 +9,7 @@ declare global {
 export default defineContentScript({
   matches: ["*://*/*", "file:///*"],
   allFrames: true,
+  matchAboutBlank: true,
   world: "MAIN",
   runAt: "document_start",
   main() {
