@@ -25,7 +25,7 @@ export function LanguageRow({ muted = false }: { muted?: boolean }) {
         <span className="text-xs font-medium">{i18n.t("options.language.title")}</span>
         <span className="text-[10px] text-muted-foreground">{i18n.t("options.language.auto")}</span>
       </div>
-      <div className="grid grid-cols-[minmax(0,1fr)_16px_113px] items-center gap-2 border-b border-border px-0.5 py-1.5">
+      <div className="grid grid-cols-[minmax(0,1fr)_16px_113px] items-center gap-2 px-0.5 py-1.5">
         <span className="truncate text-xs text-muted-foreground">{i18n.t("options.language.other")}</span>
         <IconArrowRight className="size-3.5 text-muted-foreground" aria-hidden="true" />
         <TranslationLanguagePicker compact value={language.targetCode} label={i18n.t("options.language.primary")} onChange={value => value !== language.targetCode && save({ targetCode: value as LangCodeISO6393 })} />

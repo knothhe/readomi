@@ -37,7 +37,7 @@ export function SiteDisableControl() {
   }
 
   return (
-    <section className="flex min-w-0 flex-col gap-1 border-t border-border px-0.5 pt-2.5" aria-busy={busy || undefined}>
+    <section className="flex min-w-0 flex-col gap-1 px-0.5 pt-2.5" aria-busy={busy || undefined}>
       <div className="flex min-h-6 items-center justify-between gap-2.5">
         <label htmlFor={id} title={title} className="text-[13px] leading-[18px]">{i18n.t("popup.siteDisable.label")}</label>
         <Switch

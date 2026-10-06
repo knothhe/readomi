@@ -13,7 +13,7 @@ export function VideoTranslationControl() {
   const shortcut = features.subtitlesShortcut.trim() ? formatHotkey(features.subtitlesShortcut) : null
 
   return (
-    <section aria-label={i18n.t("popup.videoSubtitles")} className="flex flex-col gap-2 border-t border-border pt-2.5">
+    <section aria-label={i18n.t("popup.videoSubtitles")} className="flex flex-col gap-2 pt-2.5">
       <TranslationControlRow
         label={i18n.t("popup.videoSubtitles")}
         controlId={id}

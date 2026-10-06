@@ -5,7 +5,7 @@ import { PopupHelpAction } from "./popup-help-action"
 
 export function TranslationHelp({ children }: { children: ReactNode }) {
   return (
-    <details className="border-t border-border pt-2.5">
+    <details className="pt-2.5">
       <summary className="cursor-pointer rounded text-[12px] leading-5 text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50">{i18n.t("popup.recovery.help")}</summary>
       <div className="flex flex-col gap-2 pt-2">
         <PopupHelpAction onClick={() => void openOptionsPage({ section: "quality" })}>
