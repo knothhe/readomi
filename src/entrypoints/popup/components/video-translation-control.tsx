@@ -4,10 +4,9 @@ import { i18n } from "#imports"
 import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { formatHotkey } from "@/utils/os"
-import { DisplayModeControl } from "./display-mode-control"
 import { TranslationControlRow } from "./translation-control-row"
 
-/** Subtitle modes are edited here independently of web text, without opening Settings. */
+/** Toggle subtitles using the display mode chosen in Settings. */
 export function VideoTranslationControl() {
   const [features, setFeatures] = useAtom(configFieldsAtomMap.features)
   const id = useId()
@@ -18,7 +17,7 @@ export function VideoTranslationControl() {
       <TranslationControlRow
         label={i18n.t("popup.videoSubtitles")}
         controlId={id}
-        hint={shortcut && <span className="text-[11px] leading-4 text-muted-foreground">{shortcut}</span>}
+        hint={shortcut && <span className="shrink-0 whitespace-nowrap text-[11px] leading-4 text-muted-foreground">{shortcut}</span>}
         control={(
           <Switch
             id={id}
@@ -28,7 +27,6 @@ export function VideoTranslationControl() {
           />
         )}
       />
-      <DisplayModeControl value={features.subtitleMode} label={i18n.t("features.mode")} onChange={subtitleMode => void setFeatures({ subtitleMode })} />
     </section>
   )
 }

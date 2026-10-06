@@ -22,6 +22,16 @@ function dimensions(popup) {
     const root = document.querySelector("#root").getBoundingClientRect()
     const footer = document.querySelector("footer").getBoundingClientRect()
     const scroller = document.scrollingElement
+    const featureRows = [...document.querySelectorAll("#root section[aria-label] div")]
+      .map(row => row.firstElementChild)
+      .filter(copy => copy?.children.length === 2 && copy.firstElementChild.hasAttribute("title"))
+      .map((copy) => {
+        const label = copy.children[0].getBoundingClientRect()
+        const hint = copy.children[1].getBoundingClientRect()
+        return { inline: Math.abs((label.top + label.height / 2) - (hint.top + hint.height / 2)) < 1, label: copy.children[0].textContent }
+      })
+    const site = document.querySelector("#root section:not([aria-label])").getBoundingClientRect()
+    const help = document.querySelector("#root details").getBoundingClientRect()
     return {
       contentHeight: root.height,
       viewportHeight: innerHeight,
@@ -30,6 +40,8 @@ function dimensions(popup) {
       scrollWidth: scroller.scrollWidth,
       clientWidth: scroller.clientWidth,
       footerBottom: footer.bottom,
+      featureRows,
+      siteBeforeHelp: site.bottom <= help.top,
     }
   })
 }
@@ -77,6 +89,11 @@ it("fits every UI language without scrolling, and keeps the footer reachable in 
       assert.equal(size.scrollHeight, size.clientHeight, label)
       assert.equal(size.scrollWidth, size.clientWidth, label)
       assert.ok(size.footerBottom <= size.viewportHeight, label)
+      assert.equal(size.featureRows.length, 3, label)
+      assert.ok(size.featureRows.every(row => row.inline), label)
+      assert.ok(size.siteBeforeHelp, label)
+      assert.equal(await popup.getByRole("group", { name: messages.popup_displayMode.message, exact: true }).count(), 0, label)
+      assert.equal(await popup.getByRole("group", { name: messages.features_mode.message, exact: true }).count(), 0, label)
     }
     test.diagnostic(`${locale}: entire popup fits within 320 × 600`)
   }

@@ -9,14 +9,14 @@ interface TranslationControlRowProps {
 
 /** Translation features share the same label, hint and action layout. */
 export function TranslationControlRow({ label, hint, control, controlId }: TranslationControlRowProps) {
-  const labelClass = "text-[13px] leading-[18px]"
+  const labelClass = "truncate text-[13px] leading-[18px]"
 
   return (
     <div className="flex min-h-9 items-center justify-between gap-3 px-0.5">
-      <div className="flex min-w-0 flex-col items-start gap-0.5">
+      <div className="flex min-w-0 items-center gap-2">
         {controlId
-          ? <label htmlFor={controlId} className={labelClass}>{label}</label>
-          : <span className={labelClass}>{label}</span>}
+          ? <label htmlFor={controlId} title={label} className={labelClass}>{label}</label>
+          : <span title={label} className={labelClass}>{label}</span>}
         {hint}
       </div>
       {control}

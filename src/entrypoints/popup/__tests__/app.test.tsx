@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { Config } from "@/types/config/config"
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { storage } from "#imports"
@@ -87,11 +87,12 @@ describe("popup app", () => {
     expect(openOptionsPage).toHaveBeenCalledWith({ section: "service" })
   })
 
-  it("shows the translate action and display mode once a key is set", () => {
+  it("shows the translate action and keeps display mode controls in settings", () => {
     renderPopup({ config: configWithKey })
 
     expect(screen.getByRole("button", { name: /popup\.translate/ })).toBeEnabled()
-    expect(screen.getByRole("group", { name: "popup.displayMode" })).toBeInTheDocument()
+    expect(screen.queryByRole("group", { name: "popup.displayMode" })).toBeNull()
+    expect(screen.queryByRole("group", { name: "features.mode" })).toBeNull()
     expect(screen.queryByText("popup.setup.title")).toBeNull()
   })
 
@@ -181,8 +182,7 @@ describe("popup app", () => {
     renderPopup({ config })
     const toggle = screen.getByRole("switch", { name: "features.video" })
     expect(toggle).toHaveAttribute("aria-checked", "false")
-    const mode = screen.getByRole("group", { name: "features.mode" })
-    expect(within(mode).getByRole("button", { name: "popup.translationOnly" })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.queryByRole("group", { name: "features.mode" })).toBeNull()
 
     fireEvent.click(toggle)
     await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({
@@ -196,34 +196,6 @@ describe("popup app", () => {
     expect(toggle).toHaveAttribute("aria-checked", "false")
 
     expect(screen.queryByRole("button", { name: "subtitleStyle.adjust" })).toBeNull()
-  })
-
-  it("edits web and subtitle modes independently without enabling either translation", async () => {
-    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, configWithKey)
-    renderPopup({ config: configWithKey })
-    const pageMode = screen.getByRole("group", { name: "popup.displayMode" })
-    const subtitleMode = screen.getByRole("group", { name: "features.mode" })
-    fireEvent.click(within(pageMode).getByRole("button", { name: "popup.translationOnly" }))
-    await waitFor(async () => {
-      const saved = await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)
-      expect(saved?.translate.mode).toBe("translationOnly")
-      expect(saved?.features.subtitleMode).toBe("bilingual")
-      expect(saved?.features.videoSubtitles).toBe(false)
-    })
-    fireEvent.click(within(subtitleMode).getByRole("button", { name: "popup.translationOnly" }))
-    await waitFor(async () => {
-      const saved = await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)
-      expect(saved?.features.subtitleMode).toBe("translationOnly")
-      expect(saved?.translate.mode).toBe("translationOnly")
-    })
-    fireEvent.click(within(pageMode).getByRole("button", { name: "popup.bilingual" }))
-    await waitFor(async () => {
-      const saved = await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`)
-      expect(saved?.translate.mode).toBe("bilingual")
-      expect(saved?.features.subtitleMode).toBe("translationOnly")
-      expect(saved?.features.videoSubtitles).toBe(false)
-    })
-    expect(screen.getByRole("button", { name: "popup.translate" })).toBeInTheDocument()
   })
 
   it("turns English word-prefix emphasis on and off from the footer, with or without a service", async () => {

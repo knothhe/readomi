@@ -1,10 +1,9 @@
-import { useAtom, useAtomValue } from "jotai"
+import { useAtomValue } from "jotai"
 import { i18n } from "#imports"
-import { configAtom, configFieldsAtomMap } from "@/utils/atoms/config"
+import { configAtom } from "@/utils/atoms/config"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
 import { isSiteDisabled } from "@/utils/site-disable"
 import { activeTabAtom } from "./atoms"
-import { DisplayModeControl } from "./components/display-mode-control"
 import { HoverTranslationControl } from "./components/hover-translation-control"
 import { LanguageRow } from "./components/language-row"
 import { PopupFooter } from "./components/popup-footer"
@@ -20,7 +19,6 @@ import { usePopupSync } from "./use-popup-sync"
 export default function App() {
   usePopupSync()
   const providerConfig = useAtomValue(featureProviderConfigAtom("translate"))
-  const [translateConfig, setTranslateConfig] = useAtom(configFieldsAtomMap.translate)
   const config = useAtomValue(configAtom)
   const tab = useAtomValue(activeTabAtom)
   const disabled = isSiteDisabled(tab.url, config)
@@ -34,19 +32,14 @@ export default function App() {
           <>
             {needsApiKey && <SetupPromptCard />}
             <section aria-label={i18n.t("popup.pageText")} className="flex flex-col gap-2">
-              {!needsApiKey && (
-                <>
-                  <TranslateButton />
-                  <DisplayModeControl value={translateConfig.mode} label={i18n.t("popup.displayMode")} onChange={mode => void setTranslateConfig({ mode })} />
-                </>
-              )}
+              {!needsApiKey && <TranslateButton />}
               <HoverTranslationControl />
             </section>
             <VideoTranslationControl />
-            <TranslationHelp><SiteRuleAgentEntry /></TranslationHelp>
           </>
         )}
         <SiteDisableControl />
+        {!disabled && <TranslationHelp><SiteRuleAgentEntry /></TranslationHelp>}
       </div>
       <PopupFooter />
     </div>
