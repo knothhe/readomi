@@ -6,6 +6,8 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Store-Origins-zh-CN.html", title: "商店与 README · 项目来源与定制理念 · 中文", x: 0, y: 194300, w: 1120, h: 900 },
+    { file: "Store-Origins-en.html", title: "商店与 README · 项目来源与定制理念 · 英文", x: 1200, y: 194300, w: 1120, h: 900 },
     { file: "Settings-Multi-Service-Switched-Keyboard.html", title: "翻译服务 · 键盘切换为 Gemini · 保留焦点", x: 1360, y: 193200, w: 1280, h: 900 },
     { file: "Settings-Multi-Service-Reorder-Hover.html", title: "翻译服务 · 拖动排序 · 悬停 Gemini 行显示手柄", x: 0, y: 193200, w: 1280, h: 900 },
     { file: "Settings-Multi-Service-Dragging.html", title: "翻译服务 · 拖动排序 · 拖动中 · Gemini 移到 DeepSeek 前", x: 0, y: 191000, w: 1280, h: 900 },
