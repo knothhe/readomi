@@ -87,7 +87,8 @@ export function replaceDraft(element: Element, text: string): boolean {
   }
 
   const newContent = ContentStateConstructor.createFromText(text)
-  const newEditorState = EditorStateConstructor.push(editorState, newContent, "insert-characters")
+  // A translation must undo independently of the spaces that triggered it.
+  const newEditorState = EditorStateConstructor.push(editorState, newContent, "insert-fragment")
 
   // Move cursor to end
   if (typeof EditorStateConstructor.moveSelectionToEnd === "function") {

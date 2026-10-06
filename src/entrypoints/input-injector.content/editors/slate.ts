@@ -50,10 +50,17 @@ export function isSlateElement(element: Element): boolean {
 function findSlateEditor(fiber: ReactFiber): SlateEditor | null {
   let currentFiber: ReactFiber | null = fiber
   while (currentFiber) {
+    const editorProp = currentFiber.memoizedProps?.editor
+    if (isSlateEditor(editorProp))
+      return editorProp
     let hook = currentFiber.memoizedState
     while (hook) {
-      if (isSlateEditor(hook.memoizedState))
-        return hook.memoizedState
+      const state = hook.memoizedState
+      if (isSlateEditor(state))
+        return state
+      // React stores useMemo as [value, dependencies], unlike useState.
+      if (Array.isArray(state) && isSlateEditor(state[0]))
+        return state[0]
       hook = hook.next
     }
     currentFiber = currentFiber.return
