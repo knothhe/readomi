@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url"
 import { nextVersion } from "../release.mjs"
 
 const releaseScript = fileURLToPath(new URL("../release.mjs", import.meta.url))
+const releaseNotesScript = fileURLToPath(new URL("../release-notes.mjs", import.meta.url))
 const chromeScript = fileURLToPath(new URL("../release-chrome.sh", import.meta.url))
 const projectConfig = JSON.parse(readFileSync(new URL("../../.release.json", import.meta.url), "utf8"))
 
@@ -58,6 +59,41 @@ function fixture(t, checks = []) {
   const initial = git("rev-parse", "HEAD")
   return { folder, work, remote, env, run, git, release, version, remoteRef, initial }
 }
+
+it("release notes list commits between reachable version tags and exclude release and merge commits", (t) => {
+  const f = fixture(t)
+  f.git("tag", "v1.2.0")
+  f.git("checkout", "-b", "feature")
+  f.git("commit", "--allow-empty", "-m", "feat: translate [subtitles]")
+  const featureHash = f.git("rev-parse", "--short", "HEAD")
+  f.git("checkout", projectConfig.branch)
+  f.git("merge", "--no-ff", "feature", "-m", "Merge feature")
+  f.git("commit", "--allow-empty", "-m", "fix: preserve layout")
+  const fixHash = f.git("rev-parse", "--short", "HEAD")
+  f.git("commit", "--allow-empty", "-m", "chore(release): v1.2.1")
+  f.git("tag", "v1.2.1")
+  f.git("commit", "--allow-empty", "-m", "future change")
+  f.git("tag", "v2.0.0")
+  const result = f.run(process.execPath, [releaseNotesScript, "example/fixture", "v1.2.1"])
+  assert.match(result.stdout, /compare\/v1\.2\.0\.\.\.v1\.2\.1/)
+  assert.ok(result.stdout.includes(`- feat: translate \\[subtitles\\] (\`${featureHash}\`)`))
+  assert.ok(result.stdout.includes(`- fix: preserve layout (\`${fixHash}\`)`))
+  assert.doesNotMatch(result.stdout, /fixture \(|chore\(release\)|Merge feature|future change/)
+})
+
+it("release notes include history on the first release and describe an empty release", (t) => {
+  const f = fixture(t)
+  f.git("commit", "--allow-empty", "-m", "chore(release): v1.2.0")
+  f.git("tag", "v1.2.0")
+  const first = f.run(process.execPath, [releaseNotesScript, "example/fixture", "v1.2.0"])
+  assert.match(first.stdout, /commits\/v1\.2\.0/)
+  assert.match(first.stdout, /- fixture \(`/)
+  assert.doesNotMatch(first.stdout, /chore\(release\)/)
+  f.git("commit", "--allow-empty", "-m", "chore(release): v1.2.1")
+  f.git("tag", "v1.2.1")
+  const empty = f.run(process.execPath, [releaseNotesScript, "example/fixture", "v1.2.1"])
+  assert.match(empty.stdout, /No changes since the previous release/)
+})
 
 it("previews without changing files, running checks or creating refs", (t) => {
   const f = fixture(t, [[process.execPath, "-e", "process.exit(3)"]])
@@ -266,4 +302,27 @@ it("Chrome upload stops before building when the matching release does not exist
   assert.match(result.stderr, /GitHub Release 'v1.2.0' is not available/)
   assert.doesNotMatch(result.stderr, /Build must not run|Unexpected GitHub write/)
   assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+})
+
+it("Chrome upload uses the readomi ZIP even when a legacy ZIP exists", (t) => {
+  const f = fixture(t)
+  f.git("tag", "-a", "v1.2.0", "-m", "Release v1.2.0")
+  const bin = join(f.folder, "bin")
+  mkdirSync(bin)
+  writeFileSync(join(bin, "gh"), `#!/bin/sh
+case "$1 $2" in
+  'auth status'|'release view') exit 0 ;;
+  'repo view') echo example/fixture ;;
+  'release upload') printf '%s\\n' "$@" > .output/upload-args.txt ;;
+  *) exit 99 ;;
+esac
+`, { mode: 0o755 })
+  writeFileSync(join(bin, "pnpm"), `#!/bin/sh
+mkdir -p .output
+touch .output/readomi-1.2.0-chrome.zip .output/readomiextension-1.2.0-chrome.zip
+`, { mode: 0o755 })
+  f.env.PATH = `${bin}:${f.env.PATH}`
+  f.run("bash", [join(f.work, "scripts/release-chrome.sh")])
+  assert.equal(readFileSync(join(f.work, ".output/upload-args.txt"), "utf8"), "release\nupload\nv1.2.0\n.output/readomi-1.2.0-chrome.zip\n--repo\nexample/fixture\n--clobber\n")
+  assert.equal(f.git("status", "--porcelain"), "")
 })

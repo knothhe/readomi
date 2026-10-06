@@ -35,6 +35,7 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ env.TAG }}
+          fetch-depth: 0
 
       - name: Check Tag Matches package.json Version
         run: |
@@ -69,13 +70,19 @@ jobs:
       - name: Create GitHub Release
         run: |
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --verify-tag --generate-notes --title "$TAG"
+            node scripts/release-notes.mjs "$GITHUB_REPOSITORY" "$TAG" > "$RUNNER_TEMP/release-notes.md"
+            gh release create "$TAG" --verify-tag --notes-file "$RUNNER_TEMP/release-notes.md" --title "$TAG"
           fi
         env:
           GH_TOKEN: ${{ github.token }}
 
       - name: Upload Extension Zips to Release
-        run: gh release upload "$TAG" .output/*-chrome.zip .output/*-edge.zip .output/*-firefox.zip .output/*-sources.zip --clobber
+        run: |
+          VERSION=$(jq -r .version package.json)
+          gh release upload "$TAG" \
+            ".output/readomi-$VERSION-chrome.zip" \
+            ".output/readomi-$VERSION-edge.zip" \
+            ".output/readomi-$VERSION-firefox.zip" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
 

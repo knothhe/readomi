@@ -114,7 +114,7 @@ export function githubRepo(url) {
   requireThat(match, "GitHub Release requires a standard github.com remote URL; aliases/Enterprise need explicit adaptation.")
   return match[1]
 }
-function releaseNotes(repo, prefix, target, sourceHead, tag) {
+export function releaseNotes(repo, prefix, target, sourceHead, tag) {
   const previous = git("tag", "--merged", sourceHead, "--list").split("\n").filter(Boolean).filter(name => name.startsWith(prefix)).filter((name) => {
     try {
       return compare(name.slice(prefix.length), target) < 0

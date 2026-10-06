@@ -64,7 +64,11 @@ pnpm release patch --apply
 本地已有的未推送提交会随 `main` 一起推送。脚本不运行构建或 npm 包发布。
 
 推送 tag 后，现有 [Release Extension CI](./.github/workflows/release.yml)
-测试、构建 Chrome / Edge / Firefox ZIP、创建 GitHub Release 并上传扩展包与源码包。
+测试、构建 Chrome / Edge / Firefox ZIP、创建 GitHub Release 并上传扩展包。
+Release 正文包含上次可达的较低版本 tag 以来的非 merge commit 标题和短 hash，
+排除版本提交，并保留 Full Changelog 链接；CI 与本地命令使用相同的生成逻辑。
+附件命名为 `readomi-<version>-chrome.zip`、`readomi-<version>-edge.zip` 和
+`readomi-<version>-firefox.zip`，不生成或上传 sources ZIP。
 配置完整的 Chrome 商店凭据时，tag 推送还会触发商店提交；手动重建既有 tag
 的附件不会再次触发商店提交。
 
@@ -85,6 +89,10 @@ CI 继续上传附件。该选项本身不构建或上传扩展包。
 `pnpm release:chrome` 用于重建并上传某个已发布版本的 Chrome ZIP。必须检出
 对应 tag、保持工作区干净，并确认 GitHub Release 已存在。它不修改版本、不创建
 tag 或 Release；上传会替换同名 Chrome ZIP。
+
+手动上传 Chrome Web Store 时，运行 `pnpm zip`，使用生成的
+`.output/readomi-<version>-chrome.zip`。打包会自动移除 manifest 的
+`key` 字段；`pnpm build` 和本地开发仍保留用于固定扩展 ID 的公钥。
 
 ## 本地发布与失败恢复
 

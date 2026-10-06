@@ -66,16 +66,11 @@ fi
 echo "Building Chrome extension version $PACKAGE_VERSION..."
 pnpm zip
 
-shopt -s nullglob
-chrome_zips=(.output/*-"$PACKAGE_VERSION"-chrome.zip)
-shopt -u nullglob
-
-if [[ ${#chrome_zips[@]} -ne 1 ]]; then
-  echo "Error: expected exactly one Chrome ZIP for version $PACKAGE_VERSION in .output, found ${#chrome_zips[@]}." >&2
+CHROME_ZIP=".output/readomi-$PACKAGE_VERSION-chrome.zip"
+if [[ ! -f "$CHROME_ZIP" ]]; then
+  echo "Error: expected Chrome ZIP '$CHROME_ZIP' was not generated." >&2
   exit 1
 fi
-
-CHROME_ZIP="${chrome_zips[0]}"
 
 echo "Uploading '$CHROME_ZIP' to $REPOSITORY release $TAG..."
 gh release upload "$TAG" "$CHROME_ZIP" --repo "$REPOSITORY" --clobber

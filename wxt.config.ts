@@ -1,3 +1,5 @@
+import { readFile, writeFile } from "node:fs/promises"
+import { resolve } from "node:path"
 import { defineConfig } from "wxt"
 import { uiLanguageMessages } from "./scripts/ui-language-messages.ts"
 
@@ -65,7 +67,19 @@ export default defineConfig({
     }),
   }),
   zip: {
-    excludeSources: ["docs/**/*", "assets/**/*", "repos/**/*"],
+    name: "readomi",
+    zipSources: false,
+  },
+  hooks: {
+    "zip:extension:start": async (wxt) => {
+      if (wxt.config.browser !== "chrome")
+        return
+      // Keep the fixed ID in local builds, but omit the key from store uploads.
+      const manifestPath = resolve(wxt.config.outDir, "manifest.json")
+      const manifest = JSON.parse(await readFile(manifestPath, "utf8"))
+      delete manifest.key
+      await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
+    },
   },
   dev: {
     server: {
