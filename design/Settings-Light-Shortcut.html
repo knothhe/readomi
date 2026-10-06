@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="zh-CN" style="color-scheme:light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>快捷键 · Option / Alt E、M、V — Readomi</title>
-<style>html,body{margin:0;min-width:0;min-height:900px;background:light-dark(#faf8f4,#242321)}body{width:100%}</style></head><body>
+<style>html,body{margin:0;min-width:0;min-height:900px;background:light-dark(#faf8f4,#242321)}body{width:100%}
+    #readomi-settings-light .rd-preview-aspects { display:flex; margin-bottom:14px; width:max-content; max-width:100%; }
+    #readomi-settings-light .rd-preview-aspects button { min-width:0; padding:6px 11px; }
+    #readomi-settings-light [data-preview-shape] { margin-inline:auto; width:100%; }
+    #readomi-settings-light [data-preview-shape="portrait"] { aspect-ratio:9/16; max-width:285px; }
+    #readomi-settings-light [data-preview-shape="square"] { aspect-ratio:1; max-width:285px; }
+    #readomi-settings-light .rd-preview-size { display:block; margin-top:10px; color:var(--rd-muted); font-size:12px; font-variant-numeric:tabular-nums; }
+</style></head><body>
 <!-- Final settings design. This state supersedes the corresponding Settings-Refresh / Settings-Subtitle board. Bottom saves 88% and renders at the player-compatible 98% anchor. Preview grows by measured caption height + 24 px without shrinking text; its caption width is frame width - 16 px. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-service" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"></rect><rect x="4" y="14" width="16" height="6" rx="2"></rect><path d="M7 7h.01M7 17h.01M12 7h5M12 17h5"></path></symbol>
@@ -182,10 +189,10 @@
     #readomi-settings-light .rd-position-seg svg { width:14px; height:14px; }
     #readomi-settings-light .rd-quiet-button { padding:0; border:0; background:transparent; color:var(--rd-muted); font-size:12px; }
     #readomi-settings-light .rd-video-preview { aspect-ratio:16/9; }
-    #readomi-settings-light .rd-caption { position:absolute; left:50%; top:88%; transform:translate(-50%,-100%); margin:0; width:max-content; max-width:calc(100% - 16px); border:0; border-radius:5px; padding:0; touch-action:none; user-select:none; }
+    #readomi-settings-light .rd-caption { position:absolute; left:50%; top:88%; transform:translate(-50%,-100%); margin:0; width:max-content; max-width:80%; border:0; border-radius:5px; padding:0; touch-action:none; user-select:none; }
     #readomi-settings-light .rd-shell .rd-caption { color:#fff; line-height:1.4; }
     #readomi-settings-light .rd-caption span { display:block; padding:1px 3px; }
-    #readomi-settings-light .rd-caption span:first-child { font-size:.82em; }
+    #readomi-settings-light .rd-caption [data-sub-original] { font-size:.85em; margin-bottom:4px; }
     #readomi-settings-light .rd-preview-setting-summary { margin-top:16px; border-top:1px solid var(--rd-line); padding-top:12px; font-size:12px; color:var(--rd-muted); }
     #readomi-settings-light [data-page="video"] .rd-preview { position:sticky; top:20px; }
     #readomi-settings-light .rd-excluded-heading { margin-bottom:11px; }
@@ -380,15 +387,15 @@
             <div class="rd-row"><div><div class="rd-label">视频字幕翻译</div><p class="rd-help">复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="视频字幕翻译" data-video checked></div>
             <div class="rd-row rd-stack"><span class="rd-label">字幕显示方式</span><div class="rd-seg" role="group" aria-label="字幕显示方式"><button type="button" class="cursor-interaction" data-submode="bilingual" aria-pressed="true">双语对照</button><button type="button" class="cursor-interaction" data-submode="only" aria-pressed="false">仅译文</button></div></div>
             <div class="rd-row rd-choice-row"><div class="rd-label-line"><span class="rd-label">字幕预设</span><span class="rd-help" data-preset-modified>已调整</span></div><div class="rd-preset-grid" role="group" aria-label="字幕预设">
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>清透</strong><small>3% · 无背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="compact" aria-pressed="false"><strong>轻量</strong><small>2.5% · 35% 背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="study" aria-pressed="false"><strong>专注</strong><small>3.75% · 65% 背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="cinema" aria-pressed="false"><strong>影院</strong><small>4.5% · 85% 背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>清透</strong><small>5% · 无背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="compact" aria-pressed="false"><strong>轻量</strong><small>4% · 35% 背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="study" aria-pressed="false"><strong>专注</strong><small>6.25% · 65% 背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="cinema" aria-pressed="false"><strong>影院</strong><small>7.5% · 85% 背景</small></button>
             </div></div>
             <div class="rd-size-group" role="group" aria-label="字幕字号设置" data-size-group>
               <div class="rd-size-mode-row"><span class="rd-label">字号方式</span><div class="rd-seg" role="group" aria-label="字号方式"><button class="cursor-interaction" type="button" data-sizemode="video" aria-pressed="true">随视频窗口</button><button class="cursor-interaction" type="button" data-sizemode="fixed" aria-pressed="false">固定字号</button></div></div>
-              <p class="rd-help" data-size-help>字号为视频宽度的百分比，随窗口和全屏缩放。</p>
-              <div class="rd-font-row"><div class="rd-font-heading"><span class="rd-label">字幕字号</span><div class="rd-size-choices" role="group" aria-label="常用字号" data-size-choices></div></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="1.25" max="12.5" step=".25" value="3" aria-label="字幕字号" data-subsize><label class="rd-number-wrap"><input class="rd-number" type="number" min="1.25" max="12.5" step=".25" value="3" aria-label="字号数值" data-size-number><span data-size-unit>%</span></label></div></div>
+              <p class="rd-help" data-size-help>字号为视频显示区域短边的百分比，随窗口和全屏缩放。</p>
+              <div class="rd-font-row"><div class="rd-font-heading"><span class="rd-label">字幕字号</span><div class="rd-size-choices" role="group" aria-label="常用字号" data-size-choices></div></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="1.25" max="25" step=".25" value="5" aria-label="字幕字号" data-subsize><label class="rd-number-wrap"><input class="rd-number" type="number" min="1.25" max="25" step=".25" value="5" aria-label="字号数值" data-size-number><span data-size-unit>%</span></label></div></div>
             </div>
             <div class="rd-row rd-choice-row" data-opacity-row><div class="rd-label-line"><span class="rd-label">背景深度</span><output data-opacity-value>0%</output></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="0" max="100" value="0" aria-label="背景深度" data-opacity><label class="rd-number-wrap"><input class="rd-number" type="number" min="0" max="100" value="0" aria-label="背景深度数值" data-opacity-number><span>%</span></label></div><p class="rd-help rd-opacity-help">0% 为无背景，数值越大背景越深。</p></div>
           </div>
@@ -402,7 +409,7 @@
           </section>
           </details>
         </div>
-        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-video-preview" data-video-stage><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>A new idea.</span><span>新的想法。</span></button></div><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 3% · 无背景 · 底部</div></aside>
+        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="预览画面"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="true">横版</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">竖版</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="false">正方形</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="landscape"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>So we beat on, boats against the current, borne back ceaselessly into the past.</span><span>于是我们奋力向前，逆流行舟，却不断被推回往昔。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 5% · 无背景 · 底部</div></aside>
       </div>
     </section>
   </template>
@@ -441,7 +448,7 @@
       const pages=shell.querySelector('.rd-pages');
       const nav=shell.querySelector('.rd-nav');
       const defs=[['service','翻译服务','server'],['reading','网页阅读','book-open'],['video','视频字幕','captions'],['quality','译文质量','sparkles'],['shortcut','快捷键','keyboard'],['appearance','外观','sun-moon'],['backup','备份','archive']];
-      const presets={clear:{name:'清透',relative:3,fixed:20,opacity:0},compact:{name:'轻量',relative:2.5,fixed:16,opacity:35},study:{name:'专注',relative:3.75,fixed:24,opacity:65},cinema:{name:'影院',relative:4.5,fixed:28,opacity:85}};
+      const presets={clear:{name:'清透',relative:5,fixed:20,opacity:0},compact:{name:'轻量',relative:4,fixed:16,opacity:35},study:{name:'专注',relative:6.25,fixed:24,opacity:65},cinema:{name:'影院',relative:7.5,fixed:28,opacity:85}};
       const positions={top:{x:50,y:18},center:{x:50,y:55},bottom:{x:50,y:88}};
       const positionLabels={top:'顶部',center:'居中',bottom:'底部',custom:'自定义位置'};
       const styleLabels={line:'左侧细线',none:'无',fade:'淡化',color:'着色',bg:'底色',dashed:'虚线下划',quote:'引用条',border:'边框',blur:'悬停显示'};
@@ -451,7 +458,7 @@
       const defaultShortcuts={page:'Alt+E',mode:'Alt+M',video:'Alt+V'};
       const shortcutLabels={page:'翻译此页 / 显示原文',mode:'切换双语 / 仅译文',video:'切换视频字幕'};
       const saved=BOARD_STATE;
-      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,submode:'bilingual',subpreset:'clear',relative:3,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
+      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,submode:'bilingual',subpreset:'clear',relative:5,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
       if(!presets[state.subpreset]) state.subpreset='clear';
       if(!styleLabels[state.style]) state.style='line';
       if(!Array.isArray(state.rules)) state.rules=[];
@@ -487,15 +494,18 @@
       }
       const currentSize=()=>state.sizemode==='fixed'?state.fixed:state.relative;
       const currentUnit=()=>state.sizemode==='fixed'?'px':'%';
-      const sizeLimits=()=>state.sizemode==='fixed'?{min:8,max:80,step:1}:{min:1.25,max:12.5,step:.25};
+      const sizeLimits=()=>state.sizemode==='fixed'?{min:8,max:80,step:1}:{min:1.25,max:25,step:.25};
       const positionName=()=>Object.keys(positions).find(k=>Math.abs(state.position.x-positions[k].x)<.5&&Math.abs(state.position.y-positions[k].y)<.5)||'custom';
       const prettyShortcut=value=>value?value.split('+').map(v=>({Alt:'⌥',Control:'⌃',Shift:'⇧',Meta:'⌘'})[v]||v).join(' '):'未设置';
       function setSize(value){const limits=sizeLimits();const number=Number(value);if(!Number.isFinite(number))return;const size=Math.max(limits.min,Math.min(limits.max,Math.round(number/limits.step)*limits.step));if(state.sizemode==='fixed')state.fixed=size;else state.relative=size;}
       function persist(){}
+      let previewAspect="landscape";
+      const previewRatios={landscape:9/16,portrait:16/9,square:1};
       function renderCaption(){
         qa('[data-caption]').forEach(caption=>{const stage=caption.closest('[data-video-stage]');
         const previewWidth=stage.getBoundingClientRect().width||320;
-        caption.style.fontSize=(state.sizemode==='fixed'?state.fixed:state.relative*previewWidth/100)+'px';
+        caption.style.fontSize=(state.sizemode==='fixed'?state.fixed:state.relative*Math.min(previewWidth,previewWidth*previewRatios[previewAspect])/100)+'px';
+        if(q('[data-preview-size]'))q('[data-preview-size]').textContent='预览字号：'+Number(parseFloat(caption.style.fontSize).toFixed(2))+' px';
         caption.style.background='rgba(15,20,35,'+state.opacity/100+')';
         // Geometry stays stable when background depth crosses zero.
         caption.style.padding='4px 7px';caption.style.fontWeight=state.subpreset==='compact'?'500':'600';
@@ -518,6 +528,12 @@
         caption.style.left=x+'%';caption.style.top=y+'%';
         });
       }
+      qa('[data-preview-aspect]').forEach(button=>button.addEventListener('click',()=>{
+        previewAspect=button.dataset.previewAspect;
+        qa('[data-preview-aspect]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.previewAspect===previewAspect)));
+        qa('[data-video-stage]').forEach(stage=>stage.dataset.previewShape=previewAspect);
+        renderCaption();
+      }));
       function renderRules(){
         q('[data-excluded-type]').value=state.ruleType;
         q('[data-excluded-hint]').textContent=ruleHints[state.ruleType];q('[data-excluded-input]').placeholder=rulePlaceholders[state.ruleType];
@@ -568,10 +584,10 @@
         const modified=Math.abs(currentSize()-expectedSize)>.01||state.opacity!==preset.opacity;
         q('[data-preset-modified]').classList.toggle('rd-is-modified',modified);q('[data-preset-modified]').setAttribute('aria-hidden',String(!modified));
         qa('[data-subpreset]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.subpreset===state.subpreset&&!modified));const p=presets[b.dataset.subpreset];b.querySelector('small').textContent=(state.sizemode==='fixed'?p.fixed+' px':p.relative+'%')+' · '+(p.opacity?p.opacity+'% 背景':'无背景');});
-        const limits=sizeLimits(),sizes=state.sizemode==='fixed'?[16,20,24,28]:[2.5,3,3.75,4.5];
+        const limits=sizeLimits(),sizes=state.sizemode==='fixed'?[16,20,24,28]:[4,5,6.25,7.5];
         qa('[data-size]').forEach((b,index)=>{b.dataset.size=String(sizes[index]);b.textContent=sizes[index]+(state.sizemode==='fixed'?' px':'%');b.setAttribute('aria-pressed',String(Math.abs(currentSize()-sizes[index])<.01));});
         ['[data-subsize]','[data-size-number]'].forEach(selector=>{const input=q(selector);input.min=limits.min;input.max=limits.max;input.step=limits.step;if(document.activeElement!==input||selector==='[data-subsize]')input.value=currentSize();});
-        q('[data-size-unit]').textContent=currentUnit();q('[data-size-help]').textContent=state.sizemode==='fixed'?'字号保持固定，不随窗口缩放。':'字号为视频宽度的百分比，随窗口和全屏缩放。';
+        q('[data-size-unit]').textContent=currentUnit();q('[data-size-help]').textContent=state.sizemode==='fixed'?'字号保持固定，不随窗口缩放。':'字号为视频显示区域短边的百分比，随窗口和全屏缩放。';
         q('[data-opacity]').value=state.opacity;if(document.activeElement!==q('[data-opacity-number]'))q('[data-opacity-number]').value=state.opacity;q('[data-opacity-value]').textContent=state.opacity+'%';
         q('[data-custom-summary]').replaceChildren(document.createTextNode(currentSize()+currentUnit()+' · '+(state.opacity?state.opacity+'% 背景':'无背景')),make('span','rd-position-summary',' · '+positionLabels[positionName()]));
         qa('[data-position]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.position===positionName())));

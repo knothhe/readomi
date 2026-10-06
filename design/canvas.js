@@ -6,6 +6,9 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Settings-Subtitle-Preview-Portrait.html", title: "字幕设置 · 现有预览 · 竖版长字幕", x: 0, y: 174000, w: 1280, h: 1000 },
+    { file: "Settings-Subtitle-Preview-Square.html", title: "字幕设置 · 现有预览 · 正方形长字幕", x: 1360, y: 174000, w: 1280, h: 1000 },
+    { file: "Video-Short-Side-Comparison.html", title: "字幕 · 短边 5% · 横竖画面对比", x: 0, y: 172000, w: 1120, h: 1520 },
     { file: "Page-Input-Translation-Cancelled.html", title: "输入框翻译 · 失焦取消 · 原文保留", x: 1360, y: 171000, w: 720, h: 900 },
     { file: "Settings-Input-Translation.html", title: "输入框翻译 · 设置", x: 0, y: 169000, w: 1280, h: 900 },
     { file: "Settings-Input-Translation-Off.html", title: "输入框翻译 · Off", x: 1360, y: 169000, w: 1280, h: 900 },

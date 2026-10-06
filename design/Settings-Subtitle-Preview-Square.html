@@ -413,7 +413,7 @@
           </section>
           </details>
         </div>
-        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="预览画面"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="true">横版</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">竖版</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="false">正方形</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="landscape"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>So we beat on, boats against the current, borne back ceaselessly into the past.</span><span>于是我们奋力向前，逆流行舟，却不断被推回往昔。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 5% · 无背景 · 底部</div></aside>
+        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="预览画面"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="false">横版</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">竖版</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="true">正方形</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="square"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>So we beat on, boats against the current, borne back ceaselessly into the past.</span><span>于是我们奋力向前，逆流行舟，却不断被推回往昔。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 5% · 无背景 · 底部</div></aside>
       </div>
     </section>
   </template>
@@ -503,7 +503,7 @@
       const prettyShortcut=value=>value?value.split('+').map(v=>({Alt:'⌥',Control:'⌃',Shift:'⇧',Meta:'⌘'})[v]||v).join(' '):'未设置';
       function setSize(value){const limits=sizeLimits();const number=Number(value);if(!Number.isFinite(number))return;const size=Math.max(limits.min,Math.min(limits.max,Math.round(number/limits.step)*limits.step));if(state.sizemode==='fixed')state.fixed=size;else state.relative=size;}
       function persist(){}
-      let previewAspect="landscape";
+      let previewAspect="square";
       const previewRatios={landscape:9/16,portrait:16/9,square:1};
       function renderCaption(){
         qa('[data-caption]').forEach(caption=>{const stage=caption.closest('[data-video-stage]');
