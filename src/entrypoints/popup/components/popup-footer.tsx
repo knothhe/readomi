@@ -163,7 +163,7 @@ export function PopupFooter() {
           </p>
         </aside>
       )}
-      <footer aria-busy={!!pending} className="relative flex items-center justify-between gap-2 border-t border-border py-1.5 pr-2.5 pl-3.5">
+      <footer aria-busy={!!pending} className="relative flex min-h-[46px] items-center justify-between gap-2 border-t border-border py-2 pr-3 pl-4">
         <button
           ref={triggerRef}
           type="button"
@@ -175,7 +175,7 @@ export function PopupFooter() {
           aria-controls={open ? menuId : undefined}
           onClick={() => setOpen(!open)}
           onKeyDown={menuKeyDown}
-          className={cn("flex h-7 min-w-0 items-center gap-1.5 rounded-md pr-1.5 pl-0.5 text-[12px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60", open && "bg-secondary text-foreground")}
+          className={cn("flex h-7 min-w-0 items-center gap-1.5 rounded-md pr-1.5 text-[12px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60", open && "bg-secondary text-foreground")}
         >
           <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", ready ? "bg-success" : "bg-attention")} />
           <span className="truncate">{serviceLabel}</span>

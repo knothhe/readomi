@@ -13,13 +13,14 @@ export function VideoTranslationControl() {
   const shortcut = features.subtitlesShortcut.trim() ? formatHotkey(features.subtitlesShortcut) : null
 
   return (
-    <section aria-label={i18n.t("popup.videoSubtitles")} className="flex flex-col gap-2 pt-2.5">
+    <section aria-label={i18n.t("popup.videoSubtitles")}>
       <TranslationControlRow
         label={i18n.t("popup.videoSubtitles")}
         controlId={id}
         hint={shortcut && <span className="shrink-0 whitespace-nowrap text-[11px] leading-4 text-muted-foreground">{shortcut}</span>}
         control={(
           <Switch
+            className="popup-switch"
             id={id}
             aria-label={i18n.t("features.video")}
             checked={features.videoSubtitles}

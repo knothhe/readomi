@@ -26,21 +26,21 @@ export default function App() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col gap-2 p-3.5">
+      <main className="px-4 pt-[18px] pb-3">
         <LanguageRow muted={needsApiKey} />
         {!disabled && (
-          <>
-            {needsApiKey && <SetupPromptCard />}
-            <section aria-label={i18n.t("popup.pageText")} className="flex flex-col gap-2">
+          <div className="mt-4">
+            {needsApiKey && <div className="mb-2"><SetupPromptCard /></div>}
+            <section aria-label={i18n.t("popup.pageText")} className="flex flex-col">
               {!needsApiKey && <TranslateButton />}
               <HoverTranslationControl />
             </section>
             <VideoTranslationControl />
-          </>
+          </div>
         )}
         <SiteDisableControl />
         {!disabled && <TranslationHelp><SiteRuleAgentEntry /></TranslationHelp>}
-      </div>
+      </main>
       <PopupFooter />
     </div>
   )

@@ -72,7 +72,7 @@ export function TranslateButton() {
             aria-label={enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translate")}
             onClick={toggle}
             disabled={!activeTab.translatable}
-            className="h-7 min-w-16 shrink-0 rounded-full bg-brand px-2.5 text-[12px] font-medium text-brand-foreground transition-colors outline-none hover:bg-brand/90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-7 min-w-[62px] shrink-0 rounded-full bg-brand px-3 text-[12px] font-medium text-brand-foreground transition-colors outline-none hover:bg-brand/90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translateAction")}
           </button>

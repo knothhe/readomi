@@ -28,6 +28,7 @@ export function HoverTranslationControl() {
       )}
       control={(
         <Switch
+          className="popup-switch"
           id={id}
           aria-label={i18n.t("features.hover")}
           checked={features.hoverTranslation}

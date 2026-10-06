@@ -42,7 +42,7 @@ export function TranslationLanguagePicker({ value, onChange, primaryCode, label,
             aria-label={label}
             aria-describedby={descriptionId}
             data-value={value}
-            className={cn("flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-card text-left outline-none transition-colors hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50", compact ? "h-8 px-2 text-[13px] font-semibold" : "h-9 px-2.5 text-xs")}
+            className={cn("flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 border border-border bg-card text-left outline-none transition-colors hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50", compact ? "h-8 rounded-lg px-2 text-[13px] font-medium" : "h-9 rounded-md px-2.5 text-xs")}
             {...props}
           >
             <span className="truncate">{value === "original" ? i18n.t("options.language.keepOriginal") : getLanguageName(value)}</span>

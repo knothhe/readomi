@@ -4,6 +4,23 @@ html {
   scrollbar-color: color-mix(in srgb, var(--rf-muted-foreground) 80%, var(--rf-background)) transparent;
 }
 
+/* The compact popup uses inset thumbs without changing settings-page switches. */
+.popup-switch {
+  border: 0;
+  padding: 2px;
+  box-shadow: none;
+}
+
+.popup-switch > span {
+  width: 14px;
+  height: 14px;
+  background: var(--rf-card);
+}
+
+.popup-switch > span[data-checked] {
+  translate: 14px 0;
+}
+
 @media (forced-colors: active) {
   html {
     scrollbar-width: auto;
