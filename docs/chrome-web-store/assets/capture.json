@@ -1,5 +1,6 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.6",
+  "sourceCommit": "cfd80bfe45966e33383c28c97f829c0cfe47dece",
   "locales": [
     "zh-CN",
     "en"
@@ -15,6 +16,17 @@
     1280,
     800
   ],
+  "permissions": [
+    "storage",
+    "tabs",
+    "alarms",
+    "scripting",
+    "webNavigation",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "hostPermissions": [
+    "*://*/*"
+  ],
   "demo": "Original sample text and deterministic loopback-only service; actual built extension UI",
-  "generatedAt": "2026-10-02T11:07:08.234Z"
+  "generatedAt": "2026-10-07T18:42:16.392Z"
 }

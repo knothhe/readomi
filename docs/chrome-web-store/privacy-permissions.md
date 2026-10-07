@@ -1,6 +1,6 @@
 # Readomi 隐私与权限填写说明
 
-这份说明对应当前工作区代码与 `wxt.config.ts`，核对日期为 2026 年 10 月 7 日，`package.json` 版本为 1.2.5。英文段落可复制到 Chrome 商店 Privacy practices 相应字段。声明需要由发布者结合最终构建和当前后台确认，不能因“开发者没有收到数据”就勾选“完全不处理用户数据”。本文记录代码行为与填写建议，不代表后台字段已保存或扩展已通过审核。
+这份说明对应当前工作区代码与 `wxt.config.ts`，核对日期为 2026 年 10 月 8 日，`package.json` 版本为 1.2.6。英文段落可复制到 Chrome 商店 Privacy practices 相应字段。声明需要由发布者结合最终构建和当前后台确认，不能因“开发者没有收到数据”就勾选“完全不处理用户数据”。本文记录代码行为与填写建议，不代表后台字段已保存或扩展已通过审核。
 
 ## 单一用途
 
@@ -10,11 +10,11 @@ Readomi helps users understand and write text on web pages through translation o
 
 ### storage
 
-Stores user-configured translation services, API keys, custom request headers and body parameters, prompts, language and appearance preferences, feature settings and site-specific rules locally. It also stores connection-check results and learned request pacing and batch limits. Temporary session storage keeps each tab's translation state and site scope, plus site-rule editing and preview sessions. No settings are synced to a developer server.
+Stores user-configured translation services, API keys, custom request headers and body parameters, prompts, language and appearance preferences, feature settings, disabled-site hostnames and site-specific rules locally. It also stores connection-check results and learned request pacing and batch limits. Temporary session storage keeps each tab's translation and subtitle switches and site scope, plus site-rule editing and preview sessions. No settings are synced to a developer server.
 
 ### tabs
 
-Identifies the active tab, associates translation progress with that tab, and updates the toolbar icon and popup state. Readomi uses tab URLs to scope translation state to the current site, scope local caches to the current page, and prepare and validate site-specific rule previews. It does not build a chronological browsing-history log or send tab URLs to a developer server.
+Identifies the active tab, associates translation progress with that tab, and updates the toolbar icon and popup state. Readomi uses tab URLs to scope translation state to the current site, scope web text caches to the current hostname and subtitle and summary caches to the current page, and prepare and validate site-specific rule previews. It does not build a chronological browsing-history log or send tab URLs to a developer server.
 
 ### alarms
 
@@ -54,13 +54,13 @@ All executable extension JavaScript is packaged with the extension, including th
 
 ## 实际数据流与保存范围
 
-- **网页与段落翻译**：待处理文本、提示词、语言规则、模型及请求参数直接发送到用户配置的服务。可用的网页标题自动加入翻译背景；开启“结合全文上下文”后，还会发送标题及提取正文的前 2,000 个字符生成摘要，并把摘要加入翻译请求。自定义提示词可引用页面描述和这段截断正文。正文提取失败时回退到页面 body 文本，再按相同上限截断。
+- **网页与段落翻译**：待处理文本、提示词、语言规则、模型及请求参数直接发送到用户配置的服务。可用的网页标题自动加入翻译背景；开启“结合文章上下文”后，还会发送标题及提取正文的前 2,000 个字符生成摘要，并把摘要加入翻译请求。自定义提示词可引用页面描述和这段截断正文。正文提取失败时回退到页面 body 文本，再按相同上限截断。
 - **语言方向**：模型在每个翻译句段内判断源语言并按主要语言 / 第二语言规则输出，代码也使用有限的本地中英文判断来约束结果。当前没有打开页面时额外发送最多 500 字符样本的语言识别流程，也不再保存检测语言。翻译已开启的页面在同站点导航、加载新内容或恢复翻译时仍可能继续发送翻译请求；“保持原文”的设置也不表示文本绝不发送到服务。
 - **输入框翻译**：默认开启。在同一已聚焦编辑框连续按三次独立空格、相邻间隔不超过 300 毫秒时，将该框当前文本发送到所选服务；使用共用提示词与语言规则，不附加网页背景或生成摘要。支持普通文本框、textarea 与可编辑富文本；密码、禁用、只读字段及输入法组合不触发。它不逐键上传输入，成功后只替换框内文本，不自动提交网页表单。取消或失焦会阻止应用旧结果，但已发出的请求不能据此视为未传输。
 - **已有字幕**：YouTube 字幕或 HTML5 字幕轨道中的句段发送到所选模型服务，不发送视频音频，不包含无字幕视频语音识别，也不生成完整视频摘要。YouTube 桥接脚本可在页面上下文以 `credentials: "include"` 获取受限定的 YouTube 字幕地址；该请求由浏览器按网站规则携带凭证，模型 API Key 不传入此桥接流程。
 - **服务配置操作**：检查连接使用短文本 `Hi` 发起翻译请求；获取模型查询配置端点的 `/models`。两者带上适用的 API Key、自定义请求头与 `Readomi/<版本>` User-Agent，服务商也能接收 IP 等常规网络信息。自定义请求体可添加或覆盖模型请求字段，应按实际配置确认发送内容。
-- **本地持久数据**：配置包含服务地址、密钥、请求头与请求体、连接检查结果、提示词、外观、语言、开关和用户站点规则。另存每个服务 / 模型学得的请求速率与批次限制；读取该存储时会过滤超过 90 天未更新的记录。API Key 保存在浏览器扩展存储中，不是单独加密的密钥保险库。
-- **缓存与会话**：IndexedDB 保存网页、段落、输入框与字幕的译文或保留原文标记，以及文章摘要、创建时间和用于页面归属的 URL 哈希。七天清理范围适用于这两类缓存，不适用于设置、密钥或服务限制。会话存储保存翻译开关 / 站点范围，以及站点适配的 URL、规则草稿、预览状态与撤销信息；关闭标签页清理对应会话。没有持久的按时间排列的浏览历史，也没有开发者服务器同步。
+- **本地持久数据**：配置包含服务地址、密钥、请求头与请求体、连接检查结果、提示词、外观、语言、开关、停用站点的主机名和用户站点规则。另存每个服务 / 模型学得的请求速率与批次限制；读取该存储时会过滤超过 90 天未更新的记录。API Key 保存在浏览器扩展存储中，不是单独加密的密钥保险库。
+- **缓存与会话**：IndexedDB 保存网页、段落、输入框与字幕的译文或保留原文标记，以及文章摘要、创建时间和用于归属的主机名或页面 URL 哈希；网页文字按主机名复用，字幕和摘要按页面保存。七天清理范围适用于这两类缓存，不适用于设置、密钥或服务限制。弹窗清除当前域名网页译文及当前页字幕、摘要，保留已显示译文；设置页可清空全部翻译缓存。会话存储保存翻译与单页字幕开关 / 站点范围，以及站点适配的 URL、规则草稿、预览状态与撤销信息；关闭标签页清理对应会话。没有持久的按时间排列的浏览历史，也没有开发者服务器同步。
 - **用户创建的副本**：完整配置备份含原始 API Key、自定义请求头和请求体。服务配置导出 / agent 说明仅遮蔽专门的 `apiKey` 字段，`headers` 和 `body` 不会自动脱敏。站点适配说明包含当前完整 URL、用户填写的问题、相关规则与阅读设置，不包含服务配置。扩展只生成或复制这些内容，不自动发送给 agent；用户自行分享后由接收应用处理。卸载扩展不会删除导出的文件或已分享副本。
 
 ## 数据类型建议
@@ -71,7 +71,7 @@ All executable extension JavaScript is packaged with the extension, including th
 | --- | --- | --- |
 | Website content | 勾选 | 页面、段落、输入框文本、已有字幕，以及适用的标题、页面描述、截断正文与摘要；文本直达用户配置的服务，无独立语言识别样本请求 |
 | Authentication information | 勾选 | API Key、可选认证请求头或请求体字段保存在本地，并随适用请求发给配置的服务；完整备份含原始值，服务配置导出只遮蔽 `apiKey` 字段 |
-| Web history | 建议保守勾选并说明范围 | 读取标签页 URL；会话保存站点范围和站点适配 URL；持久缓存保存页面 URL 哈希。不是按时间排列的浏览历史，不上传开发者。复制的适配说明含完整 URL，最终按后台定义核对 |
+| Web history | 建议保守勾选并说明范围 | 读取标签页 URL；会话保存站点范围和站点适配 URL；持久缓存保存主机名或页面 URL 哈希。不是按时间排列的浏览历史，不上传开发者。复制的适配说明含完整 URL，最终按后台定义核对 |
 | Personally identifiable information | 不作为单独收集功能 | 没有姓名、邮箱、账号注册。用户选择处理的网页内容可能包含个人信息，不能声称输入文本绝不含个人信息 |
 | Financial and payment information | 不作为单独收集功能 | 没有付款或账单收集；模型费用由服务商处理 |
 | Health information | 不作为单独收集功能 | 没有健康数据功能；网页内容可能包含相关信息 |
@@ -95,7 +95,7 @@ All executable extension JavaScript is packaged with the extension, including th
 
 建议后台 URL：https://github.com/knothhe/readomi/blob/main/PRIVACY.md。
 
-中文译文位于 `privacy-policy.zh-CN.md`。当前 `PRIVACY.md`、中文政策译文及中英文商店长描述仍保留“页面打开时发送最多 500 字符语言识别样本”等旧行为说明，尚未与本次代码核对一致；提交前应同步更正。政策还应补充输入框翻译、站点适配会话、模型请求 User-Agent 与新增权限，并准确说明配置导出的脱敏范围。本次仅更新这份填写说明，不代表相关文件已同步、已推送或公开 URL 已验证。
+中文译文位于 `privacy-policy.zh-CN.md`。本次已同步正式英文政策、中文译文及中英文商店长描述，移除独立页面语言识别请求的旧描述，并补充输入框翻译、站点适配会话、单页字幕、站点停用、缓存范围、User-Agent 权限和配置导出的实际脱敏范围。工作区更新不代表公开链接已更新，提交前仍需推送并验证匿名访问。
 
 服务编辑预览已通过 `options.service.sendsTo` 显示目标服务主机。提交前应结合实际产品界面核对是否充分说明待发送文本、可选页面背景、默认开启的输入框翻译触发方式及敏感副本；旧的“补齐页面自动语言识别告知”检查项已不适用。
 

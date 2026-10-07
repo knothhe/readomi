@@ -21,22 +21,23 @@ TRANSLATION BUILT AROUND READING
 • Switch between bilingual and translation-only views, or restore the original text.
 • Optionally translate one paragraph by pointing to it and pressing your configured trigger key.
 • Translate enabled YouTube captions and HTML5 subtitle tracks. Adjust subtitle size, style and position.
+• Translate a draft in place by pressing Space three times in an editable field; the extension does not submit the form.
 • Optionally bold the beginnings of English words to suit your reading preference.
 
 CHOOSE YOUR OWN SERVICE
-Use OpenAI, Anthropic, Gemini, DeepSeek, a compatible API or a local model. Configure and test the service manually, or copy the setup instructions for your coding agent to verify a service and prepare its configuration. Discover models and customize prompts and request parameters.
+Use OpenAI, Anthropic, Gemini, DeepSeek, a compatible API or a local model. Configure and test the service manually, or copy the setup instructions for your coding agent to verify a service and prepare its configuration. Add and reorder multiple services and switch from the popup. Existing translations remain visible; new requests use the selected service. Discover models and customize prompts and request parameters.
 
 MAKE IT YOURS
-Configure shortcuts and page translation styles. Choose light, dark or system appearance and one of four accent colors. The interface supports several languages, including English and Simplified Chinese. Import and export settings locally.
+Choose a primary and second language: other languages translate into your primary language, while primary-language text can translate into your second language or stay unchanged. Toggle subtitles for the current page, disable the extension on a specific site, and use built-in site rules or preview and save rules prepared by your agent. Clear web translations for the current domain and subtitles and summaries for the current page from the popup, or clear all translation caches in Settings. Configure shortcuts and page translation styles. Choose light, dark or system appearance and one of four accent colors. The interface supports several languages, including English and Simplified Chinese. Import and export settings locally.
 
 BEFORE YOU START
 Readomi does not include a hosted translation service. You need your own model service and API key, or a working local model endpoint. Third-party providers may charge for usage and process requests under their own policies. Readomi does not supply credits or guarantee compatibility with every custom endpoint.
 
-Page, paragraph and existing subtitle text goes directly to your configured service. After a service is configured, the extension can also send a short page text sample to detect the source language when pages open or change, even before you click Translate. Enabling page context sends the title and main article content to generate a summary; custom prompts can also include page content. Review the privacy policy and your provider's policy.
+Page, paragraph, editable-field and existing subtitle text goes directly to your configured service. Source language is determined within translation requests, without a separate detection request on page load. Once page translation is enabled, new content and navigation within the same site can cause further requests. Web translation includes the page title when available. Enabling article context sends the title and the first 2,000 characters of article text for a summary; custom prompts can also include the page description or truncated text. Input and subtitle translation omit webpage background. Review the privacy policy and your provider's policy.
 
-Settings, API keys and caches stay in your browser and are not synced to a developer server. Readomi has no account system, analytics or telemetry. Exported configuration backups contain API keys and custom headers, so keep them private.
+Settings, API keys and caches stay in your browser and are not synced to a developer server. Readomi has no account system, analytics or telemetry. Full backups contain API keys, custom headers and body parameters. Service exports and agent setup instructions mask only the dedicated API key field, so keep these copies private.
 
-Hover and video subtitle translation are off by default. Video translation requires existing captions and does not transcribe videos without subtitles. Chrome internal pages and other browser-restricted pages cannot display injected translations.
+Hover and video subtitle translation are off by default. Input-field translation is on by default and can be disabled in Settings. Video translation requires existing captions and does not transcribe videos without subtitles. Chrome internal pages and other browser-restricted pages cannot display injected translations.
 
 ORIGINS AND CUSTOMIZATION
 Readomi is adapted from Xuanwo/jiandao and mengxi-ream/read-frog. It primarily removes Read Frog's floating toolbar, text-to-speech, custom AI actions, hosted accounts, configuration sync, analytics and other features, while adding features I need on top of jiandao. I want to keep the features as simple as possible and provide a localized user experience, so I have customized it around my own experience.

@@ -1,49 +1,55 @@
 # Privacy Policy
 
-Last updated: October 2, 2026
+Last updated: October 8, 2026
 
-Readomi is a browser reading companion that translates web pages, paragraphs and existing video subtitles. Readomi has no developer-operated translation server, account system, cloud sync, analytics or telemetry. The developer does not receive your page content, API keys or browsing history through the extension.
+Readomi is a browser reading companion that translates web pages, paragraphs, text in editable fields and existing video subtitles. Readomi has no developer-operated translation server, account system, cloud sync, analytics or telemetry. The developer does not receive your page content, API keys or browsing history through the extension.
 
 ## Data sent to your configured service
 
-Readomi sends requests directly from your browser to the model provider or compatible endpoint you configure. Supported providers include OpenAI, Anthropic, Google Gemini and DeepSeek, as well as compatible gateways and local models. The recipient is the service endpoint shown in your configuration; a gateway may forward requests to its own upstream providers under its terms.
+Requests go directly from your browser to the model provider or compatible endpoint you configure. Supported providers include OpenAI, Anthropic, Google Gemini and DeepSeek, compatible gateways and local models. A gateway may forward requests to its own upstream providers under its terms.
 
-Translation requests contain the page, paragraph or existing subtitle text being processed, prompts and model settings. Web translation automatically includes the page title when available. Enabling “Use page summary” also sends the title and the first 2,000 characters of extracted article text to generate a summary for paragraph translation. Available titles and enabled summaries are attached with both built-in and custom prompts. Custom prompts can additionally insert page variables such as description or extracted text. Subtitle translation uses the shared translation rules without webpage background or a full-video summary. Unavailable background is omitted.
+Translation requests contain the text being processed, prompts, language rules and model settings. Web translation automatically includes the page title when available. Enabling “Use article context” also sends the title and the first 2,000 characters of extracted article text to generate a summary. If article extraction fails, Readomi uses body text with the same limit. Available titles and enabled summaries accompany built-in and custom prompts; custom prompts can also insert the page description or the truncated article text. Subtitle and input-field translation use the shared language rules without webpage background or an article summary.
 
-After a service is configured, Readomi can send a short sample of page text to that service to detect the source language when a page opens or changes, even before you click Translate. The current language detection request uses up to 500 characters of cleaned text derived from the page title and page text sample.
+Source language is determined within translation requests, with limited local checks to validate results. Readomi does not make a separate language-detection request when a page opens. Once page translation is enabled, navigation within the same site, new content or resuming translation can cause further requests. Choosing to preserve a language does not guarantee its text will never be sent to the service.
 
-Testing a service sends a short test request. Fetching models queries the configured service. Requests include the API key and any custom authentication headers you entered for that service. The provider can also receive ordinary network metadata, such as your IP address.
+Input-field translation is enabled by default. Pressing Space three times in the same focused editable field, with no more than 300 milliseconds between presses, sends that field’s text for translation. It supports text inputs, textareas and supported rich-text editors; password, disabled and read-only fields and input-method composition do not trigger translation. It does not upload each keystroke. A successful result replaces the field’s text without submitting the form. Canceling or leaving the field prevents an old result from being applied, but cannot undo a request already sent.
 
-The provider handles these requests under its own privacy policy and terms. The Readomi developer does not control the provider's retention, training or access practices. Review your chosen service's policy before using it on sensitive content. Official provider endpoints use HTTPS; custom endpoints can use HTTP, including local model endpoints. Use HTTPS for remote services.
+Subtitle translation sends existing YouTube captions or HTML5 subtitle text, not video audio. It does not transcribe videos without captions. The packaged YouTube bridge may retrieve captions from restricted YouTube caption URLs using the page’s website credentials; model API keys are not passed to this bridge.
+
+Connection checks send a short translation request; model discovery queries the configured service. Applicable requests include your API key, custom headers and request body parameters. Custom body parameters can override request fields. Model-service requests identify the client as Readomi/ followed by the extension version; Chrome and Edge use a dynamic request-header rule for the extension’s own requests. Providers can also receive ordinary network metadata such as your IP address.
+
+Providers handle requests under their own policies and terms. The developer does not control their retention, training or access practices. Review your service’s policy before translating sensitive content. Official endpoints use HTTPS; custom endpoints can use HTTP, including local model endpoints. Use HTTPS for remote services.
 
 ## Data kept in your browser
 
-Readomi stores settings, provider endpoints, API keys, custom headers, prompts, language preferences, appearance preferences and feature switches in local extension storage. API keys are stored in browser extension storage, not in a separate encrypted key vault.
+Local extension storage holds service configurations, API keys, custom headers and body parameters, connection-check results, prompts, languages, appearance, feature switches, disabled-site hostnames and site-specific rules. API keys are not kept in a separate encrypted key vault. Learned request pacing and batch limits are also stored locally; records not updated for more than 90 days are filtered when read.
 
-Translations and article summaries are cached locally in IndexedDB. Translation and summary cache entries older than seven days are eligible for cleanup, checked approximately once a day while the browser can run the extension. Cleanup can be delayed while the browser is closed or suspended.
+IndexedDB caches translations or preserve-original markers and article summaries, with creation times and hashes of the associated hostname or page URL. Web text translations can be reused within a hostname; subtitles and summaries remain page-scoped. Entries older than seven days are eligible for cleanup, checked approximately daily while the extension can run. Cleanup can be delayed while the browser is closed or suspended.
 
-Readomi uses temporary session storage for each tab's translation state, site origin and detected language, so it can display the correct state and restore translation on the same site. It does not build a browsing-history log or send this state to the developer. Settings and keys remain until you change them or remove the extension. Data is not synced across devices.
+Temporary session storage keeps each tab’s translation and subtitle switches, site scope and site-rule adaptation sessions, including URLs, rule drafts, preview confirmations and undo information. Tab closure clears its sessions. Readomi does not build a chronological browsing-history log or send these states to the developer. Settings and keys remain until changed or the extension is removed; they are not synced across devices.
 
 ## Copies you choose to create
 
-Exporting a configuration backup creates a local JSON file containing your settings, API keys and custom headers. Removing the extension does not remove exported files. Keep backups private and delete them separately when no longer needed.
+A configuration backup is a local JSON file containing settings, API keys, custom headers and body parameters. Service configuration exports and agent setup instructions mask only the dedicated apiKey field; headers and body parameters are not automatically redacted. Keep these copies private. Uninstalling the extension does not remove exported files or copies shared with another application.
 
-The setup flow can copy service configuration or agent instructions to your clipboard. Service configuration exports mask the saved API key. If you share those instructions or a key with a coding agent or another application, that application processes what you share under its own terms. Readomi does not automatically send configuration to an agent.
+Site-adaptation instructions include the current full URL, the problem you describe, applicable rules and reading settings, but not service credentials. Readomi only generates or copies instructions and configuration; it does not automatically send them to an agent. If you share them with an agent or another application, the recipient handles them under its own terms.
 
 ## Permissions and purpose
 
-Readomi uses storage to save configuration and reading state; tabs to identify the current reading tab and update toolbar state; scripting and webNavigation to support translation in page frames and across navigation; alarms to clean up local caches; and access to HTTP and HTTPS sites to insert translations and reach user-configured services.
+Readomi uses storage for configuration and reading state; tabs for the active page, translation state and cache scope; scripting and webNavigation for packaged page/editor scripts, embedded frames, navigation and site-rule previews; and alarms for local cache cleanup. HTTP and HTTPS host access allows translation on eligible pages and requests to user-configured services. Local-file translation additionally requires Chrome’s “Allow access to file URLs” setting. Chrome and Edge use declarativeNetRequestWithHostAccess only to set Readomi’s User-Agent on extension-initiated model-service requests.
 
-These permissions support the single purpose of helping you read web content through translation and related reading controls. Readomi does not use them for advertising, profiling or sale of personal information. Model responses are treated as data; Readomi does not load remotely hosted JavaScript or WebAssembly as extension code.
+These permissions support translation and related reading controls, not advertising, profiling or selling personal information. Model responses are data. All executable extension code is packaged locally, including the editor and YouTube bridges. Imported site rules contain validated configuration, selectors and restricted CSS; Readomi does not download or execute remote JavaScript or WebAssembly as extension code.
 
 ## Data use and deletion
 
-Readomi's handling of user data complies with the Chrome Web Store User Data Policy, including the Limited Use requirements. Readomi does not sell user data or use it for personalized advertising. User content and credentials are transmitted only to the configured service as needed for the reading features described above.
+Readomi’s handling of user data complies with the Chrome Web Store User Data Policy, including Limited Use requirements. Readomi does not sell user data or use it for personalized advertising. Content and credentials are transmitted to the configured service as needed for the described features.
 
-Change saved settings or keys in Settings. Removing the extension removes its browser-managed local data; copies you exported or shared remain where you saved or sent them. To delete data retained by a model provider, follow that provider's procedures. If you voluntarily report a problem on GitHub, the information you submit is handled by GitHub and may be public; exclude keys and private page content.
+Change or remove services, keys and site rules in Settings. Settings → Translation cache clears all translation and summary caches. The popup cache action clears web translations for the current hostname and subtitles and summaries for the current page while keeping visible translations. Disabling the extension on a site pauses its features on that hostname without deleting saved settings or caches.
+
+Uninstalling removes browser-managed extension data; exported or shared copies remain where you saved or sent them. Follow your provider’s procedures to delete data it retains. Information you voluntarily submit to GitHub is handled by GitHub and may be public; exclude keys and private page content.
 
 ## Changes and contact
 
-Changes to this policy are recorded at https://github.com/knothhe/readomi/commits/main/PRIVACY.md.
+Policy changes: https://github.com/knothhe/readomi/commits/main/PRIVACY.md.
 
-For questions, contact the maintainer through https://github.com/knothhe/readomi/issues. Do not include API keys or other secrets in a public issue.
+Questions: https://github.com/knothhe/readomi/issues. Do not include API keys or other secrets in public issues.

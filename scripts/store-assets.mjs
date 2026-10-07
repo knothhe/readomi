@@ -1,6 +1,7 @@
 /* global chrome */
 import assert from "node:assert/strict"
 import { Buffer } from "node:buffer"
+import { execFileSync } from "node:child_process"
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises"
 import http from "node:http"
 import { resolve } from "node:path"
@@ -22,6 +23,17 @@ const raw = resolve("design/assets/store")
 const output = resolve("docs/chrome-web-store/assets")
 const kinds = ["bilingual", "translation-only", "hover", "subtitles", "service"]
 const slugs = ["01-bilingual", "02-translation-only", "03-hover", "04-subtitles", "05-service"]
+const { version } = JSON.parse(await readFile(resolve("package.json"), "utf8"))
+const manifest = JSON.parse(await readFile(resolve(".output/chrome-mv3/manifest.json"), "utf8"))
+assert.equal(manifest.version, version, "build matches package.json; run pnpm build first")
+
+async function capturePopup(popup, path) {
+  await popup.evaluate(() => document.fonts.ready)
+  const height = await popup.locator("#root").evaluate(root => Math.ceil(root.getBoundingClientRect().height))
+  assert.ok(height <= 508, "the complete popup fits below its 30px inset in the 540px screen")
+  await popup.setViewportSize({ width: 320, height })
+  await popup.screenshot({ path })
+}
 
 function articleHTML() {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${examples[0][0]}</title><style>
@@ -123,20 +135,30 @@ async function captureLocale(locale, service) {
     await options.setViewportSize({ width: 1184, height: 540 })
     await configureService(options, extensionId, {
       type: "openai-compatible",
-      name: "Demo local service",
+      name: "Demo local",
+      apiKey: "demo-only-not-a-secret",
+      model: "demo-translator",
+      baseURL: `${service.origin}/v1`,
+    })
+    await options.getByRole("button", { name: "Add service", exact: true }).click()
+    await configureService(options, extensionId, {
+      type: "openai-compatible",
+      name: "Demo alternate",
       apiKey: "demo-only-not-a-secret",
       model: "demo-translator",
       baseURL: `${service.origin}/v1`,
     })
     await options.goto(`chrome-extension://${extensionId}/options.html#appearance`)
-    await options.locator("#appearance select").selectOption(locale)
+    await options.locator("#appearance [role=combobox]").click()
+    await options.locator(`[role=option][data-value="${locale}"]`).click()
     await options.waitForFunction(async language => (await chrome.storage.local.get("config")).config.ui.language === language, locale)
     const worker = context.serviceWorkers()[0]
     await worker.evaluate(async () => {
       const { config } = await chrome.storage.local.get("config")
       config.appearance.mode = "light"
-      config.language.sourceCode = "eng"
       config.features.hoverTranslation = true
+      // This fixture is not an SSE server. Show the real non-streaming mode.
+      config.features.hoverStream = false
       config.features.hoverHotkey = "control"
       await chrome.storage.local.set({ config })
     })
@@ -154,12 +176,13 @@ async function captureLocale(locale, service) {
     await article.bringToFront()
     await popup.reload()
     await popup.getByRole("button", { name: locale === "zh-CN" ? "显示原文" : /Show original/ }).waitFor()
-    await popup.screenshot({ path: `${raw}/${locale}-popup-bilingual.png` })
-    await popup.getByRole("group", { name: locale === "zh-CN" ? "网页文字显示方式" : "Web text display mode" }).getByRole("button", { name: locale === "zh-CN" ? "仅译文" : "Translation only", exact: true }).click()
+    await capturePopup(popup, `${raw}/${locale}-popup-bilingual.png`)
+    await article.bringToFront()
+    await article.keyboard.press("Alt+M")
     await article.waitForFunction(() => document.querySelector("article p")?.textContent.startsWith("一个好想法"))
     await article.screenshot({ path: `${raw}/${locale}-translation-only.png` })
-    await popup.screenshot({ path: `${raw}/${locale}-popup-translation-only.png` })
-    await popup.getByRole("group", { name: locale === "zh-CN" ? "网页文字显示方式" : "Web text display mode" }).getByRole("button", { name: locale === "zh-CN" ? "双语对照" : "Bilingual", exact: true }).click()
+    await capturePopup(popup, `${raw}/${locale}-popup-translation-only.png`)
+    await article.keyboard.press("Alt+M")
     await article.bringToFront()
     await article.locator("h1").click()
     await article.keyboard.press("Alt+E")
@@ -180,11 +203,14 @@ async function captureLocale(locale, service) {
     await hoverArticle.screenshot({ path: `${raw}/${locale}-hover.png` })
     await popup.reload()
     await popup.getByRole("switch", { name: locale === "zh-CN" ? "悬停翻译" : "Hover translation", exact: true }).waitFor()
-    await popup.screenshot({ path: `${raw}/${locale}-popup-hover.png` })
+    await capturePopup(popup, `${raw}/${locale}-popup-hover.png`)
     await worker.evaluate(async () => {
       const { config } = await chrome.storage.local.get("config")
       config.features.videoSubtitles = true
       config.features.subtitleStyle.fontSize = 28
+      config.features.subtitleStyle.fontSizeMode = "fixed"
+      config.features.subtitleStyle.backgroundEnabled = true
+      config.features.subtitleStyle.backgroundOpacity = 65
       config.features.subtitleStyle.position = { x: 50, y: 75 }
       await chrome.storage.local.set({ config })
     })
@@ -210,7 +236,12 @@ async function captureLocale(locale, service) {
     await video.mouse.move(4, 4)
     await video.screenshot({ path: `${raw}/${locale}-subtitles.png` })
     await options.goto(`chrome-extension://${extensionId}/options.html#service`)
-    await options.getByText(locale === "zh-CN" ? "已连接" : "Connected", { exact: true }).waitFor()
+    const current = options.locator(".settings-service-row[data-current='true']")
+    await current.getByText(locale === "zh-CN" ? "已连接" : "Connected", { exact: true }).waitFor()
+    await current.locator("summary").click()
+    await current.getByRole("button", { name: locale === "zh-CN" ? "连接详情" : "Connection details", exact: true }).click()
+    await current.locator(".settings-service-connection").waitFor()
+    await options.mouse.move(4, 4)
     await options.screenshot({ path: `${raw}/${locale}-service.png` })
   }
   finally {
@@ -253,8 +284,8 @@ try {
   for (const locale of ["zh-CN", "en"])
     await captureLocale(locale, service)
   await exportBoards()
-  const { version } = JSON.parse(await readFile(resolve("package.json"), "utf8"))
-  await writeFile(`${output}/capture.json`, `${JSON.stringify({ version, locales: ["zh-CN", "en"], screenshots: slugs, screenshotSize: [1280, 800], demo: "Original sample text and deterministic loopback-only service; actual built extension UI", generatedAt: new Date().toISOString() }, null, 2)}\n`)
+  const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim()
+  await writeFile(`${output}/capture.json`, `${JSON.stringify({ version, sourceCommit, locales: ["zh-CN", "en"], screenshots: slugs, screenshotSize: [1280, 800], permissions: manifest.permissions, hostPermissions: manifest.host_permissions, demo: "Original sample text and deterministic loopback-only service; actual built extension UI", generatedAt: new Date().toISOString() }, null, 2)}\n`)
   process.stdout.write(`Store assets generated for Readomi ${version}: ${output}\n`)
 }
 finally {
