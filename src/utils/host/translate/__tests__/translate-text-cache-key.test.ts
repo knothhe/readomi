@@ -60,13 +60,13 @@ async function cacheKeyFor(pageChanges: Partial<WebPagePromptContext>): Promise<
   }))
 }
 
-async function pageCacheKeyFor(path: string, pageBody: string): Promise<string> {
+async function pageCacheKeyFor(path: string, pageBody: string, title = basePageContext.webTitle ?? "", summary = basePageContext.webSummary ?? ""): Promise<string> {
   window.history.pushState({}, "", path)
-  document.title = basePageContext.webTitle ?? ""
+  document.title = title
   document.head.innerHTML = `<meta name="description" content="${pageBody}">`
   document.body.innerHTML = `<article><h1>${document.title}</h1><p>${pageBody}</p></article>`
 
-  const removeSummaryListener = onMessage("getOrGenerateWebPageSummary", async () => basePageContext.webSummary ?? "")
+  const removeSummaryListener = onMessage("getOrGenerateWebPageSummary", async () => summary)
   try {
     return await captureCacheKey(() => translateTextForPage("The release adds a new setting."))
   }
@@ -126,32 +126,84 @@ describe("translation cache key", () => {
     expect(secondKey).toBe(firstKey)
   })
 
-  it("invalidates a custom-prompt translation when automatically attached page background changes", async () => {
+  it("reuses a custom-prompt translation when automatically attached page background changes", async () => {
     await saveTranslatePrompt("{{input}}")
     const firstKey = await cacheKeyFor({})
     const secondKey = await cacheKeyFor({ webSummary: "A different topic." })
-    expect(secondKey).not.toBe(firstKey)
+    expect(secondKey).toBe(firstKey)
   })
 
-  it("user gets a new translation: Given a custom prompt that sends {{webContent}} to the model, When the page content is different only at the end, Then the translations use different cache entries", async () => {
+  it("reuses a custom-prompt translation even when referenced page content changes", async () => {
     await saveTranslatePrompt("Page content: {{webContent}}\n\n{{input}}")
     const sharedStart = "Shared page text. ".repeat(100)
 
     const firstKey = await cacheKeyFor({ webContent: `${sharedStart} first ending` })
     const secondKey = await cacheKeyFor({ webContent: `${sharedStart} second ending` })
 
-    // The model receives different requests.
-    expect(secondKey).not.toBe(firstKey)
+    expect(secondKey).toBe(firstKey)
   })
 
   it.each([
     ["title", { webTitle: "Changelog" }],
     ["summary", { webSummary: "The release removes an old setting." }],
-  ])("invalidates a default-prompt translation when the automatically attached page %s changes", async (_field, pageChanges) => {
+    ["description", { webDescription: "A different description." }],
+    ["content", { webContent: "A different article." }],
+  ])("reuses a default-prompt translation when page %s changes", async (_field, pageChanges) => {
     const firstKey = await cacheKeyFor({})
     const secondKey = await cacheKeyFor(pageChanges)
 
-    // The model receives different requests.
-    expect(secondKey).not.toBe(firstKey)
+    expect(secondKey).toBe(firstKey)
+  })
+
+  it.each([false, true])("reuses web text between X home and post details with AI content awareness set to %s", async (enableAIContentAware) => {
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, {
+      ...DEFAULT_CONFIG,
+      translate: { ...DEFAULT_CONFIG.translate, enableAIContentAware },
+    })
+    const home = await pageCacheKeyFor("/home", "A feed with several posts.", "Home / X", "A mixed feed.")
+    const detail = await pageCacheKeyFor("/mattpocockuk/status/2107749763789578692", "A post with replies.", "Matt Pocock on X / X", "A software engineering post.")
+    expect(detail).toBe(home)
+  })
+
+  it("ignores all page context values while still forwarding the actual context to translation requests", async () => {
+    await saveTranslatePrompt("Title: {{webTitle}}\nDescription: {{webDescription}}\nContent: {{webContent}}\nSummary: {{webSummary}}\n{{input}}")
+    const requests: { hash: string, context: WebPagePromptContext }[] = []
+    const remove = onMessage("enqueueTranslateRequest", async ({ data }) => {
+      requests.push({ hash: data.hash, context: { webTitle: data.webTitle, webDescription: data.webDescription, webContent: data.webContent, webSummary: data.webSummary } })
+      return { action: "translate", text: "translated", targetCode: "cmn" }
+    })
+    const contexts: (WebPagePromptContext | undefined)[] = [
+      undefined,
+      basePageContext,
+      { webTitle: "Home / X", webDescription: "New description", webContent: "Other content", webSummary: "Other summary" },
+    ]
+    try {
+      for (const webPageContext of contexts)
+        await translateTextCore({ text: "A paragraph", langConfig, providerConfig, webPageContext })
+    }
+    finally {
+      remove()
+    }
+    expect(new Set(requests.map(request => request.hash)).size).toBe(1)
+    expect(requests[1].context).toEqual(basePageContext)
+    expect(requests[2].context).toEqual(contexts[2])
+  })
+
+  it("invalidates changes to active translation rules, including context-bearing template lines", async () => {
+    await saveTranslatePrompt("Title: {{webTitle}}\n{{input}}")
+    const firstKey = await cacheKeyFor({})
+    await saveTranslatePrompt("Use title as background: {{webTitle}}\n{{input}}")
+    expect(await cacheKeyFor({})).not.toBe(firstKey)
+  })
+
+  it("ignores prompt names and inactive patterns but isolates original text and service configuration", async () => {
+    const active = { id: "active", name: "First name", systemPrompt: "Translate carefully", prompt: "{{input}}" }
+    const run = (text: string, provider = providerConfig, patterns = [active]) => captureCacheKey(() => translateTextCore({
+      text, langConfig, providerConfig: provider, customPromptsConfig: { promptId: "active", patterns },
+    }))
+    const firstKey = await run("First paragraph")
+    expect(await run("First paragraph", providerConfig, [{ ...active, name: "Renamed" }, { ...active, id: "unused", prompt: "Other rules" }])).toBe(firstKey)
+    expect(await run("Second paragraph")).not.toBe(firstKey)
+    expect(await run("First paragraph", { ...providerConfig, model: "another-model" })).not.toBe(firstKey)
   })
 })

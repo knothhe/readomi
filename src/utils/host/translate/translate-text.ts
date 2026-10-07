@@ -37,6 +37,16 @@ function normalizeWebPagePromptContext(webPageContext?: WebPagePromptContext): W
   }
 }
 
+// Render the selected rules with fixed context tokens for domain-scoped cache
+// keys. Keep the tokens populated so edits to context-bearing template lines
+// still invalidate the cache, without incorporating any page's actual metadata.
+const WEB_CACHE_PROMPT_CONTEXT: WebPagePromptContext = {
+  webTitle: "{{webTitle}}",
+  webDescription: "{{webDescription}}",
+  webContent: "{{webContent}}",
+  webSummary: "{{webSummary}}",
+}
+
 async function buildWebPageHashComponents(
   text: string,
   providerConfig: ProviderConfig,
@@ -61,7 +71,7 @@ async function buildWebPageHashComponents(
     languagePolicy: langConfig,
     customPromptsConfig,
   })
-  // The rendered prompts contain all webpage context that the model receives.
+  // Hash the rendered rules; web cache context is fixed by the caller.
   hashComponents.push(systemPrompt, prompt)
 
   return hashComponents
@@ -104,7 +114,7 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     providerConfig,
     langConfig,
     customPromptsConfig,
-    normalizedWebPageContext,
+    options.cacheScope === "page" ? normalizedWebPageContext : WEB_CACHE_PROMPT_CONTEXT,
     !options.onPartial,
   )
 
