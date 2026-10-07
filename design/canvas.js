@@ -6,6 +6,17 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Popup-Site-Translated.html", title: "弹窗 · 已翻译 · 当前页字幕关闭", x: 0, y: 203800, w: 320, h: 650 },
+    { file: "Popup-Site-Translated-Disabled.html", title: "弹窗 · 已翻译后禁用 · 保留布局与字幕选择", x: 400, y: 203800, w: 320, h: 650 },
+    { file: "Popup-Site-Translated-Resumed.html", title: "弹窗 · 恢复网站 · 保留布局与字幕关闭选择", x: 800, y: 203800, w: 320, h: 650 },
+    { file: "Popup-Motion-Review.html", title: "弹窗动效 · 三版交互对比 · A 已采用", x: 0, y: 202700, w: 1120, h: 1000 },
+    { file: "Popup-Motion-A.html", title: "弹窗动效 · A · 叠层淡化 · 已采用", x: 1200, y: 202700, w: 320, h: 500 },
+    { file: "Popup-Motion-B.html", title: "弹窗动效 · B · 柔和过渡 · 对照", x: 1600, y: 202700, w: 320, h: 500 },
+    { file: "Popup-Motion-C.html", title: "弹窗动效 · C · 轻错峰", x: 2000, y: 202700, w: 320, h: 500 },
+    { file: "Popup-Site-Resuming.html", title: "弹窗 · 网站扩展 · 恢复字幕状态中 · 无临时提示", x: 2800, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Site-Disable-Review.html", title: "弹窗 · 网站禁用 · 同列表与置灰对照", x: 0, y: 201800, w: 1120, h: 620 },
+    { file: "Popup-Site-Enabling-Failed.html", title: "弹窗 · 网站扩展 · 重新启用失败", x: 2400, y: 195400, w: 320, h: 650 },
+    { file: "Popup-Design-A-Disabled-Dark.html", title: "弹窗 · 紧凑列表 · 网站禁用 · 深色", x: 3200, y: 196500, w: 320, h: 560 },
     { file: "Page-Site-Rule-Saved-Undone.html", title: "保存提示 · B · 已撤销本次修改 · 3 秒后消失", x: 2720, y: 200600, w: 1280, h: 900 },
     { file: "Page-Site-Rule-Saved-Manage-Hover.html", title: "保存提示 · B · 查看站点规则悬停 · 无底块", x: 1360, y: 200600, w: 1280, h: 900 },
     { file: "Page-Site-Rule-Saved-Undo-Hover.html", title: "保存提示 · B · 撤销悬停 · 文字变深与细下划线", x: 0, y: 200600, w: 1280, h: 900 },

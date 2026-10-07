@@ -51,6 +51,27 @@
 
 #readomi-popup-options .rm-window{border:0;border-radius:0;width:320px}
 .rm-site-status{margin:0;color:var(--rm-sub);font-size:11px;line-height:16px}.rm-setup{display:flex;flex-direction:column;gap:10px;padding:14px;margin-bottom:8px;border:1px solid var(--rm-line);border-radius:12px;background:var(--rm-card)}.rm-setup strong{font-size:14px;line-height:20px;font-weight:600}.rm-setup p{margin:4px 0 0;font-size:12px;line-height:17px;color:var(--rm-sub)}.rm-setup button{height:40px;border:0;border-radius:9px;background:var(--rm-brand);color:var(--rm-on-brand);font-size:14px;font-weight:600}
+
+/* Site control belongs to the same list; off is available, disabled is explicit. */
+#readomi-popup-options .rm-window button:not(:disabled),#readomi-popup-options .rm-window summary{cursor:pointer}
+#readomi-popup-options .rm-switch{position:relative;background:light-dark(#b8a89c,#79665a);box-shadow:inset 0 0 0 1px light-dark(#ab998b,#927969)}
+#readomi-popup-options .rm-switch:after{background:#fffaf5;box-shadow:0 1px 2px #0002}
+#readomi-popup-options .rm-switch[aria-checked="true"]{box-shadow:none}
+#readomi-popup-options .rm-switch:not(:disabled):before{content:"";position:absolute;inset:-12px -6px}
+#readomi-popup-options .rm-switch:not(:disabled):hover{outline:3px solid var(--rm-soft)}
+#readomi-popup-options .rm-site{font-size:13px;min-height:var(--rm-row-height)}
+#readomi-popup-options .rm-site label{cursor:pointer;flex:1;line-height:42px}
+#readomi-popup-options .rm-site-status{min-height:16px;margin:0;font-size:11px;line-height:16px;color:var(--rm-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#readomi-popup-options .rm-site-status[data-error]{color:var(--rm-brand)}
+#readomi-popup-options .rm-utility{margin-top:8px}
+#readomi-popup-options .rm-row[data-paused] .rm-copy{color:var(--rm-sub)}
+#readomi-popup-options .rm-row[data-paused] .rm-key{opacity:.6}
+#readomi-popup-options .rm-translate:disabled{background:var(--rm-soft);color:var(--rm-sub);cursor:default}
+#readomi-popup-options .rm-switch:disabled{background:var(--rm-soft);box-shadow:inset 0 0 0 1px var(--rm-line);cursor:default}
+#readomi-popup-options .rm-switch:disabled:after{background:var(--rm-sub);opacity:.45;box-shadow:none}
+#readomi-popup-options .rm-switch:disabled[aria-checked="true"]{background:var(--rm-off)}
+#readomi-popup-options .rm-icon:disabled{opacity:.4;cursor:default;background:transparent}
+#readomi-popup-options .rm-help-action:disabled{color:var(--rm-sub);opacity:.55;cursor:default}
 </style></head><body><div id="readomi-popup-options"><div class="rm-window rm-compact" aria-label="紧凑列表弹窗">
       <main class="rm-main">
         <section aria-label="翻译语言">
@@ -62,9 +83,10 @@
           <div class="rm-row"><span class="rm-copy"><span>网页文字</span><span class="rm-key">⌥ E</span></span><button class="rm-translate cursor-interaction" aria-label="翻译此页" data-translate>翻译</button></div>
           <div class="rm-row"><span class="rm-copy"><span>悬停翻译</span><button class="rm-key cursor-interaction" aria-label="悬停翻译触发方式">反引号 (`)</button></span><button class="rm-switch cursor-interaction" role="switch" aria-label="悬停翻译" aria-checked="true"></button></div>
           <div class="rm-row"><span class="rm-copy"><span>视频字幕</span><span class="rm-key">⌥ V</span></span><button class="rm-switch cursor-interaction" role="switch" aria-label="视频字幕翻译" aria-checked="true"></button></div>
+          <div class="rm-row rm-site"><label for="site-disable" title="仅影响当前域名下的所有页面，立即生效。">在此网站禁用扩展</label><button id="site-disable" title="仅影响当前域名下的所有页面，立即生效。" class="rm-switch cursor-interaction" role="switch" aria-label="在此网站禁用扩展" aria-checked="false"></button></div>
         </section>
         <div class="rm-utility">
-          <div class="rm-row rm-site"><span>在此网站禁用扩展</span><button class="rm-switch cursor-interaction" role="switch" aria-label="在此网站禁用扩展" aria-checked="false"></button></div>
+
           <details class="rm-help" open><summary class="cursor-interaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg>翻译有问题？</summary><div class="rm-help-body"><button class="rm-help-action cursor-interaction">调整译文质量<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg></button><button class="rm-help-action cursor-interaction">用 Agent 适配此网站<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(-45deg)"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg></button></div></details>
         </div>
       </main>

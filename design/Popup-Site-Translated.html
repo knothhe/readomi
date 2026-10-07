@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>弹窗 · 紧凑列表 · 深色 — Readomi</title><style>html{color-scheme:dark}body{margin:0;width:320px;background:light-dark(#faf8f5,#1c1917)}
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>弹窗 · 已翻译 · 当前页字幕关闭 — Readomi</title><style>html{color-scheme:light dark}body{margin:0;width:320px;background:light-dark(#faf8f5,#1c1917)}
 #readomi-popup-options .rm-window{--rm-bg:light-dark(#faf8f5,#1c1917);--rm-ink:light-dark(#302b29,#eae3dc);--rm-sub:light-dark(#716862,#a69b93);--rm-card:light-dark(#ffffff,#26211e);--rm-soft:light-dark(#f1ebe6,#2e2723);--rm-line:light-dark(#e8e0db,#40352e);--rm-brand:light-dark(#b6533e,#e9ab91);--rm-on-brand:light-dark(#fff8ec,#1c1917);--rm-off:light-dark(#d9cdc4,#4a3c32);--rm-green:light-dark(#3f8f5a,#5db57a);--rm-row-height:42px;width:320px;max-width:100%;background:var(--rm-bg);color:var(--rm-ink);border:1px solid var(--rm-line);border-radius:14px;font:13px/1.45 -apple-system,BlinkMacSystemFont,"PingFang SC",system-ui,sans-serif;overflow:visible;box-sizing:border-box}
 #readomi-popup-options .rm-window *{box-sizing:border-box}
 #readomi-popup-options .rm-window :where(button,select){font:inherit;color:inherit}
@@ -72,6 +72,13 @@
 #readomi-popup-options .rm-switch:disabled[aria-checked="true"]{background:var(--rm-off)}
 #readomi-popup-options .rm-icon:disabled{opacity:.4;cursor:default;background:transparent}
 #readomi-popup-options .rm-help-action:disabled{color:var(--rm-sub);opacity:.55;cursor:default}
+
+#readomi-popup-options .rm-page-progress{height:34px;padding-bottom:10px;display:flex;flex-direction:column;gap:6px;color:var(--rm-sub);font-size:12px;line-height:16px}
+#readomi-popup-options .rm-page-count{display:flex;justify-content:space-between}
+#readomi-popup-options .rm-page-bar{height:2px;background:var(--rm-sub);border-radius:2px;opacity:.5}
+#readomi-popup-options .rm-page-actions{height:28px;padding-bottom:8px;font-size:12px;line-height:20px}
+#readomi-popup-options .rm-page-actions button{padding:0;border:0;background:transparent;color:var(--rm-brand);font-size:12px;line-height:20px}
+#readomi-popup-options .rm-page-reserved{height:62px}
 </style></head><body><div id="readomi-popup-options"><div class="rm-window rm-compact" aria-label="紧凑列表弹窗">
       <main class="rm-main">
         <section aria-label="翻译语言">
@@ -80,9 +87,11 @@
           <div class="rm-language-row"><span data-condition>简体中文</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg><select aria-label="第二语言"><option>英语</option><option>保持原文</option><option>日语</option></select></div>
         </section>
         <section class="rm-feature-list" aria-label="翻译功能">
-          <div class="rm-row"><span class="rm-copy"><span>网页文字</span><span class="rm-key">⌥ E</span></span><button class="rm-translate cursor-interaction" aria-label="翻译此页" data-translate>翻译</button></div>
+          <div class="rm-row"><span class="rm-copy"><span>网页文字</span><span class="rm-key">⌥ E</span></span><button class="rm-translate cursor-interaction" aria-label="显示原文" data-translate>显示原文</button></div>
+          <div class="rm-page-progress"><div class="rm-page-count"><span>已翻译</span><span>20 段</span></div><div class="rm-page-bar" aria-hidden="true"></div></div>
+          <div class="rm-page-actions"><button class="cursor-interaction" title="使用当前服务与设置，重新请求本页译文。">重新翻译此页</button></div>
           <div class="rm-row"><span class="rm-copy"><span>悬停翻译</span><button class="rm-key cursor-interaction" aria-label="悬停翻译触发方式">反引号 (`)</button></span><button class="rm-switch cursor-interaction" role="switch" aria-label="悬停翻译" aria-checked="true"></button></div>
-          <div class="rm-row"><span class="rm-copy"><span>视频字幕</span><span class="rm-key">⌥ V</span></span><button class="rm-switch cursor-interaction" role="switch" aria-label="视频字幕翻译" aria-checked="true"></button></div>
+          <div class="rm-row"><span class="rm-copy"><span>视频字幕</span><span class="rm-key">⌥ V</span></span><button class="rm-switch cursor-interaction" role="switch" aria-label="视频字幕翻译" aria-checked="false"></button></div>
           <div class="rm-row rm-site"><label for="site-disable" title="仅影响当前域名下的所有页面，立即生效。">在此网站禁用扩展</label><button id="site-disable" title="仅影响当前域名下的所有页面，立即生效。" class="rm-switch cursor-interaction" role="switch" aria-label="在此网站禁用扩展" aria-checked="false"></button></div>
         </section>
         <div class="rm-utility">
