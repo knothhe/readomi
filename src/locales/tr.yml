@@ -5,12 +5,16 @@ languageCombobox:
   searchLanguages: Dil ara…
   noLanguagesFound: Dil bulunamadı
 popup:
+  subtitlePage:
+    scope: Yalnızca bu sayfanın video altyazılarını kontrol eder.
+    failed: Altyazılar değiştirilemedi. Tekrar deneyin.
+    unavailable: Bu sayfada video altyazıları değiştirilemez.
   clearTranslationCache:
-    label: Bu sayfanın önbelleğini temizle
-    description: Bu sayfanın önbelleğini temizle; görünen çevirileri koru.
-    clearing: Sayfa önbelleği temizleniyor…
-    cleared: Sayfa önbelleği temizlendi
-    failed: Temizlenemedi. Tekrar deneyin.
+    label: Çeviri önbelleğini temizle
+    description: Bu alan adının web çevirilerini ve bu sayfanın altyazı ve özet önbelleğini temizle; görünen çevirileri koru.
+    clearing: Çeviri önbelleği temizleniyor…
+    cleared: Çeviri önbelleği temizlendi
+    failed: Çeviri önbelleği temizlenemedi. Tekrar deneyin.
   serviceSwitch:
     switchLabel: "Geçerli hizmet: $1. Hizmeti değiştir"
     title: Hizmeti değiştir
@@ -548,9 +552,8 @@ features:
   hoverStream: Üzerine gelince çeviriyi akışla göster
   hoverStreamDescription: Beklemeyi azaltmak için çeviriyi aşamalı gösterir.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: Video altyazı çevirisini varsayılan olarak aç
+  videoDescription: Yeni sayfalar için varsayılan ayardır. Sayfa anahtarları bu ayarı değiştirmez. Etkin YouTube altyazılarını ve HTML5 altyazı parçalarını destekler; altyazısız videolar henüz desteklenmez.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -582,7 +585,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: Yalnızca bu sayfa
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -687,9 +690,7 @@ translationShortcuts:
   modeHint: Yalnızca web çevirilerinin görüntülenme biçimini değiştirir.
   subtitles: Toggle video subtitles
   subtitlesHint: Bu sayfada video çevirisini açar veya kapatır.
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: Kısayol kaydetmek için tıklayın; Delete veya Backspace ile temizleyin. Altyazı kısayolu açılır pencere ve oynatıcı anahtarlarıyla eşitlenir ve yalnızca bu sayfayı etkiler.
   platformHint: "macOS üzerinde Option (⌥), Windows / Linux üzerinde Alt kullanın."
   hover: Hover translation trigger
   hoverHelp: Çeviri nasıl başlatılır
@@ -823,6 +824,7 @@ siteRuleAgent:
   openFailed: Panel açılamadı. Web sayfasını yenileyip yeniden deneyin.
   unsupported: Siteyi uyarlamadan önce normal bir web sayfası açın.
   manage: Site kurallarını yönet
+  viewRules: Site kurallarını görüntüle
   settingsHelp: Web sitesinde Readomi açılır penceresini açıp “Bu siteyi bir agent
     ile uyarlayın” seçeneğini seçin.
   advanced: Gelişmiş JSON düzenleme

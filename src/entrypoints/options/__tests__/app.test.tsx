@@ -540,7 +540,7 @@ describe("settings page", () => {
     await waitFor(() => expect(store.get(configAtom).features.hoverTranslation).toBe(true))
     fireEvent.click(screen.getByRole("link", { name: "features.title" }))
     expect(screen.queryByRole("switch", { name: "features.hover" })).toBeNull()
-    expect(screen.getByRole("switch", { name: "features.video" })).toBeInTheDocument()
+    expect(screen.getByRole("switch", { name: "features.videoDefault" })).toBeInTheDocument()
     fireEvent.click(screen.getByRole("link", { name: "options.reading.title" }))
     expect(screen.getByRole("switch", { name: "features.hover" })).toBeChecked()
 

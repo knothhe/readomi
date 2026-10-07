@@ -5,12 +5,16 @@ languageCombobox:
   searchLanguages: Tìm ngôn ngữ…
   noLanguagesFound: Không tìm thấy ngôn ngữ
 popup:
+  subtitlePage:
+    scope: Chỉ điều khiển phụ đề video trên trang hiện tại.
+    failed: Không thể chuyển phụ đề. Hãy thử lại.
+    unavailable: Không thể chuyển phụ đề video trên trang này.
   clearTranslationCache:
-    label: Xóa bộ nhớ đệm trang này
-    description: Xóa bộ nhớ đệm trang này, giữ bản dịch đang hiển thị.
-    clearing: Đang xóa bộ nhớ đệm trang…
-    cleared: Đã xóa bộ nhớ đệm trang
-    failed: Không thể xóa. Hãy thử lại.
+    label: Xóa bộ nhớ đệm bản dịch
+    description: Xóa bản dịch web của tên miền này và bộ nhớ đệm phụ đề, tóm tắt của trang này; giữ bản dịch đang hiển thị.
+    clearing: Đang xóa bộ nhớ đệm bản dịch…
+    cleared: Đã xóa bộ nhớ đệm bản dịch
+    failed: Không thể xóa bộ nhớ đệm bản dịch. Hãy thử lại.
   serviceSwitch:
     switchLabel: "Dịch vụ hiện tại: $1. Chuyển dịch vụ"
     title: Chuyển dịch vụ
@@ -543,9 +547,8 @@ features:
   hoverStream: Hiển thị bản dịch dần khi rê chuột
   hoverStreamDescription: Hiển thị bản dịch dần để giảm thời gian chờ.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: Bật dịch phụ đề video theo mặc định
+  videoDescription: Mặc định cho trang mới. Công tắc trên trang không thay đổi cài đặt này. Hỗ trợ phụ đề YouTube đã bật và phụ đề HTML5; chưa hỗ trợ video không có phụ đề.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -577,7 +580,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: Chỉ trang hiện tại
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -681,9 +684,7 @@ translationShortcuts:
   modeHint: Chỉ thay đổi cách hiển thị bản dịch trang web.
   subtitles: Toggle video subtitles
   subtitlesHint: Bật hoặc tắt dịch video trên trang hiện tại.
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: Nhấp để ghi phím tắt; Delete hoặc Backspace để xóa. Phím tắt phụ đề đồng bộ với công tắc trong cửa sổ bật lên và trình phát, chỉ áp dụng cho trang hiện tại.
   platformHint: Dùng Option (⌥) trên macOS và Alt trên Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cách kích hoạt dịch
@@ -816,6 +817,7 @@ siteRuleAgent:
   openFailed: Không thể mở bảng. Hãy tải lại trang và thử lại.
   unsupported: Hãy mở một trang web thông thường trước khi điều chỉnh trang.
   manage: Quản lý quy tắc trang
+  viewRules: Xem quy tắc trang web
   settingsHelp: Mở cửa sổ Readomi trên trang web và chọn “Điều chỉnh trang này bằng agent”.
   advanced: Chỉnh sửa JSON nâng cao
   delete: Xóa quy tắc

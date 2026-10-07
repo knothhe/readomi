@@ -72,6 +72,8 @@ export interface TranslateTextOptions extends PageTranslationRequestOptions {
   langConfig: LanguagePolicyConfig & Partial<Pick<Config["language"], "sourceCode" | "level">>
   providerConfig: ProviderConfig
   extraHashTags?: string[]
+  /** Subtitles and typed input retain page isolation; web text uses the hostname. */
+  cacheScope?: "page"
   webPageContext?: WebPagePromptContext
 }
 
@@ -113,7 +115,7 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
   const pageUrl = typeof window === "undefined" ? undefined : window.location.href
   options.signal?.throwIfAborted()
   if (options.onPartial) {
-    return requestHoverStream({ text: preparedText, langConfig, providerConfig, hash, pageUrl, context: normalizedWebPageContext, customPromptsConfig }, options)
+    return requestHoverStream({ text: preparedText, langConfig, providerConfig, hash, pageUrl, cacheScope: options.cacheScope, context: normalizedWebPageContext, customPromptsConfig }, options)
   }
   const result = await sendMessage("enqueueTranslateRequest", {
     text: preparedText,
@@ -122,6 +124,7 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
     scheduleAt: Date.now(),
     hash,
     pageUrl,
+    cacheScope: options.cacheScope,
     customPromptsConfig,
     webTitle: normalizedWebPageContext?.webTitle,
     webDescription: normalizedWebPageContext?.webDescription,

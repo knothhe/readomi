@@ -14,6 +14,7 @@ export interface HoverStreamRequest {
   providerConfig: ProviderConfig
   hash: string
   pageUrl?: string
+  cacheScope?: "page"
   context?: WebPagePromptContext
   customPromptsConfig?: Config["translate"]["customPromptsConfig"]
 }

@@ -137,7 +137,7 @@ describe("subtitle settings", () => {
     const more = container.querySelector<HTMLDetailsElement>(".subtitle-site-more")!
     expect(custom.open).toBe(false)
     expect(more.open).toBe(false)
-    expect(screen.getByRole("switch", { name: "features.video" })).toBeVisible()
+    expect(screen.getByRole("switch", { name: "features.videoDefault" })).toBeVisible()
     expect(modes().getByRole("button", { name: "subtitleStyle.fontSizeModes.video" })).toBeVisible()
     expect(presets().getAllByRole("button")).toHaveLength(4)
     expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).not.toBeVisible()

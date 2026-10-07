@@ -5,11 +5,15 @@ languageCombobox:
   searchLanguages: 言語を検索…
   noLanguagesFound: 言語が見つかりません
 popup:
+  subtitlePage:
+    scope: このページの動画字幕だけを切り替えます。
+    failed: 字幕を切り替えられませんでした。再試行してください。
+    unavailable: このページでは動画字幕を切り替えられません。
   clearTranslationCache:
-    label: このページのキャッシュを削除
-    description: このページのキャッシュを削除し、表示中の訳文は保持します。
-    clearing: このページのキャッシュを削除中…
-    cleared: このページのキャッシュを削除しました
+    label: 翻訳キャッシュを削除
+    description: このドメインのウェブ翻訳と、このページの字幕・要約のキャッシュを削除し、表示中の訳文は保持します。
+    clearing: 翻訳キャッシュを削除中…
+    cleared: 翻訳キャッシュを削除しました
     failed: 削除できませんでした。もう一度お試しください。
   serviceSwitch:
     switchLabel: 現在のサービス：$1。サービスを切り替え
@@ -528,9 +532,8 @@ features:
   hoverStream: ホバー翻訳のストリーミング表示
   hoverStreamDescription: 訳文を順次表示し、待ち時間を減らします。
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: 動画字幕の翻訳を初期状態で有効にする
+  videoDescription: 新しいページの初期設定です。ページ内の切り替えはこの設定を変更しません。YouTube の有効な字幕と HTML5 字幕トラックに対応します。字幕のない動画には未対応です。
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -562,7 +565,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: このページのみ
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -665,9 +668,7 @@ translationShortcuts:
   modeHint: ウェブページの翻訳表示のみを切り替えます。
   subtitles: Toggle video subtitles
   subtitlesHint: このページの動画翻訳をオン・オフします。
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: クリックしてショートカットを記録し、Delete または Backspace で消去します。字幕のショートカットはポップアップとプレーヤーのスイッチと同期し、このページだけに適用されます。
   platformHint: macOSではOption（⌥）、Windows / LinuxではAltを使います。
   hover: Hover translation trigger
   hoverHelp: 翻訳の操作方法
@@ -798,6 +799,7 @@ siteRuleAgent:
   openFailed: パネルを開けませんでした。ページを再読み込みして再試行してください。
   unsupported: 通常のウェブページを開いてからサイトを調整してください。
   manage: サイトルールを管理
+  viewRules: サイトルールを表示
   settingsHelp: 対象サイトで Readomi のポップアップを開き、「agent でこのサイトを調整」を選択してください。
   advanced: 高度な JSON 編集
   delete: ルールを削除

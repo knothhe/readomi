@@ -124,7 +124,7 @@ function RuleRow({ rule, enabled, pending, onToggle, onDelete }: {
 export function SiteRulesSection({ onBackToReading }: { onBackToReading?: (event: MouseEvent<HTMLAnchorElement>) => void }) {
   const [rulesConfig, setRulesConfig] = useAtom(configFieldsAtomMap.siteRules)
   const mutateConfig = useSetAtom(mutateConfigAtom)
-  const [tab, setTab] = useState<RulesTab>("builtin")
+  const [tab, setTab] = useState<RulesTab>(() => new URLSearchParams(window.location.search).get("siteRulesTab") === "custom" ? "custom" : "builtin")
   const [search, setSearch] = useState("")
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [toggling, setToggling] = useState(false)

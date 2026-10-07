@@ -5,12 +5,16 @@ languageCombobox:
   searchLanguages: Search languages…
   noLanguagesFound: No languages found
 popup:
+  subtitlePage:
+    scope: Controls video subtitles on this page only.
+    failed: Could not switch subtitles. Try again.
+    unavailable: Video subtitles cannot be switched on this page.
   clearTranslationCache:
-    label: Clear this page’s cache
-    description: Clear this page’s cache; keep visible translations.
-    clearing: Clearing this page’s cache…
-    cleared: This page’s cache was cleared
-    failed: Could not clear this page’s cache. Try again.
+    label: Clear translation cache
+    description: Clear web translations for this domain and subtitles and summaries for this page; keep visible translations.
+    clearing: Clearing translation cache…
+    cleared: Translation cache was cleared
+    failed: Could not clear translation cache. Try again.
   serviceSwitch:
     switchLabel: "Current service: $1. Switch service"
     title: Switch service
@@ -548,9 +552,8 @@ features:
   hoverStream: Stream hover translations
   hoverStreamDescription: Show translations gradually to reduce waiting.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: Enable video subtitle translation by default
+  videoDescription: The default for new pages. Page switches do not change this setting. Supports enabled YouTube captions and HTML5 subtitle tracks; videos without captions are not supported yet.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -582,7 +585,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: This page only
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -686,9 +689,7 @@ translationShortcuts:
   modeHint: Only changes how web translations are displayed.
   subtitles: Toggle video subtitles
   subtitlesHint: Turn video translation on or off for this page.
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: Click to record a shortcut; Delete or Backspace clears it. The subtitle shortcut stays in sync with the popup and player switches and affects this page only.
   platformHint: Use Option (⌥) on macOS and Alt on Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: How triggers work
@@ -819,6 +820,7 @@ siteRuleAgent:
   openFailed: Could not open the panel. Refresh the webpage and try again.
   unsupported: Open a regular webpage before adapting a site.
   manage: Manage site rules
+  viewRules: View site rules
   settingsHelp: Open the Readomi popup on the website and choose “Adapt this site
     with an agent”.
   advanced: Advanced JSON editing

@@ -62,6 +62,19 @@ it("opens with the built-in list, loads fifty more rules and resets pagination a
   expect(screen.getAllByRole("switch")).toHaveLength(50)
 })
 
+it("opens the custom rules tab when following the saved notice link", async () => {
+  const previousUrl = window.location.href
+  window.history.replaceState(null, "", "?siteRulesTab=custom#reading/site-rules")
+  try {
+    await renderRules()
+    expect(screen.getByRole("tab", { name: "siteRules.custom" })).toHaveAttribute("aria-selected", "true")
+    expect(screen.getByRole("tabpanel", { name: "siteRules.custom" })).toBeVisible()
+  }
+  finally {
+    window.history.replaceState(null, "", previousUrl)
+  }
+})
+
 it("keeps an old Read Frog disabled rule off and clears its old identifier when re-enabled", async () => {
   const store = await renderRules({ userRules: [], disabledBuiltInRules: ["readfrog-preserve-text-defaults"] })
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "readomi-preserve-text-defaults" } })

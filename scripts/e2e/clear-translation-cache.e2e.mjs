@@ -55,7 +55,7 @@ async function setup() {
   await article.goto(`${service.origin}/article?id=a`)
   await article.bringToFront()
   await popup.reload()
-  await popup.getByRole("button", { name: "Clear this page’s cache", exact: true }).waitFor()
+  await popup.getByRole("button", { name: "Clear translation cache", exact: true }).waitFor()
   return { popup, worker, article, extensionId: launched.extensionId }
 }
 
@@ -108,8 +108,8 @@ async function seedSummary(worker, pageUrl) {
 
 async function clearFromPopup(popup) {
   // Success and failure stay actionable; readers can clear again immediately.
-  await popup.getByRole("button", { name: /^(?:Clear this page’s cache|This page’s cache was cleared|Could not clear this page’s cache. Try again.)$/ }).click()
-  await popup.getByRole("button", { name: "This page’s cache was cleared", exact: true }).waitFor()
+  await popup.getByRole("button", { name: /^(?:Clear translation cache|Translation cache was cleared|Could not clear translation cache. Try again.)$/ }).click()
+  await popup.getByRole("button", { name: "Translation cache was cleared", exact: true }).waitFor()
 }
 
 async function screenshot(page, name) {
@@ -173,7 +173,7 @@ async function completedRequest(popup, id) {
   return reply.response
 }
 
-it("clears only this page's text and summary caches, retains visible translations, and clears all from settings", async () => {
+it("clears this domain's web translations and this page's summary, retains visible translations, and clears all from settings", async () => {
   const { popup, worker, article, extensionId } = await setup()
   await screenshotFooter(popup)
   await pressTranslateShortcut(article)
@@ -188,7 +188,7 @@ it("clears only this page's text and summary caches, retains visible translation
   await other.locator(".readomi-spinner").first().waitFor({ state: "detached" })
   await seedSummary(worker, other.url())
   const before = await caches(worker)
-  assert.equal(new Set(before.translations.map(record => record.pageKey)).size, 2)
+  assert.equal(new Set(before.translations.map(record => record.pageKey)).size, 1, "paths and query parameters share the domain scope")
   const configuration = await storedConfig(context)
   const displayed = await blocks.allTextContents()
   const requests = service.translationRequests().length
@@ -196,10 +196,8 @@ it("clears only this page's text and summary caches, retains visible translation
   await popup.reload()
   await clearFromPopup(popup)
   const after = await caches(worker)
-  assert.ok(after.translations.length > 0, "another page retains its translations")
-  assert.equal(new Set(after.translations.map(record => record.pageKey)).size, 1)
+  assert.deepEqual(after.translations, [], "web translations from every page in the domain were cleared")
   assert.equal(after.summaries.length, 1, "only this page's summary was cleared")
-  assert.ok(after.translations.every(record => record.pageKey === after.summaries[0].pageKey))
   assert.deepEqual(await storedConfig(context), configuration)
   assert.deepEqual(await blocks.allTextContents(), displayed)
   assert.equal(service.translationRequests().length, requests)
@@ -210,7 +208,7 @@ it("clears only this page's text and summary caches, retains visible translation
   await pressTranslateShortcut(article)
   await blocks.nth(4).waitFor({ timeout: 20_000 })
   assert.ok(service.translationRequests().length > requests)
-  await waitFor(() => caches(worker), value => new Set(value.translations.map(record => record.pageKey)).size === 2, "this page builds a fresh cache")
+  await waitFor(() => caches(worker), value => new Set(value.translations.map(record => record.pageKey)).size === 1, "this page builds a fresh domain cache")
   const settings = await context.newPage()
   await settings.goto(`chrome-extension://${extensionId}/options.html#cache`)
   await settings.locator("#cache").getByRole("button", { name: "Clear", exact: true }).click()
@@ -247,7 +245,7 @@ it("keeps pre-clear in-flight results out of the cache and starts a fresh reques
   await Promise.all([completedRequest(popup, "old-shared"), completedRequest(popup, "new-shared")])
   const final = await caches(worker)
   assert.equal(final.translations.length, 1, "only a result from the new cache generation is stored")
-  assert.ok(final.translations[0].pageKey, "the stored result belongs to the current page")
+  assert.ok(final.translations[0].pageKey, "the stored result belongs to the current domain")
 })
 
 it("retries failed paragraphs and retranslates an already translated page", async () => {
@@ -308,7 +306,7 @@ it("keeps video controls directly visible without subtitle status notices", asyn
   })
   await popup.getByText("翻译有问题？", { exact: true }).click()
   await popup.getByRole("button", { name: "调整译文质量", exact: true }).waitFor()
-  assert.equal(await popup.getByRole("button", { name: "清理当前页缓存", exact: true }).getAttribute("title"), "清理当前页缓存，保留已有译文。")
+  assert.equal(await popup.getByRole("button", { name: "清理翻译缓存", exact: true }).getAttribute("title"), "清理当前域名的网页缓存和当前页的字幕与摘要缓存，保留已有译文。")
   await screenshot(popup, "popup-help-actions-dark.png")
   if (process.env.E2E_ARTIFACTS) {
     const help = popup.locator("details").filter({ has: popup.locator("summary").filter({ hasText: "翻译有问题？" }) })

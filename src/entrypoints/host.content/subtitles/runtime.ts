@@ -1,6 +1,7 @@
 import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
+import type { PageSubtitleState } from "@/types/page-subtitle-state"
 import type { SubtitleStatus } from "@/types/subtitle-status"
 import type { VideoTranslationControls } from "@/utils/subtitles/translation-controls"
 import { i18n } from "#imports"
@@ -13,10 +14,11 @@ import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { setTranslationDirAndLang } from "@/utils/host/translate/translation-attributes"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
-import { onMessage } from "@/utils/message"
+import { onMessage, sendMessage } from "@/utils/message"
 import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle, subtitleVideoSize } from "@/utils/subtitles/appearance"
 import { shouldShowVideoControls } from "@/utils/subtitles/control-sites"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
+import { subtitlePageKey } from "@/utils/subtitles/page-state"
 import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
 import { createTextTrackSession } from "@/utils/subtitles/text-track-session"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
@@ -108,6 +110,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
       langConfig: config.language,
       providerConfig: provider,
       extraHashTags: ["video-subtitles"],
+      cacheScope: "page",
       customPromptsConfig: config.translate.customPromptsConfig,
       signal: requestController.signal,
       onTargetLanguage: (code) => {
@@ -437,40 +440,78 @@ function subtitleRequestKey(config: Config, omitProvider = false): string {
   ])
 }
 
-/** Session switches belong to a video, and reset when that element plays another source. */
-function videoSessionKey(video: HTMLVideoElement): string {
-  const source = video.currentSrc || video.src
-  if (isXHost())
-    return `${xVideoIdentity(video)}|${source}`
-  const url = new URL(location.href)
-  if (video.closest(".html5-video-player")) {
-    const id = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:shorts|embed)\/([^/]+)/)?.[1]
-    if (id)
-      return `youtube:${id}`
-  }
-  return source || `${url.origin}${url.pathname}`
-}
-
+/** All players on this page share one switch; the saved setting supplies its default. */
 export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => false) {
   const players = new Map<HTMLVideoElement, Player>()
-  let overrides = new WeakMap<HTMLVideoElement, { key: string, enabled: boolean }>()
+  let pageOverride: boolean | null = null
+  let pageUnavailable = false
+  let scope = subtitlePageKey(location.href)
+  let stateVersion = 0
   let timer: ReturnType<typeof setInterval> | undefined
   let disposed = false
   let current: Config | null = null
-  let suspended = false
   const reset = () => {
     clearInterval(timer)
     timer = undefined
     players.forEach(player => player.dispose())
     players.clear()
   }
-  const tick = (storedChange = false) => {
+  const enabled = () => !pageUnavailable && (pageOverride ?? current?.features.videoSubtitles ?? false)
+  const expectedUrl = () => window === window.top ? location.href : undefined
+  const apply = (state: PageSubtitleState) => {
+    if (disposed || isContextInvalid() || (window === window.top && subtitlePageKey(state.url) !== subtitlePageKey(location.href)))
+      return
+    stateVersion++
+    scope = window === window.top ? subtitlePageKey(state.url) : scope
+    pageOverride = state.overridden ? state.enabled : null
+    pageUnavailable = !state.available
+    tick()
+  }
+  const refresh = () => {
+    const version = stateVersion
+    void sendMessage("getPageSubtitleState", { url: expectedUrl() }).then((state) => {
+      if (state && version === stateVersion)
+        apply(state)
+    }).catch((error) => {
+      if (!disposed && !isContextInvalid())
+        logger.warn("Could not read page subtitle state", error)
+    })
+  }
+  const choose = (nextEnabled: boolean) => {
+    if (disposed || isContextInvalid() || !current || pageUnavailable || isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
+      return
+    const previous = pageOverride
+    const version = ++stateVersion
+    pageOverride = nextEnabled
+    tick()
+    void sendMessage("setPageSubtitleState", { url: expectedUrl(), enabled: nextEnabled }).then((state) => {
+      if (state && version === stateVersion)
+        apply(state)
+    }).catch((error) => {
+      if (disposed || isContextInvalid())
+        return
+      if (version === stateVersion) {
+        pageOverride = previous
+        tick()
+      }
+      logger.warn("Could not switch page subtitles", error)
+    })
+  }
+  function tick(storedChange = false) {
     const config = current
     if (disposed || isContextInvalid() || !config)
       return
-    const excluded = isVideoTranslationExcluded(location.href, config.features.videoExcludedSites)
+    const nextScope = subtitlePageKey(location.href)
+    if (window === window.top && scope !== nextScope) {
+      scope = nextScope
+      pageOverride = null
+      pageUnavailable = false
+      stateVersion++
+      refresh()
+    }
+    const excluded = pageUnavailable || isVideoTranslationExcluded(location.href, config.features.videoExcludedSites)
     if (excluded)
-      overrides = new WeakMap()
+      pageOverride = null
     const xVideo = isXHost() ? currentXVideo() : null
     const videos = isXHost() ? (xVideo ? [xVideo] : []) : Array.from(document.querySelectorAll("video"))
     for (const [video, player] of players) {
@@ -480,25 +521,15 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
       }
     }
     for (const video of videos) {
-      const session = overrides.get(video)
-      if (session && session.key !== videoSessionKey(video))
-        overrides.delete(video)
-      const enabled = !excluded && (overrides.get(video)?.enabled ?? (config.features.videoSubtitles && !suspended))
-      if (!players.has(video)) {
-        players.set(video, mountPlayer(video, config, enabled, excluded, (nextEnabled) => {
-          if (disposed || isContextInvalid() || !current || isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
-            return
-          overrides.set(video, { key: videoSessionKey(video), enabled: nextEnabled })
-          players.get(video)?.updateConfig(current, nextEnabled, false)
-          players.get(video)?.tick()
-        }))
-      }
-      else {
-        players.get(video)!.updateConfig(config, enabled, excluded, storedChange)
-      }
+      const active = !excluded && enabled()
+      if (!players.has(video))
+        players.set(video, mountPlayer(video, config, active, excluded, choose))
+      else
+        players.get(video)!.updateConfig(config, active, excluded, storedChange)
     }
     players.forEach(player => player.tick())
   }
+  const unsubscribeState = onMessage("applyPageSubtitleState", ({ data }) => apply(data))
   const unsubscribeStatus = onMessage("getSubtitleStatus", () => {
     if (disposed || isContextInvalid())
       return NO_VIDEO_STATUS
@@ -516,35 +547,32 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
   const unsubscribe = subscribeLocalConfig((config) => {
     if (disposed || isContextInvalid())
       return
-    const previous = current
     current = config
-    if (previous?.features.videoSubtitles !== config?.features.videoSubtitles) {
-      overrides = new WeakMap()
-      suspended = false
-    }
     if (!config) {
+      stateVersion++
+      pageOverride = null
       reset()
       return
     }
     tick(true)
+    refresh()
     timer ??= setInterval(tick, 250)
   })
   const keydown = (event: KeyboardEvent) => {
-    if (disposed || isContextInvalid())
+    if (disposed || isContextInvalid() || !current)
       return
-    if (!current?.features.videoSubtitles || event.defaultPrevented || event.repeat || isEditableTarget(event.target) || !eventMatchesHotkey(event, current.features.subtitlesShortcut))
+    if (event.defaultPrevented || event.repeat || event.isComposing || isEditableTarget(event.target) || !eventMatchesHotkey(event, current.features.subtitlesShortcut))
       return
-    if (isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
+    if (pageUnavailable || isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
       return
     event.preventDefault()
     event.stopPropagation()
-    suspended = !suspended
-    overrides = new WeakMap()
-    tick()
+    choose(!enabled())
   }
   document.addEventListener("keydown", keydown, true)
   return () => {
     disposed = true
+    unsubscribeState()
     unsubscribeStatus()
     unsubscribeRetry()
     document.removeEventListener("keydown", keydown, true)

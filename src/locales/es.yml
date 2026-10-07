@@ -5,12 +5,16 @@ languageCombobox:
   searchLanguages: Buscar idiomas…
   noLanguagesFound: No se encontraron idiomas
 popup:
+  subtitlePage:
+    scope: Controla los subtítulos de vídeo solo en esta página.
+    failed: No se pudieron cambiar los subtítulos. Inténtalo de nuevo.
+    unavailable: No se pueden cambiar los subtítulos de vídeo en esta página.
   clearTranslationCache:
-    label: Borrar caché de esta página
-    description: Borra la caché de esta página; conserva las traducciones visibles.
-    clearing: Borrando caché de esta página…
-    cleared: Caché de esta página borrada
-    failed: No se pudo borrar. Inténtalo de nuevo.
+    label: Borrar caché de traducción
+    description: Borra las traducciones web de este dominio y los subtítulos y resúmenes de esta página; conserva las traducciones visibles.
+    clearing: Borrando caché de traducción…
+    cleared: Caché de traducción borrada
+    failed: No se pudo borrar la caché de traducción. Inténtalo de nuevo.
   serviceSwitch:
     switchLabel: "Servicio actual: $1. Cambiar servicio"
     title: Cambiar servicio
@@ -559,9 +563,8 @@ features:
   hoverStream: Traducción progresiva al pasar el cursor
   hoverStreamDescription: Muestra la traducción progresivamente para reducir la espera.
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: Activar la traducción de subtítulos por defecto
+  videoDescription: Valor predeterminado para páginas nuevas. Los interruptores de cada página no cambian este ajuste. Admite subtítulos activados de YouTube y pistas HTML5; los vídeos sin subtítulos aún no son compatibles.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -593,7 +596,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: Solo esta página
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -700,9 +703,7 @@ translationShortcuts:
   modeHint: Solo cambia cómo se muestran las traducciones de páginas web.
   subtitles: Toggle video subtitles
   subtitlesHint: Activa o desactiva la traducción de vídeo en esta página.
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: Haz clic para grabar un atajo; Delete o Backspace lo borra. El atajo de subtítulos se sincroniza con los interruptores del panel y del reproductor y solo afecta a esta página.
   platformHint: Usa Option (⌥) en macOS y Alt en Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cómo funcionan los activadores
@@ -836,6 +837,7 @@ siteRuleAgent:
   openFailed: No se pudo abrir el panel. Actualiza la página e inténtalo de nuevo.
   unsupported: Abre una página web normal antes de adaptar un sitio.
   manage: Administrar reglas del sitio
+  viewRules: Ver reglas del sitio
   settingsHelp: Abre el menú de Readomi en el sitio web y elige «Adaptar este
     sitio con un agente».
   advanced: Edición avanzada de JSON

@@ -199,7 +199,7 @@ async function playerInspector(page) {
   }
 }
 
-it("player controls stop translation, retain per-video scope and preserve cached captions through presets and resizing", async () => {
+it("player controls stop translation, share page scope and preserve cached captions through presets and resizing", async () => {
   service = await startFakeService()
   const launched = await launchBrowser()
   context = launched.context
@@ -228,10 +228,10 @@ it("player controls stop translation, retain per-video scope and preserve cached
   assert.deepEqual(await page.evaluate(() => window.e2eTracks.map(track => track.mode)), ["hidden", "hidden"])
 
   await inspector.click(0, "label", "Disable video translation")
-  await waitFor(read, state => !state.controls[0]?.enabled && state.controls[1]?.enabled && state.captions.length === 1, "session switch affected the other player")
+  await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "page switch did not stop both players")
   assert.equal((await read()).controls[0].expanded, false, "the translation toggle does not open subtitle presets")
   assert.equal((await storedConfig(context)).features.videoSubtitles, true, "session disable leaves the global setting enabled")
-  assert.deepEqual(await page.evaluate(() => window.e2eTracks.map(track => track.mode)), ["showing", "hidden"])
+  assert.deepEqual(await page.evaluate(() => window.e2eTracks.map(track => track.mode)), ["showing", "showing"])
   assert.equal(await page.locator("#first .ytp-caption-window-container").evaluate(node => getComputedStyle(node).visibility), "visible", "disabled translation restores native captions")
 
   await page.locator("#first").evaluate(player => player.classList.add("ytp-autohide"))
@@ -319,9 +319,12 @@ it("player controls stop translation, retain per-video scope and preserve cached
   await page.setViewportSize({ width: 1280, height: 1000 })
 
   await patchFeatures({ videoSubtitles: false })
-  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => !control.enabled) && state.captions.length === 0, "global disable did not reset player sessions")
+  await page.waitForTimeout(350)
+  assert.ok((await read()).controls.every(control => control.enabled), "changing the default preserves a manually enabled page")
+  await page.evaluate(() => history.replaceState({}, "", "/watch?v=default-off-video"))
+  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => !control.enabled) && state.captions.length === 0, "the new page did not use the disabled default")
   await inspector.click(0, "label", "Enable video translation")
-  await waitFor(read, state => state.controls[0]?.enabled && !state.controls[1]?.enabled && state.captions.length === 1, "a default-off video could not enable its own session")
+  await waitFor(read, state => state.controls.every(control => control.enabled) && state.captions.length === 2, "a default-off page could not enable both players")
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)
   await page.evaluate(() => {
     history.replaceState({}, "", "/watch?v=another-video")

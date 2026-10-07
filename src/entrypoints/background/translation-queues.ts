@@ -41,14 +41,30 @@ async function pageCacheKey(pageUrl?: string): Promise<string | undefined> {
   return pageUrl ? sha256Hex(pageUrl) : undefined
 }
 
+async function domainCacheKey(pageUrl?: string): Promise<string | undefined> {
+  if (!pageUrl)
+    return undefined
+  try {
+    const url = new URL(pageUrl)
+    if (/^https?:$/.test(url.protocol) && url.hostname)
+      return sha256Hex(`domain:${url.hostname}`)
+  }
+  catch {
+    // Local files and unparseable URLs retain their existing page scope.
+  }
+  return pageCacheKey(pageUrl)
+}
+
 function requestPageUrl(tabUrl?: string, pageUrl?: string) {
   // Content scripts use the top-level tab URL, including embedded players.
   // Requests initiated by an extension page may provide their target page.
   return tabUrl && /^(?:https?|file):/i.test(tabUrl) ? tabUrl : pageUrl
 }
 
-async function scopeTranslation<T extends { hash: string, pageUrl?: string }>(data: T, tabUrl?: string) {
-  const pageKey = await pageCacheKey(requestPageUrl(tabUrl, data.pageUrl))
+async function scopeTranslation<T extends { hash: string, pageUrl?: string, cacheScope?: "page" }>(data: T, tabUrl?: string) {
+  const url = requestPageUrl(tabUrl, data.pageUrl)
+  // Web text shares results within a hostname; video subtitles remain page-scoped.
+  const pageKey = await (data.cacheScope === "page" ? pageCacheKey(url) : domainCacheKey(url))
   return { ...data, pageKey, hash: pageKey ? await sha256Hex(pageKey, data.hash) : data.hash }
 }
 let translationCacheMutationTail: Promise<void> = Promise.resolve()
@@ -82,9 +98,12 @@ async function clearPageTranslationCache(tabId: number, url: string): Promise<vo
   const pageKey = await pageCacheKey(url)
   if (!pageKey)
     return
-  pageCacheGenerations.set(pageKey, (pageCacheGenerations.get(pageKey) ?? 0) + 1)
+  const keys = new Set([pageKey, (await domainCacheKey(url))!])
+  for (const key of keys)
+    pageCacheGenerations.set(key, (pageCacheGenerations.get(key) ?? 0) + 1)
   const clearing = mutateTranslationCache(async () => {
-    await cacheDb.translationCache.deleteByPage(pageKey)
+    for (const key of keys)
+      await cacheDb.translationCache.deleteByPage(key)
     await cacheDb.articleSummaryCache.deleteByPage(pageKey)
   })
   translationCacheClearBarrier = clearing.catch(() => {})

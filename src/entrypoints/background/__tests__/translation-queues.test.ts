@@ -598,7 +598,7 @@ describe("translation queue helpers", () => {
     await expect(handler({ data: translationData("successful-write") })).resolves.toEqual(translated("translated text"))
     expect(translationCachePutMock).toHaveBeenCalledTimes(2)
   })
-  it("clears one page's text and summary cache while retaining another page with identical text", async () => {
+  it("shares web translations across paths and clears the domain while keeping other domains and page summaries", async () => {
     const records = new Map<string, { key: string, pageKey: string }>()
     const summaries = new Map<string, { key: string, pageKey: string }>()
     translationCacheGetMock.mockImplementation(async key => records.get(key))
@@ -627,23 +627,58 @@ describe("translation queue helpers", () => {
     const request = getRegisteredMessageHandler("enqueueTranslateRequest")
     const summary = getRegisteredMessageHandler("getOrGenerateWebPageSummary")
     const clear = getRegisteredMessageHandler("clearPageTranslationCache")
-    for (const pageUrl of ["https://example.com/a", "https://example.com/b"]) {
+    for (const pageUrl of ["https://example.com/a", "http://EXAMPLE.com:8080/b?tracking=1#section", "https://other.example/a"]) {
       await request({ data: { ...translationData("same-text"), pageUrl }, sender: { tab: { url: "chrome-extension://readomi/popup.html" } } })
       await summary({ data: { webTitle: "Same title", webContent: "Same article", providerConfig: llmProvider, pageUrl } })
     }
     expect(records.size).toBe(2)
-    expect(summaries.size).toBe(2)
+    expect(summaries.size).toBe(3)
     expect(executeTranslateMock).toHaveBeenCalledTimes(2)
     await clear({ data: { tabId: 7, url: "https://example.com/a" } })
     expect(records.size).toBe(1)
-    expect(summaries.size).toBe(1)
-    await request({ data: { ...translationData("same-text"), pageUrl: "https://example.com/b" } })
+    expect(summaries.size).toBe(2)
+    await request({ data: { ...translationData("same-text"), pageUrl: "https://other.example/a" } })
     expect(executeTranslateMock).toHaveBeenCalledTimes(2)
     await request({ data: { ...translationData("same-text"), pageUrl: "https://example.com/a" } })
     expect(executeTranslateMock).toHaveBeenCalledTimes(3)
   })
 
-  it("blocks pre-clear page results from writing back without blocking another page's result", async () => {
+  it("keeps subtitle requests page-scoped and subdomains separate", async () => {
+    const { sha256Hex } = await import("@/utils/hash")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const request = getRegisteredMessageHandler("enqueueTranslateRequest")
+    for (const pageUrl of ["https://example.com/a", "https://example.com/b?video=2"]) {
+      await request({ data: { ...translationData("same-subtitle"), pageUrl, cacheScope: "page" } })
+      expect(translationCachePutMock).toHaveBeenLastCalledWith(expect.objectContaining({ pageKey: await sha256Hex(pageUrl) }))
+    }
+    for (const hostname of ["example.com", "www.example.com", "news.example.com"]) {
+      await request({ data: { ...translationData("same-text"), pageUrl: `https://${hostname}/a` } })
+      expect(translationCachePutMock).toHaveBeenLastCalledWith(expect.objectContaining({ pageKey: await sha256Hex(`domain:${hostname}`) }))
+    }
+    expect(new Set(translationCachePutMock.mock.calls.map(([record]) => record.key)).size).toBe(5)
+  })
+
+  it("uses the top-level domain for embedded web text and clears both domain and page scopes", async () => {
+    const url = "https://example.com/article?tracking=1"
+    vi.spyOn(browser.tabs, "get").mockResolvedValue({ id: 7, url } as unknown as Awaited<ReturnType<typeof browser.tabs.get>>)
+    const { sha256Hex } = await import("@/utils/hash")
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    await getRegisteredMessageHandler("enqueueTranslateRequest")({
+      data: { ...translationData("frame-text"), pageUrl: "https://embedded.example/player" },
+      sender: { tab: { url } },
+    })
+    const domainKey = await sha256Hex("domain:example.com")
+    const pageKey = await sha256Hex(url)
+    expect(translationCachePutMock).toHaveBeenCalledWith(expect.objectContaining({ pageKey: domainKey }))
+    await getRegisteredMessageHandler("clearPageTranslationCache")({ data: { tabId: 7, url } })
+    expect(pageTranslationCacheClearMock).toHaveBeenCalledWith(domainKey)
+    expect(pageTranslationCacheClearMock).toHaveBeenCalledWith(pageKey)
+    expect(pageSummaryCacheClearMock).toHaveBeenCalledExactlyOnceWith(pageKey)
+  })
+
+  it("blocks pre-clear domain results from writing back without blocking another domain's result", async () => {
     const oldA = deferred<string>()
     const pendingB = deferred<string>()
     executeTranslateMock.mockReturnValueOnce(oldA.promise).mockReturnValueOnce(pendingB.promise).mockResolvedValue(response("新结果"))
@@ -651,9 +686,9 @@ describe("translation queue helpers", () => {
     const { setUpWebPageTranslationQueue } = await import("../translation-queues")
     setUpWebPageTranslationQueue()
     const request = getRegisteredMessageHandler("enqueueTranslateRequest")
-    const firstA = request({ data: { ...translationData("old-a"), pageUrl: "https://example.com/a" } })
+    const firstA = request({ data: { ...translationData("old-a"), pageUrl: "https://example.com/another?tracking=1" } })
     await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledTimes(1))
-    const firstB = request({ data: { ...translationData("other-b"), pageUrl: "https://example.com/b" } })
+    const firstB = request({ data: { ...translationData("other-b"), pageUrl: "https://other.example/b" } })
     await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledTimes(2))
     await getRegisteredMessageHandler("clearPageTranslationCache")({ data: { tabId: 7, url: "https://example.com/a" } })
     oldA.resolve(response("旧结果"))

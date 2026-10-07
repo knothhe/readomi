@@ -5,11 +5,15 @@ languageCombobox:
   searchLanguages: 搜尋語言…
   noLanguagesFound: 找不到語言
 popup:
+  subtitlePage:
+    scope: 僅控制目前頁面的影片字幕。
+    failed: 切換失敗，請重試。
+    unavailable: 目前頁面無法切換影片字幕。
   clearTranslationCache:
-    label: 清理目前頁面快取
-    description: 清理目前頁面快取，保留已有譯文。
-    clearing: 正在清理目前頁面快取…
-    cleared: 目前頁面快取已清理
+    label: 清理翻譯快取
+    description: 清理目前網域的網頁快取和目前頁面的字幕與摘要快取，保留已有譯文。
+    clearing: 正在清理翻譯快取…
+    cleared: 翻譯快取已清理
     failed: 清理失敗，請重試。
   serviceSwitch:
     switchLabel: 目前服務：$1，切換服務
@@ -528,9 +532,8 @@ features:
   hoverStream: 懸停翻譯串流顯示
   hoverStreamDescription: 逐步顯示譯文，減少等待。
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: 預設開啟影片字幕翻譯
+  videoDescription: 作為新頁面的預設狀態，目前頁面的開關不會改寫此設定。支援 YouTube 已開啟的字幕和 HTML5 字幕軌道；尚不支援無字幕影片。
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -562,7 +565,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: 僅對目前頁面生效
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -663,9 +666,7 @@ translationShortcuts:
   modeHint: 僅切換網頁的顯示方式。
   subtitles: Toggle video subtitles
   subtitlesHint: 開關目前頁面的影片翻譯。
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: 點擊錄製組合鍵；按 Delete 或 Backspace 清空。影片字幕快捷鍵與彈窗、播放器開關同步，僅影響目前頁面。
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: Hover translation trigger
   hoverHelp: 觸發方式說明
@@ -793,6 +794,7 @@ siteRuleAgent:
   openFailed: 無法開啟面板，請重新整理網頁後重試。
   unsupported: 請先開啟一個一般網頁，再適配此網站。
   manage: 管理網站規則
+  viewRules: 查看網站規則
   settingsHelp: 在要適配的網站開啟 Readomi 彈出視窗，選擇「用 Agent 適配此網站」。
   advanced: 進階 JSON 編輯
   delete: 刪除規則

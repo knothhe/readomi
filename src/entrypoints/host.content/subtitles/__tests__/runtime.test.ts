@@ -1,15 +1,17 @@
 // @vitest-environment jsdom
 import type { Config } from "@/types/config/config"
+import type { PageSubtitleState } from "@/types/page-subtitle-state"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
+import { sendMessage } from "@/utils/message"
 import * as appearance from "@/utils/subtitles/appearance"
 import { bootstrapVideoSubtitles, readActiveCueText } from "../runtime"
 
-const statusHandlers = vi.hoisted(() => new Map<string, () => unknown>())
+const statusHandlers = vi.hoisted(() => new Map<string, (message?: { data: PageSubtitleState }) => unknown>())
 vi.mock("@/utils/message", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/utils/message")>()
-  return { ...original, onMessage: (type: string, handler: () => unknown) => {
+  return { ...original, sendMessage: vi.fn(() => Promise.resolve(undefined)), onMessage: (type: string, handler: () => unknown) => {
     statusHandlers.set(type, handler)
     return () => statusHandlers.delete(type)
   } }
@@ -82,6 +84,36 @@ afterEach(() => {
 })
 
 describe("local subtitle runtime", () => {
+  it("enables subtitles with macOS Option+V even when the saved default is off", () => {
+    update(DEFAULT_CONFIG)
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "√", code: "KeyV", altKey: true, cancelable: true }))
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+    expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { url: location.href, enabled: true })
+    expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
+  })
+  it("inverts the actual player switch and reflects a popup choice in the player", () => {
+    attachYouTubePlayer()
+    update(config)
+    const toggle = () => controlsShadow.querySelector<HTMLButtonElement>(".toggle")!
+    toggle().click()
+    expect(toggle()).toHaveAttribute("aria-pressed", "false")
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "√", code: "KeyV", altKey: true, cancelable: true }))
+    expect(toggle()).toHaveAttribute("aria-pressed", "true")
+    statusHandlers.get("applyPageSubtitleState")!({ data: { url: location.href, enabled: false, available: true, overridden: true } })
+    expect(toggle()).toHaveAttribute("aria-pressed", "false")
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+    expect(config.features.videoSubtitles).toBe(true)
+  })
+  it("does not let an initial read undo a newer local switch", async () => {
+    let resolve!: (state: PageSubtitleState) => void
+    vi.mocked(sendMessage).mockImplementationOnce(() => new Promise(done => resolve = done))
+    update(DEFAULT_CONFIG)
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "v", code: "KeyV", altKey: true, cancelable: true }))
+    resolve({ url: location.href, enabled: false, available: true, overridden: false })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+  })
   it("updates the original ratio live without changing translated text, base size or position", async () => {
     update(config)
     await vi.advanceTimersByTimeAsync(1000)
@@ -186,7 +218,7 @@ describe("local subtitle runtime", () => {
     expect(translateTextCore).not.toHaveBeenCalled()
     expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
   })
-  it("does not restart a locally disabled video on style updates and keeps another video translating", async () => {
+  it("keeps all videos on the page disabled after a toolbar switch and style updates", async () => {
     attachYouTubePlayer()
     const second = document.createElement("video")
     const secondTrack = { kind: "subtitles", mode: "showing", activeCues: [{ text: "Another video" }] }
@@ -197,14 +229,13 @@ describe("local subtitle runtime", () => {
     update(config)
     controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='videoTranslationControls.disable']")!.click()
     expect(secondTrack.mode).toBe("showing")
-    expect(track.mode).toBe("hidden")
+    expect(track.mode).toBe("showing")
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, preset: "compact" } } })
     await vi.advanceTimersByTimeAsync(1000)
-    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
-    expect(translateTextCore).toHaveBeenCalledTimes(1)
-    expect(translateTextCore).toHaveBeenCalledWith(expect.objectContaining({ text: "Hello" }))
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(0)
+    expect(translateTextCore).not.toHaveBeenCalled()
   })
-  it("resets the local switch for a replacement source and ignores late results after switching off", async () => {
+  it("resets the page switch for a new page and ignores late results after switching off", async () => {
     attachXPlayer()
     let resolve!: (value: string) => void
     vi.mocked(translateTextCore).mockReturnValue(new Promise(r => resolve = r))
@@ -216,6 +247,7 @@ describe("local subtitle runtime", () => {
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
     expect(track.mode).toBe("showing")
     video.src = "https://example.com/replacement.mp4"
+    vi.stubGlobal("location", new URL("https://x.com/example/status/101"))
     await vi.advanceTimersByTimeAsync(250)
     expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
     expect(track.mode).toBe("hidden")
@@ -310,7 +342,7 @@ describe("local subtitle runtime", () => {
     expect(!!document.querySelector("[data-readomi-subtitles]")).toBe(videoSubtitles)
     expect(track.mode).toBe(videoSubtitles ? "hidden" : "showing")
   })
-  it("clears an inactive X video's session override when the site is excluded", async () => {
+  it("keeps the page switch while selecting another X video and clears it when excluded", async () => {
     attachXPlayer()
     const mainButton = document.createElement("button")
     mainButton.textContent = "Pause main"
@@ -330,7 +362,7 @@ describe("local subtitle runtime", () => {
 
     replyButton.focus()
     await vi.advanceTimersByTimeAsync(250)
-    expect(replyTrack.mode).toBe("hidden")
+    expect(replyTrack.mode).toBe("showing")
     expect(track.mode).toBe("showing")
     update({ ...config, features: { ...config.features, videoExcludedSites: [{ type: "domain", value: "x.com" }] } })
     expect(document.querySelector("[data-readomi-video-controls]")).toBeNull()
@@ -614,7 +646,7 @@ describe("local subtitle runtime", () => {
     expect(track.mode).toBe("hidden")
     await vi.advanceTimersByTimeAsync(1500)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
-    expect(translateTextCore).toHaveBeenCalledWith(expect.objectContaining({ text: "Hello", extraHashTags: ["video-subtitles"] }))
+    expect(translateTextCore).toHaveBeenCalledWith(expect.objectContaining({ text: "Hello", extraHashTags: ["video-subtitles"], cacheScope: "page" }))
     update(DEFAULT_CONFIG)
     expect(track.mode).toBe("showing")
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()

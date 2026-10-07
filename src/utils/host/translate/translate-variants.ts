@@ -111,6 +111,7 @@ export async function translateTextForInput(text: string, config: Config, signal
     providerConfig: resolveProviderConfig(config, "translate"),
     customPromptsConfig: config.translate.customPromptsConfig,
     extraHashTags: ["inputTranslation"],
+    cacheScope: "page",
     signal,
   })
 }

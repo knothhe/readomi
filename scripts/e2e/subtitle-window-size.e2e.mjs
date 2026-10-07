@@ -23,7 +23,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   const settings = launched.page
   await configureService(settings, launched.extensionId, setupDocumentFor(service.origin))
   await settings.getByRole("link", { name: "Video subtitles", exact: true }).click()
-  await settings.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
+  await settings.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).click()
   const customOptions = settings.locator(".subtitle-custom > summary")
   assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "custom subtitle controls start collapsed")
   const modes = settings.getByRole("group", { name: "Size mode", exact: true })

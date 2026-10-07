@@ -25,4 +25,12 @@ describe("navigation", () => {
       url: "chrome-extension://test-extension-id/options.html#providers",
     })
   })
+
+  it("opens saved site rules directly in the custom rules tab", async () => {
+    await openOptionsPage({ section: "reading/site-rules", siteRulesTab: "custom" })
+    expect(browser.tabs.create).toHaveBeenCalledWith({
+      active: true,
+      url: "chrome-extension://test-extension-id/options.html?siteRulesTab=custom#reading/site-rules",
+    })
+  })
 })

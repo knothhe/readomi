@@ -10,6 +10,7 @@ import { setupIframeInjection } from "./iframe-injection"
 import { setupLLMGenerateTextMessageHandlers } from "./llm-generate-text"
 import { setupSiteDisable } from "./site-disable"
 import { setupSiteRuleSessions } from "./site-rule-sessions"
+import { setupSubtitleState } from "./subtitle-state"
 import { setupTranslationProgress } from "./translation-progress"
 import { setUpWebPageTranslationQueue } from "./translation-queues"
 import { notifyPageTranslationStateChanged, translationMessage } from "./translation-signal"
@@ -38,6 +39,7 @@ export default defineBackground({
     setupSiteDisable(notifyPageTranslationStateChanged)
     setupActionIcons()
     setupTranslationProgress()
+    setupSubtitleState()
 
     setUpWebPageTranslationQueue()
     void setUpDatabaseCleanup()

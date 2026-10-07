@@ -5,11 +5,15 @@ languageCombobox:
   searchLanguages: 搜索语言…
   noLanguagesFound: 没有找到语言
 popup:
+  subtitlePage:
+    scope: 仅控制当前页面的视频字幕。
+    failed: 切换失败，请重试。
+    unavailable: 当前页面无法切换视频字幕。
   clearTranslationCache:
-    label: 清理当前页缓存
-    description: 清理当前页缓存，保留已有译文。
-    clearing: 正在清理当前页缓存…
-    cleared: 当前页缓存已清理
+    label: 清理翻译缓存
+    description: 清理当前域名的网页缓存和当前页的字幕与摘要缓存，保留已有译文。
+    clearing: 正在清理翻译缓存…
+    cleared: 翻译缓存已清理
     failed: 清理失败，请重试。
   serviceSwitch:
     switchLabel: 当前服务：$1，切换服务
@@ -522,7 +526,8 @@ features:
   hoverStream: 悬停翻译流式渲染
   hoverStreamDescription: 逐步显示译文，减少等待。
   video: 视频字幕翻译
-  videoDescription: 复用当前翻译服务。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
+  videoDefault: 默认开启视频字幕翻译
+  videoDescription: 作为新页面的默认状态，当前页开关不会改写此设置。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   videoControls: 在视频上显示控件
   videoControlsDescription: 仅在 YouTube 和 X 的支持播放器中显示。关闭后不影响字幕翻译。
   mode: 字幕显示方式
@@ -551,7 +556,7 @@ videoTranslationControls:
   title: 视频翻译
   enable: 开启视频翻译
   disable: 关闭视频翻译
-  scope: 仅对当前视频生效
+  scope: 仅对当前页面生效
   excluded: 此网站已排除
   presetButton: 调整字幕预设
   saveFailed: 保存失败，请重试。
@@ -651,7 +656,7 @@ translationShortcuts:
   modeHint: 仅切换网页的显示方式。
   subtitles: 切换视频字幕
   subtitlesHint: 开关当前页面的视频翻译。
-  hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕开关只影响当前页面，需要先启用视频字幕翻译。
+  hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕快捷键与弹窗、播放器开关同步，只影响当前页面。
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: 悬停翻译触发方式
   hoverHelp: 触发方式说明
@@ -776,6 +781,7 @@ siteRuleAgent:
   openFailed: 无法打开面板，请刷新网页后重试。
   unsupported: 请先打开一个普通网页，再适配此网站。
   manage: 管理站点规则
+  viewRules: 查看站点规则
   settingsHelp: 在要适配的网站打开 Readomi 弹窗，选择“用 Agent 适配此网站”。
   advanced: 高级 JSON 编辑
   delete: 删除规则

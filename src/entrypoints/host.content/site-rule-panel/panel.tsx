@@ -1,5 +1,6 @@
 import type { SiteRuleSessionResult } from "@/utils/site-rules/document"
 import type { SiteRulePreviewController, SiteRulePreviewReport } from "@/utils/site-rules/preview-controller"
+import { AnimatePresence } from "motion/react"
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { i18n } from "#imports"
 import { BrandIcon } from "@/components/brand-icon"
@@ -8,6 +9,7 @@ import { getLocalConfig } from "@/utils/config/storage"
 import { onMessage, sendMessage } from "@/utils/message"
 import { buildSiteRuleAgentInstructions } from "@/utils/site-rules/document"
 import { getUILanguagePreference, subscribeUILanguage } from "@/utils/ui-language"
+import { SiteRuleSavedNotice } from "./saved-notice"
 
 type View = "hidden" | "expanded" | "folded" | "saved"
 type Busy = "preview" | "save" | "stop" | "undo" | "reload" | null
@@ -24,6 +26,7 @@ export function SiteRulePanel({ controller }: { controller: SiteRulePreviewContr
   const [copyStatus, setCopyStatus] = useState<"copied" | "copyFailed" | null>(null)
   const [fallbackText, setFallbackText] = useState("")
   const [notice, setNotice] = useState<"undone" | null>(null)
+  const [saveCount, setSaveCount] = useState(0)
   const currentTextRef = useRef(text)
   const previousSessionTextRef = useRef(text)
   const aliveRef = useRef(true)
@@ -112,11 +115,12 @@ export function SiteRulePanel({ controller }: { controller: SiteRulePreviewContr
         if (sync && result.session)
           syncInput(result.session.text)
         if (kind === "save") {
+          setSaveCount(value => value + 1)
           setView("saved")
           setMoreOpen(false)
         }
         if (kind === "undo") {
-          setView("expanded")
+          setView(view === "saved" ? "saved" : "expanded")
           setCopyStatus(null)
           setNotice("undone")
         }
@@ -202,18 +206,27 @@ export function SiteRulePanel({ controller }: { controller: SiteRulePreviewContr
       setView("hidden")
   }
 
-  if (view === "hidden")
-    return null
-
-  if (view === "saved") {
+  if (view === "hidden" || view === "saved") {
     return (
-      <div className="site-rule-saved" role="status">
-        <BrandIcon size={32} />
-        <span>{i18n.t("siteRuleAgent.saved")}</span>
-        <button type="button" disabled={pending || !session?.undoAvailable} onClick={() => void run("undo", () => sendMessage("undoSiteRuleSave", undefined))}>{i18n.t("siteRuleAgent.undo")}</button>
-        <button type="button" aria-label={i18n.t("siteRuleAgent.close")} onClick={() => setView("hidden")}>×</button>
-        {error && <p className="site-rule-error" role="alert">{i18n.t(`siteRuleAgent.${error}`)}</p>}
-      </div>
+      <AnimatePresence>
+        {view === "saved" && (
+          <SiteRuleSavedNotice
+            key={saveCount}
+            pending={pending}
+            undoAvailable={!!session?.undoAvailable}
+            undone={notice === "undone"}
+            error={error ? i18n.t(`siteRuleAgent.${error}`) : null}
+            onUndo={() => void run("undo", () => sendMessage("undoSiteRuleSave", undefined))}
+            onManage={() => {
+              void sendMessage("openOptionsPage", { section: "reading/site-rules", siteRulesTab: "custom" }).catch(() => {
+                if (aliveRef.current)
+                  setError("operationFailed")
+              })
+            }}
+            onDismiss={() => setView("hidden")}
+          />
+        )}
+      </AnimatePresence>
     )
   }
 

@@ -108,7 +108,7 @@ it("updates hover and page shortcuts live, switches display mode and toggles cap
   await page.locator("nav a[href=\"#reading\"]").click()
   await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
   await page.locator("nav a[href=\"#features\"]").click()
-  await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
+  await page.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).click()
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
   await page.locator("nav a[href=\"#shortcut\"]").click()
@@ -211,7 +211,7 @@ it("manual setup and local backup restore work without an account", async () => 
   await page.locator("#service").getByText("Not checked", { exact: true }).waitFor()
   await page.getByRole("link", { name: "Web reading", exact: true }).click()
   await page.getByRole("switch", { name: "Hover translation", exact: true, checked: true }).waitFor()
-  assert.equal(await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).isVisible(), false)
+  assert.equal(await page.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).isVisible(), false)
   await page.screenshot({ path: "/tmp/readomi-web-reading.png", fullPage: true })
   await page.getByRole("link", { name: "Video subtitles", exact: true }).click()
   assert.equal(await page.getByRole("switch", { name: "Hover translation", exact: true }).isVisible(), false)
@@ -310,12 +310,12 @@ it("hover translates and restores one paragraph without enabling whole-page tran
   assert.equal((await storedConfig(context)).features.hoverTranslation, false)
 })
 
-it("caption DOM translates locally and closing the feature restores the player", async () => {
+it("caption DOM translates locally and closing the default restores an unmodified page", async () => {
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
-  await page.goto(`chrome-extension://${extensionId}/popup.html`)
-  await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
-  await page.getByRole("switch", { name: "Video subtitle translation", checked: true }).waitFor()
+  await page.goto(`chrome-extension://${extensionId}/options.html#features`)
+  await page.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).click()
+  await page.getByRole("switch", { name: "Enable video subtitle translation by default", checked: true }).waitFor()
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
   await article.evaluate(() => {
@@ -331,7 +331,7 @@ it("caption DOM translates locally and closing the feature restores the player",
     assert.ok(Date.now() < limit, "subtitle text reached the configured local API")
     await article.waitForTimeout(100)
   }
-  await page.getByRole("switch", { name: "Video subtitle translation", exact: true }).click()
+  await page.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).click()
   await article.locator("[data-readomi-subtitles]").waitFor({ state: "detached" })
   assert.notEqual(await article.locator(".ytp-caption-window-container").evaluate(el => getComputedStyle(el).visibility), "hidden")
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)

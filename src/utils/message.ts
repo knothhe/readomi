@@ -7,6 +7,7 @@ import type {
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
+import type { PageSubtitleState } from "@/types/page-subtitle-state"
 import type { SubtitleStatus } from "@/types/subtitle-status"
 import type { TranslationProgress } from "@/types/translation-progress"
 import type { TranslationResult } from "@/utils/host/translate/translation-result"
@@ -19,7 +20,7 @@ import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-pol
 interface ProtocolMap {
   getTopFrameUrl: () => Promise<string>
   // navigation
-  openOptionsPage: (data?: { section?: string }) => void
+  openOptionsPage: (data?: { section?: string, siteRulesTab?: "builtin" | "custom" }) => void
   openSiteRulePanel: () => void
   getSiteRuleSession: () => Promise<SiteRuleSessionResult>
   setSiteRuleDraft: (data: { text: string }) => Promise<SiteRuleSessionResult>
@@ -46,6 +47,10 @@ interface ProtocolMap {
   askManagerToTogglePageTranslation: (data: { enabled: boolean }) => void
   refreshPageTranslation: (data: { url: string, failedOnly: boolean }) => Promise<void>
   getSubtitleStatus: () => SubtitleStatus
+  getPageSubtitleState: (data?: { tabId?: number, url?: string }) => Promise<PageSubtitleState>
+  setPageSubtitleState: (data: { tabId?: number, url?: string, enabled?: boolean }) => Promise<PageSubtitleState>
+  applyPageSubtitleState: (data: PageSubtitleState) => void
+  pageSubtitleStateChanged: (data: { tabId: number, state: PageSubtitleState }) => void
   retrySubtitleTranslation: () => void
   // translation progress (content script -> background -> popup)
   reportTranslationProgress: (data: TranslationProgress) => void
@@ -54,7 +59,7 @@ interface ProtocolMap {
   // request
   clearTranslationCache: () => Promise<void>
   clearPageTranslationCache: (data: { tabId: number, url: string }) => Promise<void>
-  enqueueTranslateRequest: (data: { text: string, langConfig: LanguagePolicyConfig, providerConfig: ProviderConfig, scheduleAt: number, hash: string, pageUrl?: string, customPromptsConfig?: Config["translate"]["customPromptsConfig"], webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<TranslationResult>
+  enqueueTranslateRequest: (data: { text: string, langConfig: LanguagePolicyConfig, providerConfig: ProviderConfig, scheduleAt: number, hash: string, pageUrl?: string, cacheScope?: "page", customPromptsConfig?: Config["translate"]["customPromptsConfig"], webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }) => Promise<TranslationResult>
   getOrGenerateWebPageSummary: (data: { webTitle: string, webContent: string, providerConfig: ProviderConfig, pageUrl?: string }) => Promise<string | null>
   backgroundGenerateText: (data: BackgroundGenerateTextPayload) => Promise<BackgroundGenerateTextResponse>
 }

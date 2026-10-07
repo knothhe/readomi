@@ -5,12 +5,16 @@ languageCombobox:
   searchLanguages: Поиск языков…
   noLanguagesFound: Языки не найдены
 popup:
+  subtitlePage:
+    scope: Управляет субтитрами видео только на этой странице.
+    failed: Не удалось переключить субтитры. Попробуйте ещё раз.
+    unavailable: На этой странице нельзя переключить субтитры видео.
   clearTranslationCache:
-    label: Очистить кеш этой страницы
-    description: Очистить кэш страницы, сохранив видимые переводы.
-    clearing: Очистка кеша страницы…
-    cleared: Кеш страницы очищен
-    failed: Не удалось очистить. Повторите попытку.
+    label: Очистить кеш переводов
+    description: Очистить кеш веб-переводов этого домена, субтитров и резюме этой страницы, сохранив видимые переводы.
+    clearing: Очистка кеша переводов…
+    cleared: Кеш переводов очищен
+    failed: Не удалось очистить кеш переводов. Повторите попытку.
   serviceSwitch:
     switchLabel: "Текущий сервис: $1. Сменить сервис"
     title: Сменить сервис
@@ -547,9 +551,8 @@ features:
   hoverStream: Потоковый перевод при наведении
   hoverStreamDescription: "Показывает перевод постепенно, сокращая ожидание."
   video: Video subtitle translation
-  videoDescription: Uses the current translation service. Supports enabled YouTube
-    captions and HTML5 subtitle tracks. Videos without subtitles are not
-    supported yet.
+  videoDefault: Включать перевод субтитров по умолчанию
+  videoDescription: Настройка по умолчанию для новых страниц. Переключатели страниц её не меняют. Поддерживаются включённые субтитры YouTube и дорожки HTML5; видео без субтитров пока не поддерживаются.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -581,7 +584,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Applies only to this video
+  scope: Только эта страница
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -686,9 +689,7 @@ translationShortcuts:
   modeHint: Меняет только способ отображения перевода веб-страниц.
   subtitles: Toggle video subtitles
   subtitlesHint: Включает или выключает перевод видео на текущей странице.
-  hint: Click to record a key combination; Delete or Backspace clears it. The
-    subtitle toggle applies to this page and requires video subtitle translation
-    to be enabled.
+  hint: Нажмите для записи сочетания; Delete или Backspace очищает его. Сочетание для субтитров синхронизируется с переключателями панели и плеера и действует только на этой странице.
   platformHint: "В macOS используйте Option (⌥), в Windows / Linux — Alt."
   hover: Hover translation trigger
   hoverHelp: Как запускать перевод
@@ -822,6 +823,7 @@ siteRuleAgent:
   openFailed: Не удалось открыть панель. Обновите страницу и повторите попытку.
   unsupported: Перед адаптацией сайта откройте обычную веб-страницу.
   manage: Управление правилами сайтов
+  viewRules: Посмотреть правила сайта
   settingsHelp: Откройте всплывающее окно Readomi на сайте и выберите
     «Адаптировать сайт с помощью агента».
   advanced: Расширенное редактирование JSON

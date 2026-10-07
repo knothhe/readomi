@@ -173,27 +173,33 @@ describe("popup app", () => {
     expect(screen.getByRole("button", { name: /siteRuleAgent.entry/ })).toBeVisible()
   })
 
-  it("persists the subtitle toggle while preserving the hover preference and subtitle mode", async () => {
+  it("switches page subtitles without changing the default, hover preference or subtitle mode", async () => {
     const config: Config = {
       ...configWithKey,
       features: { ...configWithKey.features, hoverTranslation: true, subtitleMode: "translationOnly", subtitlesShortcut: "Alt+V" },
     }
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+    const state = { url: "https://example.com/", enabled: false, available: true, overridden: false }
+    vi.mocked(sendMessage).mockImplementation(async (type, data) => {
+      if (type === "getPageSubtitleState")
+        return state
+      if (type === "setPageSubtitleState")
+        return { ...state, enabled: (data as { enabled: boolean }).enabled, overridden: true }
+    })
     renderPopup({ config })
     const toggle = screen.getByRole("switch", { name: "features.video" })
+    await waitFor(() => expect(toggle).toBeEnabled())
     expect(toggle).toHaveAttribute("aria-checked", "false")
     expect(screen.queryByRole("group", { name: "features.mode" })).toBeNull()
 
     fireEvent.click(toggle)
-    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({
-      ...config.features,
-      videoSubtitles: true,
-    }))
-    expect(toggle).toHaveAttribute("aria-checked", "true")
+    await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", "true"))
+    expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual(config.features)
 
     fireEvent.click(toggle)
-    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual(config.features))
-    expect(toggle).toHaveAttribute("aria-checked", "false")
+    await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", "false"))
+    expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual(config.features)
+    vi.mocked(sendMessage).mockImplementation(async () => undefined)
 
     expect(screen.queryByRole("button", { name: "subtitleStyle.adjust" })).toBeNull()
   })
