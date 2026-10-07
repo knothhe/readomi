@@ -22,17 +22,17 @@ export function LanguageRow({ muted = false }: { muted?: boolean }) {
   return (
     <section aria-label={i18n.t("options.language.title")} className={cn("flex flex-col", muted && "opacity-60")}>
       <div className="flex items-center justify-between gap-2 pb-2">
-        <span className="text-xs font-medium">{i18n.t("options.language.title")}</span>
+        <span className="text-[12px] leading-[1.45] font-medium">{i18n.t("options.language.title")}</span>
         <span className="text-[11px] text-muted-foreground">{i18n.t("options.language.auto")}</span>
       </div>
       <div className="grid min-h-10 grid-cols-[minmax(0,1fr)_14px_114px] items-center gap-2.5">
-        <span className="truncate text-xs text-muted-foreground">{i18n.t("options.language.other")}</span>
-        <IconArrowRight className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        <span className="truncate text-[12px] leading-[1.45] text-muted-foreground">{i18n.t("options.language.other")}</span>
+        <IconArrowRight className="size-4 text-muted-foreground" aria-hidden="true" />
         <TranslationLanguagePicker compact value={language.targetCode} label={i18n.t("options.language.primary")} onChange={value => value !== language.targetCode && save({ targetCode: value as LangCodeISO6393 })} />
       </div>
       <div className="grid min-h-10 grid-cols-[minmax(0,1fr)_14px_114px] items-center gap-2.5">
-        <span className="truncate text-xs text-muted-foreground" title={primaryName}>{primaryName}</span>
-        <IconArrowRight className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        <span className="truncate text-[12px] leading-[1.45] text-muted-foreground" title={primaryName}>{primaryName}</span>
+        <IconArrowRight className="size-4 text-muted-foreground" aria-hidden="true" />
         <TranslationLanguagePicker compact value={secondary} primaryCode={language.targetCode} label={i18n.t("options.language.secondary")} onChange={value => value !== secondary && save({ secondaryCode: value })} />
       </div>
       {preserved && <p className="mt-1.5 text-[11px] leading-[1.5] text-muted-foreground">{i18n.t("options.language.popupKeepDescription", [primaryName])}</p>}

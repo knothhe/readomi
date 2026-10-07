@@ -9,16 +9,111 @@ html {
   border: 0;
   padding: 2px;
   box-shadow: none;
+  --popup-off: #b8a89c;
+  --popup-off-border: #ab998b;
+  --popup-paused-on: #d9cdc4;
+  --popup-soft: #f1ebe6;
+  transition: none;
+}
+
+.popup-site-control .popup-switch {
+  transition: background-color 640ms cubic-bezier(.22, 1, .36, 1), box-shadow 640ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.dark .popup-switch {
+  --popup-off: #79665a;
+  --popup-off-border: #927969;
+  --popup-paused-on: #4a3c32;
+  --popup-soft: #2e2723;
+}
+
+.popup-switch[data-unchecked]:not(:disabled) {
+  background: var(--popup-off);
+  box-shadow: inset 0 0 0 1px var(--popup-off-border);
+}
+
+.popup-switch:not(:disabled) {
+  cursor: pointer;
+}
+
+.popup-switch:not(:disabled)::before {
+  content: "";
+  position: absolute;
+  inset: -12px -6px;
+}
+
+.popup-switch:not(:disabled):hover {
+  outline: 3px solid var(--popup-soft);
 }
 
 .popup-switch > span {
   width: 14px;
   height: 14px;
-  background: var(--rf-card);
+  background: #fffaf5;
+  box-shadow: 0 1px 2px #0002;
+  transition: translate 640ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.popup-state-fade {
+  position: relative;
+}
+
+.popup-state-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  background: var(--rf-background) !important;
+  z-index: 1;
+  pointer-events: none !important;
+  user-select: none;
+}
+
+.popup-state-overlay * {
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-switch,
+  .popup-site-control .popup-switch,
+  .popup-switch > span {
+    transition: none;
+  }
 }
 
 .popup-switch > span[data-checked] {
   translate: 14px 0;
+}
+
+.popup-switch:disabled {
+  background: var(--popup-soft);
+  box-shadow: inset 0 0 0 1px var(--rf-border);
+  opacity: 1;
+  cursor: default;
+}
+
+.popup-switch:disabled[data-checked] {
+  background: var(--popup-paused-on);
+}
+
+.popup-switch:disabled > span {
+  background: var(--rf-muted-foreground);
+  box-shadow: none;
+  opacity: .45;
+}
+
+.popup-feature-row[data-paused] .popup-shortcut,
+.popup-feature-row[data-paused] .shrink-0.whitespace-nowrap {
+  opacity: .6;
+}
+
+.popup-translate:disabled {
+  background: #f1ebe6;
+}
+
+.dark .popup-translate:disabled {
+  background: #2e2723;
 }
 
 @media (forced-colors: active) {

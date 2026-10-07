@@ -13,7 +13,7 @@ const labels = {
   error: "popup.clearTranslationCache.failed",
 } as const
 
-export function ClearTranslationCacheButton() {
+export function ClearTranslationCacheButton({ disabled = false }: { disabled?: boolean }) {
   const tab = useAtomValue(activeTabAtom)
   const [state, setState] = useState<keyof typeof labels>("idle")
   const pendingRef = useRef(false)
@@ -26,7 +26,7 @@ export function ClearTranslationCacheButton() {
   }, [state])
 
   const clear = async () => {
-    if (pendingRef.current || tab.id === null || !tab.translatable)
+    if (disabled || pendingRef.current || tab.id === null || !tab.translatable)
       return
     pendingRef.current = true
     setState("pending")
@@ -48,9 +48,9 @@ export function ClearTranslationCacheButton() {
       title={i18n.t(state === "idle" ? "popup.clearTranslationCache.description" : labels[state])}
       aria-label={i18n.t(labels[state])}
       aria-busy={state === "pending"}
-      disabled={state === "pending" || tab.id === null || !tab.translatable}
+      disabled={disabled || state === "pending" || tab.id === null || !tab.translatable}
       onClick={() => void clear()}
-      className={cn("flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60", state === "error" && "text-destructive")}
+      className={cn("flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors enabled:hover:bg-muted enabled:hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default disabled:opacity-40", state === "error" && "text-destructive")}
     >
       {state === "success" ? <IconCheck aria-hidden="true" className="size-4 text-success" stroke={1.75} /> : <IconTrash aria-hidden="true" className={cn("size-4", state === "pending" && "animate-pulse")} stroke={1.75} />}
       {state !== "idle" && <span className="sr-only" role="status">{i18n.t(labels[state])}</span>}

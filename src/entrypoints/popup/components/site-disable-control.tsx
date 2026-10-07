@@ -6,7 +6,7 @@ import { configAtom, setSiteDisabledAtom } from "@/utils/atoms/config"
 import { isSiteDisabled, siteHostname } from "@/utils/site-disable"
 import { activeTabAtom } from "../atoms"
 
-export function SiteDisableControl() {
+export function SiteDisableControl({ onSavingChange }: { onSavingChange?: (saving: { url: string, disabled: boolean } | null) => void }) {
   const { url } = useAtomValue(activeTabAtom)
   const config = useAtomValue(configAtom)
   const setDisabled = useSetAtom(setSiteDisabledAtom)
@@ -17,16 +17,15 @@ export function SiteDisableControl() {
   const busy = save?.url === url && save.status === "saving"
   const failed = save?.url === url && save.status === "failed"
   const title = hostname ? `${hostname}\n${i18n.t("popup.siteDisable.description")}` : i18n.t("popup.siteDisable.unavailable")
-  const status = busy
-    ? i18n.t("popup.siteDisable.saving")
-    : failed
-      ? i18n.t("popup.siteDisable.failed")
-      : !hostname ? i18n.t("popup.siteDisable.unavailable") : disabled ? i18n.t("popup.siteDisable.disabled") : null
+  const status = failed
+    ? i18n.t("popup.siteDisable.failed")
+    : !hostname ? i18n.t("popup.siteDisable.unavailable") : null
 
   const change = async (next: boolean) => {
     if (!hostname || busy)
       return
     setSave({ url, checked: disabled, status: "saving" })
+    onSavingChange?.({ url, disabled })
     try {
       await setDisabled({ url, disabled: next })
       setSave(current => current?.url === url ? null : current)
@@ -34,12 +33,15 @@ export function SiteDisableControl() {
     catch {
       setSave(current => current?.url === url ? { ...current, status: "failed" } : current)
     }
+    finally {
+      onSavingChange?.(null)
+    }
   }
 
   return (
-    <section className="mt-3.5 flex min-w-0 flex-col gap-1" aria-busy={busy || undefined}>
-      <div className="flex min-h-9 items-center justify-between gap-3">
-        <label htmlFor={id} title={title} className="text-[12px] leading-[18px]">{i18n.t("popup.siteDisable.label")}</label>
+    <section className="popup-site-control flex min-w-0 flex-col" aria-busy={busy || undefined}>
+      <div className="flex min-h-[42px] items-center justify-between gap-3">
+        <label htmlFor={id} title={title} className="flex min-h-[42px] flex-1 cursor-pointer items-center text-[13px] leading-[18px]">{i18n.t("popup.siteDisable.label")}</label>
         <Switch
           className="popup-switch"
           id={id}
@@ -52,7 +54,7 @@ export function SiteDisableControl() {
         />
       </div>
       <span id={`${id}-description`} className="sr-only">{title}</span>
-      {status && <p id={`${id}-status`} role="status" className={busy ? "sr-only" : `text-[11px] leading-4 ${failed ? "text-destructive" : "text-muted-foreground"}`}>{status}</p>}
+      {status && <p id={`${id}-status`} role="status" className={`text-[11px] leading-4 ${failed ? "text-destructive" : "text-muted-foreground"}`}>{status}</p>}
     </section>
   )
 }

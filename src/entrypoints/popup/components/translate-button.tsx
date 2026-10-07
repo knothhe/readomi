@@ -1,4 +1,5 @@
 import { useAtom, useAtomValue } from "jotai"
+import { useLayoutEffect, useRef } from "react"
 import { i18n } from "#imports"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { sendMessage } from "@/utils/message"
@@ -44,49 +45,68 @@ function ProgressLine() {
   )
 }
 
-export function TranslateButton() {
+export function TranslateButton({ disabled = false, saving = false }: { disabled?: boolean, saving?: boolean }) {
   const activeTab = useAtomValue(activeTabAtom)
   const [enabled, setEnabled] = useAtom(pageTranslationEnabledAtom)
   const translateConfig = useAtomValue(configFieldsAtomMap.translate)
   const progress = useAtomValue(translationProgressAtom)
+  const layoutRef = useRef<HTMLDivElement>(null)
+  const heightRef = useRef(0)
+
+  useLayoutEffect(() => {
+    const root = layoutRef.current
+    if (!root)
+      return
+    // Save the footprint before the background clears progress on site disable.
+    // Keep it through resumption until an explicit page action or popup close.
+    if (saving && !disabled)
+      heightRef.current = root.getBoundingClientRect().height
+    if (disabled || saving)
+      root.style.minHeight = `${heightRef.current}px`
+    else if (!root.style.minHeight)
+      heightRef.current = root.getBoundingClientRect().height
+  }, [disabled, saving, enabled, progress])
 
   const shortcut = translateConfig.page.shortcut
   const shortcutHint = isPageTranslationShortcutEmpty(shortcut) ? null : formatHotkey(shortcut)
 
   const toggle = () => {
-    if (activeTab.id === null)
+    if (disabled || activeTab.id === null || !activeTab.translatable)
       return
+    layoutRef.current?.style.removeProperty("min-height")
+    heightRef.current = 0
     const next = !enabled
     setEnabled(next)
     void setPageTranslation(activeTab.id, next)
   }
 
   return (
-    <div>
+    <div ref={layoutRef} className="popup-page-translation">
       <TranslationControlRow
         label={i18n.t("popup.pageText")}
+        disabled={disabled}
         hint={shortcutHint && <span className="shrink-0 whitespace-nowrap text-[11px] leading-4 text-muted-foreground">{shortcutHint}</span>}
         control={(
           <button
             type="button"
             aria-label={enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translate")}
             onClick={toggle}
-            disabled={!activeTab.translatable}
-            className="h-7 min-w-[62px] shrink-0 rounded-full bg-brand px-3 text-[12px] font-medium text-brand-foreground transition-colors outline-none hover:bg-brand/90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={disabled || !activeTab.translatable}
+            className="popup-translate h-7 min-w-[62px] shrink-0 rounded-full bg-brand px-3 text-[12px] font-medium text-brand-foreground transition-colors outline-none enabled:hover:bg-brand/90 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default disabled:bg-secondary disabled:text-muted-foreground"
           >
             {enabled ? i18n.t("popup.showOriginal") : i18n.t("popup.translateAction")}
           </button>
         )}
       />
-      {(!activeTab.translatable || (enabled && !!progress?.total)) && (
+      {(!activeTab.translatable || (!disabled && enabled && !!progress?.total)) && (
         <div className="flex flex-col gap-2 pb-2.5">
           {!activeTab.translatable && (
             <p className="px-0.5 text-[12px] leading-4 text-muted-foreground">{i18n.t("popup.notTranslatable")}</p>
           )}
-          {enabled && <ProgressLine />}
+          {!disabled && enabled && <ProgressLine />}
         </div>
       )}
-      {enabled && <div className="pb-2"><PageRecoveryActions /></div>}
+      {!disabled && enabled && <div className="pb-2"><PageRecoveryActions /></div>}
     </div>
   )
 }

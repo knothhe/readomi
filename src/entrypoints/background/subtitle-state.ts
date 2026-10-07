@@ -30,12 +30,16 @@ export function setupSubtitleState() {
     if (expectedUrl && subtitlePageKey(expectedUrl) !== subtitlePageKey(url))
       throw new Error("The page changed. Reopen the popup and try again.")
     const config = await getLocalConfig() ?? DEFAULT_CONFIG
-    const available = !isSiteDisabled(url, config) && !isVideoTranslationExcluded(url, config.features.videoExcludedSites)
+    const disabled = isSiteDisabled(url, config)
+    const excluded = isVideoTranslationExcluded(url, config.features.videoExcludedSites)
+    const available = !disabled && !excluded
     const choice = await storage.getItem<PageChoice>(key(tabId))
-    const overridden = available && choice?.page === subtitlePageKey(url)
-    if (choice && (!available || !overridden))
+    const samePage = choice?.page === subtitlePageKey(url)
+    const overridden = available && samePage
+    if (choice && (excluded || !samePage))
       await storage.removeItem(key(tabId))
-    return { url, available, overridden, enabled: available && (overridden ? choice!.enabled : config.features.videoSubtitles) }
+    const selectedEnabled = samePage && !excluded ? choice!.enabled : config.features.videoSubtitles
+    return { url, available, overridden, enabled: available && selectedEnabled, ...(disabled && !excluded ? { selectedEnabled } : {}) }
   }
   onMessage("getPageSubtitleState", ({ data, sender }) => {
     const tabId = sender?.url?.startsWith(browser.runtime.getURL("/")) ? data?.tabId : sender?.tab?.id ?? data?.tabId
@@ -69,7 +73,7 @@ export function setupSubtitleState() {
       return state
     })
   })
-  // Disabled sites stop their content runtime, so clear their choices here too.
+  // Paused sites stop their content runtime; retain their choices for resumption.
   watchLocalConfig((config, previous) => {
     if (JSON.stringify([config?.features.disabledSites, config?.features.videoExcludedSites]) === JSON.stringify([previous?.features.disabledSites, previous?.features.videoExcludedSites]))
       return
@@ -79,7 +83,7 @@ export function setupSubtitleState() {
         return undefined
       const tabId = tab.id
       return enqueue(tabId, async () => {
-        if (isSiteDisabled(tab.url ?? "", next) || isVideoTranslationExcluded(tab.url ?? "", next.features.videoExcludedSites))
+        if (isVideoTranslationExcluded(tab.url ?? "", next.features.videoExcludedSites))
           await storage.removeItem(key(tabId))
         const state = await read(tabId)
         // The popup may mount optimistically before a website rule is saved.

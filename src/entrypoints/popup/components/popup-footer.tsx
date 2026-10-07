@@ -12,6 +12,7 @@ import { openOptionsPage } from "@/utils/navigation"
 import { isProviderReady } from "@/utils/service-management"
 import { cn } from "@/utils/styles/utils"
 import { ClearTranslationCacheButton } from "./clear-translation-cache-button"
+import { PopupStateFade } from "./popup-state-fade"
 import { WordPrefixEmphasisToggle } from "./word-prefix-emphasis-toggle"
 
 function describeProvider(provider: ProviderConfig): string {
@@ -23,7 +24,7 @@ function describeProvider(provider: ProviderConfig): string {
 type SwitchFeedback = { kind: "success", provider: ProviderConfig } | { kind: "error", providerId: string }
 
 /** One persisted selection is shared by the popup, settings and translation requests. */
-export function PopupFooter() {
+export function PopupFooter({ siteDisabled = false }: { siteDisabled?: boolean }) {
   const current = useAtomValue(featureProviderConfigAtom("translate"))
   const config = useAtomValue(configAtom)
   const selectProvider = useSetAtom(selectProviderAtom)
@@ -181,9 +182,9 @@ export function PopupFooter() {
           <span className="truncate">{serviceLabel}</span>
           <IconChevronDown aria-hidden="true" className={cn("size-3 shrink-0 transition-transform", open && "rotate-180")} stroke={1.75} />
         </button>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <ClearTranslationCacheButton />
-          <WordPrefixEmphasisToggle />
+        <PopupStateFade paused={siteDisabled} className="flex shrink-0 items-center gap-0.5">
+          <ClearTranslationCacheButton disabled={siteDisabled} />
+          <WordPrefixEmphasisToggle disabled={siteDisabled} />
           <button
             type="button"
             aria-label={i18n.t("popup.settings")}
@@ -193,7 +194,7 @@ export function PopupFooter() {
           >
             <IconSettings className="size-4" stroke={1.75} />
           </button>
-        </div>
+        </PopupStateFade>
         {open && (
           <div ref={menuRef} id={menuId} role="menu" aria-label={i18n.t("popup.serviceSwitch.title")} onKeyDown={menuKeyDown} className="absolute right-3.5 bottom-[46px] left-3.5 z-50 rounded-[10px] border border-border bg-card p-1.25 shadow-[0_8px_32px_#302b2924]">
             <div className="flex items-center justify-between gap-2 px-2.5 pt-2 pb-2.25">

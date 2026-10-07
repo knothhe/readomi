@@ -4,4 +4,6 @@ export interface PageSubtitleState {
   enabled: boolean
   available: boolean
   overridden: boolean
+  /** Persisted selection while the website is paused; enabled remains false. */
+  selectedEnabled?: boolean
 }

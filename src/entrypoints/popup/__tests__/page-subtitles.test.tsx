@@ -19,11 +19,11 @@ vi.mock("@/utils/message", () => ({
 }))
 const url = "https://www.youtube.com/watch?v=one"
 const actual: PageSubtitleState = { url, enabled: true, available: true, overridden: true }
-function mount(translatable = true) {
+function mount(translatable = true, disabled = false) {
   const store = createStore()
   store.set(configAtom, DEFAULT_CONFIG)
   store.set(activeTabAtom, { id: 12, url: translatable ? url : "chrome://extensions/", translatable })
-  const view = render(<Provider store={store}><VideoTranslationControl /></Provider>)
+  const view = render(<Provider store={store}><VideoTranslationControl disabled={disabled} /></Provider>)
   return { ...view, store }
 }
 const toggle = () => screen.getByRole("switch", { name: "features.video" })
@@ -66,6 +66,31 @@ describe("popup page subtitle switch", () => {
     expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { tabId: 12, url, enabled: true })
     expect(store.get(configAtom)).toEqual(DEFAULT_CONFIG)
   })
+  it("keeps the previous selection visible while disabled and ignores clicks and shortcuts", async () => {
+    const view = mount()
+    await waitFor(() => expect(toggle()).toBeChecked())
+    view.rerender(<Provider store={view.store}><VideoTranslationControl disabled /></Provider>)
+    await broadcast({ ...actual, enabled: false, available: false })
+    expect(toggle()).toBeChecked()
+    expect(toggle()).toBeDisabled()
+    expect(screen.queryByRole("status")).toBeNull()
+    fireEvent.click(toggle())
+    fireEvent.keyDown(document, { key: "v", code: "KeyV", altKey: true })
+    expect(sendMessage).not.toHaveBeenCalledWith("setPageSubtitleState", expect.anything())
+    expect(view.store.get(configAtom)).toEqual(DEFAULT_CONFIG)
+  })
+  it("reads the preserved page choice when reopening a paused site", async () => {
+    vi.mocked(sendMessage).mockResolvedValue({ ...actual, available: false, enabled: false, overridden: false, selectedEnabled: true })
+    const view = mount(true, true)
+    await waitFor(() => expect(toggle()).toBeChecked())
+    expect(toggle()).toBeDisabled()
+    expect(view.store.get(configAtom).features.videoSubtitles).toBe(false)
+    expect(screen.queryByRole("status")).toBeNull()
+    view.unmount()
+    mount(true, true)
+    await waitFor(() => expect(toggle()).toBeChecked())
+    expect(toggle()).toBeDisabled()
+  })
   it("disables while switching and preserves the previous state when switching fails", async () => {
     mount()
     await waitFor(() => expect(toggle()).toBeEnabled())
@@ -78,6 +103,23 @@ describe("popup page subtitle switch", () => {
     expect(toggle()).toBeEnabled()
     expect(toggle()).toBeChecked()
     expect(screen.getByRole("status")).toHaveTextContent("popup.subtitlePage.failed")
+  })
+  it("keeps the disabled selection and hides stale unavailability while the website is being reenabled", async () => {
+    const view = mount()
+    await waitFor(() => expect(toggle()).toBeChecked())
+    view.rerender(<Provider store={view.store}><VideoTranslationControl disabled /></Provider>)
+    await broadcast({ ...actual, enabled: false, available: false })
+    let resolve!: (state: PageSubtitleState) => void
+    vi.mocked(sendMessage).mockImplementationOnce(() => new Promise(done => resolve = done))
+    view.rerender(<Provider store={view.store}><VideoTranslationControl /></Provider>)
+    expect(screen.queryByText("popup.subtitlePage.unavailable")).toBeNull()
+    expect(toggle()).toBeChecked()
+    expect(toggle()).toBeDisabled()
+    await waitFor(() => expect(resolve).toBeDefined())
+    await act(async () => resolve(actual))
+    expect(toggle()).toBeEnabled()
+    expect(toggle()).toBeChecked()
+    expect(screen.queryByRole("status")).toBeNull()
   })
   it("keeps a notification that arrives before an older initial read completes", async () => {
     let resolve!: (state: PageSubtitleState) => void
@@ -112,5 +154,17 @@ describe("popup page subtitle switch", () => {
     mount(false)
     expect(toggle()).toBeDisabled()
     expect(screen.getByRole("status")).toHaveTextContent("popup.subtitlePage.unavailable")
+  })
+  it("still explains an actual subtitle exclusion and blocks its shortcut", async () => {
+    const view = mount()
+    await waitFor(() => expect(toggle()).toBeEnabled())
+    await act(() => view.store.set(configAtom, {
+      ...DEFAULT_CONFIG,
+      features: { ...DEFAULT_CONFIG.features, videoExcludedSites: [{ type: "domain", value: "youtube.com" }] },
+    }))
+    expect(screen.getByRole("status")).toHaveTextContent("popup.subtitlePage.unavailable")
+    expect(toggle()).toBeDisabled()
+    fireEvent.keyDown(document, { key: "v", code: "KeyV", altKey: true })
+    expect(sendMessage).not.toHaveBeenCalledWith("setPageSubtitleState", expect.anything())
   })
 })

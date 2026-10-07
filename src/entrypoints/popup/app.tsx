@@ -1,4 +1,5 @@
 import { useAtomValue } from "jotai"
+import { useState } from "react"
 import { i18n } from "#imports"
 import { configAtom } from "@/utils/atoms/config"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
@@ -21,27 +22,27 @@ export default function App() {
   const providerConfig = useAtomValue(featureProviderConfigAtom("translate"))
   const config = useAtomValue(configAtom)
   const tab = useAtomValue(activeTabAtom)
-  const disabled = isSiteDisabled(tab.url, config)
+  const [savingSite, setSavingSite] = useState<{ url: string, disabled: boolean } | null>(null)
+  const disabled = savingSite?.url === tab.url ? savingSite.disabled : isSiteDisabled(tab.url, config)
+  const featuresDisabled = disabled || !tab.translatable
   const needsApiKey = !!providerConfig && !providerConfig.apiKey?.trim()
 
   return (
     <div className="flex flex-col">
       <main className="px-4 pt-[18px] pb-3">
         <LanguageRow muted={needsApiKey} />
-        {!disabled && (
-          <div className="mt-4">
-            {needsApiKey && <div className="mb-2"><SetupPromptCard /></div>}
-            <section aria-label={i18n.t("popup.pageText")} className="flex flex-col">
-              {!needsApiKey && <TranslateButton />}
-              <HoverTranslationControl />
-            </section>
-            <VideoTranslationControl />
-          </div>
-        )}
-        <SiteDisableControl />
-        {!disabled && <TranslationHelp><SiteRuleAgentEntry /></TranslationHelp>}
+        <div className="mt-4">
+          {needsApiKey && <div className="mb-2"><SetupPromptCard /></div>}
+          <section aria-label={i18n.t("popup.pageText")} className="flex flex-col">
+            {!needsApiKey && <TranslateButton key={`${tab.id}:${tab.url}`} disabled={featuresDisabled} saving={savingSite?.url === tab.url} />}
+            <HoverTranslationControl disabled={featuresDisabled} />
+          </section>
+          <VideoTranslationControl disabled={featuresDisabled} />
+          <SiteDisableControl onSavingChange={setSavingSite} />
+        </div>
+        <TranslationHelp><SiteRuleAgentEntry disabled={disabled} /></TranslationHelp>
       </main>
-      <PopupFooter />
+      <PopupFooter siteDisabled={disabled} />
     </div>
   )
 }

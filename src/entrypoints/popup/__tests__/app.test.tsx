@@ -62,18 +62,36 @@ describe("popup app", () => {
     await waitFor(() => expect(document.documentElement).toHaveClass("dark"))
   })
 
-  it("removes the video exclusion toggle and hides translation controls on a disabled website", async () => {
-    const config: Config = { ...configWithKey, features: { ...configWithKey.features, disabledSites: ["example.com"] } }
+  it("keeps disabled features and their preferences visible, with settings and the site switch available", async () => {
+    const config: Config = { ...configWithKey, features: { ...configWithKey.features, hoverTranslation: true, videoSubtitles: true, disabledSites: ["example.com"] } }
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
     renderPopup({ config })
     expect(screen.queryByRole("switch", { name: "popup.videoSiteExclusion.label" })).toBeNull()
-    expect(screen.queryByRole("button", { name: "popup.translate" })).toBeNull()
-    expect(screen.queryByRole("switch", { name: "features.video" })).toBeNull()
+    expect(screen.getByRole("button", { name: "popup.translate" })).toBeDisabled()
+    expect(screen.getByRole("switch", { name: "features.hover" })).toBeDisabled()
+    expect(screen.getByRole("switch", { name: "features.hover" })).toBeChecked()
+    expect(screen.getByRole("switch", { name: "features.video" })).toBeDisabled()
+    expect(screen.getByRole("switch", { name: "features.video" })).toBeChecked()
+    expect(screen.getByRole("button", { name: "translationShortcuts.hover" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "popup.clearTranslationCache.label" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "popup.wordPrefixEmphasis" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "popup.settings" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "options.language.primary" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "options.language.secondary" })).toBeEnabled()
+    expect(screen.queryByText("popup.siteDisable.disabled")).toBeNull()
+    fireEvent.click(screen.getByText("popup.recovery.help"))
+    expect(screen.getByRole("button", { name: "popup.recovery.quality" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: /siteRuleAgent.entry/ })).toBeDisabled()
     const toggle = screen.getByRole("switch", { name: "popup.siteDisable.label" })
     expect(toggle).toBeChecked()
     fireEvent.click(toggle)
     await waitFor(() => expect(screen.getByRole("button", { name: "popup.translate" })).toBeEnabled())
     expect(screen.getByRole("switch", { name: "popup.siteDisable.label" })).not.toBeChecked()
+    expect(screen.getByRole("switch", { name: "features.hover" })).toBeEnabled()
+    expect(screen.getByRole("switch", { name: "features.hover" })).toBeChecked()
+    expect(screen.getByText("popup.recovery.help").closest("details")).toHaveAttribute("open")
+    expect(screen.getByRole("button", { name: /siteRuleAgent.entry/ })).toBeEnabled()
+    expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({ ...config.features, disabledSites: [] })
   })
 
   it("points to the settings page instead of configuring anything while the service has no key", () => {
@@ -85,6 +103,36 @@ describe("popup app", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "popup.setup.openSettings" }))
     expect(openOptionsPage).toHaveBeenCalledWith({ section: "service" })
+  })
+
+  it.each([false, true])("keeps the previous feature state while saving and after failure (disabled: %s)", async (disabled) => {
+    const config: Config = { ...configWithKey, features: { ...configWithKey.features, disabledSites: disabled ? ["example.com"] : [] } }
+    await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, config)
+    renderPopup({ config })
+    let rejectSave!: (error: Error) => void
+    const write = vi.spyOn(storage, "setItem").mockImplementationOnce(() => new Promise<void>((_, reject) => {
+      rejectSave = reject
+    }))
+    try {
+      const toggle = screen.getByRole("switch", { name: "popup.siteDisable.label" })
+      const translate = screen.getByRole("button", { name: "popup.translate" })
+      fireEvent.click(toggle)
+      await waitFor(() => expect(rejectSave).toBeDefined())
+      expect(toggle).toBeDisabled()
+      expect(toggle).toHaveAttribute("aria-checked", String(disabled))
+      expect(translate).toHaveProperty("disabled", disabled)
+      expect(screen.queryByText("popup.siteDisable.saving")).toBeNull()
+      expect(screen.queryByText("popup.siteDisable.failed")).toBeNull()
+      rejectSave(new Error("Storage unavailable"))
+      await waitFor(() => expect(screen.getByText("popup.siteDisable.failed")).toBeVisible())
+      expect(toggle).toBeEnabled()
+      expect(toggle).toHaveAttribute("aria-checked", String(disabled))
+      expect(translate).toHaveProperty("disabled", disabled)
+      expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(config)
+    }
+    finally {
+      write.mockRestore()
+    }
   })
 
   it("shows the translate action and keeps display mode controls in settings", () => {

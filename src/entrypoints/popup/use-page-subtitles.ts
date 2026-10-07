@@ -9,19 +9,23 @@ import { activeTabAtom } from "./atoms"
 
 interface SwitchView {
   state: PageSubtitleState | null
+  selection?: { url: string, enabled: boolean }
   pending: boolean
   failed: boolean
 }
 
 function updateSwitchView(previous: SwitchView, patch: Partial<SwitchView> | ((previous: SwitchView) => Partial<SwitchView>)): SwitchView {
-  return { ...previous, ...(typeof patch === "function" ? patch(previous) : patch) }
+  const next = { ...previous, ...(typeof patch === "function" ? patch(previous) : patch) }
+  if (next.state?.available || next.state?.selectedEnabled !== undefined)
+    next.selection = { url: next.state.url, enabled: next.state.selectedEnabled ?? next.state.enabled }
+  return next
 }
 
 /** Read the live page switch, including changes made while the popup was closed. */
-export function usePageSubtitles() {
+export function usePageSubtitles(disabled = false) {
   const tab = useAtomValue(activeTabAtom)
   const features = useAtomValue(configFieldsAtomMap.features)
-  const [{ state, pending, failed }, updateView] = useReducer(updateSwitchView, { state: null, pending: false, failed: false })
+  const [{ state, selection, pending, failed }, updateView] = useReducer(updateSwitchView, { state: null, pending: false, failed: false })
   const revisionRef = useRef(0)
   const operationRef = useRef(0)
   const notificationRef = useRef(0)
@@ -55,10 +59,10 @@ export function usePageSubtitles() {
       operation.current++
       unsubscribe()
     }
-  }, [tab.id, tab.url, tab.translatable, features.videoSubtitles, rules])
+  }, [disabled, tab.id, tab.url, tab.translatable, features.videoSubtitles, rules])
 
   const choose = useCallback(async (enabled: boolean) => {
-    if (tab.id === null || !state?.available || pending)
+    if (disabled || tab.id === null || !state?.available || pending)
       return
     const request = ++operationRef.current
     revisionRef.current++
@@ -77,11 +81,11 @@ export function usePageSubtitles() {
       if (request === operationRef.current)
         updateView({ pending: false })
     }
-  }, [tab.id, tab.url, state, pending])
+  }, [disabled, tab.id, tab.url, state, pending])
 
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
-      if (!state?.available || pending || event.defaultPrevented || event.repeat || event.isComposing || isEditableTarget(event.target) || !eventMatchesHotkey(event, features.subtitlesShortcut))
+      if (disabled || !state?.available || pending || event.defaultPrevented || event.repeat || event.isComposing || isEditableTarget(event.target) || !eventMatchesHotkey(event, features.subtitlesShortcut))
         return
       event.preventDefault()
       event.stopPropagation()
@@ -89,6 +93,7 @@ export function usePageSubtitles() {
     }
     document.addEventListener("keydown", keydown, true)
     return () => document.removeEventListener("keydown", keydown, true)
-  }, [choose, features.subtitlesShortcut, pending, state])
-  return { state, pending, failed, choose, translatable: tab.translatable }
+  }, [choose, disabled, features.subtitlesShortcut, pending, state])
+  const selectedEnabled = selection && tab.translatable && subtitlePageKey(selection.url) === subtitlePageKey(tab.url) ? selection.enabled : features.videoSubtitles
+  return { state, selectedEnabled, pending, failed, choose, translatable: tab.translatable }
 }

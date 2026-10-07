@@ -96,11 +96,31 @@ describe("shared page subtitle state", () => {
     expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", state, 1)
     expect(await read()).toEqual(state)
   })
-  it.each(["disabled", "excluded"])("clears %s page choices even while the content runtime is stopped", async (reason) => {
+  it.each([false, true])("preserves a page override across site pauses with default %s", async (videoSubtitles) => {
+    config = { ...config, features: { ...config.features, videoSubtitles } }
+    await set(!videoSubtitles)
+    const savedChoice = await storage.getItem("session:pageSubtitles:1")
+    vi.spyOn(browser.tabs, "query").mockImplementation(async () => [{ id: 1, url }] as Browser.tabs.Tab[])
+    const previous = config
+    config = { ...config, features: { ...config.features, disabledSites: ["www.youtube.com"] } }
+    watchConfig.mock.calls.at(-1)![0](config, previous)
+    const paused = { url, enabled: false, available: false, overridden: false, selectedEnabled: !videoSubtitles }
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: paused }))
+    // A reopened popup reads the saved selection even while the runtime is stopped.
+    expect(await read()).toEqual(paused)
+    expect(await storage.getItem("session:pageSubtitles:1")).toEqual(savedChoice)
+    await expect(set(videoSubtitles)).rejects.toThrow("unavailable")
+    config = previous
+    watchConfig.mock.calls.at(-1)![0](config, null)
+    const resumed = { url, enabled: !videoSubtitles, available: true, overridden: true }
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: resumed }))
+    expect(await read()).toEqual(resumed)
+  })
+  it("clears excluded page choices even while the content runtime is stopped", async () => {
     await set(true)
     vi.spyOn(browser.tabs, "query").mockImplementation(async () => [{ id: 1, url }] as Browser.tabs.Tab[])
     const previous = config
-    config = { ...config, features: { ...config.features, disabledSites: reason === "disabled" ? ["www.youtube.com"] : [], videoExcludedSites: reason === "excluded" ? [{ type: "domain", value: "youtube.com" }] : [] } }
+    config = { ...config, features: { ...config.features, videoExcludedSites: [{ type: "domain", value: "youtube.com" }] } }
     watchConfig.mock.calls.at(-1)![0](config, previous)
     await vi.waitFor(async () => expect(await storage.getItem("session:pageSubtitles:1")).toBeNull())
     await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: expect.objectContaining({ enabled: false, available: false }) }))
