@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Readomi · 保存提示三版设计</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:#f6f3ee;color:#38312c;font:13px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;display:flex;flex-direction:column;padding:26px;gap:17px}h1{font-size:22px;font-weight:550;letter-spacing:-.6px;margin:0 0 6px}header p{font-size:12px;color:#91847a;margin:0}.proposals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.proposal{border:1px solid #e6ded5;border-radius:12px;overflow:hidden;background:#fbf9f5;transition:border-color .15s,box-shadow .15s}.proposal.selected{border-color:#bb7863;box-shadow:0 0 0 1px #bb786322}.choice{display:flex;align-items:center;gap:10px;padding:17px 17px 0;background:none;border:0;text-align:left;width:100%;cursor:pointer;font:inherit;color:inherit}.letter{display:grid;place-items:center;width:25px;height:25px;border:1px solid #e2d8cd;border-radius:7px;color:#968476;font-size:12px}.selected .letter{background:#b6533e;border-color:#b6533e;color:#fff7ee}.choice strong{font-size:14px;font-weight:550}.recommended{margin-left:auto;font-size:10px;color:#a26a55}.sample{position:relative;overflow:hidden;height:148px;margin:0 7px;pointer-events:none}.sample-screen{position:absolute;left:50%;top:50%;width:420px;height:145px;transform:translate(-50%,-50%);transform-origin:center}.sample iframe{width:420px;height:145px;display:block;border:0;background:transparent}.description{font-size:11px;color:#91847a;margin:0;padding:0 17px 17px;line-height:18px}.workspace{display:flex;flex-direction:column;flex:1;min-height:260px;gap:11px}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.current{font-size:12px;font-weight:500;margin-right:auto;color:#7a695b}.toolbar button{font:inherit;font-size:11px;background:#fffdfa;border:1px solid #e3d9d0;border-radius:6px;color:#857265;padding:6px 10px;cursor:pointer}.toolbar button.primary{background:#b6533e;border-color:#b6533e;color:#fff8f1}.status{color:#a07b69;font-size:11px;min-width:134px;font-variant-numeric:tabular-nums;text-align:right}button:focus-visible{outline:2px solid #b6533e;outline-offset:3px}.stage{flex:1;min-height:0;position:relative;overflow:hidden;border:1px solid #e4dbd2;border-radius:12px;background:#eee9e3}.screen{position:absolute;left:50%;top:50%;width:1280px;height:900px;transform-origin:center;box-shadow:0 5px 22px #34201709}.screen iframe{display:block;width:1280px;height:900px;border:0;background:#fff}footer{display:flex;justify-content:space-between;gap:12px;color:#a09286;font-size:10px}@media(max-width:850px){body{height:auto;min-height:100%;padding:16px}.proposals{grid-template-columns:1fr}.sample{height:130px}.workspace{height:550px;flex:none}.toolbar .current{width:100%}.status{text-align:left}.recommended{margin-left:12px}footer{display:block}}
+</style>
+</head>
+<body>
+<header><h1>更轻一点，三种选择</h1><p>同一条保存提示，不同的占位与层级。点选方案，在下方查看网页里的实际效果。</p></header>
+<div class="proposals" role="group" aria-label="三版保存提示设计">
+  <section class="proposal" data-variant="A"><button class="choice" type="button" aria-pressed="false" aria-label="选择 A 一行轻提示"><span class="letter">A</span><strong>一行轻提示</strong></button><div class="sample"><div class="sample-screen"><iframe src="Page-Site-Rule-Saved-A.html?detail=1" title="A 一行轻提示"></iframe></div></div><p class="description">一行完成确认与操作，占位最轻。<br>浅色底 · 轻圆角 · 54 px 高</p></section>
+  <section class="proposal selected" data-variant="B"><button class="choice" type="button" aria-pressed="true" aria-label="选择 B 紧凑小卡片"><span class="letter">B</span><strong>紧凑小卡片</strong><span class="recommended">已选</span></button><div class="sample"><div class="sample-screen"><iframe src="Page-Site-Rule-Saved-B.html?detail=1" title="B 紧凑小卡片"></iframe></div></div><p class="description">确认在上，操作在下，文字自然对齐。<br>280 px 宽 · 两行布局 · 无外框文字入口</p></section>
+  <section class="proposal" data-variant="C"><button class="choice" type="button" aria-pressed="false" aria-label="选择 C 深色分区条"><span class="letter">C</span><strong>深色分区条</strong></button><div class="sample"><div class="sample-screen"><iframe src="Page-Site-Rule-Saved-C.html?detail=1" title="C 深色分区条"></iframe></div></div><p class="description">深色确认区，浅色整块入口，操作更鲜明。<br>暖灰底 · 左右分区 · 62 px 高</p></section>
+</div>
+<div class="workspace">
+  <div class="toolbar"><span class="current">B · 紧凑小卡片 · 网页中的效果</span><button type="button" data-mode="saved">重新显示</button><button type="button" class="primary" data-mode="play">播放 8 秒消失</button><button type="button" data-exit>立即退场</button><button type="button" data-exit="slow">慢速查看 ×¼</button><span class="status" role="status">静态预览</span></div>
+  <div class="stage"><div class="screen"><iframe src="Page-Site-Rule-Saved-B.html" title="当前方案 · 网页效果" data-page-frame></iframe></div></div>
+</div>
+<footer><span>仅设计预览 · 三版均保留撤销、查看站点规则与关闭</span><span>8 秒停留 · 悬停 / 聚焦暂停 · Motion 260 ms 退场</span></footer>
+<script>
+const frame = document.querySelector('[data-page-frame]');
+const stage = document.querySelector('.stage');
+const screen = document.querySelector('.screen');
+const status = document.querySelector('.status');
+const names = { A: '一行轻提示', B: '紧凑小卡片', C: '深色分区条' };
+let selected = 'B';
+let revision = 0;
+let pendingExit = null;
+function resize() {
+  screen.style.transform = `translate(-50%, -50%) scale(${Math.min(stage.clientWidth / 1280, stage.clientHeight / 900)})`;
+  document.querySelectorAll('.sample').forEach(sample => {
+    sample.querySelector('.sample-screen').style.transform = `translate(-50%, -50%) scale(${Math.min(1, sample.clientWidth / 420)})`;
+  });
+}
+const observer = new ResizeObserver(resize);
+observer.observe(stage);
+document.querySelectorAll('.sample').forEach(sample => observer.observe(sample));
+resize();
+function load(play = false) {
+  frame.src = `Page-Site-Rule-Saved-${selected}.html?${play ? 'play=1&' : ''}revision=${++revision}`;
+  status.textContent = play ? '8.0 秒后消失' : '静态预览';
+}
+document.querySelectorAll('.choice').forEach(button => button.addEventListener('click', () => {
+  selected = button.closest('.proposal').dataset.variant;
+  pendingExit = null;
+  document.querySelectorAll('.proposal').forEach(proposal => {
+    const active = proposal.dataset.variant === selected;
+    proposal.classList.toggle('selected', active);
+    proposal.querySelector('.choice').setAttribute('aria-pressed', String(active));
+  });
+  document.querySelector('.current').textContent = `${selected} · ${names[selected]} · 网页中的效果`;
+  load();
+}));
+document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
+  pendingExit = null;
+  load(button.dataset.mode === 'play');
+}));
+frame.addEventListener('load', () => {
+  if (pendingExit === null) return;
+  const slow = pendingExit;
+  pendingExit = null;
+  requestAnimationFrame(() => requestAnimationFrame(() => frame.contentWindow.postMessage({ type: 'readomi-toast-dismiss', slow }, location.origin)));
+});
+document.querySelectorAll('[data-exit]').forEach(button => button.addEventListener('click', () => {
+  pendingExit = button.dataset.exit === 'slow';
+  load();
+}));
+window.addEventListener('message', event => {
+  if (event.source !== frame.contentWindow || event.origin !== location.origin || event.data?.type !== 'readomi-toast-preview') return;
+  const { state, remaining } = event.data;
+  status.textContent = state === 'exiting' ? '正在退场' : state === 'dismissed' ? '已消失 · 规则仍生效' : state === 'undone' ? '已撤销 · 3 秒后消失' : state === 'static' ? '静态预览' : state === 'paused' ? `已暂停 · 剩余 ${(remaining / 1000).toFixed(1)} 秒` : `${(remaining / 1000).toFixed(1)} 秒后消失`;
+});
+</script>
+</body>
+</html>

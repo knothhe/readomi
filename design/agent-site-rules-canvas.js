@@ -2,6 +2,15 @@
 window.READOMI_CANVAS = {
   "title": "Readomi · 网页单面板站点适配",
   "boards": [
+    { "file": "Page-Site-Rule-Saved-Undone.html", "title": "保存提示 · B · 撤销成功 · 3 秒后消失", "x": 2720, "y": 7100, "w": 1280, "h": 900 },
+    { "file": "Page-Site-Rule-Saved-Manage-Hover.html", "title": "保存提示 · B · 查看站点规则悬停 · 无底块", "x": 1360, "y": 7100, "w": 1280, "h": 900 },
+    { "file": "Page-Site-Rule-Saved-Undo-Hover.html", "title": "保存提示 · B · 撤销悬停 · 无底块", "x": 0, "y": 7100, "w": 1280, "h": 900 },
+    { "file": "Page-Site-Rule-Saved-A.html", "title": "保存提示 · A · 一行轻提示", "x": 0, "y": 6000, "w": 1280, "h": 900 },
+    { "file": "Page-Site-Rule-Saved-B.html", "title": "保存提示 · B · 紧凑小卡片", "x": 1360, "y": 6000, "w": 1280, "h": 900 },
+    { "file": "Page-Site-Rule-Saved-C.html", "title": "保存提示 · C · 深色分区条", "x": 2720, "y": 6000, "w": 1280, "h": 900 },
+    { "file": "Page-Site-Rule-Saved-Exiting.html", "title": "保存提示 · Motion 退场 · 中间帧", "x": 2800, "y": 4750, "w": 1280, "h": 900 },
+    { "file": "Site-Rule-Saved-Review.html", "title": "保存提示 · 三版对比 · Motion 交互预览", "x": 0, "y": 4750, "w": 1360, "h": 1040 },
+    { "file": "Page-Site-Rule-Saved-Dismissed.html", "title": "保存提示 · 消失后 · 规则继续生效", "x": 1440, "y": 4750, "w": 1280, "h": 900 },
     {
       "file": "Page-Site-Rule-Prepare.html",
       "title": "站点适配 · 准备 · 自动读取网站与复制指令",
@@ -28,7 +37,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Page-Site-Rule-Saved.html",
-      "title": "站点适配 · 保存 · 面板收起 · toast 撤销与关闭",
+      "title": "站点适配 · 保存 · 面板收起 · toast 撤销与查看规则",
       "x": 4080,
       "y": 150,
       "w": 1280,
