@@ -207,8 +207,7 @@ async function captureLocale(locale, service) {
     await worker.evaluate(async () => {
       const { config } = await chrome.storage.local.get("config")
       config.features.videoSubtitles = true
-      config.features.subtitleStyle.fontSize = 28
-      config.features.subtitleStyle.fontSizeMode = "fixed"
+      config.features.subtitleStyle.relativeFontSize = 28 / 3.6
       config.features.subtitleStyle.backgroundEnabled = true
       config.features.subtitleStyle.backgroundOpacity = 65
       config.features.subtitleStyle.position = { x: 50, y: 75 }

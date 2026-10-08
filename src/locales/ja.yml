@@ -575,7 +575,7 @@ subtitleStyle:
   controlsTitle: 翻訳とスタイル
   moreOptions: More options
   custom: カスタマイズ
-  customDescription: 字幕のサイズ・背景・位置をカスタマイズ
+  customDescription: サイズ、背景、字幕位置をカスタマイズ
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -590,7 +590,7 @@ subtitleStyle:
   noBackground: No background
   backgroundSummary: $1% background
   preset: Subtitle preset
-  fontSize: Subtitle size
+  fontSize: 字幕サイズ
   originalFontScale: 原文の文字サイズ
   originalFontScaleValue: 原文の文字サイズの値
   originalFontScaleDefault: 既定 1:1
@@ -606,14 +606,7 @@ subtitleStyle:
   previewBilingualFontSize: 原文 $1 px · 訳文 $2 px
   previewTranslatedFontSize: 訳文 $1 px
   commonSizes: よく使うサイズ
-  fontDescription: Scales both lines, with equal sizes by default.
-  fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
-    window and fullscreen.
-  fixedFontDescription: ウィンドウの大きさを変えても文字サイズは固定です。
-  fontSizeModes:
-    video: Scale with video
-    fixed: Fixed size
+  relativeFontDescription: 動画ウィンドウと全画面表示に合わせて自動調整します。100% が標準サイズです。
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: プレビュー画面

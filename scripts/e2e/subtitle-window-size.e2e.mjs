@@ -16,7 +16,7 @@ afterEach(async (test) => {
   }
 })
 
-it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable backgrounds without losing translations", async () => {
+it("X HTML5 subtitles support live relative sizing and adjustable backgrounds without losing translations", async () => {
   service = await startFakeService()
   const launched = await launchBrowser()
   context = launched.context
@@ -26,8 +26,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await settings.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).click()
   const customOptions = settings.locator(".subtitle-custom > summary")
   assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "custom subtitle controls start collapsed")
-  const modes = settings.getByRole("group", { name: "Size mode", exact: true })
-  assert.equal(await modes.getByRole("button", { name: "Scale with video", exact: true }).getAttribute("aria-pressed"), "true")
+  assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).count(), 0)
   await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.videoSubtitles)
   const previewSize = () => settings.locator(".subtitle-preview-scene").evaluate(scene => ({
     width: scene.getBoundingClientRect().width,
@@ -39,7 +38,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
     return components.length === 4 ? components[3] : color === "transparent" ? 0 : 1
   }
   const waitForPreview = async (style) => {
-    await settings.waitForFunction(({ mode, size, opacity }) => {
+    await settings.waitForFunction(({ size, opacity }) => {
       const scene = document.querySelector(".subtitle-preview-scene")
       if (!scene?.lastElementChild)
         return false
@@ -48,11 +47,10 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
       const actualOpacity = components.length === 4 ? components[3] : computed.backgroundColor === "transparent" ? 0 : 1
       const ratio = { landscape: 9 / 16, portrait: 16 / 9, square: 1 }[scene.parentElement.dataset.aspect]
       const width = scene.getBoundingClientRect().width
-      const expectedSize = mode === "video" ? Math.min(width, width * ratio) * size / 100 : size
+      const expectedSize = Math.min(width, width * ratio) * size / 100
       return Math.abs(Number.parseFloat(computed.fontSize) - expectedSize) < 0.05 && Math.abs(actualOpacity - opacity) < 0.01
     }, {
-      mode: style.fontSizeMode,
-      size: style.fontSizeMode === "video" ? style.relativeFontSize : style.fontSize,
+      size: style.relativeFontSize,
       opacity: style.backgroundEnabled ? style.backgroundOpacity / 100 : 0,
     })
   }
@@ -157,10 +155,10 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await cdp.send("DOM.enable")
   await cdp.send("CSS.enable")
   const presetStyles = [
-    { preset: "clear", label: "Transparent", fontSize: 20, relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
-    { preset: "compact", label: "Compact", fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
-    { preset: "study", label: "Focus", fontSize: 24, relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
-    { preset: "cinema", label: "Cinema", fontSize: 28, relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
+    { preset: "clear", label: "Transparent", relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
+    { preset: "compact", label: "Compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
+    { preset: "study", label: "Focus", relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
+    { preset: "cinema", label: "Cinema", relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
   ]
   // The dock and preset panel use a closed shadow root. CDP reads the
   // button's bounds, then a real pointer click exercises its product handler.
@@ -278,8 +276,8 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await page.waitForFunction(() => window.e2eSubtitleTracks.clone.mode === "hidden")
   const initialStyle = (await storedConfig(context)).features.subtitleStyle
   const requests = service.completions().length
-  assert.equal(initialStyle.fontSizeMode, "video")
-  assert.equal(initialStyle.fontSize, 20)
+  assert.equal("fontSizeMode" in initialStyle, false)
+  assert.equal("fontSize" in initialStyle, false)
   assert.equal(initialStyle.relativeFontSize, 5)
   assert.equal(initialStyle.backgroundEnabled, false)
   assert.equal(initialStyle.backgroundOpacity, 0)
@@ -329,22 +327,14 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, initialStyle, "window changes do not rewrite the saved baseline")
   await page.screenshot({ path: "/tmp/readomi-x-subtitle-responsive.png" })
 
-  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.subtitleStyle.fontSizeMode === "fixed")
   await page.locator("#player").evaluate((player) => {
     player.style.width = "320px"
     player.style.height = "180px"
   })
-  await waitFor(state => state.fontSize === 20 && state.translation === ready.translation)
   await settings.reload()
-  assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "reloading settings restores the compact presentation")
-  assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Fixed size", exact: true }).getAttribute("aria-pressed"), "true")
+  assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "reloading restores the compact presentation")
   await settings.setViewportSize({ width: 390, height: 900 })
-  assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Fixed size", exact: true }).isVisible(), true)
-  assert.equal((await previewSize()).fontSize, 20, "fixed preview keeps real pixels on narrow screens")
-  await settings.screenshot({ path: "/tmp/readomi-subtitle-fixed-mobile.png", fullPage: true })
-  await settings.getByRole("group", { name: "Size mode", exact: true }).getByRole("button", { name: "Scale with video", exact: true }).click()
-  await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.subtitleStyle.fontSizeMode === "video")
+  assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).count(), 0)
   await waitFor(state => Math.abs(state.fontSize - 9) < 0.05 && state.translation === ready.translation)
   const mobilePreview = await previewSize()
   assert.ok(Math.abs(mobilePreview.fontSize - mobilePreview.width * 9 / 16 * 5 / 100) < 0.05, "relative preview matches narrow video windows")
@@ -360,7 +350,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
     }
   }
   await settings.screenshot({ path: "/tmp/readomi-subtitle-video-mobile.png", fullPage: true })
-  assert.equal(service.completions().length, requests, "resizing and changing sizing mode reuse the current translation")
+  assert.equal(service.completions().length, requests, "resizing reuse the current translation")
   assert.equal(service.translationRequests().some(messages => messages.at(-1).content.includes("Partial rendering clone")), false)
 
   const waitForStyle = async (expected) => {
@@ -377,41 +367,33 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
 
   await customOptions.click()
   // Exercise native range keyboard interaction and precise numeric entry.
-  // Each mode owns its saved size, so switching never rewrites the other value.
+  // 100% is the default; numeric entry also accepts precise imported proportions.
   const sizeSlider = settings.getByRole("slider", { name: "Subtitle size", exact: true })
   const sizeInput = settings.getByRole("spinbutton", { name: "Subtitle size", exact: true })
-  assert.equal(await sizeSlider.getAttribute("min"), "1.25")
-  assert.equal(await sizeSlider.getAttribute("max"), "25")
-  assert.equal(await sizeSlider.getAttribute("step"), "0.25")
+  assert.equal(await sizeSlider.getAttribute("min"), "25")
+  assert.equal(await sizeSlider.getAttribute("max"), "500")
+  assert.equal(await sizeSlider.getAttribute("step"), "5")
   assert.match(await sizeSlider.getAttribute("aria-valuetext"), /%/)
   await sizeSlider.press("ArrowRight")
-  await waitForStyle({ relativeFontSize: 5.25, fontSize: 20 })
+  await waitForStyle({ relativeFontSize: 5.25 })
   await waitFor(state => Math.abs(state.fontSize - 9.45) < 0.05 && state.translation === ready.translation)
-  await sizeInput.fill("4.25")
+  await sizeInput.fill("85")
   await sizeInput.press("Enter")
-  await waitForPreview(await waitForStyle({ relativeFontSize: 4.25, fontSize: 20 }))
+  await waitForPreview(await waitForStyle({ relativeFontSize: 4.25 }))
   await waitFor(state => Math.abs(state.fontSize - 7.65) < 0.05 && state.translation === ready.translation)
-  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await waitForStyle({ fontSizeMode: "fixed", relativeFontSize: 4.25, fontSize: 20 })
-  assert.equal(await sizeSlider.getAttribute("min"), "8")
-  assert.equal(await sizeSlider.getAttribute("max"), "80")
-  assert.equal(await sizeSlider.getAttribute("step"), "1")
-  assert.match(await sizeSlider.getAttribute("aria-valuetext"), /px/)
   await sizeSlider.press("Home")
-  await waitForPreview(await waitForStyle({ fontSize: 8, relativeFontSize: 4.25 }))
-  await waitFor(state => state.fontSize === 8 && state.translation === ready.translation)
-  await sizeInput.fill("18")
+  await waitForPreview(await waitForStyle({ relativeFontSize: 1.25 }))
+  await waitFor(state => Math.abs(state.fontSize - 2.25) < 0.05 && state.translation === ready.translation)
+  await sizeSlider.press("End")
+  await waitForPreview(await waitForStyle({ relativeFontSize: 25 }))
+  await waitFor(state => Math.abs(state.fontSize - 45) < 0.05 && state.translation === ready.translation)
+  await sizeInput.fill("118.75")
   await sizeInput.press("Tab")
-  await waitForStyle({ fontSize: 18, relativeFontSize: 4.25 })
-  await waitFor(state => state.fontSize === 18 && state.translation === ready.translation)
-  await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
-  await waitForPreview(await waitForStyle({ fontSizeMode: "video", relativeFontSize: 4.25, fontSize: 18 }))
-  assert.equal(await sizeInput.inputValue(), "4.25", "relative numeric input restores its own saved value")
-  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await waitForStyle({ fontSizeMode: "fixed", relativeFontSize: 4.25, fontSize: 18 })
-  assert.equal(await sizeInput.inputValue(), "18", "fixed numeric input restores its own saved value")
-  await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
-  await waitForStyle({ fontSizeMode: "video", relativeFontSize: 4.25, fontSize: 18 })
+  await waitForPreview(await waitForStyle({ relativeFontSize: 5.9375 }))
+  assert.equal(await sizeInput.inputValue(), "118.75")
+  await sizeInput.fill("85")
+  await sizeInput.press("Enter")
+  await waitForStyle({ relativeFontSize: 4.25 })
 
   const depthSlider = settings.getByRole("slider", { name: "Background depth", exact: true })
   const depthInput = settings.getByRole("spinbutton", { name: "Background depth", exact: true })
@@ -441,7 +423,7 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await settings.reload()
   assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "reload returns to the compact main list")
   await customOptions.click()
-  assert.equal(await sizeInput.inputValue(), "4.25")
+  assert.equal(await sizeInput.inputValue(), "85")
   assert.equal(await depthInput.inputValue(), "72", "reloading restores saved background depth")
   assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "narrow controls fit without horizontal overflow")
   await settings.setViewportSize({ width: 1280, height: 900 })
@@ -454,16 +436,11 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   const presets = settings.getByRole("group", { name: "Subtitle preset", exact: true })
   for (const { label, ...presetStyle } of presetStyles) {
     await presets.getByRole("button", { name: label, exact: true }).click()
-    await waitForPreview(await waitForStyle({ ...presetStyle, fontSizeMode: "video", position }))
+    await waitForPreview(await waitForStyle({ ...presetStyle, position }))
     await waitFor(state => Math.abs(state.fontSize - 180 * presetStyle.relativeFontSize / 100) < 0.05
       && Math.abs(colorOpacity(state.backgroundColor) - (presetStyle.backgroundEnabled ? presetStyle.backgroundOpacity / 100 : 0)) < 0.01
       && state.translation === ready.translation)
   }
-  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await waitForStyle({ preset: "cinema", fontSize: 28, relativeFontSize: 7.5, fontSizeMode: "fixed", position })
-  await waitFor(state => state.fontSize === 28 && state.translation === ready.translation)
-  await settings.screenshot({ path: "/tmp/readomi-subtitle-preset-fixed-cinema.png", fullPage: true })
-
   const selectPlayerPreset = async (preset) => {
     await clickPlayerControl(node => attr(node, "aria-label") === "Adjust subtitle preset")
     const video = await page.locator("#player video").boundingBox()
@@ -488,15 +465,14 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   }
   for (const { label: _label, ...presetStyle } of presetStyles) {
     await selectPlayerPreset(presetStyle.preset)
-    await waitForPreview(await waitForStyle({ ...presetStyle, fontSizeMode: "fixed", position }))
-    await waitFor(state => state.fontSize === presetStyle.fontSize
+    await waitForPreview(await waitForStyle({ ...presetStyle, position }))
+    await waitFor(state => Math.abs(state.fontSize - 180 * presetStyle.relativeFontSize / 100) < 0.05
       && Math.abs(colorOpacity(state.backgroundColor) - (presetStyle.backgroundEnabled ? presetStyle.backgroundOpacity / 100 : 0)) < 0.01
       && state.translation === ready.translation)
   }
-  await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
-  await waitForStyle({ preset: "cinema", relativeFontSize: 7.5, fontSizeMode: "video", position })
+  await waitForStyle({ preset: "cinema", relativeFontSize: 7.5, position })
   await selectPlayerPreset("study")
-  await waitForStyle({ preset: "study", fontSize: 24, relativeFontSize: 6.25, fontSizeMode: "video", backgroundEnabled: true, backgroundOpacity: 65, position })
+  await waitForStyle({ preset: "study", relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65, position })
   await waitFor(state => state.fontSize === 11.25 && Math.abs(colorOpacity(state.backgroundColor) - 0.65) < 0.01 && state.translation === ready.translation)
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, position, "all four presets preserve a manually selected position in both controls")
   assert.equal(service.completions().length, requests, "manual size, background and preset changes reuse the current translation")
@@ -530,9 +506,6 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await presets.getByRole("button", { name: "Transparent", exact: true }).click()
   await waitForStyle({ originalFontScale: 125, preset: "clear" })
   await waitFor(state => Math.abs(state.originalFontSize - 11.25) < 0.05 && state.fontSize === 9)
-  await modes.getByRole("button", { name: "Fixed size", exact: true }).click()
-  await waitForStyle({ originalFontScale: 125, fontSizeMode: "fixed" })
-  await waitFor(state => state.originalFontSize === 25 && state.fontSize === 20)
   const display = settings.getByRole("group", { name: "Subtitle display mode", exact: true })
   await display.getByRole("button", { name: "Translation only", exact: true }).click()
   assert.equal(await ratioSlider.isDisabled(), true)
@@ -549,10 +522,9 @@ it("X HTML5 subtitles support live relative sizing, fixed sizing and adjustable 
   await settings.setViewportSize({ width: 1280, height: 900 })
   await ratioChoices.getByRole("button", { name: "1:1", exact: true }).click()
   await waitForStyle({ originalFontScale: 100 })
-  await waitFor(state => state.originalFontSize === 20 && state.fontSize === 20)
-  await modes.getByRole("button", { name: "Scale with video", exact: true }).click()
+  await waitFor(state => state.originalFontSize === 9 && state.fontSize === 9)
   await settings.locator(".subtitle-position-reset").click()
-  await waitForStyle({ fontSizeMode: "video", originalFontScale: 100, position: { x: 50, y: 88 } })
+  await waitForStyle({ originalFontScale: 100, position: { x: 50, y: 88 } })
   // Exercise the actual Chinese catalog and record the chosen A layout at its default values.
   await settings.evaluate(async () => {
     const { config } = await chrome.storage.local.get("config")

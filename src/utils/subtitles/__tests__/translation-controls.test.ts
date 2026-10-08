@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { VideoTranslationControls } from "../translation-controls"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN } from "@/types/config/subtitle-style"
+import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN } from "@/types/config/subtitle-style"
 import { createVideoTranslationControls } from "../translation-controls"
 
 const live = new Set<VideoTranslationControls>()
@@ -122,10 +122,10 @@ describe("video translation controls", () => {
     const { instance, button, shadow } = fixture.create()
     button(".trigger").click()
     button("[data-preset=compact]").click()
-    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "compact", fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 })
+    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 })
     expect(button("[data-preset=clear]")).toHaveAttribute("aria-pressed", "true")
-    expect(shadow.querySelector("output")).toHaveTextContent("5%")
-    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, preset: "compact", fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 } })
+    expect(shadow.querySelector("output")).toHaveTextContent("100%")
+    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, preset: "compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 } })
     expect(button("[data-preset=compact]")).toHaveAttribute("aria-pressed", "true")
     button(".larger").click()
     expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ relativeFontSize: 4.25 })
@@ -135,15 +135,15 @@ describe("video translation controls", () => {
     expect(button(".smaller")).toBeDisabled()
     instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, relativeFontSize: SUBTITLE_RELATIVE_FONT_SIZE_MAX } })
     expect(button(".larger")).toBeDisabled()
-    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, fontSize: SUBTITLE_FONT_SIZE_MIN, fontSizeMode: "fixed" } })
+    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, relativeFontSize: SUBTITLE_RELATIVE_FONT_SIZE_MIN } })
     expect(button(".smaller")).toBeDisabled()
-    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, fontSize: SUBTITLE_FONT_SIZE_MAX, fontSizeMode: "fixed" } })
+    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, relativeFontSize: SUBTITLE_RELATIVE_FONT_SIZE_MAX } })
     expect(button(".larger")).toBeDisabled()
-    expect(shadow.querySelector("output")).toHaveTextContent("80 px")
+    expect(shadow.querySelector("output")).toHaveTextContent("500%")
     button(".smaller").click()
-    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ fontSize: 79 })
+    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ relativeFontSize: 24.75 })
     button("[data-preset=compact]").click()
-    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "compact", fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 })
+    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 })
     instance.update({ saveFailed: true })
     expect(shadow.querySelector(".error[role=status]")).toHaveTextContent("videoTranslationControls.saveFailed")
     expect(shadow.querySelector(".error[role=status]")).not.toHaveAttribute("hidden")
@@ -157,10 +157,10 @@ describe("video translation controls", () => {
     expect(shadow.querySelectorAll("[data-preset][aria-pressed=true]")).toHaveLength(0)
     instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, backgroundEnabled: true, backgroundOpacity: 50 } })
     expect(shadow.querySelectorAll("[data-preset][aria-pressed=true]")).toHaveLength(0)
-    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, fontSize: 80, backgroundOpacity: 0 } })
+    instance.update({ appearance: { ...DEFAULT_SUBTITLE_STYLE, backgroundOpacity: 0 } })
     expect(button("[data-preset=clear]")).toHaveAttribute("aria-pressed", "true")
     button("[data-preset=cinema]").click()
-    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "cinema", fontSize: 28, relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 })
+    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "cinema", relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 })
   })
 
   it("supports keyboard presets, preserves internal presses, and closes on Escape or outside presses", () => {
@@ -172,11 +172,11 @@ describe("video translation controls", () => {
     expect(shadow.activeElement).toBe(button("[data-preset=clear]"))
     button("[data-preset=clear]").dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, composed: true, cancelable: true }))
     expect(shadow.activeElement).toBe(button("[data-preset=compact]"))
-    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "compact", fontSize: 16, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 })
+    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 })
     expect(hostClick).not.toHaveBeenCalled()
     button("[data-preset=compact]").dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, composed: true, cancelable: true }))
     expect(shadow.activeElement).toBe(button("[data-preset=cinema]"))
-    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "cinema", fontSize: 28, relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 })
+    expect(fixture.onStyleChange).toHaveBeenLastCalledWith({ preset: "cinema", relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 })
     button("[data-preset=cinema]").dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, composed: true, cancelable: true }))
     expect(shadow.activeElement).toBe(button("[data-preset=compact]"))
     button("[data-preset=compact]").dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, composed: true }))

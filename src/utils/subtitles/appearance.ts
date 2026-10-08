@@ -1,5 +1,5 @@
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
-import { SUBTITLE_FONT_SIZE_MAX, SUBTITLE_FONT_SIZE_MIN, SUBTITLE_PRESET_STYLES, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP } from "@/types/config/subtitle-style"
+import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_PRESET_STYLES, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP } from "@/types/config/subtitle-style"
 import { sendMessage } from "@/utils/message"
 
 export const SUBTITLE_POSITIONS = {
@@ -8,23 +8,29 @@ export const SUBTITLE_POSITIONS = {
   bottom: { x: 50, y: 88 },
 } as const
 
-export function subtitlePresetPatch(preset: SubtitleStyle["preset"], _fontSizeMode?: SubtitleStyle["fontSizeMode"]): Pick<SubtitleStyle, "preset" | "fontSize" | "relativeFontSize" | "backgroundEnabled" | "backgroundOpacity"> {
+export function subtitlePresetPatch(preset: SubtitleStyle["preset"]): Pick<SubtitleStyle, "preset" | "relativeFontSize" | "backgroundEnabled" | "backgroundOpacity"> {
   return { preset, ...SUBTITLE_PRESET_STYLES[preset] }
 }
 
+const FONT_SCALE_FACTOR = 100 / DEFAULT_SUBTITLE_STYLE.relativeFontSize
+
+/** The reader sees 100% at the default short-side proportion, independently of the preset. */
 export function subtitleSizeSettings(style: SubtitleStyle) {
-  return style.fontSizeMode === "video"
-    ? { value: style.relativeFontSize, min: SUBTITLE_RELATIVE_FONT_SIZE_MIN, max: SUBTITLE_RELATIVE_FONT_SIZE_MAX, step: SUBTITLE_RELATIVE_FONT_SIZE_STEP, unit: "%" }
-    : { value: style.fontSize, min: SUBTITLE_FONT_SIZE_MIN, max: SUBTITLE_FONT_SIZE_MAX, step: 1, unit: "px" }
+  return {
+    value: Number((style.relativeFontSize * FONT_SCALE_FACTOR).toFixed(5)),
+    min: SUBTITLE_RELATIVE_FONT_SIZE_MIN * FONT_SCALE_FACTOR,
+    max: SUBTITLE_RELATIVE_FONT_SIZE_MAX * FONT_SCALE_FACTOR,
+    step: SUBTITLE_RELATIVE_FONT_SIZE_STEP * FONT_SCALE_FACTOR,
+    unit: "%",
+  }
 }
 
-export function subtitleSizePatch(style: SubtitleStyle, value: number): Partial<Pick<SubtitleStyle, "fontSize" | "relativeFontSize">> {
-  return style.fontSizeMode === "video" ? { relativeFontSize: value } : { fontSize: value }
+export function subtitleSizePatch(value: number): Pick<SubtitleStyle, "relativeFontSize"> {
+  return { relativeFontSize: value / FONT_SCALE_FACTOR }
 }
 
 export function formatSubtitleFontSize(style: SubtitleStyle): string {
-  const { value, unit } = subtitleSizeSettings(style)
-  return `${Number(value.toFixed(5))}${unit === "%" ? "%" : ` ${unit}`}`
+  return `${subtitleSizeSettings(style).value}%`
 }
 
 /** A disabled legacy background stays invisible even when its remembered depth is nonzero. */
@@ -40,7 +46,7 @@ export function subtitleBackgroundPatch(backgroundOpacity: number): Pick<Subtitl
 /** A preset remains selected only while its active size and visible background settings match. */
 export function isSubtitlePresetModified(style: SubtitleStyle): boolean {
   const preset = SUBTITLE_PRESET_STYLES[style.preset]
-  const presetSize = style.fontSizeMode === "video" ? preset.relativeFontSize : preset.fontSize
+  const presetSize = subtitleSizeSettings({ ...style, ...preset }).value
   return Math.abs(subtitleSizeSettings(style).value - presetSize) > 1e-9
     || effectiveSubtitleBackgroundOpacity(style) !== effectiveSubtitleBackgroundOpacity(preset)
 }
@@ -55,7 +61,7 @@ export function subtitlePositionName(position: SubtitlePosition): keyof typeof S
 export function resolveSubtitleFontSize(style: SubtitleStyle, videoWidth = 640, videoHeight = videoWidth * 9 / 16): number {
   const width = Number.isFinite(videoWidth) && videoWidth > 0 ? videoWidth : 640
   const height = Number.isFinite(videoHeight) && videoHeight > 0 ? videoHeight : width * 9 / 16
-  return style.fontSizeMode === "video" ? style.relativeFontSize * Math.min(width, height) / 100 : style.fontSize
+  return style.relativeFontSize * Math.min(width, height) / 100
 }
 
 /** Exclude contain/scale-down letterboxing while leaving caption positioning unchanged. */

@@ -4,7 +4,7 @@ import { useAtom, useSetAtom } from "jotai"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
-import { SUBTITLE_FONT_SIZE_MODES, SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { configFieldsAtomMap, writeConfigAtom } from "@/utils/atoms/config"
 import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, resolveSubtitleFontSize, resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitleBackgroundPatch, subtitlePositionName, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
@@ -40,7 +40,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
   const position = subtitlePositionName(style.position)
   const depth = effectiveSubtitleBackgroundOpacity(style)
   const backgroundSummary = depth ? i18n.t("subtitleStyle.backgroundSummary", [depth]) : i18n.t("subtitleStyle.noBackground")
-  const commonSizes = ["compact", "clear", "study", "cinema"].map(preset => SUBTITLE_PRESET_STYLES[preset as keyof typeof SUBTITLE_PRESET_STYLES][style.fontSizeMode === "video" ? "relativeFontSize" : "fontSize"])
+  const commonSizes = ["compact", "clear", "study", "cinema"].map(preset => subtitleSizeSettings({ ...style, ...SUBTITLE_PRESET_STYLES[preset as keyof typeof SUBTITLE_PRESET_STYLES] }).value)
   const positions = Object.keys(SUBTITLE_POSITIONS) as (keyof typeof SUBTITLE_POSITIONS)[]
   const [previewAspect, setPreviewAspect] = useState<keyof typeof PREVIEW_ASPECT_RATIOS>("landscape")
   const fontSizeOutputRef = useRef<HTMLOutputElement>(null)
@@ -118,21 +118,6 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
         <SettingsGroup caption={i18n.t("subtitleStyle.controlsTitle")} className="subtitle-settings-group">
           {children}
           <SettingsRow
-            className="subtitle-mode-row"
-            label={i18n.t("subtitleStyle.fontSizeMode")}
-            control={(
-              <SegmentedControl
-                aria-label={i18n.t("subtitleStyle.fontSizeMode")}
-                size="sm"
-                value={style.fontSizeMode}
-                options={SUBTITLE_FONT_SIZE_MODES.map(value => ({ value, label: i18n.t(`subtitleStyle.fontSizeModes.${value}`) }))}
-                onChange={fontSizeMode => setStyle({ fontSizeMode })}
-              />
-            )}
-          >
-            <p className="subtitle-control-help">{i18n.t(style.fontSizeMode === "video" ? "subtitleStyle.relativeFontDescription" : "subtitleStyle.fixedFontDescription")}</p>
-          </SettingsRow>
-          <SettingsRow
             label={i18n.t("subtitleStyle.preset")}
             control={<span className="subtitle-adjusted-label" data-modified={modified} aria-hidden={!modified}>{i18n.t("subtitleStyle.modified")}</span>}
           >
@@ -180,15 +165,16 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                 control={(
                   <div className="subtitle-common-sizes" role="group" aria-label={i18n.t("subtitleStyle.commonSizes")}>
                     {commonSizes.map(value => (
-                      <button type="button" key={value} aria-pressed={Math.abs(size.value - value) < 1e-9} onClick={() => setStyle(subtitleSizePatch(style, value))}>
-                        {`${value}${size.unit === "%" ? "%" : " px"}`}
+                      <button type="button" key={value} aria-pressed={Math.abs(size.value - value) < 1e-9} onClick={() => setStyle(subtitleSizePatch(value))}>
+                        {`${value}%`}
                       </button>
                     ))}
                   </div>
                 )}
               >
+                <p className="subtitle-control-help">{i18n.t("subtitleStyle.relativeFontDescription")}</p>
                 <SettingsSlider
-                  key={style.fontSizeMode}
+                  allowDecimal
                   className="subtitle-precise-slider"
                   min={size.min}
                   max={size.max}
@@ -199,7 +185,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                   showLimits={false}
                   decrementLabel={i18n.t("subtitleStyle.smaller")}
                   incrementLabel={i18n.t("subtitleStyle.larger")}
-                  onValueChange={value => setStyle(subtitleSizePatch(style, value))}
+                  onValueChange={value => setStyle(subtitleSizePatch(value))}
                 />
               </SettingsRow>
               <SubtitleOriginalSizeControl

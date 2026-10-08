@@ -7,10 +7,6 @@
   padding: 18px;
 }
 
-.subtitle-settings-group .subtitle-mode-row {
-  gap: 5px;
-}
-
 .subtitle-settings-group .subtitle-font-row .settings-row-heading {
   flex-wrap: nowrap;
   gap: 10px;
@@ -268,25 +264,25 @@
 }
 
 @container subtitle-controls (max-width: 420px) {
-  :is(.subtitle-display-row, .subtitle-mode-row) .settings-row-heading {
+  .subtitle-display-row .settings-row-heading {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
-  :is(.subtitle-display-row, .subtitle-mode-row) .settings-row-control {
+  .subtitle-display-row .settings-row-control {
     margin-left: 0;
   }
 }
 
 @media (max-width: 600px) {
-  .subtitle-settings-group :is(.subtitle-display-row, .subtitle-mode-row) .settings-row-heading {
+  .subtitle-settings-group .subtitle-display-row .settings-row-heading {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
-  .subtitle-settings-group :is(.subtitle-display-row, .subtitle-mode-row) .settings-row-control {
+  .subtitle-settings-group .subtitle-display-row .settings-row-control {
     margin-left: 0;
   }
 }

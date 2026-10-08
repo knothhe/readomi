@@ -594,7 +594,7 @@ subtitleStyle:
   controlsTitle: Перевод и стиль
   moreOptions: More options
   custom: Настроить
-  customDescription: "Настроить размер, фон и положение субтитров"
+  customDescription: Настроить размер, фон и положение
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -609,7 +609,7 @@ subtitleStyle:
   noBackground: No background
   backgroundSummary: $1% background
   preset: Subtitle preset
-  fontSize: Subtitle size
+  fontSize: Размер субтитров
   originalFontScale: Размер исходного текста
   originalFontScaleValue: Значение размера исходного текста
   originalFontScaleDefault: По умолчанию 1:1
@@ -624,15 +624,8 @@ subtitleStyle:
   originalFontScaleRetry: Повторить сохранение
   previewBilingualFontSize: Оригинал $1 px · Перевод $2 px
   previewTranslatedFontSize: Перевод $1 px
-  commonSizes: Частые размеры
-  fontDescription: Scales both lines, with equal sizes by default.
-  fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
-    window and fullscreen.
-  fixedFontDescription: Размер шрифта не меняется при изменении размера окна.
-  fontSizeModes:
-    video: Scale with video
-    fixed: Fixed size
+  commonSizes: Стандартные размеры
+  relativeFontDescription: Автоматически масштабируется с окном видео и в полноэкранном режиме. 100% — размер по умолчанию.
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Формат предпросмотра

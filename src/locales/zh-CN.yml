@@ -566,7 +566,7 @@ subtitleStyle:
   controlsTitle: 翻译与样式
   moreOptions: 更多选项
   custom: 自定义
-  customDescription: 自定义字号、背景与字幕位置
+  customDescription: 自定义大小、背景与字幕位置
   autoSave: 调整会自动保存。
   adjust: 样式与位置
   presetDescription: 选择一个起点，再调整字号和背景。
@@ -581,7 +581,7 @@ subtitleStyle:
   noBackground: 无背景
   backgroundSummary: $1% 背景
   preset: 字幕预设
-  fontSize: 字幕字号
+  fontSize: 字幕大小
   originalFontScale: 原文相对字号
   originalFontScaleValue: 原文相对字号数值
   originalFontScaleDefault: 默认 1:1
@@ -596,14 +596,8 @@ subtitleStyle:
   originalFontScaleRetry: 重试保存
   previewBilingualFontSize: 原文 $1 px · 译文 $2 px
   previewTranslatedFontSize: 译文 $1 px
-  commonSizes: 常用字号
-  fontDescription: 同时缩放原文和译文，默认两行等大。
-  fontSizeMode: 字号方式
-  relativeFontDescription: 字号为视频显示区域短边的百分比，随窗口和全屏缩放。
-  fixedFontDescription: 字号保持固定，不随窗口缩放。
-  fontSizeModes:
-    video: 随视频窗口
-    fixed: 固定字号
+  commonSizes: 常用大小
+  relativeFontDescription: 随视频窗口和全屏自动缩放，100% 为默认大小。
   position: 字幕位置
   preview: 字幕预览
   previewAspectRatio: 预览画面

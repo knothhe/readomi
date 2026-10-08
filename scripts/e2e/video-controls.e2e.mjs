@@ -278,7 +278,7 @@ it("player controls stop translation, share page scope and preserve cached capti
   await waitFor(read, state => state.controls[0]?.expanded && !state.controls[0]?.hidden && state.controls[0]?.dockOpacity === 1 && !state.controls[0]?.inert, "the open panel did not return with YouTube's native toolbar")
   const cachedRequests = service.translationRequests().length
   await inspector.click(0, "preset", "compact")
-  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.preset === "compact" && config.features.subtitleStyle.fontSize === 16, "player preset did not persist")
+  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.preset === "compact" && config.features.subtitleStyle.relativeFontSize === 4, "player preset did not persist")
   await waitFor(read, state => state.captions.some(text => text.includes("【译】Disabled cue sentence.")), "style change lost the current caption")
   await page.waitForTimeout(650)
   assert.equal(service.translationRequests().length, cachedRequests, "changing presets reuses the current translation")

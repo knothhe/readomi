@@ -162,10 +162,10 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     const preset = await controlBounds("Adjust subtitle preset")
     await page.mouse.click((preset.left + preset.right) / 2, (preset.top + preset.bottom) / 2)
     const beforeIncrease = (await storedConfig(context)).features.subtitleStyle
-    assert.equal(beforeIncrease.fontSizeMode, "video", "the default preset scales with the video window")
+    assert.equal("fontSizeMode" in beforeIncrease, false, "subtitles always scale with the video window")
     const plus = await controlBounds("Increase subtitle size")
     await page.mouse.click((plus.left + plus.right) / 2, (plus.top + plus.bottom) / 2)
-    await waitForStoredStyle(style => style.fontSizeMode === "video" && style.relativeFontSize === beforeIncrease.relativeFontSize + 0.25 && style.fontSize === beforeIncrease.fontSize)
+    await waitForStoredStyle(style => style.relativeFontSize === beforeIncrease.relativeFontSize + 0.25)
     const closePreset = await controlBounds("Adjust subtitle preset")
     await page.mouse.click((closePreset.left + closePreset.right) / 2, (closePreset.top + closePreset.bottom) / 2)
     await page.mouse.click(4, 4)

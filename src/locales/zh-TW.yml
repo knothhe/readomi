@@ -575,7 +575,7 @@ subtitleStyle:
   controlsTitle: 翻譯與樣式
   moreOptions: 更多選項
   custom: 自訂
-  customDescription: 自訂字級、背景與字幕位置
+  customDescription: 自訂大小、背景與字幕位置
   autoSave: 調整會自動儲存。
   adjust: Style and position
   presetDescription: 選擇一個起點，再調整字級和背景。
@@ -590,7 +590,7 @@ subtitleStyle:
   noBackground: 無背景
   backgroundSummary: $1% 背景
   preset: Subtitle preset
-  fontSize: Subtitle size
+  fontSize: 字幕大小
   originalFontScale: 原文相對字級
   originalFontScaleValue: 原文相對字級數值
   originalFontScaleDefault: 預設 1:1
@@ -605,14 +605,8 @@ subtitleStyle:
   originalFontScaleRetry: 重試儲存
   previewBilingualFontSize: 原文 $1 px · 譯文 $2 px
   previewTranslatedFontSize: 譯文 $1 px
-  commonSizes: 常用字級
-  fontDescription: Scales both lines, with equal sizes by default.
-  fontSizeMode: Size mode
-  relativeFontDescription: 字級為影片顯示區域短邊的百分比，隨視窗和全螢幕縮放。
-  fixedFontDescription: 字級保持固定，不隨視窗縮放。
-  fontSizeModes:
-    video: Scale with video
-    fixed: Fixed size
+  commonSizes: 常用大小
+  relativeFontDescription: 隨影片視窗和全螢幕自動縮放，100% 為預設大小。
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: 預覽畫面

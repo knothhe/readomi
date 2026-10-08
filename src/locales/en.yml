@@ -595,7 +595,7 @@ subtitleStyle:
   controlsTitle: Translation and style
   moreOptions: More options
   custom: Customize
-  customDescription: "Customize subtitle size, background, and position"
+  customDescription: Customize size, background and position
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -626,14 +626,7 @@ subtitleStyle:
   previewBilingualFontSize: Original $1 px · Translation $2 px
   previewTranslatedFontSize: Translation $1 px
   commonSizes: Common sizes
-  fontDescription: Scales both lines, with equal sizes by default.
-  fontSizeMode: Size mode
-  relativeFontDescription: Size is a percentage of the displayed video’s shorter side and scales with the
-    window and fullscreen.
-  fixedFontDescription: The font size stays fixed when the window resizes.
-  fontSizeModes:
-    video: Scale with video
-    fixed: Fixed size
+  relativeFontDescription: Scales automatically with the video window and fullscreen. 100% is the default size.
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Preview format

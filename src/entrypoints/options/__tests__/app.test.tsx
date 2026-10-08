@@ -128,16 +128,14 @@ describe("settings page", () => {
     vi.unstubAllGlobals()
   })
 
-  it("keeps size mode visible while custom adjustments open without changing saved settings", async () => {
+  it("keeps relative size controls collapsed while custom adjustments open without changing saved settings", async () => {
     const { container, store } = await renderSettings(configured, "features")
     const details = container.querySelector<HTMLDetailsElement>(".subtitle-custom")!
     const summary = screen.getByText("subtitleStyle.custom")
     const saved = store.get(configAtom).features.subtitleStyle
     expect(details).not.toHaveAttribute("open")
     expect(summary.closest("summary")).toBeVisible()
-    const mode = screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" })
-    expect(mode).toBeVisible()
-    expect(details.contains(mode)).toBe(false)
+    expect(screen.queryByRole("group", { name: "subtitleStyle.fontSizeMode" })).toBeNull()
     expect(within(screen.getByRole("group", { name: "subtitleStyle.preset" })).getAllByRole("button")).toHaveLength(4)
     expect(screen.queryByRole("switch", { name: "subtitleStyle.background" })).toBeNull()
     expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).not.toBeVisible()
@@ -149,14 +147,13 @@ describe("settings page", () => {
     expect(store.get(configAtom).features.subtitleStyle).toEqual(saved)
     fireEvent.click(summary)
     expect(details).not.toHaveAttribute("open")
-    expect(mode).toBeVisible()
     expect(store.get(configAtom).features.subtitleStyle).toEqual(saved)
     expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toEqual(saved)
   })
 
   it("previews manual subtitle sizing and backgrounds, and resets only position", async () => {
     const position = { x: 60, y: 65 }
-    const custom: Config = { ...configured, features: { ...configured.features, subtitleMode: "translationOnly", subtitleStyle: { ...DEFAULT_SUBTITLE_STYLE, fontSize: 30, relativeFontSize: 4.25, fontSizeMode: "fixed", position } } }
+    const custom: Config = { ...configured, features: { ...configured.features, subtitleMode: "translationOnly", subtitleStyle: { ...DEFAULT_SUBTITLE_STYLE, relativeFontSize: 4.25, position } } }
     const { store } = await renderSettings(custom, "features")
     const more = openSubtitleMore()
     const caption = screen.getByText("subtitleStyle.previewTranslation").parentElement!
@@ -166,33 +163,32 @@ describe("settings page", () => {
     expect(screen.getByText("subtitleStyle.modified")).toBeInTheDocument()
     expect(presets.getAllByRole("button").every(button => button.getAttribute("aria-pressed") === "false")).toBe(true)
     fireEvent.click(presets.getByRole("button", { name: "subtitleStyle.presets.compact" }))
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.compact, preset: "compact", fontSizeMode: "fixed", position }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual({ ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.compact, preset: "compact", position }))
     expect(presets.getByRole("button", { name: "subtitleStyle.presets.compact" })).toHaveAttribute("aria-pressed", "true")
     expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     const fontSizeSlider = screen.getByRole("slider", { name: "subtitleStyle.fontSize" })
     const fontSizeInput = screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })
-    expect(fontSizeSlider).toHaveAttribute("min", "8")
-    expect(fontSizeSlider).toHaveAttribute("max", "80")
-    expect(fontSizeSlider).toHaveAttribute("aria-valuetext", "16 px")
-    fireEvent.change(fontSizeInput, { target: { value: "30" } })
-    expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(16)
-    expect(caption.style.fontSize).toBe("16px")
+    expect(fontSizeSlider).toHaveAttribute("min", "25")
+    expect(fontSizeSlider).toHaveAttribute("max", "500")
+    expect(fontSizeSlider).toHaveAttribute("aria-valuetext", "80 %")
+    fireEvent.change(fontSizeInput, { target: { value: "150" } })
+    expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(4)
+    expect(caption.style.fontSize).toBe("14.4px")
     fireEvent.blur(fontSizeInput)
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(30))
-    expect(caption.style.fontSize).toBe("30px")
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(7.5))
+    expect(caption.style.fontSize).toBe("27px")
     fireEvent.change(fontSizeInput, { target: { value: "" } })
     fireEvent.blur(fontSizeInput)
-    expect(fontSizeInput).toHaveValue(30)
-    expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(30)
+    expect(fontSizeInput).toHaveValue(150)
     fireEvent.change(fontSizeInput, { target: { value: "3" } })
     fireEvent.blur(fontSizeInput)
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(8))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(1.25))
     act(() => fontSizeInput.focus())
-    fireEvent.change(fontSizeInput, { target: { value: "18.6" } })
+    fireEvent.change(fontSizeInput, { target: { value: "118.75" } })
     fireEvent.keyDown(fontSizeInput, { key: "Enter" })
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(19))
-    fireEvent.change(fontSizeSlider, { target: { value: "80" } })
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(80))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(5.9375))
+    fireEvent.change(fontSizeSlider, { target: { value: "500" } })
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(25))
     expect(screen.getByText("subtitleStyle.modified")).toBeInTheDocument()
     expect(presets.getByRole("button", { name: "subtitleStyle.presets.compact" })).toHaveAttribute("aria-pressed", "false")
 
@@ -218,24 +214,24 @@ describe("settings page", () => {
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.backgroundEnabled).toBe(true))
     expect(depthInput).toHaveValue(72)
     expect(caption.style.backgroundColor).toBe("rgba(15, 20, 35, 0.72)")
-    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toMatchObject({ fontSize: 80, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 72, position }))
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toMatchObject({ relativeFontSize: 25, backgroundEnabled: true, backgroundOpacity: 72, position }))
     fireEvent.click(within(screen.getByRole("group", { name: "subtitleStyle.position" })).getByRole("button", { name: "subtitleStyle.positions.top" }))
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.position).toEqual({ x: 50, y: 18 }))
     fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.resetPosition" }))
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toMatchObject({ fontSize: 80, relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 72, position: { x: 50, y: 88 } }))
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toMatchObject({ relativeFontSize: 25, backgroundEnabled: true, backgroundOpacity: 72, position: { x: 50, y: 88 } }))
     expect(store.get(configAtom).features.subtitleMode).toBe("translationOnly")
     expect(store.get(configAtom).translate.mode).toBe(custom.translate.mode)
   })
 
-  it.each(["video", "fixed"] as const)("uses each %s preset in settings and preserves custom position and manually adjusted size across mode changes", async (fontSizeMode) => {
+  it("applies each relative preset while preserving custom position and marks manual size changes", async () => {
     const position = { x: 60, y: 65 }
-    const custom: Config = { ...configured, features: { ...configured.features, subtitleStyle: { ...DEFAULT_SUBTITLE_STYLE, preset: "study", fontSize: 38, relativeFontSize: 5.5, backgroundEnabled: true, backgroundOpacity: 72, fontSizeMode, position } } }
+    const custom: Config = { ...configured, features: { ...configured.features, subtitleStyle: { ...DEFAULT_SUBTITLE_STYLE, preset: "study", relativeFontSize: 5.5, backgroundEnabled: true, backgroundOpacity: 72, position } } }
     const { store } = await renderSettings(custom, "features")
     const caption = screen.getByText("subtitleStyle.previewTranslation").parentElement!
     const presetControl = within(screen.getByRole("group", { name: "subtitleStyle.preset" }))
     for (const preset of SUBTITLE_PRESETS) {
       fireEvent.click(presetControl.getByRole("button", { name: `subtitleStyle.presets.${preset}` }))
-      const expectedStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES[preset], preset, fontSizeMode, position }
+      const expectedStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES[preset], preset, position }
       await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(expectedStyle))
       await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toEqual(expectedStyle))
       expect(screen.getByText("subtitleStyle.previewTranslation").parentElement).toBe(caption)
@@ -245,29 +241,15 @@ describe("settings page", () => {
       expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     }
     openSubtitleMore()
-    const manualSize = fontSizeMode === "video" ? 5.5 : 38
-    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: String(manualSize) } })
-    const manualStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.cinema, preset: "cinema" as const, fontSizeMode, position, ...(fontSizeMode === "video" ? { relativeFontSize: manualSize } : { fontSize: manualSize }) }
+    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "110" } })
+    const manualStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.cinema, preset: "cinema" as const, position, relativeFontSize: 5.5 }
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(manualStyle))
-    expect(screen.getByText("subtitleStyle.modified")).toBeInTheDocument()
+    expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "false")
     expect(presetControl.getAllByRole("button").every(button => button.getAttribute("aria-pressed") === "false")).toBe(true)
-    const nextMode: "video" | "fixed" = fontSizeMode === "video" ? "fixed" : "video"
-    openSubtitleMore()
-    const modes = within(screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" }))
-    fireEvent.click(modes.getByRole("button", { name: `subtitleStyle.fontSizeModes.${nextMode}` }))
-    const nextStyle = { ...manualStyle, fontSizeMode: nextMode }
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(nextStyle))
-    expect(screen.getByText("subtitleStyle.previewTranslation").parentElement).toBe(caption)
-    expect(caption.style.fontSize).toBe(`${resolveSubtitleFontSize(nextStyle)}px`)
-    expect(presetControl.getByRole("button", { name: "subtitleStyle.presets.cinema" })).toHaveAttribute("aria-pressed", "true")
-    expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
-    fireEvent.click(modes.getByRole("button", { name: `subtitleStyle.fontSizeModes.${fontSizeMode}` }))
-    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(manualStyle))
-    expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(manualSize)
-    expect(screen.getByText("subtitleStyle.modified")).toBeInTheDocument()
+    expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(110)
   })
 
-  it("saves the subtitle sizing mode and previews video-relative and fixed pixels at the actual card width", async () => {
+  it("saves normalized subtitle sizes and previews them at the actual card width", async () => {
     let width = 320
     let resizePreview = () => {}
     vi.stubGlobal("ResizeObserver", class {
@@ -286,40 +268,31 @@ describe("settings page", () => {
       const { store } = await renderSettings(configured, "features")
       openSubtitleMore()
       const caption = screen.getByText("subtitleStyle.previewTranslation").parentElement!
-      const modes = within(screen.getByRole("group", { name: "subtitleStyle.fontSizeMode" }))
-      expect(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.video" })).toHaveAttribute("aria-pressed", "true")
+      expect(screen.queryByRole("group", { name: "subtitleStyle.fontSizeMode" })).toBeNull()
       expect(screen.getByText("subtitleStyle.relativeFontDescription")).toBeInTheDocument()
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("min", "1.25")
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("max", "25")
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("step", "0.25")
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("aria-valuetext", "5 %")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("min", "25")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("max", "500")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("step", "5")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("aria-valuetext", "100 %")
       expect(caption.style.fontSize).toBe("9px")
       width = 640
       act(() => resizePreview())
       expect(caption.style.fontSize).toBe("18px")
-      fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "5.25" } })
+      fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "105" } })
       await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(5.25))
       expect(caption.style.fontSize).toBe("18.9px")
       const relativeInput = screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })
-      fireEvent.change(relativeInput, { target: { value: "4.125" } })
+      fireEvent.change(relativeInput, { target: { value: "82.5" } })
       expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(5.25)
       fireEvent.blur(relativeInput)
       await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(4.125))
       expect(caption.style.fontSize).toBe("14.85px")
-      fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.fixed" }))
-      await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.fontSizeMode).toBe("fixed"))
-      expect(screen.getByText("subtitleStyle.fixedFontDescription")).toBeInTheDocument()
       width = 320
       act(() => resizePreview())
-      expect(caption.style.fontSize).toBe("20px")
-      expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(20)
-      expect(store.get(configAtom).features.subtitleStyle.position).toEqual(configured.features.subtitleStyle.position)
-      fireEvent.click(modes.getByRole("button", { name: "subtitleStyle.fontSizeModes.video" }))
-      await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.fontSizeMode).toBe("video"))
       expect(caption.style.fontSize).toBe("7.425px")
-      expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(4.125)
-      expect(store.get(configAtom).features.subtitleStyle.fontSize).toBe(20)
-      await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle).toMatchObject({ fontSizeMode: "video", fontSize: 20, relativeFontSize: 4.125 }))
+      expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(82.5)
+      expect(store.get(configAtom).features.subtitleStyle.position).toEqual(configured.features.subtitleStyle.position)
+      await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.relativeFontSize).toBe(4.125))
     }
     finally {
       measure.mockRestore()

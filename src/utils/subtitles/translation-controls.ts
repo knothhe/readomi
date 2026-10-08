@@ -111,7 +111,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     const button = owner.createElement("button")
     button.type = "button"
     button.dataset.preset = preset
-    button.addEventListener("click", () => options.onStyleChange(subtitlePresetPatch(preset, state.appearance.fontSizeMode)))
+    button.addEventListener("click", () => options.onStyleChange(subtitlePresetPatch(preset)))
     presets.append(button)
     return button
   })
@@ -359,7 +359,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
   })
   const changeSize = (direction: number) => {
     const size = subtitleSizeSettings(state.appearance)
-    options.onStyleChange(subtitleSizePatch(state.appearance, Math.max(size.min, Math.min(size.max, size.value + direction * size.step))))
+    options.onStyleChange(subtitleSizePatch(Math.max(size.min, Math.min(size.max, size.value + direction * size.step))))
   }
   smaller.addEventListener("click", () => changeSize(-1))
   larger.addEventListener("click", () => changeSize(1))

@@ -14,12 +14,13 @@ interface SettingsSliderProps {
   "aria-label"?: string
   "unit"?: string
   "showLimits"?: boolean
+  "allowDecimal"?: boolean
   "decrementLabel": string
   "incrementLabel": string
 }
 
 /** Keeps the browser's range semantics and arrow keys, with visible progress and precise step controls. */
-export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, disabled, className, "aria-label": ariaLabel, unit = "", showLimits = true, decrementLabel, incrementLabel }: SettingsSliderProps) {
+export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, disabled, className, "aria-label": ariaLabel, unit = "", showLimits = true, allowDecimal = false, decrementLabel, incrementLabel }: SettingsSliderProps) {
   const generatedId = useId()
   const rangeId = id ?? generatedId
   const [draft, setDraft] = useState<string | null>(null)
@@ -27,7 +28,7 @@ export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, d
     if (draft !== null && draft.trim() !== "") {
       const parsed = Number(draft)
       if (Number.isFinite(parsed)) {
-        const next = Math.max(min, Math.min(max, step >= 1 ? Math.round(parsed) : parsed))
+        const next = Math.max(min, Math.min(max, step >= 1 && !allowDecimal ? Math.round(parsed) : parsed))
         if (next !== value)
           onValueChange(next)
       }
@@ -63,7 +64,7 @@ export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, d
             aria-label={ariaLabel}
             min={min}
             max={max}
-            step={step >= 1 ? 1 : "any"}
+            step={step >= 1 && !allowDecimal ? 1 : "any"}
             value={draft ?? value}
             disabled={disabled}
             onChange={event => setDraft(event.target.value)}
