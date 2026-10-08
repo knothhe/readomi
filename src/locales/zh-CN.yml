@@ -117,7 +117,7 @@ options:
     failedAdd: 连接失败，没有添加服务
     retryAdd: 重试并添加
     draftKept: 填写的配置已保留，现有服务继续使用。
-    agentHint: 把说明交给你的 agent，再将它验证好的配置粘贴到下面。
+    agentHint: 粘贴 agent 验证好的配置。
     add: 添加服务
     added: 已添加的服务
     order:
@@ -138,15 +138,15 @@ options:
     use: 使用此服务
     remove: 移除服务
     removeCurrentHint: 先切换到其他服务
-    back: 返回翻译服务
+    back: 翻译服务
     editTitle: 修改 $1
     scope: 当前服务用于网页、段落和字幕翻译。切换后，已有译文保留。
     useAfterAdd: 添加后使用此服务
     useAfterAddHint: 未勾选时只添加配置，当前服务继续使用。
     removed: $1 已移除。
     saveFailed: 未能保存，请重试。
-    checkAdd: 检查并添加
-    checkSave: 保存修改
+    checkAdd: 测试并保存
+    checkSave: 测试并保存
     title: 翻译服务
     currentTitle: 当前翻译服务
     configMethod: 配置方式
@@ -158,7 +158,7 @@ options:
     empty:
       title: 还没有翻译服务
       description: 选择服务，填写 API Key 和模型；也可以粘贴 agent 验证好的配置。
-    copyInstructions: 复制给 agent 的说明
+    copyInstructions: 复制说明
     copied: 已复制
     edit: 修改
     test: 测试连接
@@ -172,7 +172,7 @@ options:
     key: Key $1
     newKey: 新 Key
     keptKey: 沿用已存的 Key
-    keyMissing: 配置里没有 API Key
+    keyMissing: 缺少 API Key
     thinkingOff: 已关闭思考
     label:
       current: 当前
@@ -185,6 +185,10 @@ options:
     cancel: 取消
     apply: 应用
     applying: 检查中…
+    testPassed: 测试通过
+    testFailed: 测试失败
+    saved: 测试通过 · 已保存
+    retryTest: 重新测试
   appearance:
     title: 外观
     preferences: 界面偏好
@@ -504,6 +508,10 @@ manualService:
   intro: 选择服务和模型，填写 API Key 或勾选“无需 API Key”，检查成功后即可翻译。
   advanced: 更多参数
   compatible: OpenAI 兼容服务
+  keyPlaceholder: 输入 API Key
+  savedKeyPlaceholder: 留空沿用已保存的密钥
+  showKey: 显示 API Key
+  hideKey: 隐藏 API Key
 configBackup:
   title: 备份与同步
   backup: 备份
@@ -673,6 +681,7 @@ modelDiscovery:
   empty: 服务没有返回可用模型，请手动填写模型 ID。
   failed: 获取失败，可以重试或手动填写模型 ID。
   noKey: 请先填写 API Key 和 API 地址；已配置的服务可沿用原密钥。
+  fetchShort: 获取
 translationShortcuts:
   restoreDefaults: 恢复默认
   restoreFailed: 恢复失败，请重试。

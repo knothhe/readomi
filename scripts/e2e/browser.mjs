@@ -158,15 +158,14 @@ export async function configureService(page, extensionId, doc) {
   await section.waitFor()
   if (!await section.locator(".settings-service-editor").isVisible()) {
     const current = section.locator(".settings-service-row[data-current='true']")
-    await current.locator("summary").click()
-    await current.getByRole("button", { name: "Edit", exact: true }).click()
+    await current.getByRole("button", { name: /^Edit / }).click()
   }
   await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   await section.getByLabel("Translation service configuration").fill(JSON.stringify(doc, null, 2))
-  await section.getByRole("button", { name: /^Check and (add|save)$/ }).click()
+  await section.getByRole("button", { name: /^Test and save$/ }).click()
   // The saved summary remains visible while editing, so its status alone cannot confirm completion.
   await section.locator(".settings-service-editor").waitFor({ state: "detached", timeout: 15_000 })
-  await section.locator(".settings-service-row[data-current='true']").getByText("Connected", { exact: true }).waitFor({ timeout: 15_000 })
+  await section.locator(".settings-service-row[data-current='true']").getByText("Current", { exact: true }).waitFor({ timeout: 15_000 })
 }
 
 /** The extension's stored config, read in the service worker. */

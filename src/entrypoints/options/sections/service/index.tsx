@@ -1,68 +1,76 @@
-import type { ConnectionCheck, ProviderConfig } from "@/types/config/provider"
-import type { SetupPreview } from "@/utils/setup-document"
+import type { NotifyService, ServiceFeedback } from "./service-notice"
+import type { ProviderConfig, ProviderType } from "@/types/config/provider"
 import { useAtomValue, useSetAtom, useStore } from "jotai"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
-import { IconCheck, IconCopy } from "@/components/icons"
+import { IconArrowLeft, IconBolt, IconCheck, IconCode, IconCopy, IconDots, IconPencil, IconPlus, IconTrash } from "@/components/icons"
 import { SegmentedControl } from "@/components/segmented-control"
 import { Button } from "@/components/ui/button"
 import { configAtom } from "@/utils/atoms/config"
 import { removeProviderAtom, saveProviderAtom, saveProviderCheckAtom, selectProviderAtom } from "@/utils/atoms/service"
 import { clearClipboard, copyText } from "@/utils/clipboard"
 import { deepEqual } from "@/utils/object"
-import { resolveBaseURL, resolveRequestApi } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
-import { formatRelativeTime } from "@/utils/relative-time"
 import { hasProviderCredentials, initialProviderPlaceholder, isProviderReady } from "@/utils/service-management"
 import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
-import { applySetupDocument, describeSetupDocument, exportSetupDocument, maskApiKey, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
-import { cn } from "@/utils/styles/utils"
-import { getUILocale } from "@/utils/ui-language"
+import { applySetupDocument, describeSetupDocument, exportSetupDocument, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
 import { ManualServiceForm } from "./manual-form"
+import { ServiceMark } from "./service-mark"
+import { ServiceNotice } from "./service-notice"
 import { SortableServiceList } from "./sortable-service-list"
 import { UseAfterAdd } from "./use-after-add"
 import "./style.css"
 
 const COPIED_FEEDBACK_MS = 2000
-const MONO = "font-mono text-xs text-muted-foreground"
 
-/** See design/Settings-Multi-Service*.html for the list and editor states. */
+/** design/Settings-Service-A-Refined*.html is the source for this section. */
 export function ServiceSection() {
   const config = useAtomValue(configAtom)
   const placeholder = initialProviderPlaceholder(config)
   const providers = config.providersConfig.filter(provider => provider.id !== placeholder?.id)
   const [editing, setEditing] = useState<string | null>(null)
   const [editorMode, setEditorMode] = useState<"manual" | "agent">("manual")
+  const [editorProvider, setEditorProvider] = useState<ProviderType>("deepseek")
   const [busy, setBusy] = useState(false)
   const [makeCurrent, setMakeCurrent] = useState(false)
-  const [feedback, setFeedback] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<ServiceFeedback | null>(null)
+  const nextFeedbackIdRef = useRef(0)
+  const notify: NotifyService = useCallback(next => setFeedback({ ...next, id: ++nextFeedbackIdRef.current }), [])
+  const dismissFeedback = useCallback(() => setFeedback(null), [])
   const current = editing && editing !== "add" ? config.providersConfig.find(provider => provider.id === editing) : undefined
   const showingEditor = editing === "add" || !!current || !providers.length || busy
   const close = () => {
     setEditing(null)
     setFeedback(null)
   }
+  const saved = () => {
+    close()
+    notify({ kind: "success", message: i18n.t("options.service.saved") })
+  }
   const openEditor = (id: string) => {
     setEditorMode("manual")
+    setEditorProvider(config.providersConfig.find(provider => provider.id === id)?.provider ?? "deepseek")
     setMakeCurrent(false)
     setFeedback(null)
     setEditing(id)
   }
 
   return (
-    <section id="service" className="settings-section settings-service">
+    <section id="service" className="settings-section settings-service" data-editor={showingEditor}>
       {showingEditor && (
         <button type="button" className="settings-service-back" disabled={busy} onClick={close}>
-          <span aria-hidden="true">‹</span>
-          {" "}
+          <IconArrowLeft aria-hidden="true" />
           {i18n.t("options.service.back")}
         </button>
       )}
       <div className="settings-service-page-heading">
-        <h1 className="settings-page-title">{!showingEditor ? i18n.t("options.service.title") : current ? i18n.t("options.service.editTitle", [current.name]) : i18n.t("options.service.add")}</h1>
+        <div className="settings-service-title">
+          {showingEditor && <ServiceMark provider={editorProvider} />}
+          <h1 className="settings-page-title">{!showingEditor ? i18n.t("options.service.title") : current ? i18n.t("options.service.editTitle", [current.name]) : i18n.t("options.service.add")}</h1>
+        </div>
         {!showingEditor && (
           <button type="button" className="settings-service-add" onClick={() => openEditor("add")}>
-            <span aria-hidden="true">＋</span>
+            <IconPlus aria-hidden="true" />
             {i18n.t("options.service.add")}
           </button>
         )}
@@ -71,53 +79,50 @@ export function ServiceSection() {
         ? (
             <div className="settings-service-content">
               <SortableServiceList providers={providers}>
-                {provider => <ServiceRow provider={provider} active={provider.id === config.translate.providerId} onEdit={() => openEditor(provider.id)} onFeedback={setFeedback} />}
+                {provider => <ServiceRow provider={provider} active={provider.id === config.translate.providerId} onEdit={() => openEditor(provider.id)} onFeedback={notify} />}
               </SortableServiceList>
-              <p className="settings-service-scope">{i18n.t("options.service.scope")}</p>
-              {feedback && <p role="status" className="settings-service-feedback">{feedback}</p>}
             </div>
           )
         : (
-            <div>
-              <div className="settings-service-card">
-                <div className="settings-service-editor flex flex-col gap-5">
-                  <div className="settings-service-editor-top">
-                    <SegmentedControl
-                      aria-label={i18n.t("options.service.configMethod")}
-                      size="sm"
-                      className="settings-service-method"
-                      value={editorMode}
-                      options={[{ value: "manual", label: i18n.t("manualService.manual") }, { value: "agent", label: i18n.t("manualService.agent") }]}
-                      onChange={value => !busy && setEditorMode(value)}
-                    />
-                    {editorMode === "agent" && <CopyInstructionsButton providerId={current?.id ?? null} />}
-                  </div>
-                  {editorMode === "manual"
-                    ? <ManualServiceForm key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={close} onCancel={close} />
-                    : <ServiceEditor key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={close} />}
-                </div>
+            <div className="settings-service-editor">
+              <div className="settings-service-editor-top">
+                <SegmentedControl
+                  aria-label={i18n.t("options.service.configMethod")}
+                  size="sm"
+                  className="settings-service-method"
+                  value={editorMode}
+                  options={[
+                    { value: "manual", label: (
+                      <span>
+                        <IconPencil aria-hidden="true" />
+                        {i18n.t("manualService.manual")}
+                      </span>
+                    ) },
+                    { value: "agent", label: (
+                      <span>
+                        <IconCode aria-hidden="true" />
+                        {i18n.t("manualService.agent")}
+                      </span>
+                    ) },
+                  ]}
+                  onChange={value => !busy && setEditorMode(value)}
+                />
               </div>
-              <p className="settings-service-scope">{i18n.t("options.service.saveHint")}</p>
+              {editorMode === "manual"
+                ? <ManualServiceForm key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={saved} onCancel={close} onProviderChange={setEditorProvider} />
+                : (
+                    <>
+                      <div className="settings-service-agent-heading">
+                        <span>{i18n.t("options.service.editorLabel")}</span>
+                        <CopyInstructionsButton providerId={current?.id ?? null} />
+                      </div>
+                      <ServiceEditor key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={saved} onCancel={close} />
+                    </>
+                  )}
             </div>
           )}
+      <ServiceNotice feedback={feedback} onDismiss={dismissFeedback} />
     </section>
-  )
-}
-
-function Dot({ className }: { className: string }) {
-  return <span aria-hidden="true" className={cn("inline-block size-1.5 shrink-0 rounded-full", className)} />
-}
-
-function Details({ parts }: { parts: string[] }) {
-  return <span className="text-xs text-muted-foreground">{parts.join(" · ")}</span>
-}
-
-function NameAndModel({ name, model, size = "text-sm" }: { name: string, model: string, size?: string }) {
-  return (
-    <div className="min-w-0 truncate">
-      <span className={cn("font-semibold", size)}>{name}</span>
-      {model && <span className={cn("ml-2", MONO)}>{model}</span>}
-    </div>
   )
 }
 
@@ -131,40 +136,21 @@ function CopyInstructionsButton({ providerId }: { providerId: string | null }) {
     }
   }
   return (
-    <button type="button" onClick={() => void copy()} className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground">
-      {copied ? <IconCheck className="size-3.5" aria-hidden="true" /> : <IconCopy className="size-3.5" aria-hidden="true" />}
+    <button type="button" onClick={() => void copy()} className="settings-service-copy">
+      {copied ? <IconCheck aria-hidden="true" /> : <IconCopy aria-hidden="true" />}
       {copied ? i18n.t("options.service.copied") : i18n.t("options.service.copyInstructions")}
     </button>
   )
 }
 
-/* ──────────────────────────────
-  Preview
-  ────────────────────────────── */
-
-function checkStatus(check: ConnectionCheck | undefined, now: number) {
-  const locale = getUILocale()
-  if (!check)
-    return { dot: "bg-muted-foreground/50", tone: "text-muted-foreground", label: i18n.t("options.service.status.unchecked"), when: null }
-  const when = i18n.t("options.service.checkedAt", [formatRelativeTime(check.checkedAt, now, locale)])
-  return check.ok
-    ? { dot: "bg-success", tone: "text-success", label: i18n.t("options.service.status.ok"), when }
-    : { dot: "bg-destructive", tone: "text-destructive", label: i18n.t("options.service.status.failed"), when }
-}
-
-function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: ProviderConfig, active: boolean, onEdit: () => void, onFeedback: (message: string) => void }) {
+function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: ProviderConfig, active: boolean, onEdit: () => void, onFeedback: NotifyService }) {
+  const store = useStore()
   const select = useSetAtom(selectProviderAtom)
   const remove = useSetAtom(removeProviderAtom)
   const saveCheck = useSetAtom(saveProviderCheckAtom)
   const menuRef = useRef<HTMLDetailsElement>(null)
   const [busy, setBusy] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
-  const [now] = useState(Date.now)
   const ready = isProviderReady(provider)
-  const status = !hasProviderCredentials(provider)
-    ? { dot: "bg-destructive", tone: "text-destructive", label: i18n.t("options.service.keyMissing"), when: null }
-    : checkStatus(provider.connectionCheck, Math.max(now, provider.connectionCheck?.checkedAt ?? now))
 
   useEffect(() => {
     const closeOutside = (event: PointerEvent) => {
@@ -176,58 +162,52 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
   }, [])
 
   const act = async (operation: "use" | "test" | "remove") => {
+    // Retry uses the latest saved credentials, including edits from another page.
+    const latest = store.get(configAtom).providersConfig.find(candidate => candidate.id === provider.id)
+    if (!latest)
+      return
     setBusy(true)
-    setTesting(operation === "test")
     if (menuRef.current)
       menuRef.current.open = false
+    if (operation === "test")
+      onFeedback({ kind: "testing", message: `${latest.name} · ${i18n.t("options.service.testing")}` })
     try {
       if (operation === "use") {
         await select(provider.id)
-        onFeedback(i18n.t("popup.serviceSwitch.switched", [provider.name]))
       }
       else if (operation === "remove") {
         await remove(provider.id)
-        onFeedback(i18n.t("options.service.removed", [provider.name]))
+        onFeedback({ kind: "success", message: i18n.t("options.service.removed", [latest.name]) })
       }
       else {
-        const check = await checkConnection(provider)
-        await saveCheck({ provider, check })
+        const check = await checkConnection(latest)
+        await saveCheck({ provider: latest, check })
+        onFeedback({ kind: check.ok ? "success" : "error", message: `${latest.name} · ${i18n.t(check.ok ? "options.service.testPassed" : "options.service.testFailed")}`, description: check.error, retry: check.ok ? undefined : () => void act("test") })
       }
     }
-    catch {
-      onFeedback(i18n.t("options.service.saveFailed"))
+    catch (error) {
+      onFeedback({ kind: "error", message: i18n.t("options.service.saveFailed"), description: error instanceof Error ? error.message : undefined, retry: operation === "test" ? () => void act("test") : undefined })
     }
     finally {
       setBusy(false)
-      setTesting(false)
     }
   }
 
   return (
     <article className="settings-service-row" data-current={active}>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={active}
-        aria-label={`${provider.name} · ${provider.model}`}
-        tabIndex={active ? 0 : -1}
-        disabled={!ready}
-        aria-disabled={busy || !ready}
-        className="settings-service-choose"
-        onClick={() => !busy && !active && void act("use")}
-      >
-        <span className="settings-service-radio" aria-hidden="true" />
-        <span className="settings-service-name-line">
-          <span role="heading" aria-level={2} title={provider.name}>{provider.name}</span>
-          {active && <span className="settings-service-badge">{i18n.t("options.service.label.current")}</span>}
+      <button type="button" role="radio" aria-checked={active} aria-label={`${provider.name} · ${provider.model}`} tabIndex={active ? 0 : -1} disabled={!ready} aria-disabled={busy || !ready} className="settings-service-choose" onClick={() => !busy && !active && void act("use")}>
+        <ServiceMark provider={provider.provider} />
+        <span className="settings-service-row-copy">
+          <span className="settings-service-name-line">
+            <span role="heading" aria-level={2} title={provider.name}>{provider.name}</span>
+            {active && <span className="settings-service-badge">{i18n.t("options.service.label.current")}</span>}
+          </span>
+          <span className="settings-service-model" title={provider.model}>{provider.model}</span>
         </span>
-        <span className="settings-service-model" title={provider.model}>{provider.model}</span>
       </button>
       <div className="settings-service-row-end">
-        <span className={cn("settings-service-status", testing ? "text-muted-foreground" : status.tone)} data-testid="service-status" aria-live="polite" title={status.when ?? undefined}>
-          <Dot className={testing ? "bg-muted-foreground/50" : status.dot} />
-          {testing ? i18n.t("options.service.testing") : status.label}
-        </span>
+        {!hasProviderCredentials(provider) && <span className="settings-service-status text-destructive" data-testid="service-status">{i18n.t("options.service.keyMissing")}</span>}
+        <button type="button" className="settings-service-icon-button" disabled={busy} onClick={onEdit} aria-label={i18n.t("options.service.editTitle", [provider.name])} title={i18n.t("options.service.edit")}><IconPencil aria-hidden="true" /></button>
         <details
           ref={menuRef}
           className="settings-service-menu"
@@ -246,76 +226,24 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
             }
           }}
         >
-          <summary aria-label={i18n.t("options.service.actions", [provider.name])}><span aria-hidden="true">•••</span></summary>
+          <summary aria-label={i18n.t("options.service.actions", [provider.name])}><IconDots aria-hidden="true" /></summary>
           <div className="settings-service-menu-panel">
-            <button type="button" disabled={busy} onClick={onEdit}>{i18n.t("options.service.edit")}</button>
-            <button type="button" disabled={busy || !ready} onClick={() => void act("test")}>{i18n.t("options.service.test")}</button>
-            <button
-              type="button"
-              aria-expanded={showDetails}
-              aria-controls={`service-details-${provider.id}`}
-              onClick={() => {
-                setShowDetails(value => !value)
-                if (menuRef.current)
-                  menuRef.current.open = false
-              }}
-            >
-              {i18n.t("options.service.connectionDetails")}
+            <button type="button" disabled={busy || !ready} onClick={() => void act("test")}>
+              <IconBolt aria-hidden="true" />
+              {i18n.t("options.service.test")}
             </button>
-            <div className="settings-service-menu-separator" />
-            <button type="button" className="text-destructive" disabled={busy || active} title={active ? i18n.t("options.service.removeCurrentHint") : undefined} onClick={() => void act("remove")}>{i18n.t("options.service.remove")}</button>
+            <button type="button" className="text-destructive" disabled={busy || active} title={active ? i18n.t("options.service.removeCurrentHint") : undefined} onClick={() => void act("remove")}>
+              <IconTrash aria-hidden="true" />
+              {i18n.t("options.service.remove")}
+            </button>
           </div>
         </details>
       </div>
-      {showDetails && (
-        <details id={`service-details-${provider.id}`} className="settings-service-connection" open onToggle={event => !event.currentTarget.open && setShowDetails(false)}>
-          <summary>{i18n.t("options.service.connectionDetails")}</summary>
-          <dl>
-            <dt>{i18n.t("manualService.url")}</dt>
-            <dd>{resolveBaseURL(provider) || "—"}</dd>
-            <dt>{i18n.t("manualService.key")}</dt>
-            <dd>{provider.noApiKey ? i18n.t("manualService.noApiKey") : provider.apiKey ? maskApiKey(provider.apiKey) : "—"}</dd>
-            <dt>{i18n.t("manualService.type")}</dt>
-            <dd>{provider.provider}</dd>
-            <dt>{i18n.t("manualService.api")}</dt>
-            <dd>{resolveRequestApi(provider)}</dd>
-            <dt>{i18n.t("options.service.label.connection")}</dt>
-            <dd>{[status.label, status.when].filter(Boolean).join(" · ")}</dd>
-          </dl>
-          {provider.connectionCheck?.error && <code className="settings-service-error">{provider.connectionCheck.error}</code>}
-        </details>
-      )}
     </article>
   )
 }
 
-/* ──────────────────────────────
-  Editor
-  ────────────────────────────── */
-
-function Labeled({ label, tone, children }: { label: string, tone?: string, children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[64px_minmax(0,1fr)] items-baseline gap-3">
-      <span className={cn("text-xs text-muted-foreground", tone)}>{label}</span>
-      <div className="flex min-w-0 flex-col gap-[3px]">{children}</div>
-    </div>
-  )
-}
-
-function previewDetails(preview: SetupPreview): string[] {
-  const parts = [i18n.t("options.service.sendsTo", [preview.host || "—"])]
-  if (preview.keyStatus === "new")
-    parts.push(i18n.t("options.service.newKey"))
-  else if (preview.keyStatus === "reused")
-    parts.push(i18n.t("options.service.keptKey"))
-  if (preview.keyStatus === "none")
-    parts.push(i18n.t("manualService.noApiKey"))
-  if (preview.thinkingOff)
-    parts.push(i18n.t("options.service.thinkingOff"))
-  return parts
-}
-
-function ServiceEditor({ current, makeCurrent, onMakeCurrentChange, onBusyChange, onDone }: { current: ProviderConfig | undefined, makeCurrent: boolean, onMakeCurrentChange?: (value: boolean) => void, onBusyChange: (value: boolean) => void, onDone: () => void }) {
+function ServiceEditor({ current, makeCurrent, onMakeCurrentChange, onBusyChange, onDone, onCancel }: { current: ProviderConfig | undefined, makeCurrent: boolean, onMakeCurrentChange?: (value: boolean) => void, onBusyChange: (value: boolean) => void, onDone: () => void, onCancel: () => void }) {
   const store = useStore()
   const config = useAtomValue(configAtom)
   const saveProvider = useSetAtom(saveProviderAtom)
@@ -396,33 +324,16 @@ function ServiceEditor({ current, makeCurrent, onMakeCurrentChange, onBusyChange
         spellCheck={false}
         disabled={applying}
         placeholder={i18n.t("options.service.placeholder")}
-        style={{ height: `${rows * 18 + 24}px` }}
+        style={{ height: `${Math.max(235, Math.min(rows * 18 + 24, 400))}px` }}
         onChange={(event) => {
           setText(event.target.value)
           setFailure(null)
         }}
         className="settings-service-document w-full resize-y rounded-lg border border-input bg-card px-3 py-[11px] font-mono text-xs leading-[18px] outline-none selection:bg-link/20 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:opacity-60"
       />
-      {parsed && !parsed.ok && (
-        <Labeled label={i18n.t("options.service.label.after")} tone="text-destructive">
-          <pre className="m-0 whitespace-pre-wrap font-sans text-xs leading-[17px] text-destructive">{parsed.error}</pre>
-        </Labeled>
-      )}
-      {unchanged && (
-        <Labeled label={i18n.t("options.service.label.after")}>
-          <span className="text-xs text-muted-foreground">{i18n.t("options.service.unchanged")}</span>
-        </Labeled>
-      )}
-      {preview && (
-        <Labeled label={i18n.t(current ? "options.service.label.after" : "options.service.addPreview")}>
-          <NameAndModel name={preview.providerName} model={preview.modelId} size="text-[13px]" />
-          {preview.keyStatus === "missing"
-            ? <span className="text-xs text-destructive">{i18n.t("options.service.keyMissing")}</span>
-            : <Details parts={previewDetails(preview)} />}
-        </Labeled>
-      )}
+      {parsed && !parsed.ok && <p role="alert" className="settings-service-form-error">{parsed.error}</p>}
+      {preview?.keyStatus === "missing" && <p role="alert" className="settings-service-form-error">{i18n.t("options.service.keyMissing")}</p>}
       {!current && <UseAfterAdd value={makeCurrent} onChange={onMakeCurrentChange} disabled={applying} />}
-      {current && <p className="text-[11px] text-muted-foreground">{i18n.t("options.service.editHint")}</p>}
       {failure !== null && (
         <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3.5 text-xs">
           <p className="font-medium text-destructive">{i18n.t(current ? "options.service.failedNotSaved" : "options.service.failedAdd")}</p>
@@ -430,12 +341,12 @@ function ServiceEditor({ current, makeCurrent, onMakeCurrentChange, onBusyChange
           {!current && <p className="mt-1 text-muted-foreground">{i18n.t("options.service.draftKept")}</p>}
         </div>
       )}
-      <div className="settings-service-edit-actions flex items-center gap-2 pt-1">
-        <Button variant="outline" className="px-3.5 text-[13px] font-normal" disabled={applying} onClick={onDone}>
+      <div className="settings-service-form-actions">
+        <Button variant="outline" className="px-3.5 text-[13px] font-normal" disabled={applying} onClick={onCancel}>
           {i18n.t("options.service.cancel")}
         </Button>
         <Button className="px-4 text-[13px] font-semibold" disabled={!canApply} onClick={() => void apply()}>
-          {applying ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : failure !== null ? "options.service.retryAdd" : "options.service.checkAdd")}
+          {applying ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}
         </Button>
       </div>
     </>

@@ -45,8 +45,7 @@ async function selectSetting(page, label, option) {
 
 async function editService(page) {
   const row = page.locator("#service .settings-service-row[data-current='true']")
-  await row.locator("summary").click()
-  await row.getByRole("button", { name: "Edit", exact: true }).click()
+  await row.getByRole("button", { name: /^Edit / }).click()
 }
 
 it("fetches models from the configured API and preserves drafts across sidebar and history navigation", async () => {
@@ -60,15 +59,15 @@ it("fetches models from the configured API and preserves drafts across sidebar a
   const request = service.requests.find(r => r.url === "/v1/models")
   assert.equal(request.authorization, "Bearer local-secret-key")
   await page.locator("nav a[href=\"#reading\"]").click()
-  assert.equal(await page.getByRole("button", { name: "Check and save", exact: true }).isVisible(), false)
+  assert.equal(await page.getByRole("button", { name: "Test and save", exact: true }).isVisible(), false)
   await page.goBack()
   assert.equal(await page.getByLabel("Model", { exact: true }).inputValue(), "second-model")
   await page.getByLabel("Model", { exact: true }).fill("manual-model")
   const unsaved = await storedConfig(context)
   assert.equal(unsaved.providersConfig.find(p => p.id === unsaved.translate.providerId).model, "fake-model")
-  await page.getByRole("button", { name: "Check and save", exact: true }).click()
+  await page.getByRole("button", { name: "Test and save", exact: true }).click()
   await page.locator("#service .settings-service-editor").waitFor({ state: "detached", timeout: 15_000 })
-  await page.getByText("Connected", { exact: true }).waitFor()
+  await page.getByText("Current", { exact: true }).waitFor()
   const config = await storedConfig(context)
   assert.equal(config.providersConfig.find(p => p.id === config.translate.providerId).model, "manual-model")
   const completionsAfterSave = service.completions().length
@@ -78,7 +77,7 @@ it("fetches models from the configured API and preserves drafts across sidebar a
   const document = JSON.parse(await editor.inputValue())
   assert.equal(document.model, "manual-model", "agent setup opens the latest manually saved model")
   assert.equal(document.apiKey, "…-key", "the stored key is masked")
-  await page.getByRole("button", { name: "Copy instructions for your agent", exact: true }).waitFor()
+  await page.getByRole("button", { name: "Copy instructions", exact: true }).waitFor()
   await page.getByRole("button", { name: "Cancel", exact: true }).click()
   await editService(page)
   await page.getByRole("button", { name: "Agent setup", exact: true }).click()
@@ -87,8 +86,8 @@ it("fetches models from the configured API and preserves drafts across sidebar a
   await agentButton.evaluate(button => Promise.all(button.getAnimations().map(animation => animation.finished)))
   assert.equal(await agentButton.getAttribute("aria-pressed"), "true")
   assert.notEqual(
-    await agentButton.evaluate(button => getComputedStyle(button).backgroundColor),
-    await page.getByRole("button", { name: "Manual setup", exact: true }).evaluate(button => getComputedStyle(button).backgroundColor),
+    await agentButton.evaluate(button => getComputedStyle(button).borderBottomColor),
+    await page.getByRole("button", { name: "Manual setup", exact: true }).evaluate(button => getComputedStyle(button).borderBottomColor),
     "the active setup method is visibly selected",
   )
   assert.equal(service.completions().length, completionsAfterSave, "reopening agent setup makes no connection request")
@@ -183,9 +182,9 @@ it("manual setup and local backup restore work without an account", async () => 
   await page.getByLabel("API URL", { exact: true }).fill(doc.baseURL)
   await page.getByLabel("API Key", { exact: true }).fill(doc.apiKey)
   await page.getByLabel("Model", { exact: true }).fill(doc.model)
-  await page.getByRole("button", { name: "Check and add", exact: true }).click()
+  await page.getByRole("button", { name: "Test and save", exact: true }).click()
   await page.locator("#service .settings-service-editor").waitFor({ state: "detached", timeout: 15_000 })
-  await page.getByText("Connected", { exact: true }).waitFor()
+  await page.getByText("Current", { exact: true }).waitFor()
   const saved = await storedConfig(context)
   await page.locator("nav a[href=\"#backup\"]").click()
   assert.equal(await page.locator("#backup").getByRole("button", { name: "Import", exact: true }).isVisible(), true)
@@ -208,7 +207,8 @@ it("manual setup and local backup restore work without an account", async () => 
   assert.deepEqual(restored.providersConfig, saved.providersConfig.map(({ connectionCheck: _, ...provider }) => provider), "restoring the backup preserves service configuration, including the model and key")
   assert.ok(restored.providersConfig.every(provider => provider.connectionCheck === undefined), "restored services are untested because a backup does not establish connectivity")
   await page.locator("nav a[href=\"#service\"]").click()
-  await page.locator("#service").getByText("Not checked", { exact: true }).waitFor()
+  await page.locator("#service").getByText("Current", { exact: true }).waitFor()
+  assert.equal(await page.locator("#service [data-testid=service-status]").count(), 0)
   await page.getByRole("link", { name: "Web reading", exact: true }).click()
   await page.getByRole("switch", { name: "Hover translation", exact: true, checked: true }).waitFor()
   assert.equal(await page.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).isVisible(), false)

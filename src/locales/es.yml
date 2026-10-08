@@ -127,8 +127,7 @@ options:
     failedAdd: Falló la conexión. No se añadió el servicio.
     retryAdd: Reintentar y añadir
     draftKept: La configuración se conserva. Los servicios existentes siguen en uso.
-    agentHint: Entrega las instrucciones a tu agente y pega su configuración
-      verificada abajo.
+    agentHint: Pega la configuración verificada por tu agent.
     add: Añadir servicio
     added: Servicios añadidos
     order:
@@ -157,8 +156,8 @@ options:
     useAfterAddHint: Déjalo sin marcar para seguir usando el servicio actual.
     removed: $1 eliminado.
     saveFailed: No se pudo guardar. Inténtalo de nuevo.
-    checkAdd: Comprobar y añadir
-    checkSave: Comprobar y guardar
+    checkAdd: Probar y guardar
+    checkSave: Probar y guardar
     title: Servicio de traducción
     currentTitle: Servicio de traducción actual
     configMethod: Método de configuración
@@ -171,7 +170,7 @@ options:
       title: Aún no hay servicio de traducción
       description: Elige un servicio e introduce tu API Key y modelo. También puedes
         pegar una configuración verificada por tu agente.
-    copyInstructions: Copiar instrucciones para tu agente
+    copyInstructions: Copiar instrucciones
     copied: Copiado
     edit: Editar
     test: Probar conexión
@@ -199,6 +198,10 @@ options:
     cancel: Cancelar
     apply: Aplicar
     applying: Comprobando…
+    testPassed: Prueba superada
+    testFailed: Prueba fallida
+    saved: Prueba superada · Guardado
+    retryTest: Probar de nuevo
   appearance:
     title: Apariencia
     preferences: Preferencias de interfaz
@@ -537,6 +540,10 @@ manualService:
     para empezar a traducir.
   advanced: Más parámetros
   compatible: Servicio compatible con OpenAI
+  keyPlaceholder: Introduce la clave API
+  savedKeyPlaceholder: Deja en blanco para conservar la clave guardada
+  showKey: Mostrar clave API
+  hideKey: Ocultar clave API
 configBackup:
   title: Copia de seguridad y sincronización
   backup: Copia de seguridad
@@ -718,6 +725,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: Obtener
 translationShortcuts:
   restoreDefaults: Restablecer valores predeterminados
   restoreFailed: No se pudieron restablecer los valores predeterminados. Inténtalo de nuevo.

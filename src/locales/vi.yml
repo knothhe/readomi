@@ -120,7 +120,7 @@ options:
     failedAdd: Kết nối thất bại. Chưa thêm dịch vụ.
     retryAdd: Thử lại và thêm
     draftKept: Cấu hình đã nhập được giữ lại. Dịch vụ hiện có tiếp tục được dùng.
-    agentHint: Gửi hướng dẫn cho agent rồi dán cấu hình đã được xác minh vào bên dưới.
+    agentHint: Dán cấu hình đã được agent xác minh.
     add: Thêm dịch vụ
     added: Dịch vụ đã thêm
     order:
@@ -149,7 +149,7 @@ options:
     useAfterAddHint: Bỏ chọn để tiếp tục dùng dịch vụ hiện tại.
     removed: Đã xóa $1.
     saveFailed: Không thể lưu. Vui lòng thử lại.
-    checkAdd: Kiểm tra và thêm
+    checkAdd: Kiểm tra và lưu
     checkSave: Kiểm tra và lưu
     title: Dịch vụ dịch
     currentTitle: Dịch vụ dịch hiện tại
@@ -163,7 +163,7 @@ options:
       title: Chưa có dịch vụ dịch
       description: Chọn dịch vụ, nhập API Key và mô hình. Bạn cũng có thể dán cấu hình
         đã được agent kiểm tra.
-    copyInstructions: Sao chép hướng dẫn cho agent
+    copyInstructions: Sao chép hướng dẫn
     copied: Đã sao chép
     edit: Sửa
     test: Kiểm tra kết nối
@@ -191,6 +191,10 @@ options:
     cancel: Hủy
     apply: Áp dụng
     applying: Đang kiểm tra…
+    testPassed: Kiểm tra thành công
+    testFailed: Kiểm tra thất bại
+    saved: Kiểm tra thành công · Đã lưu
+    retryTest: Kiểm tra lại
   appearance:
     title: Giao diện
     preferences: Tùy chọn giao diện
@@ -522,6 +526,10 @@ manualService:
   intro: Chọn dịch vụ, nhập API Key và mô hình, rồi kiểm tra kết nối để bắt đầu dịch.
   advanced: Tham số khác
   compatible: Dịch vụ tương thích OpenAI
+  keyPlaceholder: Nhập khóa API
+  savedKeyPlaceholder: Để trống để giữ khóa đã lưu
+  showKey: Hiện khóa API
+  hideKey: Ẩn khóa API
 configBackup:
   title: Sao lưu và đồng bộ
   backup: Sao lưu
@@ -699,6 +707,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: Lấy
 translationShortcuts:
   restoreDefaults: Khôi phục mặc định
   restoreFailed: Không thể khôi phục mặc định. Hãy thử lại.

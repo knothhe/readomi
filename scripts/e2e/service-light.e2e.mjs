@@ -26,7 +26,7 @@ async function screenshot(page, name) {
   if (!process.env.SETTINGS_ARTIFACTS)
     return
   await mkdir(process.env.SETTINGS_ARTIFACTS, { recursive: true })
-  await page.evaluate(() => Promise.all(document.getAnimations().map(animation => animation.finished.catch(() => {}))))
+  await page.evaluate(() => Promise.all(document.getAnimations().filter(animation => animation.effect.getTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {}))))
   await page.screenshot({ path: join(process.env.SETTINGS_ARTIFACTS, `${name}.png`), fullPage: true })
 }
 
@@ -48,6 +48,10 @@ function serviceRow(section, name) {
 
 async function action(section, name, label) {
   const row = serviceRow(section, name)
+  if (label === "Edit") {
+    await row.getByRole("button", { name: `Edit ${name}`, exact: true }).click()
+    return
+  }
   await row.locator("summary").click()
   await row.getByRole("button", { name: label, exact: true }).click()
 }
@@ -92,7 +96,7 @@ it("manages independent services and switches future translations from the popup
   const release = service.holdAnswers()
   try {
     await currentRow.getByRole("button", { name: "Test connection", exact: true }).click()
-    await currentRow.getByText("Testing…", { exact: true }).waitFor()
+    await section.getByRole("status").filter({ hasText: "Testing…" }).waitFor()
   }
   finally {
     release()
@@ -101,7 +105,7 @@ it("manages independent services and switches future translations from the popup
     const config = (await chrome.storage.local.get("config")).config
     return config.providersConfig.find(provider => provider.id === id)?.connectionCheck?.checkedAt > checkedAt
   }, { id: active.id, checkedAt: active.connectionCheck.checkedAt })
-  await currentRow.getByText("Connected", { exact: true }).waitFor()
+  await section.getByRole("status").filter({ hasText: "Test passed" }).waitFor()
   const tested = await storedConfig(context)
   assert.deepEqual(tested, {
     ...initial,
@@ -117,7 +121,7 @@ it("manages independent services and switches future translations from the popup
   const secondDocument = setupDocumentFor(service.origin, { name: "Second gateway", model: "second-model" })
   await editor.fill(JSON.stringify(secondDocument, null, 2))
   assert.equal(await section.getByRole("checkbox", { name: "Use this service after adding", exact: true }).isChecked(), false)
-  await savedEditor(section, "Check and add")
+  await savedEditor(section, "Test and save")
   let saved = await storedConfig(context)
   const second = saved.providersConfig.find(provider => provider.name === secondDocument.name)
   assert.ok(second && second.id !== active.id)
@@ -135,7 +139,7 @@ it("manages independent services and switches future translations from the popup
   assert.equal(document.apiKey, "…-key")
   assert.equal((await editor.inputValue()).includes(setup.apiKey), false)
   await editor.fill(JSON.stringify({ ...document, model: "agent-model" }, null, 2))
-  await savedEditor(section, "Check and save")
+  await savedEditor(section, "Test and save")
   saved = await storedConfig(context)
   assert.equal(saved.translate.providerId, active.id)
   assert.equal(saved.providersConfig.find(provider => provider.id === second.id).model, "agent-model")
@@ -149,7 +153,7 @@ it("manages independent services and switches future translations from the popup
   await page.setViewportSize({ width: 390, height: 844 })
   await fitsViewport(page)
   await screenshot(page, "service-multi-mobile-manual")
-  await savedEditor(section, "Check and save")
+  await savedEditor(section, "Test and save")
   saved = await storedConfig(context)
   assert.equal(saved.translate.providerId, active.id)
   assert.equal(saved.providersConfig.find(provider => provider.id === second.id).model, "manual-model")
@@ -162,7 +166,7 @@ it("manages independent services and switches future translations from the popup
   await section.getByRole("button", { name: "Agent setup", exact: true }).click()
   const rejected = JSON.stringify(setupDocumentFor(service.origin, { name: "Rejected gateway", model: "rejected-model" }), null, 2)
   await editor.fill(rejected)
-  await section.getByRole("button", { name: "Check and add", exact: true }).click()
+  await section.getByRole("button", { name: "Test and save", exact: true }).click()
   await section.getByText("Connection failed. Service was not added.", { exact: true }).waitFor({ timeout: 15_000 })
   assert.equal(await editor.inputValue(), rejected)
   assert.deepEqual(await storedConfig(context), saved)
@@ -404,12 +408,56 @@ it("reorders with mouse, keyboard and touch; locks pending saves and only report
         ui: { ...config.ui, language: "zh-CN" },
         providersConfig: config.providersConfig.map((provider) => {
           const index = ids.indexOf(provider.id)
-          return { ...provider, name: names[index], model: models[index] }
+          return { ...provider, provider: ["deepseek", "gemini", "anthropic"][index], name: names[index], model: models[index] }
         }),
       } })
     }, [active.id, second.id, third.id])
     await section.getByRole("heading", { name: "Gemini", exact: true }).waitFor()
     await serviceRow(section, "Gemini").hover()
     await screenshot(page, "service-sort-zh-hover")
+    await serviceRow(section, "DeepSeek").getByRole("button", { name: "修改 DeepSeek", exact: true }).click()
+    await fitsViewport(page)
+    await screenshot(page, "service-refined-zh-manual")
+    await section.getByRole("button", { name: "agent 配置", exact: true }).click()
+    await screenshot(page, "service-refined-zh-agent")
   }
+})
+
+it("shows test feedback only on request, keeps failures for retry and dismisses success after four seconds", async () => {
+  service = await startFakeService()
+  const launched = await launchBrowser()
+  context = launched.context
+  const { page, extensionId } = launched
+  await configureService(page, extensionId, setupDocumentFor(service.origin))
+  const section = page.locator("#service")
+  const initial = await storedConfig(context)
+  const active = initial.providersConfig[0]
+  await context.serviceWorkers()[0].evaluate(config => chrome.storage.local.set({ config }), { ...initial, providersConfig: [{ ...active, model: "rejected-model" }] })
+  const notice = section.locator(".settings-service-notice")
+  await notice.waitFor({ state: "detached", timeout: 6000 })
+  assert.equal(await section.getByText("Connected", { exact: true }).count(), 0)
+  const release = service.holdAnswers()
+  try {
+    await action(section, active.name, "Test connection")
+    await notice.filter({ hasText: "Testing…" }).waitFor()
+  }
+  finally {
+    release()
+  }
+  const error = notice.filter({ hasText: "Test failed" })
+  await error.waitFor()
+  assert.ok(await error.locator(".settings-service-notice-description").textContent())
+  await screenshot(page, "service-test-failed")
+  await page.waitForTimeout(4500)
+  assert.equal(await error.isVisible(), true, "failures remain until dismissed or retried")
+  await context.serviceWorkers()[0].evaluate(config => chrome.storage.local.set({ config }), initial)
+  await error.getByRole("button", { name: "Test again", exact: true }).click()
+  const success = notice.filter({ hasText: "Test passed" })
+  await success.waitFor()
+  await screenshot(page, "service-test-passed")
+  await page.mouse.move(100, 100)
+  await section.getByRole("heading", { name: "Translation service", exact: true }).click()
+  await success.waitFor({ state: "detached", timeout: 6000 })
+  assert.equal(await section.getByText("Connected", { exact: true }).count(), 0)
+  assert.equal((await storedConfig(context)).providersConfig[0].connectionCheck.ok, true)
 })

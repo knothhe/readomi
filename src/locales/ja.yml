@@ -117,7 +117,7 @@ options:
     failedAdd: 接続に失敗したため追加されませんでした
     retryAdd: 再試行して追加
     draftKept: 入力した設定は保持されています。既存のサービスを引き続き使用します。
-    agentHint: 説明を agent に渡し、確認済みの設定を以下に貼り付けてください。
+    agentHint: agent が検証した設定を貼り付けてください。
     add: サービスを追加
     added: 追加済みサービス
     order:
@@ -145,8 +145,8 @@ options:
     useAfterAddHint: 未選択の場合は現在のサービスを引き続き使用します。
     removed: $1 を削除しました。
     saveFailed: 保存できませんでした。再試行してください。
-    checkAdd: 確認して追加
-    checkSave: 確認して保存
+    checkAdd: テストして保存
+    checkSave: テストして保存
     title: 翻訳サービス
     currentTitle: 現在の翻訳サービス
     configMethod: 設定方法
@@ -158,7 +158,7 @@ options:
     empty:
       title: 翻訳サービスがまだありません
       description: サービスを選び、API Keyとモデルを入力してください。agentが検証した設定を貼り付けることもできます。
-    copyInstructions: エージェント向けの説明をコピー
+    copyInstructions: 説明をコピー
     copied: コピーしました
     edit: 編集
     test: 接続をテスト
@@ -185,6 +185,10 @@ options:
     cancel: キャンセル
     apply: 適用
     applying: 確認中…
+    testPassed: テスト成功
+    testFailed: テスト失敗
+    saved: テスト成功 · 保存済み
+    retryTest: 再テスト
   appearance:
     title: 外観
     preferences: 表示設定
@@ -507,6 +511,10 @@ manualService:
   intro: サービスを選び、API Keyとモデルを入力し、接続を確認すると翻訳を開始できます。
   advanced: その他のパラメーター
   compatible: OpenAI 互換サービス
+  keyPlaceholder: API キーを入力
+  savedKeyPlaceholder: 空欄で保存済みのキーを使用
+  showKey: API キーを表示
+  hideKey: API キーを隠す
 configBackup:
   title: バックアップと同期
   backup: バックアップ
@@ -683,6 +691,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: 取得
 translationShortcuts:
   restoreDefaults: デフォルトに戻す
   restoreFailed: デフォルトに戻せませんでした。もう一度お試しください。

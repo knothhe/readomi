@@ -122,8 +122,7 @@ options:
     retryAdd: Повторить и добавить
     draftKept: Введённая конфигурация сохранена в форме. Существующие сервисы
       продолжают работать.
-    agentHint: "Передайте инструкции агенту, затем вставьте проверенную конфигурацию
-      ниже."
+    agentHint: "Вставьте конфигурацию, проверенную вашим agent."
     add: Добавить сервис
     added: Добавленные сервисы
     order:
@@ -152,7 +151,7 @@ options:
     useAfterAddHint: "Не отмечайте, чтобы продолжить использовать текущий сервис."
     removed: $1 удалён.
     saveFailed: Не удалось сохранить. Повторите попытку.
-    checkAdd: Проверить и добавить
+    checkAdd: Проверить и сохранить
     checkSave: Проверить и сохранить
     title: Сервис перевода
     currentTitle: Текущий сервис перевода
@@ -166,7 +165,7 @@ options:
       title: Сервис перевода ещё не настроен
       description: Выберите сервис, введите API Key и модель. Можно также вставить
         конфигурацию, проверенную агентом.
-    copyInstructions: Скопировать инструкции для агента
+    copyInstructions: Копировать инструкции
     copied: Скопировано
     edit: Изменить
     test: Проверить соединение
@@ -194,6 +193,10 @@ options:
     cancel: Отмена
     apply: Применить
     applying: Проверка…
+    testPassed: Проверка пройдена
+    testFailed: Проверка не пройдена
+    saved: Проверка пройдена · Сохранено
+    retryTest: Проверить снова
   appearance:
     title: Оформление
     preferences: Настройки интерфейса
@@ -526,6 +529,10 @@ manualService:
   intro: Выберите сервис, введите API Key и модель, затем проверьте соединение.
   advanced: Дополнительные параметры
   compatible: Сервис, совместимый с OpenAI
+  keyPlaceholder: Введите ключ API
+  savedKeyPlaceholder: "Оставьте пустым, чтобы сохранить текущий ключ"
+  showKey: Показать ключ API
+  hideKey: Скрыть ключ API
 configBackup:
   title: Резервная копия и синхронизация
   backup: Резервная копия
@@ -704,6 +711,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: Получить
 translationShortcuts:
   restoreDefaults: Восстановить настройки по умолчанию
   restoreFailed: Не удалось восстановить настройки по умолчанию. Повторите попытку.

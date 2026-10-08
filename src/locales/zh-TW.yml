@@ -117,7 +117,7 @@ options:
     failedAdd: 連線失敗，未新增服務
     retryAdd: 重試並新增
     draftKept: 填寫的設定已保留，現有服務繼續使用。
-    agentHint: 把說明交給你的 agent，再將它驗證好的設定貼到下面。
+    agentHint: 貼上 agent 驗證好的設定。
     add: 新增服務
     added: 已新增的服務
     order:
@@ -145,8 +145,8 @@ options:
     useAfterAddHint: 未勾選時只新增設定，目前服務繼續使用。
     removed: $1 已移除。
     saveFailed: 無法儲存，請重試。
-    checkAdd: 檢查並新增
-    checkSave: 儲存修改
+    checkAdd: 測試並儲存
+    checkSave: 測試並儲存
     title: 翻譯服務
     currentTitle: 目前翻譯服務
     configMethod: 設定方式
@@ -158,7 +158,7 @@ options:
     empty:
       title: 還沒有翻譯服務
       description: 選擇服務，填寫 API Key 和模型；也可以貼上 agent 驗證好的設定。
-    copyInstructions: 複製給 agent 的說明
+    copyInstructions: 複製說明
     copied: 已複製
     edit: 修改
     test: 測試連線
@@ -185,6 +185,10 @@ options:
     cancel: 取消
     apply: 套用
     applying: 檢查中…
+    testPassed: 測試通過
+    testFailed: 測試失敗
+    saved: 測試通過 · 已儲存
+    retryTest: 重新測試
   appearance:
     title: 外觀
     preferences: 介面偏好
@@ -507,6 +511,10 @@ manualService:
   intro: 選擇服務，填寫 API Key 和模型，檢查成功後即可翻譯。
   advanced: 更多參數
   compatible: OpenAI 相容服務
+  keyPlaceholder: 輸入 API Key
+  savedKeyPlaceholder: 留空沿用已儲存的金鑰
+  showKey: 顯示 API Key
+  hideKey: 隱藏 API Key
 configBackup:
   title: 備份與同步
   backup: 備份
@@ -682,6 +690,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: 取得
 translationShortcuts:
   restoreDefaults: 恢復預設
   restoreFailed: 恢復失敗，請再試一次。

@@ -119,8 +119,7 @@ options:
     failedAdd: Bağlantı başarısız. Hizmet eklenmedi.
     retryAdd: Tekrar dene ve ekle
     draftKept: Girdiğiniz yapılandırma korunur. Mevcut hizmetler kullanılmaya devam eder.
-    agentHint: "Talimatları agent’a verin, ardından doğruladığı yapılandırmayı
-      aşağıya yapıştırın."
+    agentHint: agent tarafından doğrulanan yapılandırmayı yapıştırın.
     add: Hizmet ekle
     added: Eklenen hizmetler
     order:
@@ -149,8 +148,8 @@ options:
     useAfterAddHint: İşaretlenmezse geçerli hizmet kullanılmaya devam eder.
     removed: $1 kaldırıldı.
     saveFailed: Kaydedilemedi. Lütfen tekrar deneyin.
-    checkAdd: Kontrol et ve ekle
-    checkSave: Kontrol et ve kaydet
+    checkAdd: Test et ve kaydet
+    checkSave: Test et ve kaydet
     title: Çeviri hizmeti
     currentTitle: Geçerli çeviri hizmeti
     configMethod: Yapılandırma yöntemi
@@ -163,7 +162,7 @@ options:
       title: Henüz çeviri hizmeti yok
       description: Bir hizmet seçip API Key ve model girin. Agent tarafından
         doğrulanmış bir yapılandırmayı da yapıştırabilirsiniz.
-    copyInstructions: Ajan için talimatları kopyala
+    copyInstructions: Talimatları kopyala
     copied: Kopyalandı
     edit: Düzenle
     test: Bağlantıyı test et
@@ -191,6 +190,10 @@ options:
     cancel: İptal
     apply: Uygula
     applying: Kontrol ediliyor…
+    testPassed: Test başarılı
+    testFailed: Test başarısız
+    saved: Test başarılı · Kaydedildi
+    retryTest: Yeniden test et
   appearance:
     title: Görünüm
     preferences: Arayüz tercihleri
@@ -527,6 +530,10 @@ manualService:
     bağlantıyı kontrol edin.
   advanced: Diğer parametreler
   compatible: OpenAI uyumlu hizmet
+  keyPlaceholder: API anahtarını girin
+  savedKeyPlaceholder: Kayıtlı anahtarı korumak için boş bırakın
+  showKey: API anahtarını göster
+  hideKey: API anahtarını gizle
 configBackup:
   title: Yedekleme ve eşitleme
   backup: Yedekleme
@@ -705,6 +712,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: Getir
 translationShortcuts:
   restoreDefaults: Varsayılanları geri yükle
   restoreFailed: Varsayılanlar geri yüklenemedi. Tekrar deneyin.

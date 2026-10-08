@@ -117,7 +117,7 @@ options:
     failedAdd: 연결에 실패하여 서비스를 추가하지 않았습니다
     retryAdd: 다시 시도하여 추가
     draftKept: 입력한 설정은 유지됩니다. 기존 서비스를 계속 사용합니다.
-    agentHint: 설명을 agent에 전달한 후 검증된 설정을 아래에 붙여넣으세요。
+    agentHint: agent가 검증한 설정을 붙여넣으세요.
     add: 서비스 추가
     added: 추가된 서비스
     order:
@@ -145,8 +145,8 @@ options:
     useAfterAddHint: 선택하지 않으면 현재 서비스를 계속 사용합니다.
     removed: $1 삭제됨.
     saveFailed: 저장하지 못했습니다. 다시 시도하세요.
-    checkAdd: 확인 후 추가
-    checkSave: 확인 후 저장
+    checkAdd: 테스트 후 저장
+    checkSave: 테스트 후 저장
     title: 번역 서비스
     currentTitle: 현재 번역 서비스
     configMethod: 설정 방식
@@ -158,7 +158,7 @@ options:
     empty:
       title: 아직 번역 서비스가 없습니다
       description: 서비스를 선택하고 API Key와 모델을 입력하세요. agent가 검증한 설정을 붙여 넣을 수도 있습니다.
-    copyInstructions: 에이전트용 안내 복사
+    copyInstructions: 설명 복사
     copied: 복사됨
     edit: 수정
     test: 연결 테스트
@@ -185,6 +185,10 @@ options:
     cancel: 취소
     apply: 적용
     applying: 확인 중…
+    testPassed: 테스트 통과
+    testFailed: 테스트 실패
+    saved: 테스트 통과 · 저장됨
+    retryTest: 다시 테스트
   appearance:
     title: 모양
     preferences: 인터페이스 설정
@@ -508,6 +512,10 @@ manualService:
   intro: 서비스를 선택하고 API Key와 모델을 입력한 뒤 연결을 확인하면 번역을 시작할 수 있습니다.
   advanced: 추가 매개변수
   compatible: OpenAI 호환 서비스
+  keyPlaceholder: API 키 입력
+  savedKeyPlaceholder: 비워 두면 저장된 키 사용
+  showKey: API 키 표시
+  hideKey: API 키 숨기기
 configBackup:
   title: 백업 및 동기화
   backup: 백업
@@ -684,6 +692,7 @@ modelDiscovery:
   failed: Could not fetch models. Retry or enter a model ID manually.
   noKey: Enter an API key and address first. An existing service can reuse its
     saved key.
+  fetchShort: 가져오기
 translationShortcuts:
   restoreDefaults: 기본값으로 되돌리기
   restoreFailed: 기본값으로 되돌리지 못했습니다. 다시 시도하세요.

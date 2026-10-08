@@ -9,7 +9,6 @@ export function UseAfterAdd({ value, onChange, disabled }: { value: boolean, onC
         <input type="checkbox" disabled={disabled} checked={value} onChange={event => onChange(event.target.checked)} />
         {i18n.t("options.service.useAfterAdd")}
       </label>
-      <p>{i18n.t("options.service.useAfterAddHint")}</p>
     </div>
   )
 }

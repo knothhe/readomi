@@ -1,51 +1,31 @@
-import type { ProviderConfig } from "@/types/config/provider"
+import type { ProviderConfig, ProviderType } from "@/types/config/provider"
 import type { SetupDocument } from "@/utils/setup-document"
 import { useAtomValue, useSetAtom, useStore } from "jotai"
-import { useEffect, useId, useMemo, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { i18n } from "#imports"
+import { IconCpu, IconEye, IconEyeOff, IconKey, IconLink, IconList, IconServer } from "@/components/icons"
 import { Button } from "@/components/ui/button"
-import { DEFAULT_REQUEST_API, PROVIDER_TYPES, REQUEST_APIS } from "@/types/config/provider"
+import { DEFAULT_REQUEST_API, PROVIDER_TYPES } from "@/types/config/provider"
 import { configAtom } from "@/utils/atoms/config"
 import { saveProviderAtom } from "@/utils/atoms/service"
 import { PROVIDER_ITEMS } from "@/utils/constants/providers"
 import { fetchProviderModels } from "@/utils/providers/models"
 import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
-import { applySetupDocument, exportSetupDocument, maskApiKey, setupDocumentSchema } from "@/utils/setup-document"
+import { applySetupDocument, exportSetupDocument, setupDocumentSchema } from "@/utils/setup-document"
 import { SettingsSelect } from "../../components/settings-select"
 import { UseAfterAdd } from "./use-after-add"
 
-const BODY_EXAMPLES = {
-  "openai-responses": { reasoning: { effort: "none" } },
-  "openai-chat": { reasoning_effort: "none" },
-  "anthropic": { thinking: { type: "disabled" } },
-  "gemini": { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } },
-}
-
-export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, onBusyChange, onDone, onCancel }: { current?: ProviderConfig, makeCurrent: boolean, onMakeCurrentChange?: (value: boolean) => void, onBusyChange: (value: boolean) => void, onDone: () => void, onCancel?: () => void }) {
+export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, onBusyChange, onDone, onCancel, onProviderChange }: { current?: ProviderConfig, makeCurrent: boolean, onMakeCurrentChange?: (value: boolean) => void, onBusyChange: (value: boolean) => void, onDone: () => void, onCancel?: () => void, onProviderChange: (provider: ProviderType) => void }) {
   const config = useAtomValue(configAtom)
   const store = useStore()
   const saveProvider = useSetAtom(saveProviderAtom)
   const [draft, setDraft] = useState<SetupDocument>(() => ({
-    ...(current ? exportSetupDocument(config, current.id)! : { type: "openai" as const, model: "" }),
+    ...(current ? exportSetupDocument(config, current.id)! : { type: "deepseek" as const, model: "" }),
     name: current?.name,
   }))
   const [key, setKey] = useState("")
-  const [bodyText, setBodyText] = useState(() => draft.body ? JSON.stringify(draft.body, null, 2) : "")
-  const [bodyExpanded, setBodyExpanded] = useState(() => !!draft.body || draft.type === "openai-compatible")
-  const body = useMemo(() => {
-    try {
-      return setupDocumentSchema.shape.body.safeParse(bodyText.trim() ? JSON.parse(bodyText) : undefined)
-    }
-    catch {
-      return { success: false } as const
-    }
-  }, [bodyText])
-  const api = draft.api ?? DEFAULT_REQUEST_API[draft.type]
-  const bodyExample = api === "openai-chat" && draft.type === "deepseek"
-    ? { thinking: { type: "disabled" } }
-    : BODY_EXAMPLES[api]
-  const bodyExampleText = JSON.stringify(bodyExample)
+  const [showKey, setShowKey] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [modelResult, setModelResult] = useState<{ signature: string, models: string[], state: "idle" | "loading" | "list" | "empty" | "failed" }>({ signature: "", models: [], state: "idle" })
@@ -94,21 +74,16 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
   const nameId = useId()
   const urlId = useId()
   const keyId = useId()
-  const apiId = useId()
-  const bodyId = useId()
-  const fieldClass = "w-full rounded-lg border border-input bg-card px-3 py-2.5 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+  const fieldClass = "settings-service-input"
   const labelClass = "text-xs font-medium"
 
   const save = async () => {
-    if (!body.success)
-      return
     setBusy(true)
     onBusyChange(true)
     setError(null)
     try {
       const document = setupDocumentSchema.parse({
         ...draft,
-        body: body.data,
         name: draft.name?.trim() || undefined,
         baseURL: draft.baseURL?.trim() || undefined,
         apiKey: draft.noApiKey ? undefined : key.trim() || (matching ? draft.apiKey : undefined),
@@ -133,118 +108,94 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
 
   return (
     <form
-      className="settings-manual-form flex flex-col gap-5"
-      onSubmit={(e) => {
-        e.preventDefault()
+      className="settings-manual-form"
+      onSubmit={(event) => {
+        event.preventDefault()
         void save()
       }}
     >
-      <p className="text-xs leading-5 text-muted-foreground">{i18n.t("manualService.intro")}</p>
-      <fieldset disabled={busy} className="grid min-w-0 grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2">
-        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+      <fieldset disabled={busy} className="settings-service-fields">
+        <div className="settings-service-field">
           <label className={labelClass} htmlFor={typeId}>{i18n.t("manualService.type")}</label>
-          <SettingsSelect
-            id={typeId}
-            className="w-full"
-            value={draft.type}
-            disabled={busy}
-            options={PROVIDER_TYPES.map(type => ({ value: type, label: type === "openai-compatible" ? i18n.t("manualService.compatible") : PROVIDER_ITEMS[type].name }))}
-            onValueChange={(value) => {
-              setDraft({ type: value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[value as typeof draft.type] })
-              setBodyText("")
-              setBodyExpanded(value === "openai-compatible")
-            }}
-          />
-        </div>
-        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
-          <label className={labelClass} htmlFor={keyId}>{i18n.t("manualService.key")}</label>
-          <input id={keyId} className={fieldClass} type="password" autoComplete="off" disabled={!!draft.noApiKey} value={draft.noApiKey ? "" : key} placeholder={!draft.noApiKey && matching?.apiKey?.trim() ? maskApiKey(matching.apiKey) : undefined} aria-describedby={`${keyId}-hint`} onChange={e => setKey(e.target.value)} />
-          <label className="flex items-center gap-2 text-xs">
-            <input type="checkbox" className="accent-brand" checked={!!draft.noApiKey} onChange={e => setDraft({ ...draft, noApiKey: e.target.checked || undefined })} />
-            {i18n.t("manualService.noApiKey")}
-          </label>
-          <p id={`${keyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t(draft.noApiKey ? "manualService.noApiKeyHint" : "manualService.keyHint")}</p>
-        </div>
-        <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
-          <label className={labelClass} htmlFor={modelId}>{i18n.t("manualService.model")}</label>
-          <div className="flex flex-wrap gap-2">
-            <input id={modelId} className={`${fieldClass} min-w-0 flex-1`} required value={draft.model} onChange={e => setDraft({ ...draft, model: e.target.value })} />
-            <Button type="button" variant="outline" disabled={!canFetch || modelState === "loading"} onClick={() => void fetchModels()}>{i18n.t(modelState === "loading" ? "modelDiscovery.loading" : "modelDiscovery.fetch")}</Button>
+          <div className="settings-service-input-wrap">
+            <IconServer className="settings-service-field-icon" aria-hidden="true" />
+            <SettingsSelect
+              id={typeId}
+              className="settings-service-input settings-service-with-icon"
+              value={draft.type}
+              disabled={busy}
+              options={PROVIDER_TYPES.map(type => ({ value: type, label: type === "openai-compatible" ? i18n.t("manualService.compatible") : PROVIDER_ITEMS[type].name }))}
+              onValueChange={(value) => {
+                setDraft({ type: value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[value as typeof draft.type] })
+                setKey("")
+                setShowKey(false)
+                onProviderChange(value as ProviderType)
+              }}
+            />
           </div>
-          <p className="text-[11px] leading-[1.7] text-muted-foreground" role="status">
-            {i18n.t(!canFetch ? "modelDiscovery.noKey" : modelState === "failed" ? "modelDiscovery.failed" : modelState === "empty" ? "modelDiscovery.empty" : "modelDiscovery.hint")}
-          </p>
-          {modelState === "list" && (
-            <div className="flex flex-col gap-2">
-              <label className={labelClass} htmlFor={modelsId}>{i18n.t("modelDiscovery.select")}</label>
-              <SettingsSelect
-                id={modelsId}
-                className="w-full"
-                value={models.includes(draft.model) ? draft.model : ""}
-                disabled={busy}
-                options={[{ value: "", label: i18n.t("modelDiscovery.select"), disabled: true }, ...models.map(model => ({ value: model, label: model }))]}
-                onValueChange={value => value && setDraft({ ...draft, model: value })}
-              />
+        </div>
+        <div className="settings-service-field">
+          <label className={labelClass} htmlFor={nameId}>{i18n.t("manualService.name")}</label>
+          <input id={nameId} className={fieldClass} value={draft.name ?? ""} onChange={event => setDraft({ ...draft, name: event.target.value })} />
+        </div>
+        <div className="settings-service-field settings-service-field-full">
+          <label className={labelClass} htmlFor={urlId}>{i18n.t("manualService.url")}</label>
+          <div className="settings-service-input-wrap">
+            <IconLink className="settings-service-field-icon" aria-hidden="true" />
+            <input id={urlId} className={`${fieldClass} settings-service-with-icon font-mono`} type="url" placeholder={baseURL} value={draft.baseURL ?? baseURL} onChange={event => setDraft({ ...draft, baseURL: event.target.value })} />
+          </div>
+        </div>
+        <div className="settings-service-field settings-service-field-full">
+          <div className="settings-service-field-top">
+            <label className={labelClass} htmlFor={keyId}>{i18n.t("manualService.key")}</label>
+            <label className="settings-service-key-choice">
+              <input type="checkbox" checked={!!draft.noApiKey} onChange={event => setDraft({ ...draft, noApiKey: event.target.checked || undefined })} />
+              {i18n.t("manualService.noApiKey")}
+            </label>
+          </div>
+          <div className="settings-service-input-wrap">
+            <IconKey className="settings-service-field-icon" aria-hidden="true" />
+            <input id={keyId} className={`${fieldClass} settings-service-with-icon settings-service-key-input`} type={showKey ? "text" : "password"} autoComplete="off" disabled={!!draft.noApiKey} value={draft.noApiKey ? "" : key} placeholder={draft.noApiKey ? undefined : i18n.t(matching?.apiKey?.trim() ? "manualService.savedKeyPlaceholder" : "manualService.keyPlaceholder")} onChange={event => setKey(event.target.value)} />
+            <button type="button" className="settings-service-key-visibility settings-service-icon-button" disabled={!!draft.noApiKey} aria-label={i18n.t(showKey ? "manualService.hideKey" : "manualService.showKey")} onClick={() => setShowKey(value => !value)}>
+              {showKey ? <IconEyeOff aria-hidden="true" /> : <IconEye aria-hidden="true" />}
+            </button>
+          </div>
+        </div>
+        <div className="settings-service-field settings-service-field-full">
+          <label className={labelClass} htmlFor={modelId}>{i18n.t("manualService.model")}</label>
+          <div className="settings-service-model-input">
+            <div className="settings-service-input-wrap">
+              <IconCpu className="settings-service-field-icon" aria-hidden="true" />
+              <input id={modelId} className={`${fieldClass} settings-service-with-icon font-mono`} required value={draft.model} onChange={event => setDraft({ ...draft, model: event.target.value })} />
             </div>
+            <Button type="button" variant="outline" className="settings-service-fetch" aria-label={i18n.t(modelState === "loading" ? "modelDiscovery.loading" : "modelDiscovery.fetch")} title={i18n.t("modelDiscovery.fetch")} disabled={!canFetch || modelState === "loading"} onClick={() => void fetchModels()}>
+              <IconList aria-hidden="true" />
+              {i18n.t(modelState === "loading" ? "modelDiscovery.loading" : "modelDiscovery.fetchShort")}
+            </Button>
+          </div>
+          {(modelState === "failed" || modelState === "empty") && <p className="settings-service-model-feedback" role="status">{i18n.t(`modelDiscovery.${modelState}`)}</p>}
+          {modelState === "list" && (
+            <SettingsSelect
+              id={modelsId}
+              aria-label={i18n.t("modelDiscovery.select")}
+              className="w-full"
+              value={models.includes(draft.model) ? draft.model : ""}
+              disabled={busy}
+              options={[{ value: "", label: i18n.t("modelDiscovery.select"), disabled: true }, ...models.map(model => ({ value: model, label: model }))]}
+              onValueChange={value => value && setDraft({ ...draft, model: value })}
+            />
           )}
         </div>
-        <details className="border-y border-border py-4 sm:col-span-2" open={bodyExpanded || !body.success} onToggle={event => setBodyExpanded(event.currentTarget.open)}>
-          <summary className="cursor-pointer text-xs font-medium">{i18n.t("manualService.advanced")}</summary>
-          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="flex min-w-0 flex-col gap-2">
-              <label className={labelClass} htmlFor={nameId}>{i18n.t("manualService.name")}</label>
-              <input id={nameId} className={fieldClass} value={draft.name ?? ""} onChange={e => setDraft({ ...draft, name: e.target.value })} />
-            </div>
-            <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
-              <label className={labelClass} htmlFor={urlId}>{i18n.t("manualService.url")}</label>
-              <input id={urlId} className={fieldClass} type="url" placeholder={baseURL} value={draft.baseURL ?? ""} onChange={e => setDraft({ ...draft, baseURL: e.target.value })} />
-            </div>
-            <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
-              <label className={labelClass} htmlFor={apiId}>{i18n.t("manualService.api")}</label>
-              <SettingsSelect
-                id={apiId}
-                className="w-full"
-                value={draft.api ?? DEFAULT_REQUEST_API[draft.type]}
-                disabled={busy}
-                options={REQUEST_APIS.map(api => ({ value: api, label: api }))}
-                onValueChange={value => setDraft({ ...draft, api: value as typeof draft.api })}
-              />
-            </div>
-          </div>
-          <div className="mt-4 flex min-w-0 flex-col gap-2">
-            <label className={labelClass} htmlFor={bodyId}>{i18n.t("manualService.body")}</label>
-            <textarea
-              id={bodyId}
-              aria-label={i18n.t("manualService.body")}
-              className={`${fieldClass} resize-y font-mono text-xs leading-[18px]`}
-              rows={5}
-              spellCheck={false}
-              value={bodyText}
-              placeholder={JSON.stringify(bodyExample, null, 2)}
-              aria-invalid={!body.success}
-              aria-describedby={`${bodyId}-hint ${bodyId}-example${body.success ? "" : ` ${bodyId}-error`}`}
-              onChange={e => setBodyText(e.target.value)}
-            />
-            <p id={`${bodyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("manualService.bodyHint")}</p>
-            <p id={`${bodyId}-example`} className="break-words text-[11px] leading-[1.7] text-muted-foreground">
-              {i18n.t("manualService.bodyExample")}
-              {" "}
-              <code>{bodyExampleText}</code>
-            </p>
-            {!body.success && <p id={`${bodyId}-error`} role="alert" className="text-xs text-destructive">{i18n.t("manualService.bodyInvalid")}</p>}
-          </div>
-        </details>
         {error && (
-          <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 sm:col-span-2">
-            <p className="text-xs font-medium text-destructive">{i18n.t("options.service.failedNotSaved")}</p>
-            <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-muted-foreground">{error}</pre>
+          <div role="alert" className="settings-service-form-error settings-service-field-full">
+            <p>{i18n.t("options.service.failedNotSaved")}</p>
+            <pre>{error}</pre>
           </div>
         )}
-        {current && <p className="text-[11px] text-muted-foreground sm:col-span-2">{i18n.t("options.service.editHint")}</p>}
-        {!current && <div className="sm:col-span-2"><UseAfterAdd value={makeCurrent} onChange={onMakeCurrentChange} disabled={busy} /></div>}
-        <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
+        {!current && <div className="settings-service-field-full"><UseAfterAdd value={makeCurrent} onChange={onMakeCurrentChange} disabled={busy} /></div>}
+        <div className="settings-service-form-actions settings-service-field-full">
           {onCancel && <Button type="button" variant="outline" onClick={onCancel}>{i18n.t("options.service.cancel")}</Button>}
-          <Button type="submit" disabled={!body.success || !draft.model.trim() || !hasCredentials}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
+          <Button type="submit" disabled={!draft.model.trim() || !hasCredentials}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
         </div>
       </fieldset>
     </form>

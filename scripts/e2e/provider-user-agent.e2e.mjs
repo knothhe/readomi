@@ -43,8 +43,7 @@ it("identifies connection checks, model discovery and streaming translations as 
 
   const section = settings.locator("#service")
   const row = section.locator(".settings-service-row[data-current='true']")
-  await row.locator("summary").click()
-  await row.getByRole("button", { name: "Edit", exact: true }).click()
+  await row.getByRole("button", { name: /^Edit / }).click()
   await section.getByRole("button", { name: "Manual setup", exact: true }).click()
   await section.getByRole("button", { name: "Fetch models", exact: true }).click()
   const models = section.getByRole("combobox", { name: "Select a model", exact: true })

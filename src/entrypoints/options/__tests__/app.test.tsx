@@ -88,7 +88,7 @@ function currentServiceMenu() {
 }
 
 function editCurrentService() {
-  fireEvent.click(currentServiceMenu().getByRole("button", { name: "options.service.edit" }))
+  fireEvent.click(within(screen.getByText("options.service.label.current").closest("article")!).getByRole("button", { name: "options.service.editTitle" }))
 }
 
 function selectValue(trigger: HTMLElement, value: string) {
@@ -577,10 +577,10 @@ describe("settings page", () => {
     await renderSettings()
 
     expect(screen.getByRole("button", { name: "manualService.manual" })).toHaveAttribute("aria-pressed", "true")
-    expect(screen.getByText("manualService.intro")).toBeVisible()
+    expect(screen.queryByText("manualService.intro")).toBeNull()
     expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
     expect(screen.getByLabelText("manualService.model")).toHaveValue("")
-    expect(screen.getByLabelText("manualService.url")).not.toBeVisible()
+    expect(screen.getByLabelText("manualService.url")).toBeVisible()
     expect(applyButton()).toBeDisabled()
     expect(screen.getByRole("heading", { name: "options.service.add" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "options.service.cancel" })).toBeEnabled()
@@ -591,7 +591,7 @@ describe("settings page", () => {
 
     expect(screen.getByText("OpenAI")).toBeInTheDocument()
     expect(screen.getByText("gpt-6-luna")).toBeInTheDocument()
-    expect(screen.getByTestId("service-status")).toHaveTextContent("options.service.status.ok")
+    expect(screen.queryByTestId("service-status")).toBeNull()
     expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
   })
 
@@ -602,7 +602,7 @@ describe("settings page", () => {
     expect(JSON.parse(editor().value)).toEqual({ type: "openai", apiKey: "sk-…ijkl", model: "gpt-6-luna" })
     expect(editor().selectionStart).toBe(0)
     expect(editor().selectionEnd).toBe(editor().value.length)
-    expect(screen.getByText("options.service.unchanged")).toBeInTheDocument()
+    expect(screen.queryByText("options.service.unchanged")).toBeNull()
     expect(applyButton()).toBeDisabled()
     expect(screen.getByRole("heading", { name: "options.service.editTitle" })).toBeInTheDocument()
     expect(screen.queryByLabelText("options.service.listLabel")).toBeNull()
@@ -646,7 +646,7 @@ describe("settings page", () => {
     expect(checkConnection).not.toHaveBeenCalled()
   })
 
-  it("previews what applying would change and reports invalid text", async () => {
+  it("validates agent configuration without repeating its contents", async () => {
     await renderSettings()
 
     fireEvent.change(editor(), { target: { value: "not json" } })
@@ -654,10 +654,6 @@ describe("settings page", () => {
     expect(applyButton()).toBeDisabled()
 
     fireEvent.change(editor(), { target: { value: JSON.stringify({ type: "deepseek", apiKey: "sk-test", model: "deepseek-flash", body: { thinking: { type: "disabled" } } }) } })
-    expect(screen.getByText("DeepSeek")).toBeInTheDocument()
-    expect(screen.getByText("deepseek-flash")).toBeInTheDocument()
-    expect(screen.getByText(/options\.service\.newKey/)).toBeInTheDocument()
-    expect(screen.getByText(/options\.service\.thinkingOff/)).toBeInTheDocument()
     expect(applyButton()).toBeEnabled()
   })
 
@@ -735,7 +731,7 @@ describe("settings page", () => {
       fireEvent.click(currentServiceMenu().getByRole("button", { name: "options.service.test" }))
     })
 
-    await waitFor(() => expect(screen.getByTestId("service-status")).toHaveTextContent("options.service.status.failed"))
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("timeout"))
     expect(store.get(configAtom).providersConfig[0].connectionCheck).toMatchObject({ ok: false, error: "timeout" })
   })
 
@@ -857,7 +853,7 @@ describe("manual service configuration", () => {
     // Use the actual catalog so copied instructions include their substitutions.
     act(() => setUILanguage("zh-CN"))
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "复制给 agent 的说明" }))
+      fireEvent.click(screen.getByRole("button", { name: "复制说明" }))
     })
     const instructions = vi.mocked(copyText).mock.calls[0][0]
     expect(instructions).toContain("\"model\": \"my-local-model\"")
@@ -899,78 +895,32 @@ describe("manual service configuration", () => {
     expect(applyButton()).toBeEnabled()
     expect(checkConnection).toHaveBeenCalledTimes(1)
   })
-  it("shows existing parameters and uses edited nested JSON in the connection check and saved requests", async () => {
-    const existing = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "low" }, max_output_tokens: 1000 } })) }
+  it("keeps existing request parameters and format when saving the simplified manual form", async () => {
+    const body = { reasoning: { effort: "low" }, max_output_tokens: 1000 }
+    const existing = { ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body })) }
     const { store } = await renderSettings(existing)
     chooseServiceMethod("manual")
-    const input = screen.getByLabelText("manualService.body")
-    expect(JSON.parse((input as HTMLTextAreaElement).value)).toEqual(existing.providersConfig[0].body)
-    const body = { reasoning: { effort: "none", summary: "auto" }, max_output_tokens: 2000, metadata: { tags: ["translation", null], enabled: false } }
-    fireEvent.change(input, { target: { value: JSON.stringify(body, null, 2) } })
-    expect(store.get(configAtom)).toEqual(existing)
+    expect(screen.queryByText("manualService.advanced")).toBeNull()
+    expect(screen.queryByLabelText("manualService.body")).toBeNull()
+    expect(screen.queryByLabelText("manualService.api")).toBeNull()
+    fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "updated-model" } })
     fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
-    await waitFor(() => expect(screen.queryByLabelText("manualService.body")).toBeNull())
-    const saved = store.get(configAtom)
-    const provider = saved.providersConfig.find(p => p.id === saved.translate.providerId)!
+    await waitFor(() => expect(screen.queryByLabelText("manualService.model")).toBeNull())
+    const provider = store.get(configAtom).providersConfig[0]
     expect(provider.body).toEqual(body)
-    expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ body }))
+    expect(provider.api).toBe(existing.providersConfig[0].api)
+    expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ body, model: "updated-model", apiKey: existing.providersConfig[0].apiKey }))
     expect(prepareRequest(provider, { prompt: "Translate this" }).body).toMatchObject({ ...body, input: "Translate this" })
-    chooseServiceMethod("manual")
-    expect(JSON.parse((screen.getByLabelText("manualService.body") as HTMLTextAreaElement).value)).toEqual(body)
-  })
-  it.each(["{", "[]", "null", "\"text\"", "42", "{\"budget\":1e999}"])("blocks invalid body %s before sending or saving", async (value) => {
-    const { store } = await renderSettings(configured)
-    chooseServiceMethod("manual")
-    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value } })
-    expect(screen.getByRole("alert")).toHaveTextContent("manualService.bodyInvalid")
-    expect(screen.getByLabelText("manualService.body")).toHaveAttribute("aria-invalid", "true")
-    const button = screen.getByRole("button", { name: "options.service.checkSave" })
-    expect(button).toBeDisabled()
-    fireEvent.submit(button.closest("form")!)
-    expect(checkConnection).not.toHaveBeenCalled()
-    expect(store.get(configAtom)).toEqual(configured)
-    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "{}" } })
-    expect(screen.queryByRole("alert")).toBeNull()
-    expect(button).toBeEnabled()
-  })
-  it("clears saved parameters when the editor is emptied", async () => {
-    const { store } = await renderSettings({ ...configured, providersConfig: configured.providersConfig.map(p => ({ ...p, body: { reasoning: { effort: "none" } } })) })
-    chooseServiceMethod("manual")
-    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "  " } })
-    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
-    await waitFor(() => expect(screen.queryByLabelText("manualService.body")).toBeNull())
-    expect(store.get(configAtom).providersConfig[0]).not.toHaveProperty("body")
-    expect(vi.mocked(checkConnection).mock.calls[0][0]).not.toHaveProperty("body")
-  })
-  it("changes examples with the wire format without overwriting the parameter draft", async () => {
-    await renderSettings(configured)
-    chooseServiceMethod("manual")
-    const input = screen.getByLabelText("manualService.body")
-    expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual({ reasoning: { effort: "none" } })
-    fireEvent.change(input, { target: { value: "{\"custom\":true}" } })
-    for (const [api, example] of [
-      ["openai-chat", { reasoning_effort: "none" }],
-      ["anthropic", { thinking: { type: "disabled" } }],
-      ["gemini", { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } }],
-    ] as const) {
-      selectValue(screen.getByLabelText("manualService.api"), api)
-      expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual(example)
-      expect(input).toHaveValue("{\"custom\":true}")
-    }
-    selectValue(screen.getByLabelText("manualService.type"), "deepseek")
-    expect(input).toHaveValue("")
-    expect(JSON.parse(input.getAttribute("placeholder")!)).toEqual({ thinking: { type: "disabled" } })
   })
   it("does not replace the working service when a manual connection check fails", async () => {
     vi.mocked(checkConnection).mockResolvedValue({ ok: false, checkedAt: 1_000, error: "HTTP 401" })
     const { store } = await renderSettings(configured)
     chooseServiceMethod("manual")
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "bad-model" } })
-    fireEvent.change(screen.getByLabelText("manualService.body"), { target: { value: "{\"reasoning\":{\"effort\":\"high\"}}" } })
     fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("HTTP 401"))
     expect(store.get(configAtom).providersConfig).toEqual(configured.providersConfig)
-    expect(screen.getByLabelText("manualService.body")).toHaveValue("{\"reasoning\":{\"effort\":\"high\"}}")
+    expect(screen.getByLabelText("manualService.model")).toHaveValue("bad-model")
   })
 })
 

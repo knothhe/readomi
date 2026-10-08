@@ -40,7 +40,7 @@ function menu(name: string) {
   return within(serviceRow)
 }
 function edit(name: string) {
-  fireEvent.click(menu(name).getByRole("button", { name: "options.service.edit" }))
+  fireEvent.click(within(row(name)).getByRole("button", { name: "options.service.editTitle" }))
 }
 
 describe("multiple translation services", () => {
@@ -198,7 +198,7 @@ describe("multiple translation services", () => {
     expect(saved.translate.providerId).toBe(first.id)
     expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(saved)
     edit("Service B")
-    expect(screen.getByLabelText("manualService.key")).toHaveAttribute("placeholder", "sk-…-key")
+    expect(screen.getByLabelText("manualService.key")).toHaveAttribute("placeholder", "manualService.savedKeyPlaceholder")
     fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
     await screen.findByRole("heading", { name: "Service B" })
     expect(store.get(configAtom).providersConfig[1].apiKey).toBe("sk-filled-local-key")
@@ -219,7 +219,7 @@ describe("multiple translation services", () => {
     expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ noApiKey: true, baseURL: local.baseURL }))
     expect(vi.mocked(checkConnection).mock.calls[0][0]).not.toHaveProperty("apiKey")
     expect(store.get(configAtom).providersConfig[1]).not.toHaveProperty("apiKey")
-    expect(within(row("Service B")).getByTestId("service-status")).toHaveTextContent("options.service.status.ok")
+    expect(within(row("Service B")).queryByTestId("service-status")).toBeNull()
     expect(within(row("Service B")).getByRole("radio")).toBeEnabled()
     edit("Service B")
     expect(screen.getByRole("checkbox", { name: "manualService.noApiKey" })).toBeChecked()
@@ -231,7 +231,7 @@ describe("multiple translation services", () => {
     await renderService()
     edit("Service B")
     expect(screen.getByLabelText("manualService.key")).toHaveValue("")
-    expect(screen.getByLabelText("manualService.key")).toHaveAttribute("placeholder", "sk-…-key")
+    expect(screen.getByLabelText("manualService.key")).toHaveAttribute("placeholder", "manualService.savedKeyPlaceholder")
     expect(screen.getByLabelText("manualService.key")).not.toHaveAttribute("placeholder", second.apiKey)
   })
 
@@ -301,23 +301,20 @@ describe("multiple translation services", () => {
     expect(checkConnection).not.toHaveBeenCalled()
   })
 
-  it("reveals the targeted connection details with a masked key and collapses them", async () => {
-    const { store } = await renderService()
-    expect(screen.queryByText(first.baseURL)).toBeNull()
-    fireEvent.click(menu("Service B").getByRole("button", { name: "options.service.connectionDetails" }))
-    const details = row("Service B").querySelector(".settings-service-connection") as HTMLDetailsElement
-    expect(details).toHaveAttribute("open")
-    expect(within(details).getByText(second.baseURL)).toBeVisible()
-    expect(details).toHaveTextContent("sk-…-key")
-    expect(details).not.toHaveTextContent(first.apiKey)
-    expect(details).not.toHaveTextContent(second.apiKey)
+  it("shows failures only after a test and retries with the latest saved service", async () => {
+    vi.mocked(checkConnection).mockResolvedValueOnce({ ok: false, checkedAt: 2_000, error: "HTTP 401" })
+    const { store } = await renderService({ ...configured, providersConfig: [first, { ...second, connectionCheck: { ok: false, checkedAt: 1, error: "Old error" } }] })
+    expect(screen.queryByTestId("service-status")).toBeNull()
+    expect(screen.queryByText("Old error")).toBeNull()
+    fireEvent.click(menu("Service B").getByRole("button", { name: "options.service.test" }))
+    expect(await screen.findByRole("alert")).toHaveTextContent("HTTP 401")
     await act(async () => {
-      details.open = false
-      fireEvent(details, new Event("toggle"))
+      store.set(configAtom, { ...store.get(configAtom), providersConfig: [first, { ...second, apiKey: "updated-key" }] })
     })
-    await waitFor(() => expect(row("Service B").querySelector(".settings-service-connection")).toBeNull())
-    expect(store.get(configAtom)).toEqual(configured)
-    expect(checkConnection).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole("button", { name: "options.service.retryTest" }))
+    await waitFor(() => expect(checkConnection).toHaveBeenLastCalledWith(expect.objectContaining({ id: second.id, apiKey: "updated-key" })))
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("options.service.testPassed"))
+    expect(screen.queryByTestId("service-status")).toBeNull()
   })
 
   it("returns to the list when another page removes the edited service", async () => {
