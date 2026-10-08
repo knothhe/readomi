@@ -11,18 +11,18 @@
 <p class="help">把说明交给你的 agent，再将它验证好的配置粘贴到下面。</p><label class="field">翻译服务配置<textarea class="textarea" spellcheck="false" >{
   "type": "openai-compatible",
   "name": "本地模型",
-  "apiKey": "local",
+  "noApiKey": true,
   "model": "qwen3:8b",
   "baseURL": "http://localhost:11434/v1"
 }</textarea></label>
-<div class="preview"><div class="mark" aria-hidden="true">L</div><div><p class="caption">将添加</p><h2>本地模型 <span class="model">qwen3:8b</span></h2><p class="host">网页文本发往 localhost:11434</p></div></div>
+<div class="preview"><div class="mark" aria-hidden="true">L</div><div><p class="caption">将添加</p><h2>本地模型 <span class="model">qwen3:8b</span></h2><p class="host">网页文本发往 localhost:11434 · 无需 API Key</p></div></div>
 <div class="choices"><label class="choice"><input type="checkbox" >添加后使用此服务</label></div><p class="editor-note">未勾选时只添加配置，当前服务继续使用。</p><div class="editor-footer"><a class="button" href="Settings-Multi-Service.html">取消</a><a class="button primary" href="Settings-Multi-Service-Checking.html">检查并添加</a></div></div><p class="page-note">检查成功后保存。取消会保留现有服务。</p><p class="toast" role="status" data-toast></p></main></div><script>
 /* A local design prototype. Changes are simulated in memory. */
 const names={deepseek:'DeepSeek',gemini:'Gemini',anthropic:'Anthropic'};
 let currentId='deepseek';let available=['deepseek','gemini','anthropic'];
 const toast=text=>{const el=document.querySelector('[data-toast]');if(el)el.textContent=text};
 function render(){document.querySelectorAll('.service-row').forEach(row=>{const active=row.dataset.id===currentId;row.dataset.current=String(active);const badge=row.querySelector('[data-role]');badge.hidden=!active;badge.textContent='当前';row.querySelector('[data-use-service]').disabled=active;row.querySelector('[data-remove]').disabled=active});const count=document.querySelector('[data-service-count]');if(count)count.textContent=available.length}
-document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.dataset.useService){currentId=button.dataset.useService;document.querySelectorAll('.menu').forEach(menu=>menu.open=false);render();toast('已切换为 '+names[currentId]+'。后续翻译使用新服务，已有译文保留。')}if(button.dataset.remove){const id=button.dataset.remove;if(id===currentId)return;available=available.filter(item=>item!==id);document.querySelector('[data-id="'+id+'"]').remove();render();toast(names[id]+' 已移除。')}if(button.dataset.test){const row=button.closest('.service-row');const status=row.querySelector('.status');status.textContent='测试中…';button.disabled=true;setTimeout(()=>{status.textContent='已连接';button.disabled=false;toast(names[button.dataset.test]+' · 检查成功。')},900)}if(button.hasAttribute('data-copy')){navigator.clipboard.writeText('请帮我配置 Readomi 翻译服务。先验证服务地址、模型和请求格式，再返回含 type、name、apiKey、model 和 baseURL 的配置 JSON。对于无需认证的本地服务，apiKey 使用 local。').then(()=>toast('已复制')).catch(()=>toast('无法复制，请重试。'))}});
+document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.dataset.useService){currentId=button.dataset.useService;document.querySelectorAll('.menu').forEach(menu=>menu.open=false);render();toast('已切换为 '+names[currentId]+'。后续翻译使用新服务，已有译文保留。')}if(button.dataset.remove){const id=button.dataset.remove;if(id===currentId)return;available=available.filter(item=>item!==id);document.querySelector('[data-id="'+id+'"]').remove();render();toast(names[id]+' 已移除。')}if(button.dataset.test){const row=button.closest('.service-row');const status=row.querySelector('.status');status.textContent='测试中…';button.disabled=true;setTimeout(()=>{status.textContent='已连接';button.disabled=false;toast(names[button.dataset.test]+' · 检查成功。')},900)}if(button.hasAttribute('data-copy')){navigator.clipboard.writeText('请帮我配置 Readomi 翻译服务。先验证服务地址、模型和请求格式，再返回含 type、name、apiKey、model 和 baseURL 的配置 JSON。对于无需 API Key 的服务，设置 noApiKey: true 并省略 apiKey。').then(()=>toast('已复制')).catch(()=>toast('无法复制，请重试。'))}});
 document.addEventListener('click',event=>{document.querySelectorAll('.menu[open]').forEach(menu=>{if(!menu.contains(event.target))menu.open=false})});
 if(document.querySelector('[data-service-count]'))render();
 const editedService=new URLSearchParams(location.search).get('service');

@@ -6,6 +6,7 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Settings-Service-No-Api-Key.html", title: "翻译服务 · 本地模型 · 无需 API Key", x: 0, y: 227900, w: 1280, h: 1100 },
     { file: "Settings-Sync-Services-Missing-Key.html", title: "Synced service: missing local key", x: 0, y: 185500, w: 1280, h: 900 },
     { file: "Settings-Sync-Service-Key-Edit.html", title: "Synced service: saved masked key", x: 1360, y: 185500, w: 1280, h: 960 },
     { file: "Settings-Sync-Edge.html", title: "备份与同步 · Microsoft Edge · 同步不可用", x: 0, y: 224350, w: 1280, h: 960 },
