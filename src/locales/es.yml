@@ -606,7 +606,7 @@ subtitleStyle:
   controlsTitle: Traducción y estilo
   moreOptions: More options
   custom: Personalizar
-  customDescription: Personalizar tamaño, fondo y posición
+  customDescription: "Personaliza tamaño, proporción, fuente, color, fondo y posición"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -625,7 +625,7 @@ subtitleStyle:
   fontSize: Tamaño de subtítulos
   originalFontScale: Tamaño del texto original
   originalFontScaleValue: Valor del tamaño del texto original
-  originalFontScaleDefault: Predeterminado 1:1
+  originalFontScaleDefault: "1:1 mismo tamaño"
   originalFontScaleDescription: Respecto a la traducción; al 100% ambas líneas tienen el mismo tamaño.
   originalFontScaleSummary: Original $1%
   originalFontScalePresets: Tamaños habituales del texto original
@@ -638,7 +638,7 @@ subtitleStyle:
   previewBilingualFontSize: Original $1 px · Traducción $2 px
   previewTranslatedFontSize: Traducción $1 px
   commonSizes: Tamaños habituales
-  relativeFontDescription: Se ajusta automáticamente a la ventana del video y a pantalla completa. 100% es el tamaño predeterminado.
+  relativeFontDescription: "Se adapta a la ventana y a la pantalla completa; 100% es el tamaño de referencia."
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Formato de vista previa
@@ -670,11 +670,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: Fuente de traducción
+  translationFontDescription: Solo cambia la traducción; el original conserva su fuente predeterminada.
+  translationColor: Color de traducción
+  translationColorValue: Color hexadecimal de la traducción
+  translationColorPicker: Elegir color de traducción
+  translationColorDescription: Solo cambia la traducción; el contorno conserva la legibilidad en escenas claras.
+  translationColorInvalid: "Introduce un color hexadecimal de seis dígitos, como #FFE0A0."
+  translationFonts:
+    sans: Predeterminada (sin serifa)
+    serif: Songti (con serifa)
+  translationColors:
+    white: Blanco suave
+    gold: Dorado cálido
+    mint: Turquesa claro
+  presetSummaries:
+    clear: Blanco · Sin fondo
+    gold: Dorado · Sin fondo
+    ink: Blanco suave · Fondo oscuro
   presets:
-    clear: Transparent
+    clear: Blanco puro
     compact: Compact
     study: Enfoque
     cinema: Cinema
+    gold: Dorado cálido
+    ink: Tarjeta de tinta
   positions:
     top: Top
     center: Center

@@ -595,7 +595,7 @@ subtitleStyle:
   controlsTitle: Translation and style
   moreOptions: More options
   custom: Customize
-  customDescription: Customize size, background and position
+  customDescription: "Customize size, ratio, translation font, color, background and position"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -613,7 +613,7 @@ subtitleStyle:
   fontSize: Subtitle size
   originalFontScale: Original text size
   originalFontScaleValue: Original text size value
-  originalFontScaleDefault: Default 1:1
+  originalFontScaleDefault: "1:1 equal size"
   originalFontScaleDescription: Relative to the translation; 100% makes both lines the same size.
   originalFontScaleSummary: Original $1%
   originalFontScalePresets: Common original text sizes
@@ -626,7 +626,7 @@ subtitleStyle:
   previewBilingualFontSize: Original $1 px · Translation $2 px
   previewTranslatedFontSize: Translation $1 px
   commonSizes: Common sizes
-  relativeFontDescription: Scales automatically with the video window and fullscreen. 100% is the default size.
+  relativeFontDescription: "Scales with the video window and fullscreen; 100% is the reference size."
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Preview format
@@ -656,11 +656,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: Translation font
+  translationFontDescription: Only changes the translation; the original keeps its default font.
+  translationColor: Translation color
+  translationColorValue: Translation color hex value
+  translationColorPicker: Choose translation color
+  translationColorDescription: Only changes the translation; outlines keep it readable in bright scenes.
+  translationColorInvalid: "Enter a six-digit hex color, such as #FFE0A0."
+  translationFonts:
+    sans: Default (sans serif)
+    serif: Songti (serif)
+  translationColors:
+    white: Soft white
+    gold: Warm gold
+    mint: Pale teal
+  presetSummaries:
+    clear: White · No backdrop
+    gold: Gold · No backdrop
+    ink: Soft white · Dark backdrop
   presets:
-    clear: Transparent
+    clear: Pure white
     compact: Compact
     study: Focus
     cinema: Cinema
+    gold: Warm gold
+    ink: Ink card
   positions:
     top: Top
     center: Center

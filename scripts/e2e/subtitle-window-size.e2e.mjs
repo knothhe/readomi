@@ -22,6 +22,14 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   context = launched.context
   const settings = launched.page
   await configureService(settings, launched.extensionId, setupDocumentFor(service.origin))
+  // Use a deliberate 5% short-side baseline to keep the geometry checks independent of presets.
+  await context.serviceWorkers()[0].evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    config.features.subtitleStyle.relativeFontSize = 5
+    config.features.subtitleStyle.originalFontScale = 100
+    await chrome.storage.local.set({ config })
+  })
+  await settings.reload()
   await settings.getByRole("link", { name: "Video subtitles", exact: true }).click()
   await settings.getByRole("switch", { name: "Enable video subtitle translation by default", exact: true }).click()
   const customOptions = settings.locator(".subtitle-custom > summary")
@@ -56,7 +64,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   }
   const desktopPreview = await previewSize()
   assert.ok(Math.abs(desktopPreview.fontSize - desktopPreview.width * 9 / 16 * 5 / 100) < 0.05, "settings preview uses a percentage of the video window shorter side")
-  assert.equal(colorOpacity(desktopPreview.backgroundColor), 0, "the default Transparent preset has no background")
+  assert.equal(colorOpacity(desktopPreview.backgroundColor), 0, "the baseline clear style has no background")
 
   const samples = settings.getByRole("group", { name: "Sample subtitles", exact: true })
   assert.equal(await samples.getByRole("button", { name: "Short", exact: true }).getAttribute("aria-pressed"), "true")
@@ -160,10 +168,9 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   await cdp.send("DOM.enable")
   await cdp.send("CSS.enable")
   const presetStyles = [
-    { preset: "clear", label: "Transparent", relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
-    { preset: "compact", label: "Compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
-    { preset: "study", label: "Focus", relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
-    { preset: "cinema", label: "Cinema", relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
+    { preset: "clear", label: "Pure white", relativeFontSize: 3.5, originalFontScale: 100, translationFont: "sans", translationColor: "#ffffff", backgroundEnabled: false, backgroundOpacity: 0 },
+    { preset: "gold", label: "Warm gold", relativeFontSize: 3.5, originalFontScale: 100, translationFont: "serif", translationColor: "#ffe0a0", backgroundEnabled: false, backgroundOpacity: 0 },
+    { preset: "ink", label: "Ink card", relativeFontSize: 3.5, originalFontScale: 100, translationFont: "sans", translationColor: "#f9fafb", backgroundEnabled: true, backgroundOpacity: 78 },
   ]
   // The dock and preset panel use a closed shadow root. CDP reads the
   // button's bounds, then a real pointer click exercises its product handler.
@@ -217,10 +224,9 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
         assert.ok(rect.left >= bounds.left - 0.5 && rect.right <= bounds.right + 0.5 && rect.top >= bounds.top - 0.5 && rect.bottom <= bounds.bottom + 0.5, `${text} stays fully inside its button`)
       }
     }
-    const [clear, compact, study, cinema] = buttons.map(button => button.bounds)
-    assert.ok(Math.abs(clear.top - compact.top) < 0.5 && Math.abs(study.top - cinema.top) < 0.5, "the four presets form two rows")
-    assert.ok(Math.abs(clear.left - study.left) < 0.5 && Math.abs(compact.left - cinema.left) < 0.5, "the four presets form two columns")
-    assert.ok(clear.right <= compact.left && study.right <= cinema.left && clear.bottom <= study.top && compact.bottom <= cinema.top, "preset buttons do not overlap")
+    const [clear, gold, ink] = buttons.map(button => button.bounds)
+    assert.ok(Math.abs(clear.top - gold.top) < 0.5 && Math.abs(gold.top - ink.top) < 0.5, "the three presets form one row")
+    assert.ok(clear.right <= gold.left && gold.right <= ink.left, "preset buttons do not overlap")
   }
   const waitForInlineToolbar = async () => {
     try {
@@ -375,14 +381,14 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   // 100% is the default; numeric entry also accepts precise imported proportions.
   const sizeSlider = settings.getByRole("slider", { name: "Subtitle size", exact: true })
   const sizeInput = settings.getByRole("spinbutton", { name: "Subtitle size", exact: true })
-  assert.equal(await sizeSlider.getAttribute("min"), "25")
-  assert.equal(await sizeSlider.getAttribute("max"), "500")
-  assert.equal(await sizeSlider.getAttribute("step"), "5")
+  assert.equal(await sizeSlider.getAttribute("min"), "35.714285714285715")
+  assert.equal(await sizeSlider.getAttribute("max"), "714.2857142857143")
+  assert.equal(await sizeSlider.getAttribute("step"), "7.142857142857143")
   assert.match(await sizeSlider.getAttribute("aria-valuetext"), /%/)
   await sizeSlider.press("ArrowRight")
   await waitForStyle({ relativeFontSize: 5.25 })
   await waitFor(state => Math.abs(state.fontSize - 9.45) < 0.05 && state.translation === ready.translation)
-  await sizeInput.fill("85")
+  await sizeInput.fill("121.42857142857143")
   await sizeInput.press("Enter")
   await waitForPreview(await waitForStyle({ relativeFontSize: 4.25 }))
   await waitFor(state => Math.abs(state.fontSize - 7.65) < 0.05 && state.translation === ready.translation)
@@ -392,11 +398,11 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   await sizeSlider.press("End")
   await waitForPreview(await waitForStyle({ relativeFontSize: 25 }))
   await waitFor(state => Math.abs(state.fontSize - 45) < 0.05 && state.translation === ready.translation)
-  await sizeInput.fill("118.75")
+  await sizeInput.fill("169.64285714285714")
   await sizeInput.press("Tab")
   await waitForPreview(await waitForStyle({ relativeFontSize: 5.9375 }))
-  assert.equal(await sizeInput.inputValue(), "118.75")
-  await sizeInput.fill("85")
+  assert.equal(await sizeInput.inputValue(), "169.64286")
+  await sizeInput.fill("121.42857142857143")
   await sizeInput.press("Enter")
   await waitForStyle({ relativeFontSize: 4.25 })
 
@@ -428,7 +434,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   await settings.reload()
   assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "reload returns to the compact main list")
   await customOptions.click()
-  assert.equal(await sizeInput.inputValue(), "85")
+  assert.equal(await sizeInput.inputValue(), "121.42857")
   assert.equal(await depthInput.inputValue(), "72", "reloading restores saved background depth")
   assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "narrow controls fit without horizontal overflow")
   await settings.setViewportSize({ width: 1280, height: 900 })
@@ -475,13 +481,13 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
       && Math.abs(colorOpacity(state.backgroundColor) - (presetStyle.backgroundEnabled ? presetStyle.backgroundOpacity / 100 : 0)) < 0.01
       && state.translation === ready.translation)
   }
-  await waitForStyle({ preset: "cinema", relativeFontSize: 7.5, position })
-  await selectPlayerPreset("study")
-  await waitForStyle({ preset: "study", relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65, position })
-  await waitFor(state => state.fontSize === 11.25 && Math.abs(colorOpacity(state.backgroundColor) - 0.65) < 0.01 && state.translation === ready.translation)
-  assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, position, "all four presets preserve a manually selected position in both controls")
+  await waitForStyle({ preset: "ink", relativeFontSize: 3.5, position })
+  await selectPlayerPreset("gold")
+  await waitForStyle({ preset: "gold", relativeFontSize: 3.5, backgroundEnabled: false, backgroundOpacity: 0, position })
+  await waitFor(state => state.fontSize === 6.3 && colorOpacity(state.backgroundColor) === 0 && state.translation === ready.translation)
+  assert.deepEqual((await storedConfig(context)).features.subtitleStyle.position, position, "all three presets preserve a manually selected position in both controls")
   assert.equal(service.completions().length, requests, "manual size, background and preset changes reuse the current translation")
-  await page.screenshot({ path: "/tmp/readomi-subtitle-preset-video-study.png" })
+  await page.screenshot({ path: "/tmp/readomi-subtitle-preset-video-gold.png" })
 
   // Original size is independent of the translated size and remains saved across modes.
   const ratioSlider = settings.getByRole("slider", { name: "Original text size", exact: true })
@@ -508,9 +514,9 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   assert.deepEqual(await storedConfig(context), ratioConfig, "invalid numeric drafts do not save")
   await ratioInput.press("Escape")
   assert.equal(await ratioInput.inputValue(), "125")
-  await presets.getByRole("button", { name: "Transparent", exact: true }).click()
-  await waitForStyle({ originalFontScale: 125, preset: "clear" })
-  await waitFor(state => Math.abs(state.originalFontSize - 11.25) < 0.05 && state.fontSize === 9)
+  await presets.getByRole("button", { name: "Pure white", exact: true }).click()
+  await waitForStyle({ originalFontScale: 100, preset: "clear" })
+  await waitFor(state => Math.abs(state.originalFontSize - 6.3) < 0.05 && Math.abs(state.fontSize - 6.3) < 0.05)
   const display = settings.getByRole("group", { name: "Subtitle display mode", exact: true })
   await display.getByRole("button", { name: "Translation only", exact: true }).click()
   assert.equal(await ratioSlider.isDisabled(), true)
@@ -520,14 +526,14 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   await waitForStoredConfig(context, config => config.features.subtitleMode === "bilingual")
   await settings.reload()
   await customOptions.click()
-  assert.equal(await ratioInput.inputValue(), "125", "reload restores the saved original ratio")
+  assert.equal(await ratioInput.inputValue(), "100", "reload restores the saved original ratio")
   await settings.setViewportSize({ width: 390, height: 900 })
   assert.equal(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
   await settings.screenshot({ path: "/tmp/readomi-subtitle-ratio-implemented-mobile.png", fullPage: true })
   await settings.setViewportSize({ width: 1280, height: 900 })
   await ratioChoices.getByRole("button", { name: "1:1", exact: true }).click()
   await waitForStyle({ originalFontScale: 100 })
-  await waitFor(state => state.originalFontSize === 9 && state.fontSize === 9)
+  await waitFor(state => Math.abs(state.originalFontSize - 6.3) < 0.05 && Math.abs(state.fontSize - 6.3) < 0.05)
   await settings.locator(".subtitle-position-reset").click()
   await waitForStyle({ originalFontScale: 100, position: { x: 50, y: 88 } })
   // Exercise the actual Chinese catalog and record the chosen A layout at its default values.
@@ -547,7 +553,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
     await settings.screenshot({ path: `/tmp/readomi-subtitle-ratio-implemented-${name}.png`, fullPage: true })
   }
   await settings.getByRole("group", { name: "常用大小", exact: true }).getByRole("button", { name: "150%", exact: true }).click()
-  await waitForPreview(await waitForStyle({ relativeFontSize: 7.5 }))
+  await waitForPreview(await waitForStyle({ relativeFontSize: 5.25 }))
   await settings.locator("#features .options-preview-column").screenshot({ path: "/tmp/readomi-preview-150-short-zh.png", animations: "disabled" })
   await settings.getByRole("group", { name: "示例字幕", exact: true }).getByRole("button", { name: "长句", exact: true }).click()
   await settings.locator("#features .options-preview-column").screenshot({ path: "/tmp/readomi-preview-150-long-zh.png", animations: "disabled" })
@@ -555,7 +561,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   await settings.setViewportSize({ width: 390, height: 900 })
   await settings.screenshot({ path: "/tmp/readomi-preview-150-mobile-zh.png", fullPage: true, animations: "disabled" })
   await settings.getByRole("group", { name: "常用大小", exact: true }).getByRole("button", { name: "100%", exact: true }).click()
-  await waitForPreview(await waitForStyle({ relativeFontSize: 5 }))
+  await waitForPreview(await waitForStyle({ relativeFontSize: 3.5 }))
   assert.equal(service.completions().length, requests, "changing only the original ratio reuses translations")
 
   await page.evaluate(() => {

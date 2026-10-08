@@ -3,7 +3,7 @@ import { fakeBrowser } from "wxt/testing/fake-browser"
 import { storage } from "#imports"
 import { setupSiteRuleSessions } from "@/entrypoints/background/site-rule-sessions"
 import { configSchema } from "@/types/config/config"
-import { subtitleStyleSchema } from "@/types/config/subtitle-style"
+import { SUBTITLE_PRESETS, subtitleStyleSchema } from "@/types/config/subtitle-style"
 import { withConfigWriteLock } from "@/utils/config/write-lock"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { sendMessage } from "@/utils/message"
@@ -18,14 +18,22 @@ describe("subtitle appearance configuration", () => {
 
   it("scales both lines with the video short side across landscape, portrait and square sizes", () => {
     const style = DEFAULT_CONFIG.features.subtitleStyle
-    for (const [width, height, expected] of [[320, 180, 9], [640, 360, 18], [1280, 720, 36], [285, 506, 14.25], [400, 400, 20], [960, 400, 20]]) {
-      expect(resolveSubtitleFontSize(style, width, height)).toBe(expected)
-      expect(resolveSubtitleFontSize({ ...style, relativeFontSize: 6.25 }, width, height)).toBe(expected * 1.25)
+    for (const [width, height, expected] of [[320, 180, 6.3], [640, 360, 12.6], [1280, 720, 25.2], [285, 506, 9.975], [400, 400, 14], [960, 400, 14]]) {
+      expect(resolveSubtitleFontSize(style, width, height)).toBeCloseTo(expected)
+      expect(resolveSubtitleFontSize({ ...style, relativeFontSize: 6.25 }, width, height)).toBeCloseTo(expected * 6.25 / 3.5)
     }
     for (const width of [0, Number.NaN, Number.POSITIVE_INFINITY])
-      expect(resolveSubtitleFontSize(style, width)).toBe(18)
+      expect(resolveSubtitleFontSize(style, width)).toBe(12.6)
     for (const height of [0, Number.NaN, Number.POSITIVE_INFINITY])
-      expect(resolveSubtitleFontSize(style, 640, height)).toBe(18)
+      expect(resolveSubtitleFontSize(style, 640, height)).toBe(12.6)
+  })
+  it.each(SUBTITLE_PRESETS)("starts %s at the previous 100% size reduced to 87.5% and equal original and translated lines", (preset) => {
+    const style = { ...DEFAULT_CONFIG.features.subtitleStyle, ...subtitlePresetPatch(preset) }
+    expect(formatSubtitleFontSize(style)).toBe("100%")
+    expect(resolveSubtitleFontSize(style, 640, 360)).toBeCloseTo(12.6)
+    expect(subtitleTextStyle(style)["--readomi-original-font-scale"]).toBe("1em")
+    expect(subtitleSizePatch(150)).toEqual({ relativeFontSize: 5.25 })
+    expect(isSubtitlePresetModified({ ...style, ...subtitleSizePatch(150) })).toBe(true)
   })
   it("updates legacy presets and migrates custom width proportions only once", () => {
     for (const [preset, oldSize, newSize] of [["clear", 3, 5], ["compact", 2.5, 4], ["study", 3.75, 6.25], ["cinema", 4.5, 7.5]] as const) {
@@ -61,17 +69,17 @@ describe("subtitle appearance configuration", () => {
     expect(resolveSubtitleFontSize(defaults, 640)).toBeCloseTo(20)
   })
   it.each([
-    { preset: "clear", relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
+    { preset: "clear", relativeFontSize: 3.5, backgroundEnabled: false, backgroundOpacity: 0 },
     { preset: "compact", relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
     { preset: "study", relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
     { preset: "cinema", relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
-  ] as const)("applies the $preset starting point without changing position or original ratio", (expected) => {
+  ] as const)("applies the $preset starting point without changing position", (expected) => {
     const position = { x: 60, y: 65 }
     const original = { ...DEFAULT_CONFIG.features.subtitleStyle, relativeFontSize: 7, originalFontScale: 85, position }
     const style = { ...original, ...subtitlePresetPatch(expected.preset) }
     expect(style).toMatchObject(expected)
     expect(style.position).toBe(position)
-    expect(style.originalFontScale).toBe(85)
+    expect(style.originalFontScale).toBe(expected.preset === "clear" ? 100 : 85)
     expect(isSubtitlePresetModified(style)).toBe(false)
   })
   it.each([
@@ -81,7 +89,7 @@ describe("subtitle appearance configuration", () => {
   ] as const)("migrates older $preset pixel-only styles without losing background or position", ({ preset, backgroundEnabled, backgroundOpacity }) => {
     const position = { x: 60, y: 65 }
     const migrated = subtitleStyleSchema.parse({ preset, fontSize: 38, position })
-    expect(migrated).toEqual({ preset, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", originalFontScale: 100, backgroundEnabled, backgroundOpacity, position })
+    expect(migrated).toEqual({ preset, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", originalFontScale: 100, translationFont: "sans", translationColor: "#ffffff", backgroundEnabled, backgroundOpacity, position })
     expect(resolveSubtitleFontSize(migrated, 640)).toBeCloseTo(38)
   })
   it("uses fresh defaults and preserves explicit fractional proportions, disabled backgrounds and zero depth", () => {
@@ -103,19 +111,19 @@ describe("subtitle appearance configuration", () => {
   it.each([50, 85, 100, 125, 150])("accepts original ratio %s without changing the translation size", (originalFontScale) => {
     const style = subtitleStyleSchema.parse({ ...DEFAULT_CONFIG.features.subtitleStyle, originalFontScale })
     expect(subtitleTextStyle(style)["--readomi-original-font-scale"]).toBe(`${originalFontScale / 100}em`)
-    expect(resolveSubtitleFontSize(style)).toBe(18)
+    expect(resolveSubtitleFontSize(style)).toBe(12.6)
   })
   it.each([49, 151, 86, 102.5, Number.NaN, Number.POSITIVE_INFINITY])("rejects invalid original ratio %s", (originalFontScale) => {
     expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, originalFontScale }).success).toBe(false)
   })
   it("shows normalized percentages and preserves precise imported values", () => {
     const style = { ...DEFAULT_CONFIG.features.subtitleStyle, relativeFontSize: 3.125 }
-    expect(subtitleSizeSettings(style)).toEqual({ value: 62.5, min: 25, max: 500, step: 5, unit: "%" })
-    expect(subtitleSizePatch(67.5)).toEqual({ relativeFontSize: 3.375 })
-    expect(formatSubtitleFontSize(style)).toBe("62.5%")
+    expect(subtitleSizeSettings(style)).toEqual({ value: 89.28571, min: 1.25 * (100 / 3.5), max: 25 * (100 / 3.5), step: 0.25 * (100 / 3.5), unit: "%" })
+    expect(subtitleSizePatch(67.5)).toEqual({ relativeFontSize: 2.3625 })
+    expect(formatSubtitleFontSize(style)).toBe("89.28571%")
     expect(formatSubtitleFontSize(DEFAULT_CONFIG.features.subtitleStyle)).toBe("100%")
     const migrated = subtitleStyleSchema.parse({ fontSize: 39 })
-    expect(formatSubtitleFontSize(migrated)).toBe("216.66667%")
+    expect(formatSubtitleFontSize(migrated)).toBe("309.52381%")
     expect(resolveSubtitleFontSize(migrated, 640)).toBeCloseTo(39)
   })
   it("uses manual background settings for every preset, including clear", () => {
@@ -177,7 +185,7 @@ describe("subtitle appearance configuration", () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, old)
     await saveSubtitleStyle({ backgroundEnabled: false, backgroundOpacity: 0 })
     const saved = await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)
-    expect(saved).toEqual({ ...old, features: { ...old.features, subtitleStyle: { preset: "study", position: { x: 60, y: 65 }, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", originalFontScale: 100, backgroundEnabled: false, backgroundOpacity: 0 } } })
+    expect(saved).toEqual({ ...old, features: { ...old.features, subtitleStyle: { preset: "study", position: { x: 60, y: 65 }, relativeFontSize: 38 / 3.6, relativeFontSizeBasis: "shortSide", originalFontScale: 100, translationFont: "sans", translationColor: "#ffffff", backgroundEnabled: false, backgroundOpacity: 0 } } })
   })
   it("serializes background style patches with other configuration writes and merges each into the latest value", async () => {
     await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, DEFAULT_CONFIG)
@@ -219,5 +227,30 @@ describe("subtitle appearance configuration", () => {
   })
   it.each([-1, 101, Number.NaN, Number.POSITIVE_INFINITY])("rejects invalid background depth %s", (backgroundOpacity) => {
     expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, backgroundOpacity }).success).toBe(false)
+  })
+})
+
+describe("subtitle translation font and color validation", () => {
+  it("preserves legacy subtitle size, background, original ratio and position while adding safe typography defaults", () => {
+    const old = { preset: "compact", relativeFontSize: 4.125, relativeFontSizeBasis: "shortSide", originalFontScale: 125, backgroundEnabled: false, backgroundOpacity: 65, position: { x: 60, y: 70 } }
+    const migrated = subtitleStyleSchema.parse(old)
+    expect(migrated).toEqual({ ...old, translationFont: "sans", translationColor: "#ffffff" })
+    expect(subtitleStyleSchema.parse(migrated)).toEqual(migrated)
+  })
+
+  it("normalizes a valid hex color and rejects unsupported fonts or injected color values", () => {
+    expect(subtitleStyleSchema.parse({ ...DEFAULT_CONFIG.features.subtitleStyle, translationColor: "#AbCDEF", translationFont: "serif" })).toMatchObject({ translationColor: "#abcdef", translationFont: "serif" })
+    for (const translationColor of ["#fff", "red", "var(--page-color)", "#ffffgg", "#ffffffff", null])
+      expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, translationColor }).success).toBe(false)
+    expect(subtitleStyleSchema.safeParse({ ...DEFAULT_CONFIG.features.subtitleStyle, translationFont: "custom" }).success).toBe(false)
+  })
+
+  it("marks changes to font, color or original ratio, but keeps dragged position independent of a preset", () => {
+    const gold = { ...DEFAULT_CONFIG.features.subtitleStyle, ...subtitlePresetPatch("gold") }
+    expect(isSubtitlePresetModified(gold)).toBe(false)
+    expect(isSubtitlePresetModified({ ...gold, translationFont: "sans" })).toBe(true)
+    expect(isSubtitlePresetModified({ ...gold, translationColor: "#ffffff" })).toBe(true)
+    expect(isSubtitlePresetModified({ ...gold, originalFontScale: 85 })).toBe(true)
+    expect(isSubtitlePresetModified({ ...gold, position: { x: 20, y: 40 } })).toBe(false)
   })
 })

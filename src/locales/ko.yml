@@ -576,7 +576,7 @@ subtitleStyle:
   controlsTitle: 번역 및 스타일
   moreOptions: More options
   custom: 사용자 지정
-  customDescription: 크기, 배경 및 자막 위치 사용자 지정
+  customDescription: "크기, 비율, 번역 글꼴, 색상, 배경, 위치 조정"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -594,7 +594,7 @@ subtitleStyle:
   fontSize: 자막 크기
   originalFontScale: 원문 글자 크기
   originalFontScaleValue: 원문 글자 크기 값
-  originalFontScaleDefault: 기본값 1:1
+  originalFontScaleDefault: "1:1 같은 크기"
   originalFontScaleDescription: 번역문을 기준으로 하며, 100%이면 두 줄의 크기가 같습니다.
   originalFontScaleSummary: 원문 $1%
   originalFontScalePresets: 자주 사용하는 원문 크기
@@ -607,7 +607,7 @@ subtitleStyle:
   previewBilingualFontSize: 원문 $1 px · 번역문 $2 px
   previewTranslatedFontSize: 번역문 $1 px
   commonSizes: 자주 사용하는 크기
-  relativeFontDescription: 동영상 창과 전체 화면에 맞춰 자동으로 조절됩니다. 100%가 기본 크기입니다.
+  relativeFontDescription: "동영상 창과 전체 화면에 맞춰 조절하며 100%가 기준 크기입니다."
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: 미리보기 화면
@@ -636,11 +636,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: 번역 글꼴
+  translationFontDescription: 번역문만 변경하며 원문은 기본 글꼴을 사용합니다.
+  translationColor: 번역 색상
+  translationColorValue: 번역 색상 코드
+  translationColorPicker: 번역 색상 선택
+  translationColorDescription: 번역문만 변경하며 외곽선을 유지해 밝은 화면에서도 읽기 쉽습니다.
+  translationColorInvalid: "#FFE0A0처럼 6자리 16진수 색상을 입력하세요."
+  translationFonts:
+    sans: 기본 (고딕체)
+    serif: 명조체
+  translationColors:
+    white: 부드러운 흰색
+    gold: 따뜻한 금색
+    mint: 연한 청록색
+  presetSummaries:
+    clear: 흰색 · 배경 없음
+    gold: 금색 · 배경 없음
+    ink: 흰색 · 어두운 배경
   presets:
-    clear: Transparent
+    clear: 순백
     compact: Compact
     study: 집중
     cinema: Cinema
+    gold: 따뜻한 금색
+    ink: 잉크 카드
   positions:
     top: Top
     center: Center

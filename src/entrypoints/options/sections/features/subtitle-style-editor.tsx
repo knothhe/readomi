@@ -4,13 +4,14 @@ import { useAtom, useSetAtom } from "jotai"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
-import { SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
+import { SUBTITLE_DEFAULT_SIZE_BASIS, SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
 import { configFieldsAtomMap, writeConfigAtom } from "@/utils/atoms/config"
 import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, resolveSubtitleFontSize, resolveSubtitlePosition, SUBTITLE_POSITIONS, subtitleBackgroundPatch, subtitlePositionName, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings, subtitleTextStyle } from "@/utils/subtitles/appearance"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 import { SettingsSlider } from "../../components/settings-slider"
 import { SubtitleOriginalSizeControl } from "./subtitle-original-size-control"
+import { SubtitleTranslationStyleControls } from "./subtitle-translation-style-controls"
 import "./subtitle-style-editor.css"
 
 const PREVIEW_ASPECT_RATIOS = { landscape: 9 / 16, portrait: 16 / 9, square: 1 } as const
@@ -41,7 +42,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
   const position = subtitlePositionName(style.position)
   const depth = effectiveSubtitleBackgroundOpacity(style)
   const backgroundSummary = depth ? i18n.t("subtitleStyle.backgroundSummary", [depth]) : i18n.t("subtitleStyle.noBackground")
-  const commonSizes = ["compact", "clear", "study", "cinema"].map(preset => subtitleSizeSettings({ ...style, ...SUBTITLE_PRESET_STYLES[preset as keyof typeof SUBTITLE_PRESET_STYLES] }).value)
+  const commonSizes = [80, 100, 125, 150]
   const positions = Object.keys(SUBTITLE_POSITIONS) as (keyof typeof SUBTITLE_POSITIONS)[]
   const [previewAspect, setPreviewAspect] = useState<keyof typeof PREVIEW_ASPECT_RATIOS>("landscape")
   const [previewSample, setPreviewSample] = useState<"short" | "long">("short")
@@ -138,8 +139,6 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
           >
             <div className="subtitle-preset-list" role="group" aria-label={i18n.t("subtitleStyle.preset")}>
               {SUBTITLE_PRESETS.map((preset) => {
-                const candidate = { ...style, ...subtitlePresetPatch(preset) }
-                const candidateDepth = effectiveSubtitleBackgroundOpacity(candidate)
                 return (
                   <button
                     type="button"
@@ -151,9 +150,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                   >
                     <strong>{i18n.t(`subtitleStyle.presets.${preset}`)}</strong>
                     <span>
-                      {formatSubtitleFontSize(candidate)}
-                      {" · "}
-                      {candidateDepth ? i18n.t("subtitleStyle.backgroundSummary", [candidateDepth]) : i18n.t("subtitleStyle.noBackground")}
+                      {i18n.t(`subtitleStyle.presetSummaries.${preset}`)}
                     </span>
                   </button>
                 )
@@ -168,7 +165,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                 {" · "}
                 {i18n.t("subtitleStyle.originalFontScaleSummary", [style.originalFontScale])}
                 {" · "}
-                {backgroundSummary}
+                {i18n.t(`subtitleStyle.translationFonts.${style.translationFont}`)}
                 <span className="subtitle-custom-position">{` · ${i18n.t(`subtitleStyle.positions.${position}`)}`}</span>
               </span>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m3 6 5 5 5-5" /></svg>
@@ -195,7 +192,8 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                   max={size.max}
                   step={size.step}
                   aria-label={i18n.t("subtitleStyle.fontSize")}
-                  value={size.value}
+                  value={style.relativeFontSize * (100 / SUBTITLE_DEFAULT_SIZE_BASIS)}
+                  displayValue={size.value}
                   unit={size.unit}
                   showLimits={false}
                   decrementLabel={i18n.t("subtitleStyle.smaller")}
@@ -211,6 +209,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                 onChange={setOriginalFontScale}
                 onRetry={() => setOriginalFontScale(style.originalFontScale)}
               />
+              <SubtitleTranslationStyleControls style={style} onChange={setStyle} />
               <SettingsRow label={i18n.t("subtitleStyle.backgroundOpacity")} control={<output className="subtitle-depth-value">{`${depth}%`}</output>}>
                 <SettingsSlider
                   className="subtitle-precise-slider"
@@ -291,7 +290,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
               style={{ ...subtitleTextStyle(style), maxWidth: "80%", left: `${style.position.x}%`, top: `${style.position.y}%` }}
             >
               {features.subtitleMode === "bilingual" && <div className="subtitle-preview-original">{i18n.t(previewSample === "short" ? "subtitleStyle.previewOriginal" : "subtitleStyle.previewLongOriginal")}</div>}
-              <div>{i18n.t(previewSample === "short" ? "subtitleStyle.previewTranslation" : "subtitleStyle.previewLongTranslation")}</div>
+              <div className="subtitle-preview-translated">{i18n.t(previewSample === "short" ? "subtitleStyle.previewTranslation" : "subtitleStyle.previewLongTranslation")}</div>
             </div>
           </div>
         </div>
@@ -302,7 +301,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
         <p className="subtitle-preview-summary">
           {i18n.t(`subtitleStyle.presets.${style.preset}`)}
           {modified && ` (${i18n.t("subtitleStyle.modified")})`}
-          {` · ${formatSubtitleFontSize(style)} · ${i18n.t("subtitleStyle.originalFontScaleSummary", [style.originalFontScale])} · ${backgroundSummary} · ${i18n.t(`subtitleStyle.positions.${position}`)}`}
+          {` · ${formatSubtitleFontSize(style)} · ${i18n.t("subtitleStyle.originalFontScaleSummary", [style.originalFontScale])} · ${i18n.t(`subtitleStyle.translationFonts.${style.translationFont}`)} · ${style.translationColor.toUpperCase()} · ${backgroundSummary} · ${i18n.t(`subtitleStyle.positions.${position}`)}`}
         </p>
       </aside>
     </div>

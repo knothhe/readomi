@@ -566,7 +566,7 @@ subtitleStyle:
   controlsTitle: 翻译与样式
   moreOptions: 更多选项
   custom: 自定义
-  customDescription: 自定义大小、背景与字幕位置
+  customDescription: 自定义大小、比例、译文字体、颜色、背景与位置
   autoSave: 调整会自动保存。
   adjust: 样式与位置
   presetDescription: 选择一个起点，再调整字号和背景。
@@ -584,7 +584,7 @@ subtitleStyle:
   fontSize: 字幕大小
   originalFontScale: 原文相对字号
   originalFontScaleValue: 原文相对字号数值
-  originalFontScaleDefault: 默认 1:1
+  originalFontScaleDefault: "1:1 等大"
   originalFontScaleDescription: 以译文字号为基准，100% 时原文与译文等大。
   originalFontScaleSummary: 原文 $1%
   originalFontScalePresets: 常用原文比例
@@ -597,7 +597,7 @@ subtitleStyle:
   previewBilingualFontSize: 原文 $1 px · 译文 $2 px
   previewTranslatedFontSize: 译文 $1 px
   commonSizes: 常用大小
-  relativeFontDescription: 随视频窗口和全屏自动缩放，100% 为默认大小。
+  relativeFontDescription: "随视频窗口和全屏自动缩放，100% 为基准大小。"
   position: 字幕位置
   preview: 字幕预览
   previewAspectRatio: 预览画面
@@ -625,11 +625,31 @@ subtitleStyle:
   reset: 恢复默认
   resetPosition: 字幕位置复位
   resetPositionShort: 复位
+  translationFont: 译文字体
+  translationFontDescription: 仅调整译文；原文沿用默认字体。
+  translationColor: 译文颜色
+  translationColorValue: 译文颜色色值
+  translationColorPicker: 选择译文颜色
+  translationColorDescription: 仅调整译文；描边保留，明亮画面也能看清。
+  translationColorInvalid: "请输入六位十六进制颜色，例如 #FFE0A0。"
+  translationFonts:
+    sans: 默认（无衬线）
+    serif: 宋体（衬线）
+  translationColors:
+    white: 柔白
+    gold: 暖金
+    mint: 浅青
+  presetSummaries:
+    clear: 白字 · 无底色
+    gold: 金字 · 无底色
+    ink: 柔白 · 深色底
   presets:
-    clear: 清透
+    clear: 素白
     compact: 轻量
     study: 专注
     cinema: 影院
+    gold: 暖金
+    ink: 墨笺
   positions:
     top: 顶部
     center: 居中

@@ -428,7 +428,7 @@ describe("local subtitle runtime", () => {
   it("rolls back a failed style save without discarding the translation and lets the user retry", async () => {
     attachYouTubePlayer()
     const save = vi.spyOn(appearance, "saveSubtitleStyle").mockRejectedValueOnce(new Error("storage failed")).mockResolvedValue(undefined)
-    update(config)
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 5 } } })
     await vi.advanceTimersByTimeAsync(1000)
     const host = document.querySelector("[data-readomi-subtitles]")
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
@@ -451,7 +451,7 @@ describe("local subtitle runtime", () => {
     vi.spyOn(appearance, "saveSubtitleStyle")
       .mockImplementationOnce(() => new Promise(resolve => resolveFirst = resolve))
       .mockImplementationOnce(() => new Promise((_, reject) => rejectSecond = reject))
-    update(config)
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 5 } } })
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
     larger.click()
     larger.click()
@@ -611,9 +611,9 @@ describe("local subtitle runtime", () => {
     vi.spyOn(player, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 320, top: 0, width: 640, height: 720 } as DOMRect)
     update(config)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("32px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22.4px")
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, position: { x: 50, y: 18 } } } })
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("32px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("22.4px")
   })
   it("excludes contain letterboxing from font sizing without moving the bottom anchor", async () => {
     attachXPlayer()
@@ -623,15 +623,15 @@ describe("local subtitle runtime", () => {
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
     update(config)
     const host = document.querySelector("[data-readomi-subtitles]")
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("20.25px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("14.175px")
     video.style.objectFit = "fill"
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("36px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("25.2px")
     video.style.objectFit = "scale-down"
     Object.defineProperty(video, "videoWidth", { value: 180, configurable: true })
     Object.defineProperty(video, "videoHeight", { value: 320, configurable: true })
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("9px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("6.3px")
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(config.features.subtitleStyle.position).toEqual(DEFAULT_CONFIG.features.subtitleStyle.position)
   })
@@ -759,10 +759,9 @@ describe("local subtitle runtime", () => {
       const box = shadow.querySelector<HTMLElement>(".box")!
       expect(box.style.fontSize).toBe("42.75px")
       const presets = {
-        clear: { relativeFontSize: 5, backgroundEnabled: false, backgroundOpacity: 0 },
-        compact: { relativeFontSize: 4, backgroundEnabled: true, backgroundOpacity: 35 },
-        study: { relativeFontSize: 6.25, backgroundEnabled: true, backgroundOpacity: 65 },
-        cinema: { relativeFontSize: 7.5, backgroundEnabled: true, backgroundOpacity: 85 },
+        clear: { relativeFontSize: 3.5, originalFontScale: 100, translationFont: "sans", translationColor: "#ffffff", backgroundEnabled: false, backgroundOpacity: 0 },
+        gold: { relativeFontSize: 3.5, originalFontScale: 100, translationFont: "serif", translationColor: "#ffe0a0", backgroundEnabled: false, backgroundOpacity: 0 },
+        ink: { relativeFontSize: 3.5, originalFontScale: 100, translationFont: "sans", translationColor: "#f9fafb", backgroundEnabled: true, backgroundOpacity: 78 },
       }
       for (const [preset, expected] of Object.entries(presets)) {
         const button = controlsShadow.querySelector<HTMLButtonElement>(`button[data-preset="${preset}"]`)!
@@ -785,16 +784,16 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(1000)
     const host = document.querySelector("[data-readomi-subtitles]")
     const box = shadow.querySelector<HTMLElement>(".box")!
-    expect(box.style.fontSize).toBe("18px")
+    expect(box.style.fontSize).toBe("12.6px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 320, height: 180 } as DOMRect)
     await vi.advanceTimersByTimeAsync(250)
-    expect(box.style.fontSize).toBe("9px")
+    expect(box.style.fontSize).toBe("6.3px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 320, height: 640 } as DOMRect)
     await vi.advanceTimersByTimeAsync(250)
-    expect(box.style.fontSize).toBe("16px")
+    expect(box.style.fontSize).toBe("11.2px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 1280, height: 720 } as DOMRect)
     await vi.advanceTimersByTimeAsync(250)
-    expect(box.style.fontSize).toBe("36px")
+    expect(box.style.fontSize).toBe("25.2px")
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 6.25 } } })
     expect(box.style.fontSize).toBe("45px")
     vi.mocked(video.getBoundingClientRect).mockReturnValue({ left: 0, top: 0, width: 320, height: 180 } as DOMRect)

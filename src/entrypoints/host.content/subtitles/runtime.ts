@@ -70,7 +70,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   host.setAttribute("translate", "no")
   const shadow = host.attachShadow({ mode: "closed" })
   const style = document.createElement("style")
-  style.textContent = `:host{position:fixed!important;z-index:2147483646!important;pointer-events:none!important;display:block!important;width:max-content!important;transform:translate(-50%,-100%)!important}.box{position:relative;max-width:100%;box-sizing:border-box;font-family:system-ui;pointer-events:auto;touch-action:none;user-select:none;cursor:grab;outline:none}.box:focus-visible{outline:2px solid #fff8;outline-offset:6px}.box.dragging{cursor:grabbing}.original{font-size:var(--readomi-original-font-scale,1em);margin-bottom:4px}.translated{font-size:1em}.empty{display:none}`
+  style.textContent = `:host{position:fixed!important;z-index:2147483646!important;pointer-events:none!important;display:block!important;width:max-content!important;transform:translate(-50%,-100%)!important}.box{position:relative;max-width:100%;box-sizing:border-box;font-family:system-ui;pointer-events:auto;touch-action:none;user-select:none;cursor:grab;outline:none}.box:focus-visible{outline:2px solid #fff8;outline-offset:6px}.box.dragging{cursor:grabbing}.original{font-size:var(--readomi-original-font-scale,1em);margin-bottom:var(--readomi-original-gap,4px);color:var(--readomi-original-color,#fff);font-weight:var(--readomi-original-weight,600)}.translated{font-size:1em;font-family:var(--readomi-translation-font,system-ui);color:var(--readomi-translation-color,#fff);letter-spacing:var(--readomi-translation-letter-spacing,0);line-height:1.45}.empty{display:none}`
   const box = document.createElement("div")
   const original = document.createElement("div")
   original.className = "original"
@@ -168,9 +168,9 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   const renderAppearance = () => {
     box.setAttribute("aria-label", i18n.t("subtitleStyle.dragHint"))
     box.title = i18n.t("subtitleStyle.dragHint")
-    const { "--readomi-original-font-scale": originalFontScale, ...textStyle } = subtitleTextStyle(appearance)
-    Object.assign(box.style, textStyle)
-    box.style.setProperty("--readomi-original-font-scale", originalFontScale)
+    for (const [property, value] of Object.entries(subtitleTextStyle(appearance))) {
+      box.style.setProperty(property.startsWith("--") ? property : property.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`), value)
+    }
     positionCaption()
   }
   const persist = (patch: Partial<SubtitleStyle>) => onStyleChange(patch)

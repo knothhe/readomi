@@ -1,7 +1,7 @@
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
 import { browser, i18n } from "#imports"
-import { SUBTITLE_PRESETS } from "@/types/config/subtitle-style"
-import { formatSubtitleFontSize, isSubtitlePresetModified, SUBTITLE_POSITIONS, subtitlePresetPatch, subtitleSizePatch, subtitleSizeSettings } from "./appearance"
+import { SUBTITLE_PRESETS, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP, SUBTITLE_TRANSLATION_COLORS } from "@/types/config/subtitle-style"
+import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, SUBTITLE_POSITIONS, subtitleBackgroundPatch, subtitlePresetPatch } from "./appearance"
 import { xVideoContainer, xVideoControls, xVideoToolsStart } from "./x-player"
 
 export interface VideoTranslationControlsState {
@@ -38,10 +38,12 @@ const CONTROL_CSS = `
 .trigger,.toggle{display:grid;place-items:center;flex:0 0 var(--action-width);width:var(--action-width);height:100%;padding:0;border:0;border-radius:4px;background:transparent;color:#fff}.trigger:hover,.trigger[aria-expanded=true],.toggle:hover{background:#ffffff12}
 .trigger:focus-visible,.toggle:focus-visible{outline-offset:-2px}
 .logo{width:var(--logo-size);height:var(--logo-size);display:block;flex-shrink:0}.toggle-track{position:relative;display:block;width:var(--track-width);height:var(--track-height);border-radius:999px;background:#ffffff1c;box-shadow:inset 0 0 0 1px #ffffff28}.toggle-thumb{position:absolute;left:2px;top:2px;width:var(--thumb-size);height:var(--thumb-size);border-radius:50%;background:#ffffffb3}.toggle[aria-pressed=true] .toggle-track{background:#b6533e;box-shadow:none}.toggle[aria-pressed=true] .toggle-thumb{transform:translateX(calc(var(--track-width) - var(--thumb-size) - 4px));background:#fff8ec}
-.panel{position:fixed;width:240px;background:#1a1d24f7;border:1px solid #ffffff26;border-radius:10px;padding:14px;color:white;box-shadow:0 6px 24px #0005;pointer-events:auto;overflow:auto;overscroll-behavior:contain}.panel h2{font-size:12px;font-weight:550;margin:0 0 12px}.presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.presets button{min-width:0;background:#ffffff12;border:1px solid #ffffff20;border-radius:6px;color:#dfdfdf;font-size:12px;line-height:1.35;padding:8px 6px;white-space:normal;overflow-wrap:anywhere}.presets button[aria-pressed=true]{border-color:#cc8a6d;background:#b6533e45;color:#ffe5d8}
+.panel{position:fixed;width:240px;background:#1a1d24f7;border:1px solid #ffffff26;border-radius:10px;padding:14px;color:white;box-shadow:0 6px 24px #0005;pointer-events:auto;overflow:auto;overscroll-behavior:contain}.panel h2{font-size:12px;font-weight:550;margin:0 0 12px}.presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.presets button{min-width:0;background:#ffffff12;border:1px solid #ffffff20;border-radius:6px;color:#dfdfdf;font-size:12px;line-height:1.35;padding:8px 6px;white-space:normal;overflow-wrap:anywhere}.presets button[aria-pressed=true]{border-color:#cc8a6d;background:#b6533e45;color:#ffe5d8}
 .size-row{display:flex;align-items:center;margin:14px 0;padding-top:12px;border-top:1px solid #ffffff20;gap:9px}.size-label{font-size:11px;margin-right:auto;color:#d1d0ce}.size-row button{width:25px;height:25px;background:#ffffff12;border:1px solid #ffffff24;border-radius:5px;color:white;font-size:15px;line-height:1}.size-row output{font-size:12px;min-width:40px;font-variant-numeric:tabular-nums;text-align:center}.reset{width:100%;background:transparent;border:0;border-top:1px solid #ffffff20;padding:12px 0 0;text-align:left;color:#dbd8d6;font-size:11px}.error{margin:12px 0 0;font-size:11px;line-height:1.5;color:#f4bcaa}
+.appearance-row{border-top:1px solid #ffffff20;padding-top:12px;margin:14px 0}.field-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.field-heading label,.field-heading span{font-size:11px;color:#d1d0ce}.field-heading output{font-size:11px;color:#d1d0ce;font-variant-numeric:tabular-nums}.background-range{appearance:none;width:100%;height:4px;margin:8px 0;background:linear-gradient(to right,#cc8a6d 0 var(--depth),#ffffff26 var(--depth) 100%);border-radius:99px;cursor:pointer}.background-range::-webkit-slider-thumb{appearance:none;width:13px;height:13px;border-radius:50%;background:#ffe5d8;border:2px solid #cc8a6d}.background-range::-moz-range-thumb{width:9px;height:9px;border-radius:50%;background:#ffe5d8;border:2px solid #cc8a6d}.background-range:focus-visible,.color-picker:focus-visible{outline:2px solid #e8b29b;outline-offset:4px}.color-options{display:flex;align-items:center;gap:6px}.color-swatch{flex:0 0 26px;width:26px;height:26px;display:grid;place-items:center;border:1px solid #ffffff20;border-radius:6px;background:#ffffff08;padding:0}.color-swatch span{width:12px;height:12px;border-radius:50%;border:1px solid #ffffff30}.color-swatch[aria-pressed=true]{border-color:#cc8a6d;background:#b6533e45}.color-custom{margin-left:auto;display:flex;align-items:center;gap:6px;font:10px ui-monospace,monospace;color:#dfdfdf;white-space:nowrap}.color-picker{width:26px;height:26px;border:1px solid #ffffff26;border-radius:6px;padding:3px;background:#ffffff08;cursor:pointer}
 :host([data-narrow]) .dock{--tool-height:26px;--action-width:28px;--logo-size:18px;--track-width:23px;--track-height:13px;--thumb-size:9px}
 :host([data-narrow]) .panel{padding:8px}:host([data-narrow]) .panel h2{display:none}:host([data-narrow]) .presets button{padding:5px 6px}:host([data-narrow]) .size-row{margin:6px 0;padding-top:6px}:host([data-narrow]) .reset{padding-top:6px}
+:host([data-narrow]) .appearance-row{margin:8px 0;padding-top:8px}
 `
 
 /** Independent from caption availability: the reader can enable translation before a cue arrives. */
@@ -102,10 +104,47 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
   const larger = element("button", "larger")
   larger.textContent = "+"
   sizeRow.append(sizeCaption, smaller, sizeOutput, larger)
+  const backgroundRow = element("div", "appearance-row")
+  const backgroundHeading = element("div", "field-heading")
+  const backgroundLabel = element("label")
+  backgroundLabel.htmlFor = "readomi-background-depth"
+  const backgroundOutput = element("output")
+  const backgroundRange = element("input", "background-range")
+  backgroundRange.id = backgroundLabel.htmlFor
+  backgroundRange.type = "range"
+  backgroundRange.min = "0"
+  backgroundRange.max = "100"
+  backgroundRange.step = "1"
+  backgroundHeading.append(backgroundLabel, backgroundOutput)
+  backgroundRow.append(backgroundHeading, backgroundRange)
+  const colorRow = element("div", "appearance-row")
+  const colorHeading = element("div", "field-heading")
+  const colorLabel = element("span")
+  colorHeading.append(colorLabel)
+  const colorOptions = element("div", "color-options")
+  colorOptions.setAttribute("role", "group")
+  const colorButtons = Object.entries(SUBTITLE_TRANSLATION_COLORS).map(([name, color]) => {
+    const button = element("button", "color-swatch")
+    button.dataset.color = color
+    const swatch = element("span")
+    swatch.style.backgroundColor = color
+    swatch.setAttribute("aria-hidden", "true")
+    button.append(swatch)
+    button.addEventListener("click", () => options.onStyleChange({ translationColor: color }))
+    colorOptions.append(button)
+    return { button, name: name as keyof typeof SUBTITLE_TRANSLATION_COLORS, color }
+  })
+  const colorCustom = element("label", "color-custom")
+  const colorPicker = element("input", "color-picker")
+  colorPicker.type = "color"
+  const colorOutput = element("output")
+  colorCustom.append(colorPicker, colorOutput)
+  colorOptions.append(colorCustom)
+  colorRow.append(colorHeading, colorOptions)
   const reset = element("button", "reset")
   const error = element("p", "error")
   error.setAttribute("role", "status")
-  panel.append(heading, presets, sizeRow, reset, error)
+  panel.append(heading, presets, sizeRow, backgroundRow, colorRow, reset, error)
   shadow.append(style, dock, panel)
   const presetButtons = SUBTITLE_PRESETS.map((preset) => {
     const button = owner.createElement("button")
@@ -135,13 +174,31 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     }
     sizeCaption.textContent = i18n.t("subtitleStyle.fontSize")
     sizeOutput.textContent = formatSubtitleFontSize(state.appearance)
-    const size = subtitleSizeSettings(state.appearance)
     for (const [button, label] of [[smaller, i18n.t("subtitleStyle.smaller")], [larger, i18n.t("subtitleStyle.larger")], [reset, i18n.t("subtitleStyle.resetPosition")]] as const) {
       button.setAttribute("aria-label", label)
       button.title = label
     }
-    smaller.disabled = size.value <= size.min
-    larger.disabled = size.value >= size.max
+    smaller.disabled = state.appearance.relativeFontSize <= SUBTITLE_RELATIVE_FONT_SIZE_MIN
+    larger.disabled = state.appearance.relativeFontSize >= SUBTITLE_RELATIVE_FONT_SIZE_MAX
+    const depth = effectiveSubtitleBackgroundOpacity(state.appearance)
+    backgroundLabel.textContent = i18n.t("subtitleStyle.backgroundOpacity")
+    backgroundRange.setAttribute("aria-label", backgroundLabel.textContent)
+    backgroundRange.setAttribute("aria-valuetext", `${depth}%`)
+    backgroundRange.value = String(depth)
+    backgroundRange.style.setProperty("--depth", `${depth}%`)
+    backgroundOutput.textContent = `${depth}%`
+    colorLabel.textContent = i18n.t("subtitleStyle.translationColor")
+    colorOptions.setAttribute("aria-label", colorLabel.textContent)
+    for (const { button, name, color } of colorButtons) {
+      const label = i18n.t(`subtitleStyle.translationColors.${name}`)
+      button.setAttribute("aria-label", label)
+      button.title = label
+      button.setAttribute("aria-pressed", String(state.appearance.translationColor.toLowerCase() === color))
+    }
+    colorPicker.setAttribute("aria-label", i18n.t("subtitleStyle.translationColorPicker"))
+    colorPicker.title = i18n.t("subtitleStyle.translationColorPicker")
+    colorPicker.value = state.appearance.translationColor
+    colorOutput.textContent = state.appearance.translationColor.toUpperCase()
     reset.textContent = i18n.t("subtitleStyle.resetPosition")
     error.textContent = i18n.t("videoTranslationControls.saveFailed")
     error.hidden = !state.saveFailed
@@ -344,7 +401,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     if (event.key === "ArrowDown") {
       event.preventDefault()
       setMenu(true)
-      presetButtons[SUBTITLE_PRESETS.indexOf(state.appearance.preset)].focus({ preventScroll: true })
+      presetButtons[Math.max(0, SUBTITLE_PRESETS.findIndex(preset => preset === state.appearance.preset))].focus({ preventScroll: true })
     }
   })
   presets.addEventListener("keydown", (event) => {
@@ -352,17 +409,18 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     if (index < 0 || !["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(event.key))
       return
     event.preventDefault()
-    const offset = event.key === "ArrowUp" ? -2 : event.key === "ArrowDown" ? 2 : event.key === "ArrowLeft" ? -1 : 1
+    const offset = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1
     const next = event.key === "Home" ? 0 : event.key === "End" ? presetButtons.length - 1 : (index + offset + presetButtons.length) % presetButtons.length
     presetButtons[next].focus({ preventScroll: true })
     presetButtons[next].click()
   })
   const changeSize = (direction: number) => {
-    const size = subtitleSizeSettings(state.appearance)
-    options.onStyleChange(subtitleSizePatch(Math.max(size.min, Math.min(size.max, size.value + direction * size.step))))
+    options.onStyleChange({ relativeFontSize: Math.max(SUBTITLE_RELATIVE_FONT_SIZE_MIN, Math.min(SUBTITLE_RELATIVE_FONT_SIZE_MAX, state.appearance.relativeFontSize + direction * SUBTITLE_RELATIVE_FONT_SIZE_STEP)) })
   }
   smaller.addEventListener("click", () => changeSize(-1))
   larger.addEventListener("click", () => changeSize(1))
+  backgroundRange.addEventListener("input", () => options.onStyleChange(subtitleBackgroundPatch(Number(backgroundRange.value))))
+  colorPicker.addEventListener("input", () => options.onStyleChange({ translationColor: colorPicker.value.toLowerCase() }))
   reset.addEventListener("click", () => options.onStyleChange({ position: SUBTITLE_POSITIONS.bottom }))
   const onOutsidePointer = (event: Event) => {
     if (menuOpen && !event.composedPath().includes(host))

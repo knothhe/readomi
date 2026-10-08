@@ -5,6 +5,7 @@ import { cn } from "@/utils/styles/utils"
 interface SettingsSliderProps {
   "id"?: string
   "value": number
+  "displayValue"?: number
   "min": number
   "max": number
   "step"?: number
@@ -20,7 +21,7 @@ interface SettingsSliderProps {
 }
 
 /** Keeps the browser's range semantics and arrow keys, with visible progress and precise step controls. */
-export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, disabled, className, "aria-label": ariaLabel, unit = "", showLimits = true, allowDecimal = false, decrementLabel, incrementLabel }: SettingsSliderProps) {
+export function SettingsSlider({ id, value, displayValue = value, min, max, step = 1, onValueChange, disabled, className, "aria-label": ariaLabel, unit = "", showLimits = true, allowDecimal = false, decrementLabel, incrementLabel }: SettingsSliderProps) {
   const generatedId = useId()
   const rangeId = id ?? generatedId
   const [draft, setDraft] = useState<string | null>(null)
@@ -37,7 +38,7 @@ export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, d
   }
   const change = (next: number) => {
     setDraft(null)
-    onValueChange(Number(next.toFixed(5)))
+    onValueChange(allowDecimal ? next : Number(next.toFixed(5)))
   }
   return (
     <div className={cn("settings-slider", className)} data-disabled={disabled || undefined}>
@@ -47,7 +48,7 @@ export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, d
           id={rangeId}
           type="range"
           aria-label={ariaLabel}
-          aria-valuetext={`${value}${unit ? ` ${unit}` : ""}`}
+          aria-valuetext={`${displayValue}${unit ? ` ${unit}` : ""}`}
           min={min}
           max={max}
           step={step}
@@ -65,7 +66,7 @@ export function SettingsSlider({ id, value, min, max, step = 1, onValueChange, d
             min={min}
             max={max}
             step={step >= 1 && !allowDecimal ? 1 : "any"}
-            value={draft ?? value}
+            value={draft ?? displayValue}
             disabled={disabled}
             onChange={event => setDraft(event.target.value)}
             onBlur={commit}

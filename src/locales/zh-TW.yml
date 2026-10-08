@@ -575,7 +575,7 @@ subtitleStyle:
   controlsTitle: 翻譯與樣式
   moreOptions: 更多選項
   custom: 自訂
-  customDescription: 自訂大小、背景與字幕位置
+  customDescription: 自訂大小、比例、譯文字體、顏色、背景與位置
   autoSave: 調整會自動儲存。
   adjust: Style and position
   presetDescription: 選擇一個起點，再調整字級和背景。
@@ -593,7 +593,7 @@ subtitleStyle:
   fontSize: 字幕大小
   originalFontScale: 原文相對字級
   originalFontScaleValue: 原文相對字級數值
-  originalFontScaleDefault: 預設 1:1
+  originalFontScaleDefault: "1:1 等大"
   originalFontScaleDescription: 以譯文字級為基準，100% 時原文與譯文等大。
   originalFontScaleSummary: 原文 $1%
   originalFontScalePresets: 常用原文比例
@@ -606,7 +606,7 @@ subtitleStyle:
   previewBilingualFontSize: 原文 $1 px · 譯文 $2 px
   previewTranslatedFontSize: 譯文 $1 px
   commonSizes: 常用大小
-  relativeFontDescription: 隨影片視窗和全螢幕自動縮放，100% 為預設大小。
+  relativeFontDescription: "隨影片視窗與全螢幕自動縮放，100% 為基準大小。"
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: 預覽畫面
@@ -634,11 +634,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: 譯文字體
+  translationFontDescription: 僅調整譯文；原文沿用預設字體。
+  translationColor: 譯文顏色
+  translationColorValue: 譯文顏色色碼
+  translationColorPicker: 選擇譯文顏色
+  translationColorDescription: 僅調整譯文；保留描邊，明亮畫面也能看清。
+  translationColorInvalid: "請輸入六位十六進位顏色，例如 #FFE0A0。"
+  translationFonts:
+    sans: 預設（無襯線）
+    serif: 宋體（襯線）
+  translationColors:
+    white: 柔白
+    gold: 暖金
+    mint: 淺青
+  presetSummaries:
+    clear: 白字 · 無底色
+    gold: 金字 · 無底色
+    ink: 柔白 · 深色底
   presets:
-    clear: 清透
+    clear: 素白
     compact: 輕量
     study: 專注
     cinema: 影院
+    gold: 暖金
+    ink: 墨箋
   positions:
     top: Top
     center: Center

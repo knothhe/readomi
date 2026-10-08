@@ -595,7 +595,7 @@ subtitleStyle:
   controlsTitle: Çeviri ve stil
   moreOptions: More options
   custom: Özelleştir
-  customDescription: Boyut, arka plan ve konumu özelleştir
+  customDescription: "Boyut, oran, çeviri yazı tipi, renk, arka plan ve konumu özelleştir"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -613,7 +613,7 @@ subtitleStyle:
   fontSize: Altyazı boyutu
   originalFontScale: Orijinal metin boyutu
   originalFontScaleValue: Orijinal metin boyutu değeri
-  originalFontScaleDefault: Varsayılan 1:1
+  originalFontScaleDefault: "1:1 eşit boyut"
   originalFontScaleDescription: Çeviriye göre ayarlanır; %100 olduğunda iki satır aynı boyuttadır.
   originalFontScaleSummary: Orijinal %$1
   originalFontScalePresets: Sık kullanılan orijinal metin boyutları
@@ -626,7 +626,7 @@ subtitleStyle:
   previewBilingualFontSize: Orijinal $1 px · Çeviri $2 px
   previewTranslatedFontSize: Çeviri $1 px
   commonSizes: Yaygın boyutlar
-  relativeFontDescription: Video penceresine ve tam ekrana göre otomatik ölçeklenir. Varsayılan boyut %100’dür.
+  relativeFontDescription: "Video penceresi ve tam ekranla ölçeklenir; %100 referans boyuttur."
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Önizleme biçimi
@@ -657,11 +657,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: Çeviri yazı tipi
+  translationFontDescription: Yalnızca çeviriyi değiştirir; özgün metin varsayılan yazı tipini korur.
+  translationColor: Çeviri rengi
+  translationColorValue: Çeviri rengi HEX değeri
+  translationColorPicker: Çeviri rengini seç
+  translationColorDescription: Yalnızca çeviriyi değiştirir; kenarlıklar parlak sahnelerde okunabilirliği korur.
+  translationColorInvalid: "#FFE0A0 gibi altı haneli bir HEX rengi girin."
+  translationFonts:
+    sans: Varsayılan (serifsiz)
+    serif: Songti (serifli)
+  translationColors:
+    white: Yumuşak beyaz
+    gold: Sıcak altın
+    mint: Açık turkuaz
+  presetSummaries:
+    clear: Beyaz · Arka plansız
+    gold: Altın · Arka plansız
+    ink: Beyaz · Koyu arka plan
   presets:
-    clear: Transparent
+    clear: Saf beyaz
     compact: Compact
     study: Odak
     cinema: Cinema
+    gold: Sıcak altın
+    ink: Mürekkep kartı
   positions:
     top: Top
     center: Center

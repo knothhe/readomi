@@ -1,5 +1,5 @@
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
-import { DEFAULT_SUBTITLE_STYLE, SUBTITLE_PRESET_STYLES, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP } from "@/types/config/subtitle-style"
+import { SUBTITLE_DEFAULT_SIZE_BASIS, SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP } from "@/types/config/subtitle-style"
 import { sendMessage } from "@/utils/message"
 
 export const SUBTITLE_POSITIONS = {
@@ -8,11 +8,11 @@ export const SUBTITLE_POSITIONS = {
   bottom: { x: 50, y: 88 },
 } as const
 
-export function subtitlePresetPatch(preset: SubtitleStyle["preset"]): Pick<SubtitleStyle, "preset" | "relativeFontSize" | "backgroundEnabled" | "backgroundOpacity"> {
+export function subtitlePresetPatch(preset: SubtitleStyle["preset"]): Partial<SubtitleStyle> & Pick<SubtitleStyle, "preset" | "relativeFontSize" | "backgroundEnabled" | "backgroundOpacity"> {
   return { preset, ...SUBTITLE_PRESET_STYLES[preset] }
 }
 
-const FONT_SCALE_FACTOR = 100 / DEFAULT_SUBTITLE_STYLE.relativeFontSize
+const FONT_SCALE_FACTOR = 100 / SUBTITLE_DEFAULT_SIZE_BASIS
 
 /** The reader sees 100% at the default short-side proportion, independently of the preset. */
 export function subtitleSizeSettings(style: SubtitleStyle) {
@@ -26,7 +26,7 @@ export function subtitleSizeSettings(style: SubtitleStyle) {
 }
 
 export function subtitleSizePatch(value: number): Pick<SubtitleStyle, "relativeFontSize"> {
-  return { relativeFontSize: value / FONT_SCALE_FACTOR }
+  return { relativeFontSize: Number((value / FONT_SCALE_FACTOR).toFixed(12)) }
 }
 
 export function formatSubtitleFontSize(style: SubtitleStyle): string {
@@ -43,11 +43,14 @@ export function subtitleBackgroundPatch(backgroundOpacity: number): Pick<Subtitl
   return { backgroundOpacity, backgroundEnabled: backgroundOpacity > 0 }
 }
 
-/** A preset remains selected only while its active size and visible background settings match. */
+/** A preset remains selected while all of its appearance settings match; position stays independent. */
 export function isSubtitlePresetModified(style: SubtitleStyle): boolean {
   const preset = SUBTITLE_PRESET_STYLES[style.preset]
   const presetSize = subtitleSizeSettings({ ...style, ...preset }).value
   return Math.abs(subtitleSizeSettings(style).value - presetSize) > 1e-9
+    || ("originalFontScale" in preset && style.originalFontScale !== preset.originalFontScale)
+    || ("translationFont" in preset && style.translationFont !== preset.translationFont)
+    || ("translationColor" in preset && style.translationColor.toLowerCase() !== preset.translationColor)
     || effectiveSubtitleBackgroundOpacity(style) !== effectiveSubtitleBackgroundOpacity(preset)
 }
 
@@ -78,18 +81,29 @@ export function subtitleVideoSize(video: HTMLVideoElement, rect = video.getBound
 
 /** Shared presentation for the settings preview and the in-video renderer. */
 export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640, videoHeight = videoWidth * 9 / 16) {
+  const ink = style.preset === "ink"
+  const modern = (SUBTITLE_PRESETS as readonly SubtitleStyle["preset"][]).includes(style.preset)
+  const hasBackground = effectiveSubtitleBackgroundOpacity(style) > 0
   return {
     "--readomi-original-font-scale": `${style.originalFontScale / 100}em`,
+    "--readomi-translation-font": style.translationFont === "serif" ? "\"Songti SC\", \"STSong\", \"Noto Serif CJK SC\", \"SimSun\", serif" : "system-ui, \"PingFang SC\", sans-serif",
+    "--readomi-translation-color": style.translationColor,
+    "--readomi-translation-letter-spacing": style.translationFont === "serif" ? "0.04em" : "0",
+    "--readomi-original-color": ink ? "#d1dcdf" : style.preset === "gold" ? "#fff7e9" : "#fff",
+    "--readomi-original-weight": ink ? "400" : style.preset === "gold" ? "500" : "600",
+    "--readomi-original-gap": modern ? ink ? "0.35em" : "0.22em" : "4px",
     "fontSize": `${resolveSubtitleFontSize(style, videoWidth, videoHeight)}px`,
-    "fontWeight": style.preset === "compact" ? "500" : "600",
-    "lineHeight": "1.4",
+    "fontWeight": ink || style.preset === "compact" ? "500" : "600",
     "color": "#fff",
-    "textAlign": "center" as const,
+    "textAlign": ink ? "left" as const : "center" as const,
     "whiteSpace": "pre-line" as const,
-    "textShadow": "0 2px 4px #000,0 0 2px #000",
-    "background": style.backgroundEnabled ? `rgba(15,20,35,${style.backgroundOpacity / 100})` : "transparent",
-    "borderRadius": style.backgroundEnabled ? "8px" : "0",
-    "padding": style.backgroundEnabled ? style.preset === "compact" ? "8px 14px" : "10px 16px" : "0",
+    "textShadow": ink && hasBackground ? "none" : modern ? "0 2px 4px #0008" : "0 2px 4px #000,0 0 2px #000",
+    "WebkitTextStroke": modern && !(ink && hasBackground) ? "0.075em #17201ccc" : "0",
+    "paintOrder": "stroke fill",
+    "lineHeight": "1.4",
+    "background": style.backgroundEnabled ? `rgba(${ink ? "16,25,27" : "15,20,35"},${style.backgroundOpacity / 100})` : "transparent",
+    "borderRadius": style.backgroundEnabled ? ink ? "0.4em" : "8px" : "0",
+    "padding": style.backgroundEnabled ? ink ? "0.6em 0.9em" : style.preset === "compact" ? "8px 14px" : "10px 16px" : "0",
   }
 }
 

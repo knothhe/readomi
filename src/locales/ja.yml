@@ -575,7 +575,7 @@ subtitleStyle:
   controlsTitle: 翻訳とスタイル
   moreOptions: More options
   custom: カスタマイズ
-  customDescription: サイズ、背景、字幕位置をカスタマイズ
+  customDescription: サイズ、比率、訳文のフォント、色、背景、位置を調整
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -593,7 +593,7 @@ subtitleStyle:
   fontSize: 字幕サイズ
   originalFontScale: 原文の文字サイズ
   originalFontScaleValue: 原文の文字サイズの値
-  originalFontScaleDefault: 既定 1:1
+  originalFontScaleDefault: "1:1 同じサイズ"
   originalFontScaleDescription: 訳文を基準に、100% で原文と訳文が同じ大きさになります。
   originalFontScaleSummary: 原文 $1%
   originalFontScalePresets: 原文サイズのプリセット
@@ -606,7 +606,7 @@ subtitleStyle:
   previewBilingualFontSize: 原文 $1 px · 訳文 $2 px
   previewTranslatedFontSize: 訳文 $1 px
   commonSizes: よく使うサイズ
-  relativeFontDescription: 動画ウィンドウと全画面表示に合わせて自動調整します。100% が標準サイズです。
+  relativeFontDescription: "動画ウィンドウと全画面に合わせて拡大縮小します。100% が基準サイズです。"
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: プレビュー画面
@@ -635,11 +635,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: 訳文のフォント
+  translationFontDescription: 訳文のみ変更します。原文は標準フォントを使います。
+  translationColor: 訳文の色
+  translationColorValue: 訳文のカラーコード
+  translationColorPicker: 訳文の色を選択
+  translationColorDescription: 訳文のみ変更します。縁取りで明るい映像でも読みやすくします。
+  translationColorInvalid: "#FFE0A0 など、6桁の16進数カラーコードを入力してください。"
+  translationFonts:
+    sans: 標準（サンセリフ）
+    serif: 明朝体（セリフ）
+  translationColors:
+    white: ソフトホワイト
+    gold: ウォームゴールド
+    mint: ライトティール
+  presetSummaries:
+    clear: 白文字 · 背景なし
+    gold: 金文字 · 背景なし
+    ink: 白文字 · 暗い背景
   presets:
-    clear: Transparent
+    clear: ピュアホワイト
     compact: Compact
     study: 集中
     cinema: Cinema
+    gold: ウォームゴールド
+    ink: インクカード
   positions:
     top: Top
     center: Center

@@ -594,7 +594,7 @@ subtitleStyle:
   controlsTitle: Перевод и стиль
   moreOptions: More options
   custom: Настроить
-  customDescription: Настроить размер, фон и положение
+  customDescription: "Настройка размера, пропорции, шрифта, цвета, фона и положения"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -612,7 +612,7 @@ subtitleStyle:
   fontSize: Размер субтитров
   originalFontScale: Размер исходного текста
   originalFontScaleValue: Значение размера исходного текста
-  originalFontScaleDefault: По умолчанию 1:1
+  originalFontScaleDefault: "1:1 равный размер"
   originalFontScaleDescription: Относительно перевода; при 100% обе строки одинакового размера.
   originalFontScaleSummary: Оригинал $1%
   originalFontScalePresets: Стандартные размеры исходного текста
@@ -625,7 +625,7 @@ subtitleStyle:
   previewBilingualFontSize: Оригинал $1 px · Перевод $2 px
   previewTranslatedFontSize: Перевод $1 px
   commonSizes: Стандартные размеры
-  relativeFontDescription: Автоматически масштабируется с окном видео и в полноэкранном режиме. 100% — размер по умолчанию.
+  relativeFontDescription: "Масштабируется с окном видео и полным экраном; 100% — базовый размер."
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Формат предпросмотра
@@ -656,11 +656,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: Шрифт перевода
+  translationFontDescription: Меняет только перевод; оригинал сохраняет стандартный шрифт.
+  translationColor: Цвет перевода
+  translationColorValue: HEX-код цвета перевода
+  translationColorPicker: Выбрать цвет перевода
+  translationColorDescription: Меняет только перевод; обводка сохраняет читаемость на светлом фоне.
+  translationColorInvalid: "Введите шестизначный HEX-цвет, например #FFE0A0."
+  translationFonts:
+    sans: Стандартный (без засечек)
+    serif: Songti (с засечками)
+  translationColors:
+    white: Мягкий белый
+    gold: Тёплый золотой
+    mint: Светлый бирюзовый
+  presetSummaries:
+    clear: Белый · Без фона
+    gold: Золотой · Без фона
+    ink: Белый · Тёмный фон
   presets:
-    clear: Transparent
+    clear: Чистый белый
     compact: Compact
     study: Фокус
     cinema: Cinema
+    gold: Тёплый золотой
+    ink: Чернильная карточка
   positions:
     top: Top
     center: Center

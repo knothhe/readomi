@@ -590,7 +590,7 @@ subtitleStyle:
   controlsTitle: Dịch và kiểu hiển thị
   moreOptions: More options
   custom: Tùy chỉnh
-  customDescription: Tùy chỉnh kích thước, nền và vị trí
+  customDescription: "Tùy chỉnh kích thước, tỷ lệ, phông chữ, màu, nền và vị trí"
   autoSave: Changes save automatically.
   adjust: Style and position
   presetDescription: Choose a starting point, then adjust size and background.
@@ -608,7 +608,7 @@ subtitleStyle:
   fontSize: Kích thước phụ đề
   originalFontScale: Cỡ chữ gốc
   originalFontScaleValue: Giá trị cỡ chữ gốc
-  originalFontScaleDefault: Mặc định 1:1
+  originalFontScaleDefault: "1:1 cùng kích thước"
   originalFontScaleDescription: So với bản dịch; 100% khiến hai dòng có cùng cỡ chữ.
   originalFontScaleSummary: Bản gốc $1%
   originalFontScalePresets: Cỡ chữ gốc thường dùng
@@ -621,7 +621,7 @@ subtitleStyle:
   previewBilingualFontSize: Bản gốc $1 px · Bản dịch $2 px
   previewTranslatedFontSize: Bản dịch $1 px
   commonSizes: Kích thước thường dùng
-  relativeFontDescription: Tự động thay đổi theo cửa sổ video và chế độ toàn màn hình. 100% là kích thước mặc định.
+  relativeFontDescription: "Thay đổi theo cửa sổ video và toàn màn hình; 100% là kích thước tham chiếu."
   position: Subtitle position
   preview: Subtitle preview
   previewAspectRatio: Khung xem trước
@@ -651,11 +651,31 @@ subtitleStyle:
   reset: Restore defaults
   resetPosition: Reset subtitle position
   resetPositionShort: Reset
+  translationFont: Phông chữ bản dịch
+  translationFontDescription: Chỉ thay đổi bản dịch; bản gốc giữ phông chữ mặc định.
+  translationColor: Màu bản dịch
+  translationColorValue: Mã màu HEX của bản dịch
+  translationColorPicker: Chọn màu bản dịch
+  translationColorDescription: Chỉ thay đổi bản dịch; viền chữ giúp dễ đọc trên cảnh sáng.
+  translationColorInvalid: "Nhập mã màu HEX gồm sáu chữ số, ví dụ #FFE0A0."
+  translationFonts:
+    sans: Mặc định (không chân)
+    serif: Songti (có chân)
+  translationColors:
+    white: Trắng dịu
+    gold: Vàng ấm
+    mint: Xanh ngọc nhạt
+  presetSummaries:
+    clear: Trắng · Không nền
+    gold: Vàng · Không nền
+    ink: Trắng dịu · Nền tối
   presets:
-    clear: Transparent
+    clear: Trắng tinh
     compact: Compact
     study: Tập trung
     cinema: Cinema
+    gold: Vàng ấm
+    ink: Thẻ mực
   positions:
     top: Top
     center: Center

@@ -220,27 +220,30 @@ it("manual setup and local backup restore work without an account", async () => 
   const presets = features.getByRole("group", { name: "Subtitle preset", exact: true })
   assert.equal(await features.getByRole("group", { name: "Size mode", exact: true }).count(), 0)
   assert.equal(await custom.evaluate(element => element.open), false)
-  await presets.getByRole("button", { name: "Focus", exact: true }).click()
-  await waitForSaved(config => config.features.subtitleStyle.preset === "study")
+  await presets.getByRole("button", { name: "Ink card", exact: true }).click()
+  await waitForSaved(config => config.features.subtitleStyle.preset === "ink")
   assert.equal(await custom.evaluate(element => element.open), false, "selecting a preset keeps fine controls collapsed")
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, {
     ...restored.features.subtitleStyle,
-    preset: "study",
-    relativeFontSize: 6.25,
+    preset: "ink",
+    relativeFontSize: 3.5,
+    originalFontScale: 100,
+    translationFont: "sans",
+    translationColor: "#f9fafb",
     backgroundEnabled: true,
-    backgroundOpacity: 65,
+    backgroundOpacity: 78,
   })
   await custom.locator("summary").click()
   const sizeSlider = features.getByRole("slider", { name: "Subtitle size", exact: true })
   const sizeNumber = features.getByRole("spinbutton", { name: "Subtitle size", exact: true })
-  assert.equal(await sizeSlider.getAttribute("min"), "25")
-  assert.equal(await sizeSlider.getAttribute("max"), "500")
-  assert.equal(await sizeSlider.inputValue(), "125")
+  assert.equal(await sizeSlider.getAttribute("min"), "35.714285714285715")
+  assert.equal(await sizeSlider.getAttribute("max"), "714.2857142857143")
+  assert.equal(await sizeSlider.inputValue(), "100")
   await sizeSlider.press("End")
   await waitForSaved(config => config.features.subtitleStyle.relativeFontSize === 25)
   await sizeSlider.blur()
-  assert.equal(await sizeNumber.inputValue(), "500")
-  assert.ok(await features.locator(".subtitle-preview-scene").evaluate(scene => Math.abs(Number.parseFloat(scene.lastElementChild.style.fontSize) - scene.getBoundingClientRect().width * 9 / 16 * 0.25) < 0.05))
+  assert.equal(await sizeNumber.inputValue(), "714.28571")
+  assert.ok(await features.locator(".subtitle-preview-scene").evaluate(scene => Math.abs(Number.parseFloat(scene.lastElementChild.style.fontSize) - scene.clientWidth * 9 / 16 * 0.25) < 0.05))
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: "/tmp/readomi-subtitle-settings.png", fullPage: true })
   await page.getByRole("link", { name: "Appearance", exact: true }).click()
@@ -248,19 +251,18 @@ it("manual setup and local backup restore work without an account", async () => 
   await page.waitForFunction(() => document.documentElement.classList.contains("dark"))
   await page.getByRole("link", { name: "Video subtitles", exact: true }).click()
   await page.screenshot({ path: "/tmp/readomi-subtitle-settings-dark.png", fullPage: true })
-  await presets.getByRole("button", { name: "Transparent", exact: true }).click()
-  await features.getByRole("group", { name: "Common sizes", exact: true }).getByRole("button", { name: "100%", exact: true }).click()
+  await presets.getByRole("button", { name: "Pure white", exact: true }).click()
   await waitForSaved((config) => {
     const style = config.features.subtitleStyle
-    return style.preset === "clear" && style.relativeFontSize === 5 && style.backgroundOpacity === 0
+    return style.preset === "clear" && style.relativeFontSize === 3.5 && style.backgroundOpacity === 0
   })
   assert.deepEqual((await storedConfig(context)).features.subtitleStyle, restored.features.subtitleStyle)
-  assert.equal(await presets.getByRole("button", { name: "Transparent", exact: true }).getAttribute("aria-pressed"), "true")
+  assert.equal(await presets.getByRole("button", { name: "Pure white", exact: true }).getAttribute("aria-pressed"), "true")
   assert.equal(await features.getByRole("slider", { name: "Background depth", exact: true }).inputValue(), "0")
   await page.setViewportSize({ width: 390, height: 844 })
   assert.equal(await features.evaluate(el => el.scrollWidth <= el.clientWidth), true)
   assert.equal(await sizeNumber.inputValue(), "100")
-  assert.ok(await features.locator(".subtitle-preview-scene").evaluate(scene => Math.abs(Number.parseFloat(scene.lastElementChild.style.fontSize) - scene.getBoundingClientRect().width * 9 / 16 * 0.05) < 0.05), "subtitles scale to the mobile preview")
+  assert.ok(await features.locator(".subtitle-preview-scene").evaluate(scene => Math.abs(Number.parseFloat(scene.lastElementChild.style.fontSize) - scene.clientWidth * 9 / 16 * 0.035) < 0.05), "subtitles scale to the mobile preview")
   await page.screenshot({ path: "/tmp/readomi-subtitle-settings-mobile.png", fullPage: true })
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.getByRole("link", { name: "Appearance", exact: true }).click()
