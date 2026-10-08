@@ -10,7 +10,7 @@
 
 #readomi-settings-light .rd-video-preview{min-height:0!important}#readomi-settings-light .rd-caption span{padding:0}#readomi-settings-light .rd-preview-aspects{margin-bottom:10px}#readomi-settings-light .rd-preview-samples{width:fit-content;margin-bottom:14px}#readomi-settings-light .rd-preview-overflow{color:var(--rd-brand);font-size:12px;margin-top:10px}#readomi-settings-light .rd-caption{font-family:system-ui}#readomi-settings-light .rd-caption [data-sub-original]{font-size:1em}
 </style></head><body>
-<!-- Final settings design. This state supersedes the corresponding Settings-Refresh / Settings-Subtitle board. Bottom saves 88% and renders at the player-compatible 98% anchor. Preview grows by measured caption height + 24 px without shrinking text; its caption width is frame width - 16 px. -->
+<!-- Final settings design. This state supersedes the corresponding Settings-Refresh / Settings-Subtitle board. Bottom saves 88% and renders at the player-compatible 98% anchor. Preview preserves the selected aspect ratio and scales caption geometry from the reference player. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-service" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="2"></rect><rect x="4" y="14" width="16" height="6" rx="2"></rect><path d="M7 7h.01M7 17h.01M12 7h5M12 17h5"></path></symbol>
 <symbol id="i-reading" viewBox="0 0 24 24"><path d="M12 5v15M12 5C9 3 5 3 3 4v14c3-1 6-1 9 2 3-3 6-3 9-2V4c-2-1-6-1-9 1"></path></symbol>
@@ -193,8 +193,8 @@
     #readomi-settings-light .rd-video-preview { aspect-ratio:16/9; }
     #readomi-settings-light .rd-caption { position:absolute; left:50%; top:88%; transform:translate(-50%,-100%); margin:0; width:max-content; max-width:80%; border:0; border-radius:5px; padding:0; touch-action:none; user-select:none; }
     #readomi-settings-light .rd-shell .rd-caption { color:#fff; line-height:1.4; }
-    #readomi-settings-light .rd-caption span { display:block; padding:1px 3px; }
-    #readomi-settings-light .rd-caption [data-sub-original] { font-size:.85em; margin-bottom:4px; }
+    #readomi-settings-light .rd-caption span { display:block; padding:0; }
+    #readomi-settings-light .rd-caption [data-sub-original] { font-size:1em; margin-bottom:4px; }
     #readomi-settings-light .rd-preview-setting-summary { margin-top:16px; border-top:1px solid var(--rd-line); padding-top:12px; font-size:12px; color:var(--rd-muted); }
     #readomi-settings-light [data-page="video"] .rd-preview { position:sticky; top:20px; }
     #readomi-settings-light .rd-excluded-heading { margin-bottom:11px; }
