@@ -7,6 +7,8 @@
     #readomi-settings-light [data-preview-shape="portrait"] { aspect-ratio:9/16; max-width:285px; }
     #readomi-settings-light [data-preview-shape="square"] { aspect-ratio:1; max-width:285px; }
     #readomi-settings-light .rd-preview-size { display:block; margin-top:10px; color:var(--rd-muted); font-size:12px; font-variant-numeric:tabular-nums; }
+
+#readomi-settings-light .rd-video-preview{min-height:0!important}#readomi-settings-light .rd-caption span{padding:0}#readomi-settings-light .rd-preview-aspects{margin-bottom:10px}#readomi-settings-light .rd-preview-samples{width:fit-content;margin-bottom:14px}#readomi-settings-light .rd-preview-overflow{color:var(--rd-brand);font-size:12px;margin-top:10px}#readomi-settings-light .rd-caption{font-family:system-ui}#readomi-settings-light .rd-caption [data-sub-original]{font-size:1em}
 </style></head><body>
 <!-- Final settings design. This state supersedes the corresponding Settings-Refresh / Settings-Subtitle board. Bottom saves 88% and renders at the player-compatible 98% anchor. Preview grows by measured caption height + 24 px without shrinking text; its caption width is frame width - 16 px. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -412,7 +414,7 @@
           </section>
           </details>
         </div>
-        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="预览画面"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="false">横版</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">竖版</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="true">正方形</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="square"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>So we beat on, boats against the current, borne back ceaselessly into the past.</span><span>于是我们奋力向前，逆流行舟，却不断被推回往昔。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 100% · 无背景 · 底部</div></aside>
+        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="预览画面"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="false">横版</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">竖版</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="true">正方形</button></div><div class="rd-preview-samples rd-seg" role="group" aria-label="示例字幕"><button type="button" data-preview-sample="short" aria-pressed="true">短句</button><button type="button" data-preview-sample="long" aria-pressed="false">长句</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="square"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>Let’s begin our journey.</span><span>让我们开始这段旅程。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:10px">画面与字幕按同一比例缩小；长句可查看换行效果。</p><p class="rd-preview-overflow" role="status" hidden>字幕已超出画面，建议减小字号或原文比例。</p><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 100% · 无背景 · 底部</div></aside>
       </div>
     </section>
   </template>
@@ -509,11 +511,12 @@
         caption.style.fontSize=(state.relative*Math.min(previewWidth,previewWidth*previewRatios[previewAspect])/100)+'px';
         if(q('[data-preview-size]'))q('[data-preview-size]').textContent='预览字号：'+Number(parseFloat(caption.style.fontSize).toFixed(2))+' px';
         caption.style.background='rgba(15,20,35,'+state.opacity/100+')';
-        // Geometry stays stable when background depth crosses zero.
-        caption.style.padding='4px 7px';caption.style.fontWeight=state.subpreset==='compact'?'500':'600';
+        const previewScale=previewWidth/(previewAspect==='landscape'?1280:720);
+        const samples={short:['Let’s begin our journey.','让我们开始这段旅程。'],long:['So we beat on, boats against the current, borne back ceaselessly into the past.','于是我们奋力向前，逆流行舟，却不断被推回往昔。']};
+        caption.querySelector('[data-sub-original]').textContent=samples[previewSample][0];caption.lastElementChild.textContent=samples[previewSample][1];
+        caption.style.padding=state.opacity?(state.subpreset==='compact'?8:10)*previewScale+'px '+(state.subpreset==='compact'?14:16)*previewScale+'px':'0';caption.style.borderRadius=state.opacity?8*previewScale+'px':'0';caption.querySelector('[data-sub-original]').style.marginBottom=4*previewScale+'px';caption.style.textShadow='0 '+2*previewScale+'px '+4*previewScale+'px #000,0 0 '+2*previewScale+'px #000';caption.style.fontWeight=state.subpreset==='compact'?'500':'600';
         const measured=caption.getBoundingClientRect();
-        // Grow the preview for a large sample; preserve the chosen font size.
-        stage.style.minHeight=Math.ceil(measured.height+24)+'px';
+        stage.style.minHeight='';const overflow=stage.parentElement.querySelector('.rd-preview-overflow');if(overflow)overflow.hidden=measured.height<=stage.getBoundingClientRect().height;
         const box=stage.getBoundingClientRect();
         let x=state.position.x,y=state.position.y;
         if(box.width&&box.height){

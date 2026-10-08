@@ -6,6 +6,11 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Settings-Subtitle-Preview-Short-150.html", title: "字幕预览 · 短句 150%", x: 0, y: 212600, w: 1280, h: 1500 },
+    { file: "Settings-Subtitle-Preview-Long-150.html", title: "字幕预览 · 长句 150%", x: 1360, y: 212600, w: 1280, h: 1500 },
+    { file: "Settings-Subtitle-Preview-Portrait-150.html", title: "字幕预览 · 竖版短句 150%", x: 2720, y: 212600, w: 1280, h: 1500 },
+    { file: "Settings-Subtitle-Preview-Overflow.html", title: "字幕预览 · 长句 500% 超出画面", x: 0, y: 214200, w: 1280, h: 1500 },
+    { file: "Settings-Subtitle-Preview-Mobile-150.html", title: "字幕预览 · 窄屏短句 150%", x: 1360, y: 214200, w: 390, h: 1950 },
     { file: "Settings-Subtitle-Preset-Gold.html", title: "字幕预设 · 暖金 · 自定义内译文字体与颜色", x: 0, y: 210850, w: 1280, h: 1650 },
     { file: "Settings-Subtitle-Preset-Adjusted.html", title: "字幕预设 · 已调整 · 无衬线与柔白译文", x: 1360, y: 210850, w: 1280, h: 1650 },
     { file: "Video-Preset-Review.html", title: "字幕预设 · 素白 / 暖金 / 墨笺 · 三版提案", x: 0, y: 208100, w: 1440, h: 1400 },
