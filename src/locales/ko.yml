@@ -616,8 +616,16 @@ subtitleStyle:
     portrait: 세로
     square: 정사각형
   previewFontSize: "미리보기 글자 크기: $1 px"
-  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
-  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewSample: 예시 자막
+  previewSamples:
+    short: 짧은 문장
+    long: 긴 문장
+  previewScaleHint: 영상과 자막을 같은 비율로 축소합니다. 긴 문장으로 줄바꿈을 확인하세요.
+  previewOverflow: 자막이 화면을 벗어납니다. 자막 크기나 원문 비율을 줄이세요.
+  previewLongOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewLongTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewOriginal: Let’s begin our journey.
+  previewTranslation: 让我们开始这段旅程。
   dragHint: Drag subtitles to move them
   previewDragHint: 자막을 드래그해 위치를 조정하고 방향키로 미세 조정하세요.
   previewDragLabel: 드래그 가능한 자막

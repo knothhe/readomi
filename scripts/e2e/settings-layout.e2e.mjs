@@ -295,12 +295,12 @@ it("keeps settings readable across sizes, preserves prompt contents and drafts, 
   await page.keyboard.press("End")
   await page.waitForFunction(() => document.querySelector("input[type='range']")?.value === "500")
   await screenshot(page, "dark-video-max-font")
-  const captionFits = await page.getByLabel("字幕预览", { exact: true }).evaluate((frame) => {
+  const previewAspect = await page.getByLabel("字幕预览", { exact: true }).evaluate((frame) => {
     const bounds = frame.getBoundingClientRect()
-    const caption = frame.querySelector(".subtitle-preview-scene")?.lastElementChild?.getBoundingClientRect()
-    return caption && caption.left >= bounds.left && caption.right <= bounds.right && caption.top >= bounds.top && caption.bottom <= bounds.bottom
+    return bounds.width / bounds.height
   })
-  assert.equal(captionFits, true, "the largest subtitle preview fits the video frame")
+  assert.ok(Math.abs(previewAspect - 16 / 9) < 0.01, "extreme subtitle sizes preserve the selected video aspect ratio")
+  assert.equal(await page.getByText("字幕已超出画面，建议减小字号或原文比例。", { exact: true }).isVisible(), true)
   for (const width of [500, 390]) {
     await page.setViewportSize({ width, height: 844 })
     for (const language of ["en", "ru", "vi"]) {
@@ -350,7 +350,9 @@ it("keeps custom subtitle controls steady and offers all reading styles in a hor
   await depth.fill("35")
   await depth.press("Enter")
   await waitForStoredConfig(context, config => config.features.subtitleStyle.backgroundOpacity === 35 && config.features.subtitleStyle.backgroundEnabled)
-  assert.deepEqual(await frameGeometry(), plain, "adding a background preserves the custom layout and caption padding")
+  const filled = await frameGeometry()
+  assert.equal(filled.groupHeight, plain.groupHeight, "adding a background preserves the custom controls")
+  assert.ok(filled.captionWidth > plain.captionWidth && filled.captionHeight > plain.captionHeight, "preview uses the same background padding as the player")
   assert.equal((await storedConfig(context)).features.subtitleStyle.backgroundEnabled, true)
   await depthSlider.press("Home")
   await waitForStoredConfig(context, config => config.features.subtitleStyle.backgroundOpacity === 0 && !config.features.subtitleStyle.backgroundEnabled)
@@ -367,6 +369,28 @@ it("keeps custom subtitle controls steady and offers all reading styles in a hor
   assert.equal(await size.inputValue(), "125")
   await page.getByRole("group", { name: "Common sizes", exact: true }).getByRole("button", { name: "150%", exact: true }).click()
   assert.equal(await size.inputValue(), "150")
+  const sampleControls = page.getByRole("group", { name: "Sample subtitles", exact: true })
+  const previewGeometry = () => page.locator(".subtitle-preview-frame").evaluate((frame) => {
+    const stage = frame.querySelector(".subtitle-preview-scene")
+    const caption = stage.lastElementChild
+    const bounds = frame.getBoundingClientRect()
+    const scale = new DOMMatrixReadOnly(getComputedStyle(stage).transform).a
+    return { ratio: bounds.width / bounds.height, captionFraction: caption.getBoundingClientRect().height / bounds.height, fontSize: Number.parseFloat(getComputedStyle(caption).fontSize) * scale, lineHeight: Number.parseFloat(getComputedStyle(caption).lineHeight) * scale }
+  })
+  const shortPreview = await previewGeometry()
+  assert.ok(shortPreview.captionFraction < 0.3, "150% short bilingual subtitles occupy about a quarter of the frame")
+  assert.ok(Math.abs(shortPreview.ratio - 16 / 9) < 0.01)
+  await waitForStoredConfig(context, config => config.features.subtitleStyle.relativeFontSize === 7.5)
+  const savedBeforeSample = await storedConfig(context)
+  await page.screenshot({ path: "/tmp/readomi-preview-short-150-desktop.png", fullPage: true })
+  await sampleControls.getByRole("button", { name: "Long", exact: true }).click()
+  const longPreview = await previewGeometry()
+  assert.ok(longPreview.captionFraction > shortPreview.captionFraction + 0.15, "long sample demonstrates additional wrapping at the same font size")
+  assert.equal(longPreview.fontSize, shortPreview.fontSize)
+  assert.equal(longPreview.ratio, shortPreview.ratio)
+  assert.deepEqual(await storedConfig(context), savedBeforeSample, "sample choice does not change stored preferences")
+  await page.screenshot({ path: "/tmp/readomi-preview-long-150-desktop.png", fullPage: true })
+  await sampleControls.getByRole("button", { name: "Short", exact: true }).click()
   await screenshot(page, "video-custom-light")
   for (const width of [1440, 1280, 1024, 900, 861, 860, 600, 500, 390]) {
     await page.setViewportSize({ width, height: 1000 })
@@ -380,6 +404,9 @@ it("keeps custom subtitle controls steady and offers all reading styles in a hor
     })
     assert.equal(controlsOverlap, false, `the size label and presets do not overlap at ${width}px`)
   }
+  await page.screenshot({ path: "/tmp/readomi-preview-short-150-mobile.png", fullPage: true })
+  const mobilePreview = await previewGeometry()
+  assert.ok(Math.abs(mobilePreview.captionFraction - shortPreview.captionFraction) < 0.01, "mobile preview preserves the reference player proportions")
   await screenshot(page, "video-custom-mobile")
   await page.locator("nav a[href='#reading']").click()
   const styles = page.locator(".settings-reading-style-options")

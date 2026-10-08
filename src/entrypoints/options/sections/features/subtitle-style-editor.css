@@ -186,15 +186,33 @@
 }
 
 .subtitle-preview-caption {
+  font-family: system-ui;
   touch-action: none;
   user-select: none;
   cursor: grab;
 }
 
-.subtitle-preview-aspects {
+.subtitle-preview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.subtitle-preview-controls > [role="group"] {
   width: fit-content;
   max-width: 100%;
-  margin-bottom: 14px;
+}
+
+.subtitle-preview-scene {
+  transform-origin: 0 0;
+}
+
+.subtitle-preview-overflow {
+  margin: 0;
+  color: var(--rf-primary);
+  font-size: 12px;
+  line-height: 1.65;
 }
 
 .subtitle-preview-frame {

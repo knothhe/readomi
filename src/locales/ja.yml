@@ -615,8 +615,16 @@ subtitleStyle:
     portrait: 縦長
     square: 正方形
   previewFontSize: プレビュー文字サイズ：$1 px
-  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
-  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewSample: サンプル字幕
+  previewSamples:
+    short: 短文
+    long: 長文
+  previewScaleHint: 映像と字幕を同じ比率で縮小します。長文で折り返しを確認できます。
+  previewOverflow: 字幕が画面からはみ出しています。字幕サイズか原文の比率を小さくしてください。
+  previewLongOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewLongTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewOriginal: Let’s begin our journey.
+  previewTranslation: 让我们开始这段旅程。
   dragHint: Drag subtitles to move them
   previewDragHint: 字幕をドラッグして位置を調整できます。矢印キーで微調整もできます。
   previewDragLabel: ドラッグできる字幕

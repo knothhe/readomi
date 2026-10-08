@@ -615,8 +615,16 @@ subtitleStyle:
     portrait: 直版
     square: 正方形
   previewFontSize: 預覽字級：$1 px
-  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
-  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewSample: 範例字幕
+  previewSamples:
+    short: 短句
+    long: 長句
+  previewScaleHint: 畫面與字幕按同一比例縮小；長句可查看換行效果。
+  previewOverflow: 字幕已超出畫面，建議減小字號或原文比例。
+  previewLongOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewLongTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewOriginal: Let’s begin our journey.
+  previewTranslation: 让我们开始这段旅程。
   dragHint: 在影片上拖曳字幕調整位置。
   previewDragHint: 拖曳字幕調整位置；方向鍵也可微調。
   previewDragLabel: 可拖曳的字幕

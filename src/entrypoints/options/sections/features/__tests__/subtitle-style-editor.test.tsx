@@ -171,12 +171,12 @@ describe("subtitle settings", () => {
     expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.relativeFontSize).toBe(5.9375)
   })
 
-  it("preserves disabled legacy backgrounds until a depth edit and keeps preview padding stable", async () => {
+  it("preserves disabled legacy backgrounds until a depth edit and matches player padding", async () => {
     const { store } = await renderFeatures({ backgroundEnabled: false, backgroundOpacity: 72 })
     const custom = openCustom()
     const slider = screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" })
     const caption = screen.getByRole("group", { name: "subtitleStyle.previewDragLabel" })
-    const padding = caption.style.padding
+    expect(caption.style.padding).toBe("0px")
     const number = screen.getByRole("spinbutton", { name: "subtitleStyle.backgroundOpacity" })
     expect(slider).toHaveValue("0")
     expect(number).toHaveValue(0)
@@ -184,15 +184,15 @@ describe("subtitle settings", () => {
     fireEvent.change(number, { target: { value: "35" } })
     fireEvent.blur(number)
     await waitFor(() => expect(savedStyle(store)).toMatchObject({ backgroundEnabled: true, backgroundOpacity: 35 }))
-    expect(caption.style.padding).toBe(padding)
+    expect(caption.style.padding).toBe("10px 16px")
     fireEvent.change(slider, { target: { value: "0" } })
     await waitFor(() => expect(savedStyle(store)).toMatchObject({ backgroundEnabled: false, backgroundOpacity: 0 }))
-    expect(caption.style.padding).toBe(padding)
+    expect(caption.style.padding).toBe("0px")
     expect(slider).toBeVisible()
     expect(custom.open).toBe(true)
     fireEvent.click(presets().getByRole("button", { name: "subtitleStyle.presets.compact" }))
     expect(slider).toBeVisible()
-    expect(caption.style.padding).toBe(padding)
+    expect(caption.style.padding).toBe("8px 14px")
     expect(custom.open).toBe(true)
   })
 
@@ -214,64 +214,68 @@ describe("subtitle settings", () => {
     }
   })
 
-  it("fits a measured large caption without shrinking its font and only grows the frame when needed", async () => {
+  it("preserves the video aspect ratio when oversized captions overflow and recovers without changing configuration", async () => {
     let width = 320
     let captionHeight = 344
     let resizePreview = () => {}
     vi.stubGlobal("ResizeObserver", class {
-      constructor(callback: () => void) {
-        resizePreview = callback
-      }
-
+      constructor(callback: () => void) { resizePreview = callback }
       observe() {}
       disconnect() {}
     })
     const originalRect = HTMLElement.prototype.getBoundingClientRect
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
-      if (this.classList.contains("subtitle-preview-scene")) {
-        const height = Math.max(width * 9 / 16, Number.parseFloat(this.parentElement!.style.minHeight) || 0)
-        return new DOMRect(0, 0, width, height)
-      }
+      if (this.classList.contains("subtitle-preview-frame") || this.classList.contains("subtitle-preview-scene"))
+        return new DOMRect(0, 0, width, width * 9 / 16)
       if (this.classList.contains("subtitle-preview-caption"))
-        return new DOMRect(0, 0, width - 16, captionHeight)
+        return new DOMRect(0, 0, width * 0.8, captionHeight)
       return originalRect.call(this)
     })
-    const { store } = await renderFeatures({ relativeFontSize: 25, backgroundEnabled: false, backgroundOpacity: 0 })
+    const { store } = await renderFeatures({ relativeFontSize: 25 })
     const caption = screen.getByRole("group", { name: "subtitleStyle.previewDragLabel" })
     const scene = caption.parentElement!
     const frame = scene.parentElement!
-    const expectCaptionFits = () => {
-      const height = scene.getBoundingClientRect().height
-      const bottom = Number.parseFloat(caption.style.top) / 100 * height
-      expect(bottom - captionHeight).toBeGreaterThanOrEqual(12)
-      expect(bottom).toBeLessThan(height)
-      expect(Number.parseFloat(caption.style.fontSize)).toBeCloseTo(width * 9 / 16 * 0.25)
-    }
-    expect(caption.style.maxWidth).toBe("80%")
-    expect(frame.style.minHeight).toBe("368px")
-    expectCaptionFits()
-
-    openCustom()
-    const initialPadding = caption.style.padding
-    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.backgroundOpacity" }), { target: { value: "72" } })
-    await waitFor(() => expect(savedStyle(store).backgroundOpacity).toBe(72))
-    expect(frame.style.minHeight).toBe("368px")
-    expect(caption.style.padding).toBe(initialPadding)
-    expectCaptionFits()
-
+    expect(frame.style.minHeight).toBe("")
+    expect(scene.style.width).toBe("1280px")
+    expect(scene.style.height).toBe("720px")
+    expect(scene.style.transform).toBe("scale(0.25)")
+    expect(caption.style.fontSize).toBe("180px")
+    expect(screen.getByText("subtitleStyle.previewOverflow")).toHaveAttribute("role", "status")
+    const saved = store.get(configAtom)
     width = 240
-    captionHeight = 420
     act(() => resizePreview())
-    expect(frame.style.minHeight).toBe("444px")
-    expectCaptionFits()
-    expect(savedStyle(store).relativeFontSize).toBe(25)
-
-    captionHeight = 64
+    expect(scene.style.transform).toBe("scale(0.1875)")
+    expect(frame.style.minHeight).toBe("")
+    expect(caption.style.fontSize).toBe("180px")
+    expect(store.get(configAtom)).toEqual(saved)
+    captionHeight = 40
+    openCustom()
     fireEvent.click(screen.getByRole("button", { name: "100%" }))
     await waitFor(() => expect(savedStyle(store).relativeFontSize).toBe(5))
-    expect(caption.style.fontSize).toBe("6.75px")
-    expect(frame.style.minHeight).toBe("88px")
-    expect(scene.getBoundingClientRect().height).toBe(135)
+    expect(caption.style.fontSize).toBe("36px")
+    expect(screen.getByText("subtitleStyle.previewOverflow")).not.toBeVisible()
+    expect(frame.style.minHeight).toBe("")
+  })
+
+  it("switches short and long samples locally without changing appearance or saved settings", async () => {
+    const { store } = await renderFeatures({ relativeFontSize: 7.5, originalFontScale: 125, backgroundEnabled: true, backgroundOpacity: 65, position: { x: 60, y: 65 } })
+    const saved = store.get(configAtom)
+    const samples = within(screen.getByRole("group", { name: "subtitleStyle.previewSample" }))
+    const caption = screen.getByRole("group", { name: "subtitleStyle.previewDragLabel" })
+    expect(samples.getByRole("button", { name: "subtitleStyle.previewSamples.short" })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByText("subtitleStyle.previewOriginal")).toBeInTheDocument()
+    fireEvent.click(samples.getByRole("button", { name: "subtitleStyle.previewSamples.long" }))
+    expect(screen.queryByText("subtitleStyle.previewOriginal")).toBeNull()
+    expect(screen.getByText("subtitleStyle.previewLongOriginal")).toBeInTheDocument()
+    expect(caption.style.fontSize).toBe("54px")
+    expect(caption.style.padding).toBe("10px 16px")
+    expect(caption.style.borderRadius).toBe("8px")
+    expect(caption.style.textShadow).toBe("0 2px 4px #000,0 0 2px #000")
+    expect(caption.style.getPropertyValue("--readomi-original-font-scale")).toBe("1.25em")
+    expect(store.get(configAtom)).toEqual(saved)
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(saved)
+    fireEvent.click(samples.getByRole("button", { name: "subtitleStyle.previewSamples.short" }))
+    expect(screen.getByText("subtitleStyle.previewTranslation")).toBeInTheDocument()
   })
 
   it("saves keyboard preview moves without opening custom settings", async () => {
@@ -287,11 +291,11 @@ describe("subtitle settings", () => {
   it("switches preview formats locally and keeps live styles, display mode and position editing", async () => {
     const originalRect = HTMLElement.prototype.getBoundingClientRect
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
-      if (this.classList.contains("subtitle-preview-scene")) {
-        const aspect = this.parentElement!.dataset.aspect
+      if (this.classList.contains("subtitle-preview-scene") || this.classList.contains("subtitle-preview-frame")) {
+        const aspect = this.classList.contains("subtitle-preview-frame") ? this.dataset.aspect : this.parentElement!.dataset.aspect
         const width = aspect === "landscape" ? 640 : 285
         const height = width * (aspect === "portrait" ? 16 / 9 : aspect === "square" ? 1 : 9 / 16)
-        return new DOMRect(0, 0, width, Math.max(height, Number.parseFloat(this.parentElement!.style.minHeight) || 0))
+        return new DOMRect(0, 0, width, height)
       }
       if (this.classList.contains("subtitle-preview-caption"))
         return new DOMRect(0, 0, 180, 60)
@@ -302,22 +306,23 @@ describe("subtitle settings", () => {
     const formats = within(screen.getByRole("group", { name: "subtitleStyle.previewAspectRatio" }))
     const caption = screen.getByRole("group", { name: "subtitleStyle.previewDragLabel" })
     const frame = container.querySelector(".subtitle-preview-frame")!
-    expect(caption.style.fontSize).toBe("18px")
+    expect(caption.style.fontSize).toBe("36px")
     for (const aspect of ["portrait", "square", "landscape"] as const) {
       fireEvent.click(formats.getByRole("button", { name: `subtitleStyle.previewAspectRatios.${aspect}` }))
       expect(frame).toHaveAttribute("data-aspect", aspect)
       expect(formats.getByRole("button", { name: `subtitleStyle.previewAspectRatios.${aspect}` })).toHaveAttribute("aria-pressed", "true")
-      expect(caption.style.fontSize).toBe(aspect === "landscape" ? "18px" : "14.25px")
+      expect(caption.style.fontSize).toBe("36px")
+      expect(caption.parentElement!.style.transform).toBe(`scale(${aspect === "landscape" ? 0.5 : 285 / 720})`)
       expect(store.get(configAtom)).toEqual(initialConfig)
       expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(initialConfig)
     }
     fireEvent.click(formats.getByRole("button", { name: "subtitleStyle.previewAspectRatios.portrait" }))
     fireEvent.click(presets().getByRole("button", { name: "subtitleStyle.presets.compact" }))
     await waitFor(() => expect(savedStyle(store).preset).toBe("compact"))
-    expect(caption.style.fontSize).toBe("11.4px")
+    expect(caption.style.fontSize).toBe("28.8px")
     expect(caption.style.backgroundColor).toBe("rgba(15, 20, 35, 0.35)")
     fireEvent.click(formats.getByRole("button", { name: "subtitleStyle.previewAspectRatios.square" }))
-    expect(caption.style.fontSize).toBe("11.4px")
+    expect(caption.style.fontSize).toBe("28.8px")
     const current = store.get(configAtom)
     act(() => store.set(configAtom, { ...current, features: { ...current.features, subtitleMode: "translationOnly" } }))
     expect(screen.queryByText("subtitleStyle.previewOriginal")).toBeNull()

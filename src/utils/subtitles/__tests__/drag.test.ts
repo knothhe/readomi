@@ -9,16 +9,16 @@ function pointer(element: HTMLElement, type: string, x: number, y: number, butto
   Object.defineProperty(event, "pointerId", { value: 1 })
   element.dispatchEvent(event)
 }
-function setup(initial = { x: 50, y: 88 }) {
+function setup(initial = { x: 50, y: 88 }, scale = 1) {
   document.body.innerHTML = "<div tabindex=\"0\"><button>+</button></div>"
   const element = document.querySelector("div")!
-  vi.spyOn(element, "getBoundingClientRect").mockReturnValue({ width: 200, height: 60 } as DOMRect)
+  vi.spyOn(element, "getBoundingClientRect").mockReturnValue({ width: 200 * scale, height: 60 * scale } as DOMRect)
   let position = initial
   const commit = vi.fn()
   const move = vi.fn((next) => {
     position = next
   })
-  cleanup = bindSubtitleDrag(element, { videoRect: () => rect, position: () => position, move, commit })
+  cleanup = bindSubtitleDrag(element, { videoRect: () => ({ ...rect, width: rect.width * scale, height: rect.height * scale }), geometryScale: () => scale, position: () => position, move, commit })
   return { element, commit, move, position: () => position }
 }
 afterEach(() => {
@@ -27,6 +27,14 @@ afterEach(() => {
 })
 
 describe("subtitle drag interaction", () => {
+  it("keeps reference-player bounds when dragging a scaled preview", () => {
+    const { element, commit, position } = setup({ x: 50, y: 88 }, 0.25)
+    pointer(element, "pointerdown", 80, 75)
+    pointer(element, "pointermove", -1000, -1000)
+    expect(position()).toEqual({ x: (100 + 12) / 640 * 100, y: (60 + 12) / 360 * 100 })
+    pointer(element, "pointerup", -1000, -1000)
+    expect(commit).toHaveBeenCalledExactlyOnceWith(position())
+  })
   it("moves relative to the video and saves once at the end of a drag", () => {
     const { element, move, commit, position } = setup()
     pointer(element, "pointerdown", 320, 300)

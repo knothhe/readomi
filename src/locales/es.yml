@@ -647,8 +647,16 @@ subtitleStyle:
     portrait: Vertical
     square: Cuadrado
   previewFontSize: "Tamaño de vista previa: $1 px"
-  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
-  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewSample: Subtítulos de ejemplo
+  previewSamples:
+    short: Cortos
+    long: Largos
+  previewScaleHint: El vídeo y los subtítulos se reducen juntos. El ejemplo largo permite comprobar los saltos de línea.
+  previewOverflow: Los subtítulos exceden el encuadre. Reduce su tamaño o la proporción del texto original.
+  previewLongOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewLongTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewOriginal: Let’s begin our journey.
+  previewTranslation: 让我们开始这段旅程。
   dragHint: Drag subtitles to move them
   previewDragHint: Arrastra los subtítulos para moverlos; usa las flechas para
     ajustar con precisión.

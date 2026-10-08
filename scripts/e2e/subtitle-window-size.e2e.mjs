@@ -30,7 +30,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.videoSubtitles)
   const previewSize = () => settings.locator(".subtitle-preview-scene").evaluate(scene => ({
     width: scene.getBoundingClientRect().width,
-    fontSize: Number.parseFloat(getComputedStyle(scene.lastElementChild).fontSize),
+    fontSize: Number.parseFloat(getComputedStyle(scene.lastElementChild).fontSize) * new DOMMatrixReadOnly(getComputedStyle(scene).transform).a,
     backgroundColor: getComputedStyle(scene.lastElementChild).backgroundColor,
   }))
   const colorOpacity = (color) => {
@@ -48,7 +48,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
       const ratio = { landscape: 9 / 16, portrait: 16 / 9, square: 1 }[scene.parentElement.dataset.aspect]
       const width = scene.getBoundingClientRect().width
       const expectedSize = Math.min(width, width * ratio) * size / 100
-      return Math.abs(Number.parseFloat(computed.fontSize) - expectedSize) < 0.05 && Math.abs(actualOpacity - opacity) < 0.01
+      return Math.abs(Number.parseFloat(computed.fontSize) * new DOMMatrixReadOnly(getComputedStyle(scene).transform).a - expectedSize) < 0.05 && Math.abs(actualOpacity - opacity) < 0.01
     }, {
       size: style.relativeFontSize,
       opacity: style.backgroundEnabled ? style.backgroundOpacity / 100 : 0,
@@ -58,6 +58,10 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   assert.ok(Math.abs(desktopPreview.fontSize - desktopPreview.width * 9 / 16 * 5 / 100) < 0.05, "settings preview uses a percentage of the video window shorter side")
   assert.equal(colorOpacity(desktopPreview.backgroundColor), 0, "the default Transparent preset has no background")
 
+  const samples = settings.getByRole("group", { name: "Sample subtitles", exact: true })
+  assert.equal(await samples.getByRole("button", { name: "Short", exact: true }).getAttribute("aria-pressed"), "true")
+  await samples.getByRole("button", { name: "Long", exact: true }).click()
+  assert.equal(await settings.locator(".subtitle-preview-original").textContent(), "So we beat on, boats against the current, borne back ceaselessly into the past.")
   const previewFormats = settings.getByRole("group", { name: "Preview format", exact: true })
   const previewConfig = await storedConfig(context)
   for (const [label, aspect] of [["Portrait", "portrait"], ["Square", "square"], ["Landscape", "landscape"]]) {
@@ -80,6 +84,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
     await settings.screenshot({ path: `/tmp/readomi-settings-subtitle-preview-${aspect}.png`, fullPage: true })
   }
 
+  await samples.getByRole("button", { name: "Short", exact: true }).click()
   // Match X's post container, complete source and partial clone rendering track.
   // A stationary media clock isolates sizing from playback and translation timing.
   await context.route("https://x.com/**", route => route.fulfill({
@@ -541,6 +546,16 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
     await settings.evaluate(() => scrollTo(0, 0))
     await settings.screenshot({ path: `/tmp/readomi-subtitle-ratio-implemented-${name}.png`, fullPage: true })
   }
+  await settings.getByRole("group", { name: "常用大小", exact: true }).getByRole("button", { name: "150%", exact: true }).click()
+  await waitForPreview(await waitForStyle({ relativeFontSize: 7.5 }))
+  await settings.locator("#features .options-preview-column").screenshot({ path: "/tmp/readomi-preview-150-short-zh.png", animations: "disabled" })
+  await settings.getByRole("group", { name: "示例字幕", exact: true }).getByRole("button", { name: "长句", exact: true }).click()
+  await settings.locator("#features .options-preview-column").screenshot({ path: "/tmp/readomi-preview-150-long-zh.png", animations: "disabled" })
+  await settings.getByRole("group", { name: "示例字幕", exact: true }).getByRole("button", { name: "短句", exact: true }).click()
+  await settings.setViewportSize({ width: 390, height: 900 })
+  await settings.screenshot({ path: "/tmp/readomi-preview-150-mobile-zh.png", fullPage: true, animations: "disabled" })
+  await settings.getByRole("group", { name: "常用大小", exact: true }).getByRole("button", { name: "100%", exact: true }).click()
+  await waitForPreview(await waitForStyle({ relativeFontSize: 5 }))
   assert.equal(service.completions().length, requests, "changing only the original ratio reuses translations")
 
   await page.evaluate(() => {

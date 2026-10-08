@@ -3,6 +3,7 @@ import { clampSubtitlePosition } from "./appearance"
 
 interface DragOptions {
   videoRect: () => DOMRect
+  geometryScale?: () => number
   position: () => SubtitlePosition
   move: (position: SubtitlePosition) => void
   commit: (position: SubtitlePosition) => void
@@ -12,7 +13,10 @@ interface DragOptions {
 export function bindSubtitleDrag(element: HTMLElement, options: DragOptions): () => void {
   let drag: { id: number, x: number, y: number, origin: SubtitlePosition, moved: boolean } | null = null
   const clamp = (position: SubtitlePosition, origin?: SubtitlePosition) => {
-    const bounded = clampSubtitlePosition(position, options.videoRect(), element.getBoundingClientRect())
+    const scale = options.geometryScale?.() ?? 1
+    const rect = options.videoRect()
+    const caption = element.getBoundingClientRect()
+    const bounded = clampSubtitlePosition(position, { width: rect.width / scale, height: rect.height / scale }, { width: caption.width / scale, height: caption.height / scale })
     if (!origin)
       return bounded
     // An automatic YouTube caption can begin in the player's letterbox area.

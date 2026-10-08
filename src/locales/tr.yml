@@ -635,8 +635,16 @@ subtitleStyle:
     portrait: Dikey
     square: Kare
   previewFontSize: "Önizleme boyutu: $1 px"
-  previewOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
-  previewTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewSample: Örnek altyazılar
+  previewSamples:
+    short: Kısa
+    long: Uzun
+  previewScaleHint: Video ve altyazılar birlikte ölçeklenir. Satır kaydırmayı görmek için uzun örneği kullanın.
+  previewOverflow: Altyazılar kareyi aşıyor. Altyazı boyutunu veya orijinal metin oranını azaltın.
+  previewLongOriginal: So we beat on, boats against the current, borne back ceaselessly into the past.
+  previewLongTranslation: 于是我们奋力向前，逆流行舟，却不断被推回往昔。
+  previewOriginal: Let’s begin our journey.
+  previewTranslation: 让我们开始这段旅程。
   dragHint: Drag subtitles to move them
   previewDragHint: Konumu ayarlamak için altyazıları sürükleyin; ince ayar için ok
     tuşlarını kullanın.
