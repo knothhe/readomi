@@ -2,7 +2,7 @@ import type { ProviderConfig } from "@/types/config/provider"
 import { fetchProvider } from "./fetch"
 import { buildHeaders, resolveBaseURL, resolveRequestApi } from "./request"
 
-export type ModelListProvider = Pick<ProviderConfig, "provider" | "api" | "apiKey" | "baseURL" | "headers">
+export type ModelListProvider = Pick<ProviderConfig, "provider" | "api" | "apiKey" | "noApiKey" | "baseURL" | "headers">
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)

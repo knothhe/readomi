@@ -10,6 +10,7 @@ import { configAtom } from "@/utils/atoms/config"
 import { detectBrowserEnvironment } from "@/utils/browser-environment"
 import { DEFAULT_SYNC_STATUS, SYNC_STATE_KEY, syncStatusSchema } from "@/utils/config/sync-state"
 import { sendMessage } from "@/utils/message"
+import { hasProviderCredentials } from "@/utils/service-management"
 import { SettingsGroup, SettingsRow } from "../../components/settings-section"
 import { BackupDialog } from "./dialog"
 
@@ -97,7 +98,7 @@ export function ChromeSync({ onStatusChange }: { onStatusChange: (status: Config
   const supported = !loading && environment.supported
   const enabled = supported && status.enabled
   const problem = status.phase === "failed" || status.phase === "quota"
-  const missing = config.providersConfig.filter(p => p.enabled && p.model.trim() && !p.apiKey?.trim() && !Object.keys(p.headers ?? {}).length)
+  const missing = config.providersConfig.filter(p => p.enabled && p.model.trim() && !hasProviderCredentials(p) && !Object.keys(p.headers ?? {}).length)
   const statusText = status.phase === "quota" ? "configSync.quota" : status.phase === "failed" ? "configSync.failed" : status.phase === "pending" ? "configSync.pending" : "configSync.saved"
 
   return (

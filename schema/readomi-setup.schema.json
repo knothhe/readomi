@@ -32,9 +32,13 @@
       "minLength": 1
     },
     "apiKey": {
-      "description": "The API key. Required for a new service. Endpoints without authentication still need a non-empty value, e.g. \"local\". When updating an existing service, the masked value from an export (such as \"sk-…a9f2\") keeps the stored key.",
+      "description": "The API key. Required for a new service unless noApiKey is true. When updating an existing service, a masked or omitted key keeps the stored key only when its type and endpoint are unchanged.",
       "type": "string",
       "minLength": 1
+    },
+    "noApiKey": {
+      "description": "Set true for a service that needs no API key, such as local Ollama or LM Studio. Omit apiKey. Clears any stored API key and skips API key authentication; custom headers are still sent.",
+      "type": "boolean"
     },
     "model": {
       "type": "string",

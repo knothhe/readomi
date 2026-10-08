@@ -285,6 +285,29 @@ describe("describeSetupDocument", () => {
   })
 })
 
+describe("services without API keys", () => {
+  const document = { type: "openai-compatible" as const, noApiKey: true, model: "qwen3:8b", baseURL: "http://localhost:11434/v1" }
+
+  it("adds and exports a local service without a placeholder key", () => {
+    const parsed = parseSetupDocument(JSON.stringify(document))
+    expect(parsed.ok).toBe(true)
+    expect(describeSetupDocument(DEFAULT_CONFIG, document).keyStatus).toBe("none")
+    const result = applySetupDocument(DEFAULT_CONFIG, document, { mode: "add" })
+    expect(result.config.providersConfig[0]).toMatchObject({ noApiKey: true, model: document.model })
+    expect(result.config.providersConfig[0]).not.toHaveProperty("apiKey")
+    expect(result.keyReused).toBe(false)
+    expect(exportSetupDocument(result.config)).toEqual(document)
+  })
+
+  it("removes a stored key when switching authentication off and requires a key when switching it back on", () => {
+    const stored = configWithOpenAIKey("sk-current")
+    const result = applySetupDocument(stored, { type: "openai", noApiKey: true, apiKey: "sk-…rent", model: "m" }, { mode: "edit", providerId: "openai-default" })
+    expect(result.config.providersConfig[0]).not.toHaveProperty("apiKey")
+    expect(result.config.providersConfig[0].noApiKey).toBe(true)
+    expect(() => applySetupDocument(result.config, { type: "openai", model: "m" }, { mode: "edit", providerId: "openai-default" })).toThrow(SetupDocumentError)
+  })
+})
+
 describe("api key masking", () => {
   it("keeps the prefix and the last four characters", () => {
     expect(maskApiKey("sk-abcdefghijkl")).toBe("sk-…ijkl")

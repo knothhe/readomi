@@ -105,6 +105,14 @@ describe("prepareRequest", () => {
     expect(prepared.body).not.toHaveProperty("temperature")
   })
 
+  it.each(["openai-chat", "openai-responses", "anthropic", "gemini"] as const)("skips stored API keys for %s when explicitly disabled", (api) => {
+    const prepared = prepareRequest(provider({ api, noApiKey: true, headers: { "X-Tenant": "local" } }), { prompt: "P" })
+    expect(prepared.headers).not.toHaveProperty("authorization")
+    expect(prepared.headers).not.toHaveProperty("x-api-key")
+    expect(prepared.headers).not.toHaveProperty("x-goog-api-key")
+    expect(prepared.headers["x-tenant"]).toBe("local")
+  })
+
   it("keeps Readomi's identity when extra headers include a differently cased User-Agent", () => {
     const prepared = prepareRequest(provider({ headers: { "uSeR-aGeNt": "Mozilla/5.0", "X-Tenant": "t1" } }), { prompt: "P" })
     expect(prepared.headers["user-agent"]).toBe(APP_USER_AGENT)

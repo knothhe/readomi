@@ -16,8 +16,10 @@ prompt.
 ## What to do
 
 1. **Ask** the person two things: which service they want to use, and where
-   their API key is (a file, an environment variable, or they paste it to
-   you).
+   whether the service needs an API key and where it is (a file, an
+   environment variable, or they paste it to you). For a service without
+   authentication, skip the key steps, verify without an authentication
+   header, and set `noApiKey: true` in the document.
 2. **Keep the key out of your output.** Read it into a shell variable and
    never print it. Every command below assumes `KEY` holds it:
 
@@ -55,7 +57,8 @@ text ends with that service's document, even when another service is current.
 Its key is masked (`sk-…a9f2`). Returning the masked key unchanged keeps the
 target service's stored key only when its `type` and resolved `baseURL` are
 unchanged. A new service, a changed type or endpoint, or a replacement key
-requires a full key and the clipboard step above. The add editor starts with
+requires a full key and the clipboard step above, unless the service needs
+no API key (`noApiKey: true`). The add editor starts with
 no existing service configuration and never borrows another account's key.
 
 ## The document
@@ -80,7 +83,8 @@ silently ignored setting.
 | ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `type`        | yes                     | `openai`, `anthropic`, `gemini`, `deepseek`, or `openai-compatible` for any other endpoint that speaks the OpenAI chat completions API (Ollama, LM Studio, vLLM, OpenRouter, Groq, Mistral, Qwen, GLM, Moonshot, MiniMax, Doubao, gateways).                                                                                  |
 | `api`         | no                      | Wire format: `openai-chat`, `openai-responses`, `anthropic` or `gemini`. Defaults from `type`: `openai` → `openai-responses`, `anthropic` → `anthropic`, `gemini` → `gemini`, `deepseek` and `openai-compatible` → `openai-chat`. Set `openai-responses` for a compatible service that speaks the Responses API, such as xAI. |
-| `apiKey`      | for a new service       | The key. Endpoints without authentication still need a non-empty value such as `"local"`. While editing, a masked or omitted key keeps that service's stored key only when its `type` and endpoint are unchanged.                                                                                                                                                                                 |
+| `apiKey`      | for a new service       | The key. Omit when `noApiKey` is `true`. While editing, a masked or omitted key keeps that service's stored key only when its `type` and endpoint are unchanged.                                                                                                                                                                                 |
+| `noApiKey`    | no                      | Set `true` for services without API key authentication (for example, local Ollama or LM Studio). Clears the stored API key; Readomi skips API key authentication and still sends custom headers. Manual setup offers the same "No API key required" option. |
 | `model`       | yes                     | Model ID exactly as the service expects it.                                                                                                                                                                                                                                                                                   |
 | `baseURL`     | for `openai-compatible` | Base URL up to and including the version path, e.g. `http://localhost:11434/v1`. Omit for an official API.                                                                                                                                                                                                                    |
 | `name`        | no                      | Display name. Defaults to the service name.                                                                                                                                                                                                                                                                                   |
@@ -97,6 +101,20 @@ and preserves the current selection. Other services and settings stay as
 they are. Switching from the popup or the service list affects subsequent
 page, paragraph and subtitle requests; existing translations are kept.
 
+For a local service that needs no API key, use:
+
+```json
+{
+  "type": "openai-compatible",
+  "noApiKey": true,
+  "model": "qwen3:8b",
+  "baseURL": "http://localhost:11434/v1"
+}
+```
+
+The address alone does not disable authentication. If your local server
+requires a key, omit `noApiKey` and provide its key as usual.
+
 ## Recipes
 
 Translation needs fast answers, so turn thinking off or down where the model
@@ -109,8 +127,8 @@ reference; check the reference when a model is newer than this guide.
 | Anthropic                                                                 | `anthropic`         | `claude-haiku-4-5`             | `{ "thinking": { "type": "disabled" } }`                                       | Fastest Claude. For Claude 5 models, thinking is adaptive and always on; use `{ "output_config": { "effort": "low" } }` instead. Do not set `temperature`. |
 | Gemini                                                                    | `gemini`            | `gemini-3.5-flash-lite`        | `{ "generationConfig": { "thinkingConfig": { "thinkingLevel": "minimal" } } }` | Older 2.5 models use `"thinkingBudget": 0` instead of `thinkingLevel`.                                                                                     |
 | DeepSeek                                                                  | `deepseek`          | `deepseek-flash`               | `{ "thinking": { "type": "disabled" } }`                                       | Thinking is on by default and slows translation.                                                                                                           |
-| Ollama                                                                    | `openai-compatible` | the model tag, e.g. `qwen3:8b` | usually none                                                                   | `baseURL`: `http://localhost:11434/v1`, `apiKey`: `"ollama"`. Qwen models accept `{ "enable_thinking": false }` when served with the option.               |
-| LM Studio                                                                 | `openai-compatible` | as listed by `GET /v1/models`  | usually none                                                                   | `baseURL`: `http://localhost:1234/v1`, `apiKey`: `"lm-studio"`.                                                                                            |
+| Ollama                                                                    | `openai-compatible` | the model tag, e.g. `qwen3:8b` | usually none                                                                   | `baseURL`: `http://localhost:11434/v1`, `noApiKey`: `true` (omit `apiKey`). Qwen models accept `{ "enable_thinking": false }` when served with the option.               |
+| LM Studio                                                                 | `openai-compatible` | as listed by `GET /v1/models`  | usually none                                                                   | `baseURL`: `http://localhost:1234/v1`, `noApiKey`: `true` (omit `apiKey`).                                                                                            |
 | xAI                                                                       | `openai-compatible` | e.g. `grok-4.7`                | `{ "reasoning": { "effort": "low" } }`                                         | `api`: `"openai-responses"`, `baseURL`: `https://api.x.ai/v1`.                                                                                             |
 | OpenRouter, Groq, Mistral, Qwen, GLM, Moonshot, MiniMax, Doubao, gateways | `openai-compatible` | as the service names it        | `{ "reasoning_effort": "none" }` if it accepts it                              | `baseURL` from the service's docs, ending in its version path. Some services reject `reasoning_effort: "none"` with `Invalid option: expected one of "low" | …`; drop the field then. |
 

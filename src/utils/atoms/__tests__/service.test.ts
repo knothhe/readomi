@@ -125,6 +125,13 @@ describe("service management writes", () => {
     expect((await storage.getItem<Config>(key))?.providersConfig).toEqual([second])
   })
 
+  it("allows selecting a service explicitly configured without an API key", async () => {
+    const local = { ...second, apiKey: undefined, noApiKey: true }
+    const store = await setup({ ...configured, providersConfig: [active, local] })
+    await store.set(selectProviderAtom, local.id)
+    expect(store.get(configAtom).translate.providerId).toBe(local.id)
+  })
+
   it("rejects selections with a missing key or model, disabled services and removed services", async () => {
     const variants = [{ ...second, apiKey: " " }, { ...second, model: " " }, { ...second, enabled: false }]
     for (const unavailable of variants) {

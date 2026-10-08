@@ -52,7 +52,7 @@ function applyAPIKeysFromEnv(config: Config): { config: Config, changed: boolean
   const providersConfig = config.providersConfig.map((providerConfig) => {
     const apiKeyEnvName = `WXT_${providerConfig.provider.toUpperCase()}_API_KEY`
     const envApiKey = import.meta.env[apiKeyEnvName] as string | undefined
-    if (!envApiKey || providerConfig.apiKey === envApiKey) {
+    if (providerConfig.noApiKey || !envApiKey || providerConfig.apiKey === envApiKey) {
       return providerConfig
     }
 

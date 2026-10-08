@@ -31,6 +31,8 @@ export const providerConfigItemSchema = z.strictObject({
   /** Wire format; defaults per provider type (see DEFAULT_REQUEST_API). */
   api: z.enum(REQUEST_APIS).optional(),
   apiKey: z.string().optional(),
+  /** Explicitly skip API key authentication (e.g. a local Ollama server). */
+  noApiKey: z.boolean().optional(),
   /** Endpoint base URL up to and including the version path. Required for "openai-compatible". */
   baseURL: z.string().optional(),
   /** Model ID exactly as the service expects it. Empty only for a service that has not been set up yet. */

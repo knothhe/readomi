@@ -19,6 +19,11 @@ describe("provider model discovery", () => {
     expect(String(url)).toBe("http://localhost:8000/v1/models?tenant=me")
     expect(init).toMatchObject({ method: "GET", redirect: "error", headers: { "authorization": "Bearer local", "x-tenant": "me" } })
   })
+  it("discovers local models without sending a placeholder or stored key", async () => {
+    respond({ data: [{ id: "qwen3:8b" }] })
+    expect(await fetchProviderModels({ provider: "openai-compatible", baseURL: "http://localhost:11434/v1", noApiKey: true, apiKey: "old-key" })).toEqual(["qwen3:8b"])
+    expect(fetchMock.mock.calls[0][1]?.headers).not.toHaveProperty("authorization")
+  })
   it("uses Anthropic authentication and follows its cursor on the same endpoint", async () => {
     respond({ data: [{ id: "claude-a" }], has_more: true, last_id: "claude-a" })
     respond({ data: [{ id: "claude-b" }], has_more: false })

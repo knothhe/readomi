@@ -3,6 +3,7 @@ import { useRef, useState } from "react"
 import { i18n } from "#imports"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
 import { sendMessage } from "@/utils/message"
+import { hasProviderCredentials } from "@/utils/service-management"
 import { activeTabAtom, translationProgressAtom } from "../atoms"
 
 export function PageRecoveryActions() {
@@ -31,7 +32,7 @@ export function PageRecoveryActions() {
       setPending(false)
     }
   }
-  const disabled = pending || !tab.translatable || !provider?.apiKey?.trim()
+  const disabled = pending || !tab.translatable || !hasProviderCredentials(provider)
   const actionClass = "rounded text-brand hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60"
   return (
     <div className="flex flex-col gap-1.5">

@@ -3,6 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { executeTranslate } from "@/utils/host/translate/execute-translate"
+import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
 import { translateTextForInput, translateTextForPage, translateTextForPageTitle } from "@/utils/host/translate/translate-variants"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
 
@@ -66,6 +67,11 @@ describe("translate-text", () => {
       systemPrompt: "Translate to {{targetLang}}",
       prompt: "{{input}}",
     })
+  })
+
+  it("accepts a page translation service explicitly configured without an API key", () => {
+    const config = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(provider => ({ ...provider, noApiKey: true })) }
+    expect(validateTranslationConfigAndToast(config)).toBe(true)
   })
 
   describe("translateTextForPage", () => {

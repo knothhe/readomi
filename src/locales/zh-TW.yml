@@ -491,8 +491,9 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to
-    keep the existing key."
+  keyHint: 修改時留空沿用原密鑰；無驗證服務請勾選「無需 API Key」。
+  noApiKey: 無需 API Key
+  noApiKeyHint: 適用於 Ollama、LM Studio 等無驗證服務。儲存後移除已存的 API Key，請求仍可使用自訂標頭。
   model: Model
   api: Request format
   save: Test and save

@@ -94,6 +94,13 @@ describe("popup app", () => {
     expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features).toEqual({ ...config.features, disabledSites: [] })
   })
 
+  it("offers translation for a service explicitly configured without an API key", () => {
+    const config: Config = { ...DEFAULT_CONFIG, providersConfig: DEFAULT_CONFIG.providersConfig.map(provider => ({ ...provider, noApiKey: true })) }
+    renderPopup({ config })
+    expect(screen.queryByText("popup.setup.title")).toBeNull()
+    expect(screen.getByRole("button", { name: "popup.translate" })).toBeEnabled()
+  })
+
   it("points to the settings page instead of configuring anything while the service has no key", () => {
     renderPopup()
 

@@ -492,8 +492,9 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to
-    keep the existing key."
+  keyHint: "Leave blank to keep the existing key when editing. For services without authentication, select “No API key required”."
+  noApiKey: API Key 불필요
+  noApiKeyHint: "For services without authentication, such as Ollama and LM Studio. Saving removes the stored API key; custom headers are still sent."
   model: Model
   api: Request format
   save: Test and save

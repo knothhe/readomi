@@ -11,7 +11,7 @@ export const AGENT_SETUP_GUIDE_URL = "https://github.com/knothhe/readomi/blob/ma
  */
 export function buildAgentInstructions(config: Config, providerId?: string | null): string {
   const current = providerId === null ? null : exportSetupDocument(config, providerId)
-  const currentText = current?.apiKey
+  const currentText = (current?.apiKey || current?.noApiKey)
     ? stringifySetupDocument(current)
     : i18n.t("agentInstructions.noConfiguration")
   return i18n.t("agentInstructions.text", [AGENT_SETUP_GUIDE_URL, currentText])

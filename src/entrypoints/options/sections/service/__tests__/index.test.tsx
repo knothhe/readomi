@@ -204,6 +204,29 @@ describe("multiple translation services", () => {
     expect(store.get(configAtom).providersConfig[1].apiKey).toBe("sk-filled-local-key")
   })
 
+  it("disables key entry, discovers models and saves a local service without a key", async () => {
+    const local = { ...second, provider: "openai-compatible" as const, baseURL: "http://localhost:11434/v1", apiKey: "local" }
+    const { store } = await renderService({ ...configured, providersConfig: [first, local] })
+    edit("Service B")
+    fireEvent.click(screen.getByRole("checkbox", { name: "manualService.noApiKey" }))
+    expect(screen.getByLabelText("manualService.key")).toBeDisabled()
+    expect(screen.getByLabelText("manualService.key")).toHaveValue("")
+    expect(screen.getByLabelText("manualService.key")).not.toHaveAttribute("placeholder")
+    fireEvent.click(screen.getByRole("button", { name: "modelDiscovery.fetch" }))
+    await waitFor(() => expect(fetchProviderModels).toHaveBeenCalledWith(expect.objectContaining({ noApiKey: true, apiKey: undefined, baseURL: local.baseURL }), expect.any(AbortSignal)))
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
+    await screen.findByRole("heading", { name: "Service B" })
+    expect(checkConnection).toHaveBeenCalledWith(expect.objectContaining({ noApiKey: true, baseURL: local.baseURL }))
+    expect(vi.mocked(checkConnection).mock.calls[0][0]).not.toHaveProperty("apiKey")
+    expect(store.get(configAtom).providersConfig[1]).not.toHaveProperty("apiKey")
+    expect(within(row("Service B")).getByTestId("service-status")).toHaveTextContent("options.service.status.ok")
+    expect(within(row("Service B")).getByRole("radio")).toBeEnabled()
+    edit("Service B")
+    expect(screen.getByRole("checkbox", { name: "manualService.noApiKey" })).toBeChecked()
+    fireEvent.click(screen.getByRole("checkbox", { name: "manualService.noApiKey" }))
+    expect(screen.getByRole("button", { name: "options.service.checkSave" })).toBeDisabled()
+  })
+
   it("shows a masked saved-key hint while keeping the editable password value empty", async () => {
     await renderService()
     edit("Service B")

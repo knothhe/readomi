@@ -510,8 +510,9 @@ manualService:
   name: Name
   url: API URL
   key: API Key
-  keyHint: "For local services without authentication, enter local. Leave blank to
-    keep the existing key."
+  keyHint: "Leave blank to keep the existing key when editing. For services without authentication, select “No API key required”."
+  noApiKey: No API key required
+  noApiKeyHint: "For services without authentication, such as Ollama and LM Studio. Saving removes the stored API key; custom headers are still sent."
   model: Model
   api: Request format
   save: Test and save
@@ -522,8 +523,7 @@ manualService:
   bodyExample: "Thinking parameter example (adjust according to your model’s
     documentation):"
   bodyInvalid: "Enter a valid JSON object (not an array, string, or null)."
-  intro: Choose a service, enter your API key and model, then check the connection
-    to start translating.
+  intro: Choose a service and model, enter your API key or select “No API key required”, then check the connection to start translating.
   advanced: More parameters
   compatible: OpenAI-compatible service
 configBackup:

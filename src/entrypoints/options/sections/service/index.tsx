@@ -13,7 +13,7 @@ import { deepEqual } from "@/utils/object"
 import { resolveBaseURL, resolveRequestApi } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
 import { formatRelativeTime } from "@/utils/relative-time"
-import { initialProviderPlaceholder, isProviderReady } from "@/utils/service-management"
+import { hasProviderCredentials, initialProviderPlaceholder, isProviderReady } from "@/utils/service-management"
 import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
 import { applySetupDocument, describeSetupDocument, exportSetupDocument, maskApiKey, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
 import { cn } from "@/utils/styles/utils"
@@ -162,7 +162,7 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
   const [showDetails, setShowDetails] = useState(false)
   const [now] = useState(Date.now)
   const ready = isProviderReady(provider)
-  const status = !provider.apiKey?.trim()
+  const status = !hasProviderCredentials(provider)
     ? { dot: "bg-destructive", tone: "text-destructive", label: i18n.t("options.service.keyMissing"), when: null }
     : checkStatus(provider.connectionCheck, Math.max(now, provider.connectionCheck?.checkedAt ?? now))
 
@@ -274,7 +274,7 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
             <dt>{i18n.t("manualService.url")}</dt>
             <dd>{resolveBaseURL(provider) || "—"}</dd>
             <dt>{i18n.t("manualService.key")}</dt>
-            <dd>{provider.apiKey ? maskApiKey(provider.apiKey) : "—"}</dd>
+            <dd>{provider.noApiKey ? i18n.t("manualService.noApiKey") : provider.apiKey ? maskApiKey(provider.apiKey) : "—"}</dd>
             <dt>{i18n.t("manualService.type")}</dt>
             <dd>{provider.provider}</dd>
             <dt>{i18n.t("manualService.api")}</dt>
@@ -308,6 +308,8 @@ function previewDetails(preview: SetupPreview): string[] {
     parts.push(i18n.t("options.service.newKey"))
   else if (preview.keyStatus === "reused")
     parts.push(i18n.t("options.service.keptKey"))
+  if (preview.keyStatus === "none")
+    parts.push(i18n.t("manualService.noApiKey"))
   if (preview.thinkingOff)
     parts.push(i18n.t("options.service.thinkingOff"))
   return parts

@@ -18,6 +18,17 @@ describe("configuration sync payload", () => {
     expect(JSON.stringify(encoded.values)).not.toMatch(/secret|apiKey|headers|body|connectionCheck/)
     expect((await decodeSyncConfig(encoded.values))?.config).toEqual(document)
   })
+  it("syncs the no-key setting without restoring an old local key", async () => {
+    const local = configured()
+    const remote = toSyncedConfig(local)
+    remote.providersConfig[0].noApiKey = true
+    const encoded = await encodeSyncConfig(remote, {})
+    const decoded = (await decodeSyncConfig(encoded.values))!.config
+    expect(decoded.providersConfig[0].noApiKey).toBe(true)
+    const applied = applySyncedConfig(local, decoded)
+    expect(applied.providersConfig[0]).not.toHaveProperty("apiKey")
+    expect(applied.providersConfig[0].noApiKey).toBe(true)
+  })
   it("rejects cloud credentials rather than importing them", () => {
     expect(() => parseSyncedConfig(configured())).toThrow("invalid")
   })

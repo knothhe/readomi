@@ -34,6 +34,14 @@ describe("agent setup instructions", () => {
     expect(text).not.toContain("\"model\"")
   })
 
+  it("includes a local service configured without a key", () => {
+    const local: Config = { ...config, providersConfig: [{ ...config.providersConfig[0], apiKey: undefined, noApiKey: true, model: "local-model" }] }
+    const text = buildAgentInstructions(local)
+    expect(text).toContain("\"noApiKey\": true")
+    expect(text).toContain("\"model\": \"local-model\"")
+    expect(text).not.toContain("\"apiKey\"")
+  })
+
   it("preserves current-service instructions for callers that omit the target", () => {
     expect(buildAgentInstructions(config)).toContain("\"type\": \"openai\"")
   })

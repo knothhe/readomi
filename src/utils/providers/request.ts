@@ -117,9 +117,9 @@ function buildBody(api: RequestApi, provider: ProviderConfig, request: TextReque
   }
 }
 
-export function buildHeaders(api: RequestApi, provider: Pick<ProviderConfig, "apiKey" | "headers">): Record<string, string> {
+export function buildHeaders(api: RequestApi, provider: Pick<ProviderConfig, "apiKey" | "noApiKey" | "headers">): Record<string, string> {
   const headers = new Headers({ "Content-Type": "application/json" })
-  if (provider.apiKey) {
+  if (!provider.noApiKey && provider.apiKey) {
     switch (api) {
       case "anthropic":
         headers.set("x-api-key", provider.apiKey)

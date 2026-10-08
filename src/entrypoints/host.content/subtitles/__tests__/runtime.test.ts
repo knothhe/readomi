@@ -119,6 +119,14 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(0)
     expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
   })
+  it("translates video captions without an API key when explicitly configured", async () => {
+    const local: Config = { ...config, providersConfig: config.providersConfig.map(p => ({ ...p, apiKey: undefined, noApiKey: true })) }
+    update(local)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translateTextCore).toHaveBeenCalledWith(expect.objectContaining({ providerConfig: expect.objectContaining({ noApiKey: true, apiKey: undefined }) }))
+    expect(shadow.querySelector(".translated")!.textContent).toBe("你好")
+  })
+
   it("updates the original ratio live without changing translated text, base size or position", async () => {
     update(config)
     await vi.advanceTimersByTimeAsync(1000)

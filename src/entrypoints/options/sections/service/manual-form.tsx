@@ -60,10 +60,11 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
   }, [])
   // A stored key belongs to its endpoint; never carry it to a new address.
   const matching = current ? config.providersConfig.find(provider => provider.id === current.id && provider.provider === draft.type && resolveBaseURL(provider) === resolveBaseURL({ provider: draft.type, baseURL: draft.baseURL })) : undefined
-  const effectiveKey = key.trim() || matching?.apiKey?.trim()
+  const effectiveKey = draft.noApiKey ? undefined : key.trim() || matching?.apiKey?.trim()
+  const hasCredentials = !!draft.noApiKey || !!effectiveKey
   const baseURL = resolveBaseURL({ provider: draft.type, baseURL: draft.baseURL })
-  const canFetch = !!effectiveKey && !!baseURL
-  const signature = JSON.stringify([draft.type, draft.api, draft.baseURL, matching?.headers, effectiveKey])
+  const canFetch = hasCredentials && !!baseURL
+  const signature = JSON.stringify([draft.type, draft.api, draft.baseURL, matching?.headers, effectiveKey, draft.noApiKey])
   const models = modelResult.signature === signature ? modelResult.models : []
   const modelState = modelResult.signature === signature ? modelResult.state : "idle"
   useEffect(() => {
@@ -77,7 +78,7 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
     setModelResult({ signature, models: [], state: "loading" })
     try {
       const latest = matching ? store.get(configAtom).providersConfig.find(provider => provider.id === matching.id && provider.provider === draft.type && resolveBaseURL(provider) === baseURL) : undefined
-      const result = await fetchProviderModels({ provider: draft.type, api: draft.api, baseURL: draft.baseURL, apiKey: key.trim() || latest?.apiKey, headers: latest?.headers }, controller.signal)
+      const result = await fetchProviderModels({ provider: draft.type, api: draft.api, baseURL: draft.baseURL, apiKey: draft.noApiKey ? undefined : key.trim() || latest?.apiKey, noApiKey: draft.noApiKey, headers: latest?.headers }, controller.signal)
       if (!controller.signal.aborted && requestRef.current === controller) {
         setModelResult({ signature, models: result, state: result.length ? "list" : "empty" })
       }
@@ -110,7 +111,7 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
         body: body.data,
         name: draft.name?.trim() || undefined,
         baseURL: draft.baseURL?.trim() || undefined,
-        apiKey: key.trim() || (matching ? draft.apiKey : undefined),
+        apiKey: draft.noApiKey ? undefined : key.trim() || (matching ? draft.apiKey : undefined),
       })
       const { config: next, providerId } = applySetupDocument(store.get(configAtom), document, { mode: current ? "edit" : "add", providerId: current?.id, makeCurrent })
       const provider = next.providersConfig.find(p => p.id === providerId)!
@@ -157,8 +158,12 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
         </div>
         <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
           <label className={labelClass} htmlFor={keyId}>{i18n.t("manualService.key")}</label>
-          <input id={keyId} className={fieldClass} type="password" autoComplete="off" value={key} placeholder={matching?.apiKey?.trim() ? maskApiKey(matching.apiKey) : undefined} aria-describedby={`${keyId}-hint`} onChange={e => setKey(e.target.value)} />
-          <p id={`${keyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("manualService.keyHint")}</p>
+          <input id={keyId} className={fieldClass} type="password" autoComplete="off" disabled={!!draft.noApiKey} value={draft.noApiKey ? "" : key} placeholder={!draft.noApiKey && matching?.apiKey?.trim() ? maskApiKey(matching.apiKey) : undefined} aria-describedby={`${keyId}-hint`} onChange={e => setKey(e.target.value)} />
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" className="accent-brand" checked={!!draft.noApiKey} onChange={e => setDraft({ ...draft, noApiKey: e.target.checked || undefined })} />
+            {i18n.t("manualService.noApiKey")}
+          </label>
+          <p id={`${keyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t(draft.noApiKey ? "manualService.noApiKeyHint" : "manualService.keyHint")}</p>
         </div>
         <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
           <label className={labelClass} htmlFor={modelId}>{i18n.t("manualService.model")}</label>
@@ -239,7 +244,7 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
         {!current && <div className="sm:col-span-2"><UseAfterAdd value={makeCurrent} onChange={onMakeCurrentChange} disabled={busy} /></div>}
         <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
           {onCancel && <Button type="button" variant="outline" onClick={onCancel}>{i18n.t("options.service.cancel")}</Button>}
-          <Button type="submit" disabled={!body.success || !draft.model.trim() || !effectiveKey}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
+          <Button type="submit" disabled={!body.success || !draft.model.trim() || !hasCredentials}>{busy ? i18n.t("options.service.applying") : i18n.t(current ? "options.service.checkSave" : "options.service.checkAdd")}</Button>
         </div>
       </fieldset>
     </form>

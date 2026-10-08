@@ -11,6 +11,7 @@ import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { getSecondaryLanguage } from "@/utils/language-policy"
 import { logger } from "@/utils/logger"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
+import { hasProviderCredentials } from "@/utils/service-management"
 import { sha256Hex } from "../../hash"
 import { sendMessage } from "../../message"
 import { requestHoverStream } from "./stream-request"
@@ -157,7 +158,7 @@ export function validateTranslationConfigAndToast(
   }
 
   // check if the API key is configured
-  if (!providerConfig.apiKey?.trim()) {
+  if (!hasProviderCredentials(providerConfig)) {
     toast.error(i18n.t("translation.noApiKey"))
     logger.info("validateTranslationConfig: returning false (no API key)")
     return false

@@ -15,6 +15,7 @@ import { setTranslationDirAndLang } from "@/utils/host/translate/translation-att
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
 import { onMessage, sendMessage } from "@/utils/message"
+import { isProviderReady } from "@/utils/service-management"
 import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle, subtitleVideoSize } from "@/utils/subtitles/appearance"
 import { shouldShowVideoControls } from "@/utils/subtitles/control-sites"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
@@ -103,7 +104,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   let requestController = new AbortController()
   const translations = new SubtitleTranslationWindow(async (input) => {
     const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
-    if (!provider?.apiKey?.trim())
+    if (!isProviderReady(provider))
       throw new Error("Translation service is not configured")
     const generation = translationGeneration
     return translateTextCore({
@@ -124,7 +125,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     })
   }, async (items, signal, urgent, onProgress) => {
     const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
-    if (!provider?.apiKey?.trim())
+    if (!isProviderReady(provider))
       throw new Error("Translation service is not configured")
     const generation = translationGeneration
     const apply: typeof onProgress = (results) => {

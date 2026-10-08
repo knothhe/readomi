@@ -24,7 +24,8 @@ export const setupDocumentSchema = z.strictObject({
   type: z.enum(PROVIDER_TYPES).describe("Which service. \"openai\", \"anthropic\", \"gemini\" and \"deepseek\" are the official APIs. \"openai-compatible\" is any other endpoint that speaks the OpenAI chat completions API, such as Ollama, LM Studio, OpenRouter or a gateway; it needs baseURL."),
   api: z.enum(REQUEST_APIS).optional().describe("Wire format. Defaults per type: openai → openai-responses, anthropic → anthropic, gemini → gemini, deepseek and openai-compatible → openai-chat. Set \"openai-responses\" for a compatible service that only speaks the Responses API, such as xAI."),
   name: z.string().trim().min(1).optional().describe("Display name. Defaults to the service type's name."),
-  apiKey: z.string().trim().min(1).optional().describe("The API key. Required for a new service. Endpoints without authentication still need a non-empty value, e.g. \"local\". When updating an existing service, the masked value from an export (such as \"sk-…a9f2\") keeps the stored key."),
+  apiKey: z.string().trim().min(1).optional().describe("The API key. Required for a new service unless noApiKey is true. When updating an existing service, a masked or omitted key keeps the stored key only when its type and endpoint are unchanged."),
+  noApiKey: z.boolean().optional().describe("Set true for a service that needs no API key, such as local Ollama or LM Studio. Omit apiKey. Clears any stored API key and skips API key authentication; custom headers are still sent."),
   model: z.string().trim().min(1).describe("Model ID exactly as the service expects it, e.g. \"gpt-6-luna\", \"claude-haiku-4-5\", \"gemini-3.5-flash-lite\", \"deepseek-flash\", \"qwen3:8b\"."),
   baseURL: z.url().optional().describe("Endpoint base URL up to and including the version path, e.g. \"http://localhost:11434/v1\". Required for openai-compatible. Omit for an official API."),
   headers: z.record(z.string(), z.string()).optional().describe("Extra HTTP headers sent with every request."),
@@ -185,9 +186,9 @@ export function applySetupDocument(config: Config, document: SetupDocument, opti
   const existing = targetProvider(config, document, options)
 
   const documentKey = provider.apiKey && !isMaskedApiKey(provider.apiKey) ? provider.apiKey : undefined
-  const apiKey = documentKey ?? (canReuseKey(existing, provider, options) ? existing?.apiKey : undefined)
-  if (!apiKey) {
-    throw new SetupDocumentError("MISSING_API_KEY", "The document has no API key and no stored service matches it. Endpoints without authentication still need a non-empty value such as \"local\".")
+  const apiKey = provider.noApiKey ? undefined : documentKey ?? (canReuseKey(existing, provider, options) ? existing?.apiKey : undefined)
+  if (!provider.noApiKey && !apiKey) {
+    throw new SetupDocumentError("MISSING_API_KEY", "The document has no API key and no stored service matches it. For a service without API key authentication, set noApiKey to true.")
   }
 
   const otherNames = new Set(config.providersConfig.filter(p => p.id !== existing?.id).map(p => p.name))
@@ -199,7 +200,8 @@ export function applySetupDocument(config: Config, document: SetupDocument, opti
     enabled: true,
     provider: provider.type,
     ...(provider.api && { api: provider.api }),
-    apiKey,
+    ...(apiKey && { apiKey }),
+    ...(provider.noApiKey && { noApiKey: true }),
     model: provider.model,
     ...(provider.baseURL && { baseURL: resolveBaseURL(toProviderShape(provider)) }),
     ...(provider.headers && { headers: provider.headers }),
@@ -224,7 +226,7 @@ export function applySetupDocument(config: Config, document: SetupDocument, opti
     throw new SetupDocumentError("INVALID_RESULT", parsed.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("\n"))
   }
 
-  return { config: parsed.data, providerId: next.id, replaced: !!existing, keyReused: !documentKey }
+  return { config: parsed.data, providerId: next.id, replaced: !!existing, keyReused: !provider.noApiKey && !documentKey && !!apiKey }
 }
 
 /* ──────────────────────────────
@@ -237,7 +239,7 @@ export interface SetupPreview {
   providerName: string
   modelId: string
   host: string
-  keyStatus: "new" | "reused" | "missing"
+  keyStatus: "new" | "reused" | "missing" | "none"
   thinkingOff: boolean | null
   replaces: boolean
 }
@@ -255,7 +257,7 @@ export function describeSetupDocument(config: Config, document: SetupDocument, o
     providerName: provider.name ?? (options?.mode === "add" ? undefined : existing?.name) ?? PROVIDER_ITEMS[provider.type].name,
     modelId: provider.model,
     host: getRequestHost(toProviderShape(provider)),
-    keyStatus: hasDocumentKey ? "new" : canReuseKey(existing, provider, options) && existing?.apiKey ? "reused" : "missing",
+    keyStatus: provider.noApiKey ? "none" : hasDocumentKey ? "new" : canReuseKey(existing, provider, options) && existing?.apiKey ? "reused" : "missing",
     thinkingOff: describesThinkingOff(provider.body, api),
     replaces: !!existing,
   }
@@ -276,7 +278,7 @@ export function exportSetupDocument(config: Config, providerId = config.translat
     type: provider.provider,
     ...(provider.api && { api: provider.api }),
     ...(provider.name !== PROVIDER_ITEMS[provider.provider].name && { name: provider.name }),
-    ...(provider.apiKey && { apiKey: maskApiKey(provider.apiKey) }),
+    ...(provider.noApiKey ? { noApiKey: true } : provider.apiKey && { apiKey: maskApiKey(provider.apiKey) }),
     model: provider.model,
     ...(provider.baseURL && { baseURL: provider.baseURL }),
     ...(provider.headers && { headers: provider.headers }),

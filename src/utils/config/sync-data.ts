@@ -8,7 +8,7 @@ export const SYNC_PREFIX = "readomi.sync.v1."
 export const SYNC_MANIFEST_KEY = `${SYNC_PREFIX}manifest`
 export const SYNC_QUOTA = 102400
 const ITEM_QUOTA = 8192
-const PUBLIC_PROVIDER_FIELDS = ["id", "name", "description", "enabled", "provider", "api", "baseURL", "model", "temperature"] as const
+const PUBLIC_PROVIDER_FIELDS = ["id", "name", "description", "enabled", "provider", "api", "noApiKey", "baseURL", "model", "temperature"] as const
 export type SyncedProvider = Pick<ProviderConfig, typeof PUBLIC_PROVIDER_FIELDS[number]>
 export type SyncedConfig = Omit<Config, "providersConfig"> & { providersConfig: SyncedProvider[] }
 
@@ -89,7 +89,7 @@ export function applySyncedConfig(local: Config, remote: SyncedConfig): Config {
       return provider
     return {
       ...provider,
-      ...(previous.apiKey !== undefined && { apiKey: previous.apiKey }),
+      ...(!provider.noApiKey && previous.apiKey !== undefined && { apiKey: previous.apiKey }),
       ...(previous.headers !== undefined && { headers: previous.headers }),
       ...(previous.body !== undefined && { body: previous.body }),
       ...(sameSyncValue(publicProvider(previous), provider) && previous.connectionCheck && { connectionCheck: previous.connectionCheck }),

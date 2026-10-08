@@ -297,7 +297,7 @@ agentInstructions:
   text: |
     我在用浏览器扩展Readomi来翻译网页，请帮我配置它的翻译服务。
     先阅读说明：$1
-    按说明操作：问清我要用哪家服务、API Key 在哪里；用我的 Key 按说明里的请求模板验证，直到请求成功；把翻译服务的配置 JSON 写入我的剪贴板；最后告诉我在Readomi设置页的“翻译服务”里粘贴并应用。
+    按说明操作：问清我要用哪家服务、是否需要 API Key；无鉴权服务设置 noApiKey: true 并省略 apiKey；需要密钥时用我的 Key 按说明里的请求模板验证，直到请求成功；把翻译服务的配置 JSON 写入我的剪贴板；最后告诉我在Readomi设置页的“翻译服务”里粘贴并应用。
     我当前的配置（密钥已脱敏）：
     $2
 shortcutKeySelector:
@@ -491,7 +491,9 @@ manualService:
   name: 名称
   url: API 地址
   key: API Key
-  keyHint: 本地无鉴权服务可填写 local；修改时留空沿用原密钥。
+  keyHint: 修改时留空沿用原密钥；无鉴权服务请勾选“无需 API Key”。
+  noApiKey: 无需 API Key
+  noApiKeyHint: 适用于 Ollama、LM Studio 等无鉴权服务。保存后移除已存的 API Key，请求仍可使用自定义请求头。
   model: 模型
   api: 请求格式
   save: 测试并保存
@@ -499,7 +501,7 @@ manualService:
   bodyHint: 填写 body 内的 JSON 对象，无需再包一层 body；留空使用服务默认值。参数会合并进每次请求，并覆盖同名字段。
   bodyExample: 思考参数示例（请按模型文档调整）：
   bodyInvalid: 请输入有效的 JSON 对象（不能是数组、字符串或 null）。
-  intro: 选择服务，填写 API Key 和模型，检查成功后即可翻译。
+  intro: 选择服务和模型，填写 API Key 或勾选“无需 API Key”，检查成功后即可翻译。
   advanced: 更多参数
   compatible: OpenAI 兼容服务
 configBackup:

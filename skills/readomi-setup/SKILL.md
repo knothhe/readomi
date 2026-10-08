@@ -18,7 +18,9 @@ templates: https://github.com/knothhe/readomi/blob/main/docs/agent-setup.md
 
 1. Ask which service (OpenAI, Anthropic, Gemini, DeepSeek, or an
    OpenAI-compatible endpoint such as Ollama, OpenRouter or a gateway) and
-   where the API key is. If the user pasted a current configuration, change
+   whether it needs an API key and where the key is. For services without
+   authentication, skip the key steps, verify without an authentication
+   header, and set `noApiKey: true` while omitting `apiKey`. If the user pasted a current configuration, change
    only what they asked.
 2. Load the key into a shell variable from a file or environment variable.
    Never print it, never include it in a message.
@@ -29,7 +31,7 @@ templates: https://github.com/knothhe/readomi/blob/main/docs/agent-setup.md
    (`pbcopy`, `wl-copy`, `xclip -selection clipboard`, or `clip`). A masked
    key from an export (`sk-…a9f2`) can be returned unchanged when editing that
    service with the same type and endpoint. Adding a service or changing its
-   type, endpoint or key requires a full key.
+   type, endpoint or key requires a full key unless `noApiKey: true`.
 5. Tell the user to open settings → "Translation service" → "Add service",
    paste the configuration and click "Check and add". First setup opens the
    add editor automatically. To change a stored service, choose "Edit" from
@@ -54,6 +56,6 @@ subsequent translation requests and keeps existing translations.
 - Gemini: `gemini-3.5-flash-lite` with `body: { "generationConfig": { "thinkingConfig": { "thinkingLevel": "minimal" } } }`.
 - DeepSeek: `deepseek-flash` with `body: { "thinking": { "type": "disabled" } }`.
 - Ollama / LM Studio / other compatible services: `type: "openai-compatible"`,
-  `baseURL` ending in the version path, any non-empty `apiKey`, the model ID
+  `baseURL` ending in the version path, `noApiKey: true` when no key is needed (otherwise supply `apiKey`), the model ID
   the service lists. Add `api: "openai-responses"` for a service that only
   speaks the Responses API (xAI).

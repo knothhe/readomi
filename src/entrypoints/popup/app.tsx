@@ -3,6 +3,7 @@ import { useState } from "react"
 import { i18n } from "#imports"
 import { configAtom } from "@/utils/atoms/config"
 import { featureProviderConfigAtom } from "@/utils/atoms/provider"
+import { hasProviderCredentials } from "@/utils/service-management"
 import { isSiteDisabled } from "@/utils/site-disable"
 import { activeTabAtom } from "./atoms"
 import { HoverTranslationControl } from "./components/hover-translation-control"
@@ -25,7 +26,7 @@ export default function App() {
   const [savingSite, setSavingSite] = useState<{ url: string, disabled: boolean } | null>(null)
   const disabled = savingSite?.url === tab.url ? savingSite.disabled : isSiteDisabled(tab.url, config)
   const featuresDisabled = disabled || !tab.translatable
-  const needsApiKey = !!providerConfig && !providerConfig.apiKey?.trim()
+  const needsApiKey = !!providerConfig && !hasProviderCredentials(providerConfig)
 
   return (
     <div className="flex flex-col">

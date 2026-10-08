@@ -5,8 +5,12 @@ import { DEFAULT_PROVIDER_CONFIG } from "@/utils/constants/providers"
 import { getUniqueName } from "@/utils/name"
 import { deepEqual } from "@/utils/object"
 
+export function hasProviderCredentials(provider: Pick<ProviderConfig, "apiKey" | "noApiKey"> | null | undefined): boolean {
+  return !!provider && (provider.noApiKey === true || !!provider.apiKey?.trim())
+}
+
 export function isProviderReady(provider: ProviderConfig | null | undefined): provider is ProviderConfig {
-  return !!provider?.enabled && !!provider.apiKey?.trim() && !!provider.model.trim()
+  return !!provider?.enabled && hasProviderCredentials(provider) && !!provider.model.trim()
 }
 
 /** Only the untouched installation placeholder can be replaced by an initial setup. */
