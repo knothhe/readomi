@@ -6,6 +6,10 @@
 window.READOMI_CANVAS = {
   title: "Readomi Design",
   boards: [
+    { file: "Video-Player-Appearance.html", title: "播放器弹窗 · 背景深度与译文颜色", x: 0, y: 217000, w: 1040, h: 740 },
+    { file: "Video-Player-Appearance-Adjusted.html", title: "播放器弹窗 · 调整背景与译文颜色", x: 1120, y: 217000, w: 1040, h: 740 },
+    { file: "Video-Player-Appearance-Mobile.html", title: "播放器弹窗 · 窄屏滚动调整", x: 2240, y: 217000, w: 390, h: 450 },
+    { file: "Settings-Subtitle-Preset-Color-Invalid.html", title: "字幕预设 · 无效颜色草稿 · 保留已保存预览", x: 2720, y: 210850, w: 1280, h: 1650 },
     { file: "Settings-Subtitle-Preview-Short-150.html", title: "字幕预览 · 短句 150%", x: 0, y: 212600, w: 1280, h: 1500 },
     { file: "Settings-Subtitle-Preview-Long-150.html", title: "字幕预览 · 长句 150%", x: 1360, y: 212600, w: 1280, h: 1500 },
     { file: "Settings-Subtitle-Preview-Portrait-150.html", title: "字幕预览 · 竖版短句 150%", x: 2720, y: 212600, w: 1280, h: 1500 },
