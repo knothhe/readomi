@@ -58,11 +58,19 @@ describe("popup page subtitle switch", () => {
   it("shares clicks and macOS Option+V without changing the global configuration", async () => {
     const { store } = mount()
     await waitFor(() => expect(toggle()).toBeEnabled())
-    fireEvent.click(toggle())
-    await waitFor(() => expect(toggle()).not.toBeChecked())
+    expect(toggle()).toBeChecked()
+    // Finish the async write and React effects before sending the next input.
+    await act(async () => {
+      fireEvent.click(toggle())
+    })
+    expect(toggle()).not.toBeChecked()
+    expect(toggle()).toBeEnabled()
     expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { tabId: 12, url, enabled: false })
-    fireEvent.keyDown(document, { key: "√", code: "KeyV", altKey: true })
-    await waitFor(() => expect(toggle()).toBeChecked())
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "√", code: "KeyV", altKey: true })
+    })
+    expect(toggle()).toBeChecked()
+    expect(toggle()).toBeEnabled()
     expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { tabId: 12, url, enabled: true })
     expect(store.get(configAtom)).toEqual(DEFAULT_CONFIG)
   })
