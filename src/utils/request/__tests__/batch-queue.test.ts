@@ -80,8 +80,6 @@ function createBatchQueue(
   requestQueue: RequestQueue,
   config = baseBatchConfig,
   options?: {
-    learnedLimits?: (limitKey: string) => { maxItems: number, maxCharacters: number } | undefined
-    onLimitsLearned?: (limitKey: string, limits: { maxItems: number, maxCharacters: number }) => void
     enableFallbackToIndividual?: boolean
     executeIndividual?: (data: TranslateBatchData) => Promise<string>
     onError?: (error: Error, context: { batchKey: string, retryCount: number, isFallback: boolean }) => void
@@ -93,9 +91,6 @@ function createBatchQueue(
     getBatchKey: (data) => {
       return `${data.langConfig.sourceCode}-${data.langConfig.targetCode}-${data.providerConfig.id}`
     },
-    getLimitKey: data => data.providerConfig.id,
-    learnedLimits: options?.learnedLimits,
-    onLimitsLearned: options?.onLimitsLearned,
     getCharacters: (data) => {
       return data.text.length
     },
@@ -382,26 +377,21 @@ describe("batchQueue – error handling", () => {
     await expect(Promise.all(promises)).resolves.toEqual(["r-A", "r-B"])
   })
 
-  it("keeps later batches for the same service at the smaller size, and leaves other services alone", async () => {
+  it("does not permanently shrink later batches after a short batch loses an item", async () => {
     vi.useFakeTimers()
     mockBatchAnswers(count => count > 1 ? 1 : count)
-    const otherProvider = { ...sampleProviderConfig, id: "other-provider", name: "Other" }
-
     const requestQueue = new RequestQueue({ ...baseRequestQueueConfig, rate: 100, capacity: 100 })
     const batchQueue = createBatchQueue(requestQueue, baseBatchConfig, { enableFallbackToIndividual: false })
     const first = enqueueTexts(batchQueue, ["A", "B"])
     await vi.advanceTimersByTimeAsync(baseBatchConfig.batchDelay)
     await Promise.all(first)
 
-    expect(batchQueue.limitsFor(sampleProviderConfig.id)).toEqual({ maxItems: 1, maxCharacters: 1 })
-    expect(batchQueue.limitsFor(otherProvider.id)).toEqual({ maxItems: baseBatchConfig.maxItemsPerBatch, maxCharacters: baseBatchConfig.maxCharactersPerBatch })
-
     mockExecuteTranslate.mockClear()
-    const second = enqueueTexts(batchQueue, ["C", "D"])
+    mockBatchAnswers(count => count)
+    const second = enqueueTexts(batchQueue, ["A much longer subtitle", "Another longer subtitle"])
     await vi.advanceTimersByTimeAsync(baseBatchConfig.batchDelay)
-    await expect(Promise.all(second)).resolves.toEqual(["r-C", "r-D"])
-    // Sent one paragraph at a time, with no failed attempt first.
-    expect(mockExecuteTranslate).toHaveBeenCalledTimes(2)
+    await expect(Promise.all(second)).resolves.toEqual(["r-A much longer subtitle", "r-Another longer subtitle"])
+    expect(mockExecuteTranslate).toHaveBeenCalledTimes(1)
   })
 
   it("does not retry regular request errors", async () => {
@@ -429,30 +419,6 @@ describe("batchQueue – error handling", () => {
 
     await expect(promise).rejects.toThrow("Network error")
     expect(attemptCount).toBe(1) // No retry for regular errors
-  })
-
-  it("reports the smaller size so it can be kept, and starts from a size kept earlier", async () => {
-    vi.useFakeTimers()
-    mockBatchAnswers(count => count > 1 ? 1 : count)
-    const onLimitsLearned = vi.fn()
-
-    const requestQueue = new RequestQueue({ ...baseRequestQueueConfig, rate: 100, capacity: 100 })
-    const learning = createBatchQueue(requestQueue, baseBatchConfig, { enableFallbackToIndividual: false, onLimitsLearned })
-    const promises = enqueueTexts(learning, ["A", "B"])
-    await vi.advanceTimersByTimeAsync(baseBatchConfig.batchDelay)
-    await Promise.all(promises)
-    expect(onLimitsLearned).toHaveBeenCalledWith(sampleProviderConfig.id, { maxItems: 1, maxCharacters: 1 })
-
-    // A later session reads the kept size and sends one paragraph at a time from the start.
-    mockExecuteTranslate.mockClear()
-    const remembering = createBatchQueue(requestQueue, baseBatchConfig, {
-      enableFallbackToIndividual: false,
-      learnedLimits: key => key === sampleProviderConfig.id ? { maxItems: 1, maxCharacters: 1 } : undefined,
-    })
-    const next = enqueueTexts(remembering, ["C", "D"])
-    await vi.advanceTimersByTimeAsync(baseBatchConfig.batchDelay)
-    await expect(Promise.all(next)).resolves.toEqual(["r-C", "r-D"])
-    expect(mockExecuteTranslate).toHaveBeenCalledTimes(2)
   })
 
   it("falls back to an individual request when a single paragraph still comes back wrong", async () => {

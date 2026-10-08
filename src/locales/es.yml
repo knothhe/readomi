@@ -537,7 +537,7 @@ manualService:
   advanced: Más parámetros
   compatible: Servicio compatible con OpenAI
 configBackup:
-  title: Copia de seguridad
+  title: Copia de seguridad y sincronización
   backup: Copia de seguridad
   restore: Restaurar
   description: Exports include API keys and custom headers. Keep them private.
@@ -901,3 +901,42 @@ inputTranslation:
   pending: Traduciendo entrada…
   failed: La traducción falló. Se conservó el texto original.
   replaceFailed: No se pudo sustituir el texto. Traduce manualmente en este editor.
+
+configSync:
+  title: Sincronización de Chrome
+  browser: Navegador actual · $1
+  detecting: Detectando…
+  otherBrowser: Otro navegador
+  toggle: Sincronizar este dispositivo
+  toggleDescription: Usa tu cuenta de Chrome para conservar los ajustes entre dispositivos.
+  unsupported: Esta versión solo admite Chrome. Las copias de seguridad siguen disponibles.
+  scope: Contenido sincronizado
+  scopeDescription: "Idiomas, apariencia, preferencias de traducción, atajos, estilos de subtítulos, reglas de sitios y nombres, modelos y direcciones de servicios."
+  localOnly: Solo en este dispositivo
+  localOnlyDescription: "Claves API, cabeceras y parámetros personalizados. Introduce las credenciales en los dispositivos nuevos."
+  requirement: Inicia sesión con la misma cuenta en Chrome y activa la sincronización. Desactivar este interruptor conserva los ajustes locales y sincronizados.
+  pending: Guardando para la sincronización de Chrome…
+  localSaved: Ajustes guardados en este dispositivo.
+  saved: Guardado para que Chrome lo sincronice
+  lastSaved: Último guardado · $1
+  failed: No se pudo guardar para la sincronización de Chrome
+  quota: La configuración supera la capacidad de sincronización
+  failureDescription: Los ajustes locales están guardados. Se conserva la configuración sincronizada anterior.
+  retryHint: Se reintentará automáticamente. También puedes reintentar ahora.
+  quotaHint: Reduce las reglas de sitios o el contenido personalizado y reintenta.
+  retry: Reintentar
+  chooseTitle: Se encontró una configuración sincronizada
+  chooseDescription: Elige la configuración que quieres usar entre dispositivos.
+  useRemote: Usar la configuración sincronizada
+  useLocal: Usar la configuración de este dispositivo
+  recommended: Recomendado
+  chooseHint: Tu elección reemplaza la otra configuración. Las credenciales no se sincronizan.
+  enable: Activar sincronización
+  needsKeys: Algunos servicios necesitan claves API
+  needsKeysDescription: Se sincronizó la información de $1. Introduce las claves API para usar estos servicios.
+  openServices: Ir a los servicios de traducción →
+  fileBackup: Copia de seguridad en archivo
+  importReplace: "Aplicar este archivo reemplaza todos los ajustes de este dispositivo, incluidas las credenciales."
+  importHint: "La sincronización está activada. La importación también actualiza los ajustes y servicios sincronizados; las claves API, cabeceras y parámetros permanecen en este dispositivo."
+  actionFailed: No se pudo leer o aplicar la configuración sincronizada. Reintenta.
+  choiceChanged: La configuración sincronizada cambió. Cierra este diálogo y elige de nuevo.

@@ -1,8 +1,10 @@
 import type { RefObject } from "react"
 import { useAtomValue } from "jotai"
 import { useEffect, useRef } from "react"
+import { TRANSLATION_FONT_FAMILIES } from "@/types/config/translation-font"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { BLOCK_CONTENT_CLASS, CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
+import { PAGE_TRANSLATION_FONT_VARIABLE } from "@/utils/host-translation-font"
 import { decorateTranslationNode } from "@/utils/host/translate/ui/decorate-translation"
 import { startWordPrefixEmphasis } from "@/utils/host/word-prefix-emphasis"
 import { cn } from "@/utils/styles/utils"
@@ -24,11 +26,15 @@ function useWordPrefixEmphasis(ref: RefObject<HTMLElement | null>, enabled: bool
 
 /** A translated paragraph in the chosen display mode and translation style, with the English emphasis when it is on. */
 export function TranslationPreview() {
-  const { mode, translationNodeStyle } = useAtomValue(configFieldsAtomMap.translate)
+  const { mode, translationFont, translationNodeStyle } = useAtomValue(configFieldsAtomMap.translate)
   const { wordPrefixEmphasis } = useAtomValue(configFieldsAtomMap.reading)
   const previewRef = useRef<HTMLDivElement>(null)
   const translationRef = useRef<HTMLSpanElement>(null)
   useWordPrefixEmphasis(previewRef, wordPrefixEmphasis)
+
+  useEffect(() => {
+    previewRef.current?.style.setProperty(PAGE_TRANSLATION_FONT_VARIABLE, TRANSLATION_FONT_FAMILIES[translationFont])
+  }, [translationFont])
 
   useEffect(() => {
     if (translationRef.current)
@@ -47,7 +53,7 @@ export function TranslationPreview() {
             </>
           )
         // Translation only puts the translation in place of the original, without a translation style.
-        : <p className="m-0 text-[14px] leading-[1.9]" lang="zh">{TRANSLATION}</p>}
+        : <p className={cn(CONTENT_WRAPPER_CLASS, "m-0 text-[14px] leading-[1.9]")} lang="zh">{TRANSLATION}</p>}
     </SettingsPreview>
   )
 }

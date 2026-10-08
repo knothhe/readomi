@@ -24,14 +24,25 @@ describe("service limits store", () => {
     const first = new ServiceLimitsStore(() => now)
     await first.load()
     first.update("p1:m1", { pace: { rate: 5, ceiling: 10 } })
-    first.update("p1:m1", { batch: { maxItems: 2, maxCharacters: 400 } })
     expect(await storage.getItem("local:serviceLimits")).toBeNull()
 
     await vi.advanceTimersByTimeAsync(2000)
 
     const next = new ServiceLimitsStore(() => now)
     await next.load()
-    expect(next.get("p1:m1")).toEqual({ pace: { rate: 5, ceiling: 10 }, batch: { maxItems: 2, maxCharacters: 400 }, updatedAt: now })
+    expect(next.get("p1:m1")).toEqual({ pace: { rate: 5, ceiling: 10 }, updatedAt: now })
+  })
+
+  it("removes legacy batch limits while preserving the learned request pace", async () => {
+    const now = 1_000 * DAY
+    await storage.setItem("local:serviceLimits", {
+      "p1:m1": { pace: { rate: 5, ceiling: 10 }, batch: { maxItems: 2, maxCharacters: 22 }, updatedAt: now },
+    })
+    const store = new ServiceLimitsStore(() => now)
+    await store.load()
+    const expected = { "p1:m1": { pace: { rate: 5, ceiling: 10 }, updatedAt: now } }
+    expect(store.get("p1:m1")).toEqual(expected["p1:m1"])
+    expect(await storage.getItem("local:serviceLimits")).toEqual(expected)
   })
 
   it("forgets services unused for 90 days", async () => {

@@ -3,6 +3,7 @@ import type { ColorTheme } from "@/utils/color-theme"
 import type { ThemeMode } from "@/utils/theme"
 import { PRELOAD_MARGIN_PX, PRELOAD_THRESHOLD } from "@/utils/constants/translate"
 import { setHostColorTheme } from "@/utils/host-color-theme"
+import { setHostTranslationFont } from "@/utils/host-translation-font"
 import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { removeAllTranslatedWrapperNodes } from "@/utils/host/translate/node-manipulation"
 import { retryFailedTranslations } from "@/utils/host/translate/retry-failed"
@@ -45,6 +46,7 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
     colorTheme = config?.appearance.colorTheme ?? "terra"
     appearanceMode = config?.appearance.mode ?? "system"
     setHostColorTheme(colorTheme, resolveTheme(appearanceMode))
+    setHostTranslationFont(config?.translate.translationFont ?? "sans")
   })
   const appearanceQuery = window.matchMedia?.("(prefers-color-scheme: dark)")
   const updateAppearance = () => setHostColorTheme(colorTheme, resolveTheme(appearanceMode))

@@ -1,14 +1,16 @@
 import { z } from "zod"
+import { TRANSLATION_FONTS } from "./translation-font"
 
 export const SUBTITLE_PRESETS = ["clear", "gold", "ink"] as const
 // Legacy styles stay readable when importing or upgrading an existing configuration.
 const STORED_SUBTITLE_PRESETS = [...SUBTITLE_PRESETS, "compact", "study", "cinema"] as const
-export const SUBTITLE_TRANSLATION_FONTS = ["sans", "serif"] as const
+export const SUBTITLE_TRANSLATION_FONTS = TRANSLATION_FONTS
 export const SUBTITLE_TRANSLATION_COLORS = { white: "#ffffff", gold: "#ffe0a0", mint: "#bfe6df" } as const
 export const SUBTITLE_DEFAULT_SIZE_BASIS = 3.5
 export const SUBTITLE_RELATIVE_FONT_SIZE_MIN = 1.25
 export const SUBTITLE_RELATIVE_FONT_SIZE_MAX = 25
-export const SUBTITLE_RELATIVE_FONT_SIZE_STEP = 0.25
+export const SUBTITLE_FONT_SIZE_PERCENT_STEP = 5
+export const SUBTITLE_RELATIVE_FONT_SIZE_STEP = SUBTITLE_DEFAULT_SIZE_BASIS * SUBTITLE_FONT_SIZE_PERCENT_STEP / 100
 export const SUBTITLE_ORIGINAL_FONT_SCALE_MIN = 50
 export const SUBTITLE_ORIGINAL_FONT_SCALE_MAX = 150
 export const SUBTITLE_ORIGINAL_FONT_SCALE_STEP = 5

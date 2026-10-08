@@ -9,6 +9,7 @@ import {
   WALKED_ATTRIBUTE,
 } from "@/utils/constants/dom-labels"
 import { batchDOMOperation, flushBatchedOperations } from "../../dom/batch-dom"
+import { getContainingShadowRoot } from "../../dom/node"
 import { getTranslationGroup, registerTranslationGroupWrapper } from "../../dom/translation-group"
 import { hideGroupOriginalNodes, rememberGroupOriginalNodes } from "../dom/group-original-nodes"
 import { extractInlineAtomText, renderInlineAtomTranslation } from "../dom/inline-atoms"
@@ -18,6 +19,7 @@ import { shouldFilterSmallParagraph } from "../filter-small-paragraph"
 import { prepareTranslationText } from "../text-preparation"
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { createSpinnerInside, getTranslatedTextAndRemoveSpinner } from "../ui/spinner"
+import { ensurePresetStyles } from "../ui/style-injector"
 import { setPendingTranslationLayout } from "../ui/translation-layout"
 import { isNumericContent } from "../ui/translation-utils"
 import { isTranslatingInWalk, MARK_ATTRIBUTES_REGEX, markTranslatingInWalk, unmarkTranslatingInWalk } from "./translation-state"
@@ -123,6 +125,7 @@ export async function translateTranslationGroup(
     }
 
     const doc = container.ownerDocument
+    ensurePresetStyles(getContainingShadowRoot(container) ?? doc)
     const wrapper = doc.createElement("span")
     wrapper.className = `${NOTRANSLATE_CLASS} ${CONTENT_WRAPPER_CLASS}`
     wrapper.setAttribute(TRANSLATION_MODE_ATTRIBUTE, config.translate.mode)

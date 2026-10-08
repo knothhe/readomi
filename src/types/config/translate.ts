@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { TRANSLATION_NODE_STYLE } from "@/utils/constants/translation-node-style"
 import { isPageTranslationShortcutEmpty, isValidConfiguredPageTranslationShortcut } from "@/utils/page-translation-shortcut"
+import { TRANSLATION_FONTS } from "./translation-font"
 
 export const TRANSLATION_MODES = ["bilingual", "translationOnly"] as const
 export const translationModeSchema = z.enum(TRANSLATION_MODES)
@@ -65,6 +66,7 @@ export const pageTranslationShortcutSchema = z.string().superRefine((shortcut, c
 export const translateConfigSchema = z.object({
   providerId: z.string().nonempty(),
   mode: translationModeSchema,
+  translationFont: z.enum(TRANSLATION_FONTS).default("sans"),
   page: z.object({
     shortcut: pageTranslationShortcutSchema,
   }),

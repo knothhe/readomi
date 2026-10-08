@@ -177,7 +177,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                 control={(
                   <div className="subtitle-common-sizes" role="group" aria-label={i18n.t("subtitleStyle.commonSizes")}>
                     {commonSizes.map(value => (
-                      <button type="button" key={value} aria-pressed={Math.abs(size.value - value) < 1e-9} onClick={() => setStyle(subtitleSizePatch(value))}>
+                      <button type="button" key={value} aria-pressed={Math.abs(style.relativeFontSize - subtitleSizePatch(value).relativeFontSize) < 1e-9} onClick={() => setStyle(subtitleSizePatch(value))}>
                         {`${value}%`}
                       </button>
                     ))}
@@ -191,6 +191,7 @@ export function SubtitleStyleEditor({ children, footer }: { children: ReactNode,
                   min={size.min}
                   max={size.max}
                   step={size.step}
+                  stepBase={0}
                   aria-label={i18n.t("subtitleStyle.fontSize")}
                   value={style.relativeFontSize * (100 / SUBTITLE_DEFAULT_SIZE_BASIS)}
                   displayValue={size.value}

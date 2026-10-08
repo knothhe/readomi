@@ -1,4 +1,5 @@
 import type { Config } from "@/types/config/config"
+import type { ConfigSyncStatus } from "@/utils/config/sync-state"
 import { useSetAtom, useStore } from "jotai"
 import { useRef, useState } from "react"
 import { i18n } from "#imports"
@@ -6,13 +7,17 @@ import { IconAlertCircle } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { configAtom, replaceConfigAtom } from "@/utils/atoms/config"
 import { exportConfigBackup, MAX_BACKUP_SIZE, parseConfigBackup } from "@/utils/config/backup"
+import { DEFAULT_SYNC_STATUS } from "@/utils/config/sync-state"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
+import { ChromeSync } from "./chrome-sync"
+import { BackupDialog } from "./dialog"
 
 export function BackupSection() {
   const store = useStore()
   const replace = useSetAtom(replaceConfigAtom)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [syncStatus, setSyncStatus] = useState<ConfigSyncStatus>(DEFAULT_SYNC_STATUS)
   const [pending, setPending] = useState<{ name: string, config: Config } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -67,7 +72,8 @@ export function BackupSection() {
   return (
     <SettingsSection id="backup" title={i18n.t("configBackup.title")}>
       <div className="settings-backup-content flex flex-col gap-5">
-        <SettingsGroup>
+        <ChromeSync onStatusChange={setSyncStatus} />
+        <SettingsGroup caption={i18n.t("configSync.fileBackup")} className="mt-1">
           <SettingsRow
             label={i18n.t("configBackup.export")}
             description={i18n.t("configBackup.exportDescription")}
@@ -103,16 +109,19 @@ export function BackupSection() {
           <p>{i18n.t("configBackup.description")}</p>
         </div>
         {pending && (
-          <div className="flex flex-col gap-4 rounded-[10px] border border-border bg-card p-5">
-            <p className="break-all text-sm font-medium">{i18n.t("configBackup.preview", [pending.name])}</p>
-            <p className="rounded-lg border border-border bg-background p-4 font-mono text-xs leading-[1.7]">{i18n.t("configBackup.service", [provider?.name ?? "—", provider?.model ?? "—"])}</p>
-            <div className="flex flex-wrap justify-end gap-2">
+          <BackupDialog title={i18n.t("configBackup.import")} busy={busy} onClose={() => setPending(null)}>
+            <p className="mt-2.5 text-xs text-muted-foreground">{i18n.t("configSync.importReplace")}</p>
+            <p className="mt-4 break-all text-xs font-medium">{i18n.t("configBackup.preview", [pending.name])}</p>
+            <p className="mt-3 rounded-lg border border-border bg-background p-4 font-mono text-xs leading-[1.7]">{i18n.t("configBackup.service", [provider?.name ?? "—", provider?.model ?? "—"])}</p>
+            {syncStatus.enabled && <p className="mt-4 text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("configSync.importHint")}</p>}
+            {error && <p role="alert" className="mt-3 text-xs text-destructive">{i18n.t("configBackup.failed")}</p>}
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
               <Button variant="outline" disabled={busy} onClick={() => setPending(null)}>{i18n.t("configBackup.cancel")}</Button>
               <Button disabled={busy} onClick={() => void apply()}>{i18n.t("configBackup.apply")}</Button>
             </div>
-          </div>
+          </BackupDialog>
         )}
-        {error && (
+        {error && !pending && (
           <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
             <p className="text-xs font-medium text-destructive">{i18n.t("configBackup.failed")}</p>
             <pre className="mt-2 whitespace-pre-wrap break-all text-xs text-muted-foreground">{error}</pre>

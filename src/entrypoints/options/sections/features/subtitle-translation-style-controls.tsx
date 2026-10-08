@@ -1,6 +1,7 @@
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
 import { useId, useState } from "react"
 import { i18n } from "#imports"
+import { SegmentedControl } from "@/components/segmented-control"
 import { SUBTITLE_TRANSLATION_COLORS, SUBTITLE_TRANSLATION_FONTS } from "@/types/config/subtitle-style"
 import { SettingsRow } from "../../components/settings-section"
 
@@ -24,17 +25,16 @@ export function SubtitleTranslationStyleControls({ style, onChange }: { style: S
   return (
     <>
       <SettingsRow
+        className="subtitle-display-row"
         label={i18n.t("subtitleStyle.translationFont")}
-        htmlFor={`${id}-font`}
         control={(
-          <select
-            id={`${id}-font`}
-            className="subtitle-translation-font-select"
+          <SegmentedControl
+            aria-label={i18n.t("subtitleStyle.translationFont")}
+            size="sm"
             value={style.translationFont}
-            onChange={event => onChange({ translationFont: event.target.value as SubtitleStyle["translationFont"] })}
-          >
-            {SUBTITLE_TRANSLATION_FONTS.map(font => <option key={font} value={font}>{i18n.t(`subtitleStyle.translationFonts.${font}`)}</option>)}
-          </select>
+            options={SUBTITLE_TRANSLATION_FONTS.map(value => ({ value, label: i18n.t(`subtitleStyle.translationFonts.${value}`) }))}
+            onChange={translationFont => onChange({ translationFont })}
+          />
         )}
       >
         <p className="subtitle-control-help">{i18n.t("subtitleStyle.translationFontDescription")}</p>

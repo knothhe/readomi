@@ -3,6 +3,7 @@ import hostThemeCss from "@/assets/styles/host-theme.css?raw"
 import translationNodePresetCss from "@/assets/styles/translation-node-preset.css?raw"
 import wordPrefixEmphasisCss from "@/assets/styles/word-prefix-emphasis.css?raw"
 import { trackHostThemeRoot } from "@/utils/host-color-theme"
+import { trackHostTranslationFontRoot } from "@/utils/host-translation-font"
 import { logger } from "@/utils/logger"
 
 type StyleRoot = Document | ShadowRoot
@@ -111,6 +112,7 @@ function getPresetStyleSheet(root: StyleRoot): CSSStyleSheet {
 /** Ensure preset styles are injected into the given root */
 export function ensurePresetStyles(root: StyleRoot): void {
   trackHostThemeRoot(root)
+  trackHostTranslationFontRoot(root)
   if (injectedPresetRoots.has(root))
     return
 

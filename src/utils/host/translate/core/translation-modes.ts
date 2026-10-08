@@ -12,7 +12,7 @@ import {
 import { batchDOMOperation, flushBatchedOperations } from "../../dom/batch-dom"
 import { isBlockTransNode, isCustomForceBlockTranslation, isHTMLElement, isNaturalBlockTransNode, isTextNode, isTransNode } from "../../dom/filter"
 import { unwrapDeepestOnlyHTMLChild } from "../../dom/find"
-import { getOwnerDocument } from "../../dom/node"
+import { getContainingShadowRoot, getOwnerDocument } from "../../dom/node"
 import { getTranslationGroup } from "../../dom/translation-group"
 import { extractTextContent } from "../../dom/traversal"
 import { extractInlineAtomText, renderInlineAtomTranslation } from "../dom/inline-atoms"
@@ -24,6 +24,7 @@ import { shouldFilterSmallParagraph } from "../filter-small-paragraph"
 import { prepareTranslationText } from "../text-preparation"
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { createSpinnerInside, getTranslatedTextAndRemoveSpinner } from "../ui/spinner"
+import { ensurePresetStyles } from "../ui/style-injector"
 import { resolveTranslationLayout, setPendingTranslationLayout } from "../ui/translation-layout"
 import { isNumericContent } from "../ui/translation-utils"
 import { translateTranslationGroup } from "./translation-group"
@@ -124,6 +125,7 @@ export async function translateNodesBilingualMode(
       return
 
     const ownerDoc = getOwnerDocument(targetNode)
+    ensurePresetStyles(getContainingShadowRoot(targetNode) ?? ownerDoc)
     const translatedWrapperNode = ownerDoc.createElement("span")
     translatedWrapperNode.className = `${NOTRANSLATE_CLASS} ${CONTENT_WRAPPER_CLASS}`
     translatedWrapperNode.setAttribute(TRANSLATION_MODE_ATTRIBUTE, "bilingual" satisfies TranslationMode)
@@ -321,6 +323,7 @@ export async function translateNodeTranslationOnlyMode(
       return
 
     const ownerDoc = getOwnerDocument(targetNode)
+    ensurePresetStyles(getContainingShadowRoot(targetNode) ?? ownerDoc)
     const translatedWrapperNode = ownerDoc.createElement("span")
     translatedWrapperNode.className = `${NOTRANSLATE_CLASS} ${CONTENT_WRAPPER_CLASS}`
     translatedWrapperNode.setAttribute(TRANSLATION_MODE_ATTRIBUTE, "translationOnly" satisfies TranslationMode)

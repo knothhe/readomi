@@ -238,16 +238,6 @@
   line-height: 1.45;
 }
 
-.subtitle-translation-font-select {
-  max-width: 180px;
-  padding: 6px 10px;
-  border: 1px solid var(--rf-border);
-  border-radius: 6px;
-  background: var(--rf-card);
-  color: var(--rf-foreground);
-  font-size: 12px;
-}
-
 .subtitle-color-entry, .subtitle-color-options, .subtitle-color-options button {
   display: flex;
   align-items: center;
@@ -301,7 +291,7 @@
   border-radius: 50%;
 }
 
-.subtitle-settings-layout :is(.subtitle-color-entry input, .subtitle-color-options button, .subtitle-translation-font-select):focus-visible {
+.subtitle-settings-layout :is(.subtitle-color-entry input, .subtitle-color-options button):focus-visible {
   outline: 3px solid var(--rf-ring);
   outline-offset: 3px;
 }

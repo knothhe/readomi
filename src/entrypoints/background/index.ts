@@ -5,6 +5,7 @@ import { onMessage } from "@/utils/message"
 import { openOptionsPage } from "@/utils/navigation"
 import { setupActionIcons } from "./action-icon"
 import { ensureInitializedConfig } from "./config"
+import { setupConfigSync } from "./config-sync"
 import { setUpDatabaseCleanup } from "./db-cleanup"
 import { setupIframeInjection } from "./iframe-injection"
 import { setupLLMGenerateTextMessageHandlers } from "./llm-generate-text"
@@ -35,6 +36,7 @@ export default defineBackground({
 
     onMessage("getTopFrameUrl", message => message.sender?.tab?.url ?? message.sender?.url ?? "")
 
+    setupConfigSync()
     translationMessage()
     setupSiteDisable(notifyPageTranslationStateChanged)
     setupActionIcons()

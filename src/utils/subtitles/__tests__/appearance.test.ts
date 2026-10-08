@@ -118,13 +118,15 @@ describe("subtitle appearance configuration", () => {
   })
   it("shows normalized percentages and preserves precise imported values", () => {
     const style = { ...DEFAULT_CONFIG.features.subtitleStyle, relativeFontSize: 3.125 }
-    expect(subtitleSizeSettings(style)).toEqual({ value: 89.28571, min: 1.25 * (100 / 3.5), max: 25 * (100 / 3.5), step: 0.25 * (100 / 3.5), unit: "%" })
+    expect(subtitleSizeSettings(style)).toEqual({ value: 89.29, min: 1.25 * (100 / 3.5), max: 25 * (100 / 3.5), step: 5, unit: "%" })
     expect(subtitleSizePatch(67.5)).toEqual({ relativeFontSize: 2.3625 })
-    expect(formatSubtitleFontSize(style)).toBe("89.28571%")
+    expect(formatSubtitleFontSize(style)).toBe("89.29%")
+    expect(formatSubtitleFontSize({ ...style, relativeFontSize: 2.75 })).toBe("78.57%")
     expect(formatSubtitleFontSize(DEFAULT_CONFIG.features.subtitleStyle)).toBe("100%")
     const migrated = subtitleStyleSchema.parse({ fontSize: 39 })
-    expect(formatSubtitleFontSize(migrated)).toBe("309.52381%")
+    expect(formatSubtitleFontSize(migrated)).toBe("309.52%")
     expect(resolveSubtitleFontSize(migrated, 640)).toBeCloseTo(39)
+    expect(isSubtitlePresetModified({ ...DEFAULT_CONFIG.features.subtitleStyle, relativeFontSize: 3.5001 })).toBe(true)
   })
   it("uses manual background settings for every preset, including clear", () => {
     const style = { ...DEFAULT_CONFIG.features.subtitleStyle, backgroundEnabled: true, backgroundOpacity: 72 }

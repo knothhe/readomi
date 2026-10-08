@@ -1,3 +1,4 @@
+import type { SubtitleBatchOutcome, SubtitleBatchProgress, SubtitleTranslationItem } from "../translation-batch"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { SubtitleTranslationWindow } from "../translation-window"
 
@@ -10,6 +11,75 @@ async function flush() {
 afterEach(() => vi.useRealTimers())
 
 describe("subtitle lookahead scheduling", () => {
+  it("explicitly submits six-cue batches with adjacent context and bounded concurrency", async () => {
+    const batch = vi.fn((_items: SubtitleTranslationItem[], _signal: AbortSignal) => new Promise<SubtitleBatchOutcome[]>(() => {}))
+    const single = vi.fn()
+    const window = new SubtitleTranslationWindow(single, batch)
+    window.update(cues, 0, 1, "Cue 0")
+    expect(single).not.toHaveBeenCalled()
+    expect(batch).toHaveBeenCalledTimes(2)
+    expect(batch.mock.calls[0][0]).toHaveLength(6)
+    expect(batch.mock.calls[0][0][0]).toEqual({ id: "cue-0", text: "Cue 0", before: [], after: ["Cue 1", "Cue 2"] })
+    window.update(cues, 0, 1, "Cue 0")
+    expect(batch).toHaveBeenCalledTimes(2)
+    window.seek()
+    expect(batch.mock.calls.every(call => call[1].aborted)).toBe(true)
+    window.update(cues, 100, 1, "Cue 50")
+    expect(batch.mock.calls[2][0][0].text).toBe("Cue 50")
+    window.dispose()
+  })
+
+  it("keeps timestamps and the character budget while matching results by ID", async () => {
+    const source = cues.slice(0, 10).map(cue => ({ ...cue, text: "a".repeat(300) + cue.text }))
+    const batch = vi.fn(async (items: SubtitleTranslationItem[]) => items.toReversed().map(item => ({ id: item.id, result: { action: "translate" as const, text: `译：${item.text}` } })))
+    const window = new SubtitleTranslationWindow(vi.fn(), batch)
+    window.update(source, 0, 1, source[0].text)
+    await flush()
+    expect(batch.mock.calls[0][0]).toHaveLength(3)
+    expect(window.get(source[0].text)).toBe(`译：${source[0].text}`)
+    expect(source[0].start).toBe(0)
+    expect(source[0].end).toBe(2)
+    window.dispose()
+  })
+
+  it("does not reuse a repeated caption's translation in a different context", async () => {
+    const source = cues.slice(0, 5).map(cue => ({ ...cue, text: cue.start === 0 || cue.start === 6 ? "Yes." : cue.text }))
+    const batch = vi.fn(async (items: SubtitleTranslationItem[]) => items.map(item => ({ id: item.id, result: { action: "translate" as const, text: item.id } })))
+    const window = new SubtitleTranslationWindow(vi.fn(), batch)
+    window.update(source, 0, 1, "Yes.")
+    await flush()
+    expect(window.get("Yes.")).toBe("cue-0")
+    window.update(source, 6, 1, "Yes.")
+    expect(window.get("Yes.")).toBe("cue-3")
+    window.dispose()
+  })
+
+  it("displays a validated partial result while the rest of the batch is pending", async () => {
+    let publish!: SubtitleBatchProgress
+    let reject!: (error: Error) => void
+    const batch = vi.fn((_items, _signal, _urgent, onProgress: SubtitleBatchProgress) => {
+      publish = onProgress
+      return new Promise<SubtitleBatchOutcome[]>((_resolve, r) => reject = r)
+    })
+    const window = new SubtitleTranslationWindow(vi.fn(), batch)
+    const source = cues.slice(0, 6)
+    window.update(source, 0, 1, "Cue 0")
+    publish([{ id: "cue-0", result: { action: "translate", text: "已完成的译文" } }])
+    expect(window.get("Cue 0")).toBe("已完成的译文")
+    reject(new Error("Other cues failed"))
+    await flush()
+    expect(window.hasFailed("Cue 0")).toBe(false)
+    expect(window.get("Cue 0")).toBe("已完成的译文")
+    window.seek()
+    window.update(source, 4, 1, "Cue 2")
+    const oldPublish = publish
+    window.reset()
+    oldPublish([{ id: "cue-2", result: { action: "translate", text: "过期结果" } }])
+    window.update(source, 4, 1, "Cue 2")
+    expect(window.get("Cue 2")).toBeUndefined()
+    window.dispose()
+  })
+
   it("prepares a rolling window before playback, caches translations and does not submit the whole video", async () => {
     const translate = vi.fn(async text => `Translated ${text}`)
     const window = new SubtitleTranslationWindow(translate)

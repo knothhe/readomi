@@ -522,7 +522,7 @@ manualService:
   advanced: Tham số khác
   compatible: Dịch vụ tương thích OpenAI
 configBackup:
-  title: Sao lưu
+  title: Sao lưu và đồng bộ
   backup: Sao lưu
   restore: Khôi phục
   description: Exports include API keys and custom headers. Keep them private.
@@ -877,3 +877,42 @@ inputTranslation:
   pending: Đang dịch ô nhập…
   failed: Dịch ô nhập thất bại. Văn bản gốc đã được giữ lại.
   replaceFailed: Không thể thay thế nội dung. Vui lòng dịch thủ công trong trình soạn thảo này.
+
+configSync:
+  title: Đồng bộ Chrome
+  browser: Trình duyệt hiện tại · $1
+  detecting: Đang nhận diện…
+  otherBrowser: Trình duyệt khác
+  toggle: Đồng bộ thiết bị này
+  toggleDescription: Dùng tài khoản Chrome để giữ cài đặt trên các thiết bị.
+  unsupported: Phiên bản này chỉ hỗ trợ Chrome. Bạn vẫn có thể sao lưu bằng tệp.
+  scope: Nội dung đồng bộ
+  scopeDescription: "Ngôn ngữ, giao diện, tùy chọn dịch, phím tắt, kiểu phụ đề, quy tắc trang web và tên, mô hình, địa chỉ dịch vụ."
+  localOnly: Chỉ lưu trên thiết bị này
+  localOnlyDescription: "Khóa API, tiêu đề và tham số yêu cầu tùy chỉnh. Nhập thông tin xác thực trên thiết bị mới."
+  requirement: Đăng nhập cùng tài khoản trong Chrome và bật đồng bộ. Tắt công tắc này vẫn giữ cài đặt cục bộ và đồng bộ.
+  pending: Đang lưu vào bộ nhớ đồng bộ Chrome…
+  localSaved: Đã lưu cài đặt trên thiết bị này.
+  saved: Đã lưu để Chrome đồng bộ
+  lastSaved: Lưu lần cuối · $1
+  failed: Không thể lưu vào bộ nhớ đồng bộ Chrome
+  quota: Cấu hình vượt quá dung lượng đồng bộ
+  failureDescription: Đã lưu cài đặt cục bộ. Bộ nhớ đồng bộ giữ cấu hình trước đó.
+  retryHint: Sẽ tự động thử lại. Bạn cũng có thể thử lại ngay.
+  quotaHint: Giảm quy tắc trang web hoặc nội dung tùy chỉnh rồi thử lại.
+  retry: Thử lại
+  chooseTitle: Tìm thấy cấu hình đã đồng bộ
+  chooseDescription: Chọn cấu hình dùng giữa các thiết bị.
+  useRemote: Dùng cấu hình đã đồng bộ
+  useLocal: Dùng cấu hình của thiết bị này
+  recommended: Đề xuất
+  chooseHint: Lựa chọn sẽ thay thế cấu hình còn lại. Thông tin xác thực không được đồng bộ.
+  enable: Bật đồng bộ
+  needsKeys: Một số dịch vụ cần khóa API
+  needsKeysDescription: Đã đồng bộ thông tin dịch vụ $1. Nhập khóa API để sử dụng.
+  openServices: Đến dịch vụ dịch →
+  fileBackup: Sao lưu bằng tệp
+  importReplace: "Áp dụng sẽ thay thế mọi cài đặt trên thiết bị này, gồm thông tin xác thực."
+  importHint: "Thiết bị này đã bật đồng bộ. Nhập tệp cũng cập nhật cài đặt và thông tin dịch vụ được đồng bộ; khóa API, tiêu đề và tham số yêu cầu vẫn lưu cục bộ."
+  actionFailed: Không thể đọc hoặc áp dụng cấu hình đồng bộ. Hãy thử lại.
+  choiceChanged: Cấu hình đồng bộ đã thay đổi. Đóng hộp thoại rồi chọn lại.

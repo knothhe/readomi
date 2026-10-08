@@ -10,6 +10,12 @@ beforeEach(() => {
   fakeBrowser.reset()
 })
 
+it("adds the default web font to legacy configs and rejects unsupported fonts", () => {
+  const { translationFont: _font, ...translate } = DEFAULT_CONFIG.translate
+  expect(configSchema.parse({ ...DEFAULT_CONFIG, translate }).translate.translationFont).toBe("sans")
+  expect(configSchema.safeParse({ ...DEFAULT_CONFIG, translate: { ...translate, translationFont: "unknown" } }).success).toBe(false)
+})
+
 it("defaults legacy configs to visible video controls while preserving existing preferences", () => {
   const { videoControls: _videoControls, ...features } = DEFAULT_CONFIG.features
   const legacy = { ...DEFAULT_CONFIG, features: { ...features, videoSubtitles: true } }

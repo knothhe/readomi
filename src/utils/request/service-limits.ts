@@ -1,13 +1,11 @@
-import type { BatchLimits } from "./batch-queue"
 import type { PaceState } from "./pace"
 import type { ProviderConfig } from "@/types/config/provider"
 import { storage } from "#imports"
 import { logger } from "@/utils/logger"
 
-/** What Readomi has learned about one service: its request pace and the batch size it handles. */
+/** What Readomi has learned about one service: its request pace. */
 export interface ServiceLimits {
   pace?: PaceState
-  batch?: BatchLimits
   /** Milliseconds since the epoch. Entries unused for STALE_AFTER_MS are dropped. */
   updatedAt: number
 }
@@ -17,7 +15,7 @@ const STALE_AFTER_MS = 90 * 24 * 60 * 60 * 1000
 const FLUSH_DELAY_MS = 2000
 
 /**
- * Limits are learned per service and model: rate limits and batch handling
+ * Limits are learned per service and model: rate limits
  * differ between models of the same account, and a new model starts fresh.
  */
 export function serviceLimitsKey(provider: Pick<ProviderConfig, "id" | "model">): string {
@@ -41,7 +39,12 @@ export class ServiceLimitsStore {
       try {
         const stored = await storage.getItem<Record<string, ServiceLimits>>(STORAGE_KEY) ?? {}
         const cutoff = this.now() - STALE_AFTER_MS
-        this.entries = Object.fromEntries(Object.entries(stored).filter(([, entry]) => entry.updatedAt >= cutoff))
+        const recent = Object.entries(stored).filter(([, entry]) => entry.updatedAt >= cutoff)
+        this.entries = Object.fromEntries(recent.map(([key, entry]) => [key, { pace: entry.pace, updatedAt: entry.updatedAt }]))
+        // Legacy format failures could permanently reduce a service to 22 chars.
+        // Preserve its pace, but remove every learned batch limit on upgrade.
+        if (Object.values(stored).some(entry => "batch" in entry))
+          await this.flush()
       }
       catch (error) {
         logger.warn("Failed to read learned service limits", error)

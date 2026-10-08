@@ -6,8 +6,18 @@ import { it } from "node:test"
 import { configureService, launchBrowser, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
-async function subtitlePlayback(transcriptFormat) {
-  const service = await startFakeService()
+async function subtitlePlayback(transcriptFormat, slowMissingCue = false) {
+  let releaseMissingCue
+  // Reproduce real Magpie responses, which frequently omit the route newline.
+  const service = await startFakeService({ subtitleInlineHeaders: true, subtitleBatchResponse: async (items, outcomes) => {
+    if (!slowMissingCue)
+      return outcomes
+    if (items.some(item => item.id === "cue-0"))
+      return outcomes.filter(outcome => outcome.id !== "cue-5")
+    if (items.length === 1 && items[0].id === "cue-5")
+      await new Promise(resolve => releaseMissingCue = resolve)
+    return outcomes
+  } })
   let context
   let release
   try {
@@ -123,8 +133,19 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     await page.waitForFunction(() => document.querySelector("video").currentTime >= 3)
     release()
     release = undefined
-    await waitForSubtitle(state => state.original?.startsWith("Sentence ") && state.original !== "Sentence 0." && state.text.includes(`【译】${state.original}`))
+    await waitForSubtitle(state => state.original?.startsWith("Sentence ") && state.original !== "Sentence 0." && (!slowMissingCue || Number(state.original.match(/\d+/)[0]) < 5) && state.text.includes(`【译】${state.original}`))
+    if (slowMissingCue) {
+      assert.ok(releaseMissingCue, "current subtitles display while the missing cue's retry is blocked")
+      releaseMissingCue()
+      releaseMissingCue = undefined
+    }
     assert.equal(await page.evaluate(() => document.querySelector("video").paused), false)
+    const batches = service.translationRequests().filter(items => items[0].content.includes("## Subtitle Batch Response Contract"))
+    assert.ok(batches.length > 0, "timeline subtitles use the dedicated batch protocol")
+    const firstBatch = JSON.parse(batches[0].at(-1).content.split("Requested subtitle IDs and read-only context:\n").at(-1))
+    assert.equal(firstBatch.length, 6, "one provider call translates six future cues")
+    assert.deepEqual(firstBatch[0].after, ["Sentence 1.", "Sentence 2."], "surrounding context travels with the batch")
+    assert.equal(service.translationRequests().filter(items => items[0].content.includes("## Correct the Invalid Translation Response")).length, slowMissingCue ? 1 : 0, "only a genuinely missing cue triggers a corrective retry")
     const messages = service.translationRequests().map(items => items.at(-1).content).join("\n")
     assert.match(messages, /Sentence 5\./, "future cues reached the model before being displayed")
     await page.evaluate(() => document.querySelector("video").currentTime = 90)
@@ -192,28 +213,32 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
     const popup = await context.newPage()
     await popup.setViewportSize({ width: 320, height: 460 })
     await popup.goto(`chrome-extension://${extensionId}/popup.html`)
-    const webMode = popup.getByRole("group", { name: "Web text display mode" })
-    const subtitleMode = popup.getByRole("group", { name: "Subtitle display mode" })
-    await webMode.getByRole("button", { name: "Translation only", exact: true }).click()
-    await popup.waitForFunction(() => document.querySelector("section[aria-label=\"Web text\"] button[aria-pressed=\"true\"]")?.textContent.includes("Translation only"))
-    assert.equal((await waitForStoredConfig(config => config.translate.mode === "translationOnly")).features.subtitleMode, "bilingual")
     if (process.env.POPUP_SCREENSHOT)
       await popup.screenshot({ path: process.env.POPUP_SCREENSHOT, animations: "disabled" })
+    const settings = await context.newPage()
+    await settings.goto(`chrome-extension://${extensionId}/options.html#reading`)
+    const webMode = settings.getByRole("group", { name: "Display", exact: true })
+    await webMode.getByRole("button", { name: "Translation only", exact: true }).click()
+    assert.equal((await waitForStoredConfig(config => config.translate.mode === "translationOnly")).features.subtitleMode, "bilingual")
+    await settings.goto(`chrome-extension://${extensionId}/options.html#features`)
+    const subtitleMode = settings.getByRole("group", { name: "Subtitle display mode" })
     await subtitleMode.getByRole("button", { name: "Translation only", exact: true }).click()
+    await waitForStoredConfig(config => config.features.subtitleMode === "translationOnly")
+    await waitForSubtitle(state => state.original === "" && state.text?.includes("【译】"))
+    await settings.goto(`chrome-extension://${extensionId}/options.html#reading`)
     await webMode.getByRole("button", { name: "Bilingual", exact: true }).click()
     const finalConfig = await waitForStoredConfig(config => config.features.subtitleMode === "translationOnly" && config.translate.mode === "bilingual")
     assert.equal(finalConfig.features.subtitleMode, "translationOnly")
     assert.equal(finalConfig.translate.mode, "bilingual")
     assert.deepEqual(finalConfig.features.subtitleStyle, moved)
-    await popup.reload()
-    await popup.waitForFunction(() => {
-      const groups = [...document.querySelectorAll("[role=\"group\"]")]
-      const selected = label => groups.find(group => group.getAttribute("aria-label") === label)?.querySelector("[aria-pressed=\"true\"]")?.textContent
-      return selected("Web text display mode") === "Bilingual" && selected("Subtitle display mode") === "Translation only"
-    })
+    await settings.reload()
+    assert.equal(await webMode.getByRole("button", { name: "Bilingual", exact: true }).getAttribute("aria-pressed"), "true")
+    await settings.goto(`chrome-extension://${extensionId}/options.html#features`)
+    assert.equal(await subtitleMode.getByRole("button", { name: "Translation only", exact: true }).getAttribute("aria-pressed"), "true")
   }
   finally {
     release?.()
+    releaseMissingCue?.()
     await context?.close()
     await service.close()
   }
@@ -222,3 +247,5 @@ fetch('https://www.youtube.com/api/timedtext?v=readomi-fixture&lang=en&pot=fixtu
 for (const format of ["json3", "srv3", "legacy"]) {
   it(`YouTube ${format} subtitles under Trusted Types preserve preloading, appearance and web modes`, () => subtitlePlayback(format))
 }
+
+it("shows valid cues while one missing subtitle is still retrying", () => subtitlePlayback("json3", true))

@@ -507,7 +507,7 @@ manualService:
   advanced: その他のパラメーター
   compatible: OpenAI 互換サービス
 configBackup:
-  title: バックアップ
+  title: バックアップと同期
   backup: バックアップ
   restore: 復元
   description: Exports include API keys and custom headers. Keep them private.
@@ -858,3 +858,42 @@ inputTranslation:
   pending: 入力を翻訳中…
   failed: 入力の翻訳に失敗しました。原文は保持されています。
   replaceFailed: 入力を置き換えられません。このエディターでは手動で翻訳してください。
+
+configSync:
+  title: Chrome 同期
+  browser: 使用中のブラウザー · $1
+  detecting: 確認中…
+  otherBrowser: その他のブラウザー
+  toggle: このデバイスを同期
+  toggleDescription: Chrome アカウントで他のデバイスにも設定を引き継ぎます。
+  unsupported: このバージョンは Chrome のみ対応です。ファイルのバックアップは利用できます。
+  scope: 同期する内容
+  scopeDescription: 言語、外観、翻訳設定、ショートカット、字幕スタイル、サイトルール、サービス名、モデル、アドレス。
+  localOnly: このデバイスのみに保存
+  localOnlyDescription: API キー、カスタムヘッダー、リクエストパラメーター。新しいデバイスでは認証情報を入力してください。
+  requirement: Chrome で同じアカウントにログインし、同期を有効にしてください。このスイッチをオフにしてもローカルと同期先の設定は保持されます。
+  pending: Chrome の同期領域に保存中…
+  localSaved: このデバイスに設定を保存しました。
+  saved: Chrome の同期用に保存済み
+  lastSaved: 最終保存 · $1
+  failed: Chrome の同期領域に保存できませんでした
+  quota: 設定が同期容量を超えています
+  failureDescription: ローカル設定は保存済みです。同期先では前回の設定が保持されています。
+  retryHint: 自動的に再試行します。今すぐ再試行することもできます。
+  quotaHint: サイトルールやカスタムコンテンツを減らして再試行してください。
+  retry: 再試行
+  chooseTitle: 同期済みの設定が見つかりました
+  chooseDescription: デバイス間で使用する設定を選択してください。
+  useRemote: 同期済みの設定を使用
+  useLocal: このデバイスの設定を使用
+  recommended: 推奨
+  chooseHint: 選択した設定で他方を置き換えます。認証情報は同期されません。
+  enable: 同期を有効にする
+  needsKeys: 一部のサービスに API キーが必要です
+  needsKeysDescription: $1 のサービス情報を同期しました。API キーを入力すると使用できます。
+  openServices: 翻訳サービスへ →
+  fileBackup: ファイルのバックアップ
+  importReplace: 適用すると、認証情報を含むこのデバイスのすべての設定が置き換わります。
+  importHint: このデバイスでは同期が有効です。インポートすると同期対象の設定とサービス情報も更新されます。API キー、ヘッダー、リクエストパラメーターはローカルに保持されます。
+  actionFailed: 同期設定を読み込むか適用できませんでした。再試行してください。
+  choiceChanged: 同期設定が変更されました。この画面を閉じて再度選択してください。

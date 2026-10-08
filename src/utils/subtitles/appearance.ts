@@ -1,5 +1,6 @@
 import type { SubtitlePosition, SubtitleStyle } from "@/types/config/subtitle-style"
-import { SUBTITLE_DEFAULT_SIZE_BASIS, SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP } from "@/types/config/subtitle-style"
+import { SUBTITLE_DEFAULT_SIZE_BASIS, SUBTITLE_FONT_SIZE_PERCENT_STEP, SUBTITLE_PRESET_STYLES, SUBTITLE_PRESETS, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN } from "@/types/config/subtitle-style"
+import { TRANSLATION_FONT_FAMILIES } from "@/types/config/translation-font"
 import { sendMessage } from "@/utils/message"
 
 export const SUBTITLE_POSITIONS = {
@@ -17,10 +18,10 @@ const FONT_SCALE_FACTOR = 100 / SUBTITLE_DEFAULT_SIZE_BASIS
 /** The reader sees 100% at the default short-side proportion, independently of the preset. */
 export function subtitleSizeSettings(style: SubtitleStyle) {
   return {
-    value: Number((style.relativeFontSize * FONT_SCALE_FACTOR).toFixed(5)),
+    value: Number((style.relativeFontSize * FONT_SCALE_FACTOR).toFixed(2)),
     min: SUBTITLE_RELATIVE_FONT_SIZE_MIN * FONT_SCALE_FACTOR,
     max: SUBTITLE_RELATIVE_FONT_SIZE_MAX * FONT_SCALE_FACTOR,
-    step: SUBTITLE_RELATIVE_FONT_SIZE_STEP * FONT_SCALE_FACTOR,
+    step: SUBTITLE_FONT_SIZE_PERCENT_STEP,
     unit: "%",
   }
 }
@@ -46,8 +47,7 @@ export function subtitleBackgroundPatch(backgroundOpacity: number): Pick<Subtitl
 /** A preset remains selected while all of its appearance settings match; position stays independent. */
 export function isSubtitlePresetModified(style: SubtitleStyle): boolean {
   const preset = SUBTITLE_PRESET_STYLES[style.preset]
-  const presetSize = subtitleSizeSettings({ ...style, ...preset }).value
-  return Math.abs(subtitleSizeSettings(style).value - presetSize) > 1e-9
+  return Math.abs(style.relativeFontSize - preset.relativeFontSize) > 1e-9
     || ("originalFontScale" in preset && style.originalFontScale !== preset.originalFontScale)
     || ("translationFont" in preset && style.translationFont !== preset.translationFont)
     || ("translationColor" in preset && style.translationColor.toLowerCase() !== preset.translationColor)
@@ -86,7 +86,7 @@ export function subtitleTextStyle(style: SubtitleStyle, videoWidth = 640, videoH
   const hasBackground = effectiveSubtitleBackgroundOpacity(style) > 0
   return {
     "--readomi-original-font-scale": `${style.originalFontScale / 100}em`,
-    "--readomi-translation-font": style.translationFont === "serif" ? "\"Songti SC\", \"STSong\", \"Noto Serif CJK SC\", \"SimSun\", serif" : "system-ui, \"PingFang SC\", sans-serif",
+    "--readomi-translation-font": TRANSLATION_FONT_FAMILIES[style.translationFont],
     "--readomi-translation-color": style.translationColor,
     "--readomi-translation-letter-spacing": style.translationFont === "serif" ? "0.04em" : "0",
     "--readomi-original-color": ink ? "#d1dcdf" : style.preset === "gold" ? "#fff7e9" : "#fff",

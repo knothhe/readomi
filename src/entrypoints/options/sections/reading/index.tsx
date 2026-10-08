@@ -5,6 +5,7 @@ import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
 import { Switch } from "@/components/ui/switch"
 import { TRANSLATION_MODES } from "@/types/config/translate"
+import { TRANSLATION_FONTS } from "@/types/config/translation-font"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { SettingsGroup, SettingsRow, SettingsSection } from "../../components/settings-section"
 import { CSSEditor } from "./css-editor"
@@ -40,6 +41,19 @@ export function ReadingSection({ onOpenSiteRules }: { onOpenSiteRules?: (event: 
                   value={translateConfig.mode}
                   options={TRANSLATION_MODES.map(value => ({ value, label: i18n.t(MODE_LABEL_KEY[value]) }))}
                   onChange={mode => void setTranslateConfig({ mode })}
+                />
+              )}
+            />
+            <SettingsRow
+              className="settings-reading-mode"
+              label={i18n.t("subtitleStyle.translationFont")}
+              control={(
+                <SegmentedControl
+                  aria-label={i18n.t("subtitleStyle.translationFont")}
+                  size="sm"
+                  value={translateConfig.translationFont}
+                  options={TRANSLATION_FONTS.map(value => ({ value, label: i18n.t(`subtitleStyle.translationFonts.${value}`) }))}
+                  onChange={translationFont => void setTranslateConfig({ translationFont })}
                 />
               )}
             />

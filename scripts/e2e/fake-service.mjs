@@ -86,7 +86,7 @@ function responseSegment(segment, system, withExamples) {
  * `holdAnswers()` keeps the answers back until the function it returns is
  * called, like a slow service.
  */
-export async function startFakeService({ streaming = false, languageRules = false } = {}) {
+export async function startFakeService({ streaming = false, languageRules = false, subtitleInlineHeaders = false, subtitleBatchResponse } = {}) {
   const requests = []
   const articleRequests = []
   let heldStreamCompletion
@@ -145,9 +145,17 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
       const segments = source
         .split(/\r?\n[ \t]*%%[ \t]*\r?\n/)
         .map(segment => responseSegment(segment, system, languageRules))
-      const translated = segments
+      let translated = segments
         .map(({ header, text }) => header ? `${header}${text ? `\n${text}` : ""}` : text)
         .join("\n%%\n")
+      if (system.includes("## Subtitle Batch Response Contract")) {
+        const items = JSON.parse(user.split("Requested subtitle IDs and read-only context:\n").at(-1))
+        const outcomes = items.map((item) => {
+          const { header, text } = responseSegment(item.text, system, languageRules)
+          return { id: item.id, translation: header ? `${header}${text ? `${subtitleInlineHeaders ? "" : "\n"}${text}` : ""}` : text }
+        })
+        translated = JSON.stringify(subtitleBatchResponse ? await subtitleBatchResponse(items, outcomes) : outcomes)
+      }
       if (streaming && json.stream) {
         response.setHeader("Content-Type", "text/event-stream")
         // Keep legacy long-stream typography coverage, including deliberately

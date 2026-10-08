@@ -181,6 +181,49 @@ describe("multiple translation services", () => {
     expect(store.get(configAtom)).toEqual(saved)
   })
 
+  it("lists a synced service without a local key and fills the same service rather than adding a duplicate", async () => {
+    const synced = { ...second, apiKey: undefined, connectionCheck: undefined }
+    const { store } = await renderService({ ...configured, providersConfig: [first, synced] })
+    expect(within(row("Service B")).getByRole("radio")).toBeDisabled()
+    expect(within(row("Service B")).getByTestId("service-status")).toHaveTextContent("options.service.keyMissing")
+    edit("Service B")
+    const key = screen.getByLabelText("manualService.key")
+    expect(key).toHaveValue("")
+    fireEvent.change(key, { target: { value: "sk-filled-local-key" } })
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
+    await screen.findByRole("heading", { name: "Service B" })
+    const saved = store.get(configAtom)
+    expect(saved.providersConfig).toHaveLength(2)
+    expect(saved.providersConfig[1]).toMatchObject({ id: second.id, apiKey: "sk-filled-local-key" })
+    expect(saved.translate.providerId).toBe(first.id)
+    expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(saved)
+    edit("Service B")
+    expect(screen.getByLabelText("manualService.key")).toHaveAttribute("placeholder", "sk-…-key")
+    fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))
+    await screen.findByRole("heading", { name: "Service B" })
+    expect(store.get(configAtom).providersConfig[1].apiKey).toBe("sk-filled-local-key")
+  })
+
+  it("shows a masked saved-key hint while keeping the editable password value empty", async () => {
+    await renderService()
+    edit("Service B")
+    expect(screen.getByLabelText("manualService.key")).toHaveValue("")
+    expect(screen.getByLabelText("manualService.key")).toHaveAttribute("placeholder", "sk-…-key")
+    expect(screen.getByLabelText("manualService.key")).not.toHaveAttribute("placeholder", second.apiKey)
+  })
+
+  it("shows synced services arriving while the unconfigured settings page is open", async () => {
+    const { store } = await renderService(DEFAULT_CONFIG)
+    expect(screen.getByRole("button", { name: "options.service.checkAdd" })).toBeVisible()
+    const synced = { ...configured, providersConfig: [{ ...first, apiKey: undefined, connectionCheck: undefined }] }
+    await act(async () => {
+      await storage.setItem(`local:${CONFIG_STORAGE_KEY}`, synced)
+      store.set(configAtom, synced)
+    })
+    expect(screen.getByRole("heading", { name: first.name })).toBeVisible()
+    expect(screen.queryByRole("button", { name: "options.service.checkAdd" })).toBeNull()
+  })
+
   it("keeps failed drafts without saving or switching, then permits a retry", async () => {
     vi.mocked(checkConnection).mockResolvedValueOnce({ ok: false, checkedAt: 2_000, error: "Model unavailable" })
     const { store } = await renderService()

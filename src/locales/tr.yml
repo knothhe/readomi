@@ -527,7 +527,7 @@ manualService:
   advanced: Diğer parametreler
   compatible: OpenAI uyumlu hizmet
 configBackup:
-  title: Yedekleme
+  title: Yedekleme ve eşitleme
   backup: Yedekleme
   restore: Geri yükleme
   description: Exports include API keys and custom headers. Keep them private.
@@ -887,3 +887,42 @@ inputTranslation:
   pending: Girdi çevriliyor…
   failed: Giriş çevirisi başarısız oldu. Özgün metin korundu.
   replaceFailed: Girdi değiştirilemedi. Bu düzenleyicide lütfen elle çevirin.
+
+configSync:
+  title: Chrome eşitlemesi
+  browser: Geçerli tarayıcı · $1
+  detecting: Algılanıyor…
+  otherBrowser: Diğer tarayıcı
+  toggle: Bu cihazı eşitle
+  toggleDescription: Ayarları cihazlar arasında korumak için Chrome hesabını kullanın.
+  unsupported: Bu sürüm yalnızca Chrome destekler. Dosya yedekleri kullanılabilir.
+  scope: Eşitlenen içerik
+  scopeDescription: "Diller, görünüm, çeviri tercihleri, kısayollar, altyazı stilleri, site kuralları ve hizmet adları, modelleri ve adresleri."
+  localOnly: Yalnızca bu cihazda saklanır
+  localOnlyDescription: "API anahtarları, özel başlıklar ve istek parametreleri. Yeni cihazlarda kimlik bilgilerini girin."
+  requirement: "Chrome'da aynı hesapla oturum açın ve eşitlemeyi etkinleştirin. Bu anahtarı kapatmak yerel ve eşitlenen ayarları korur."
+  pending: Chrome eşitleme alanına kaydediliyor…
+  localSaved: Ayarlar bu cihaza kaydedildi.
+  saved: Chrome eşitlemesi için kaydedildi
+  lastSaved: Son kayıt · $1
+  failed: Chrome eşitleme alanına kaydedilemedi
+  quota: Yapılandırma eşitleme kapasitesini aşıyor
+  failureDescription: Yerel ayarlar kaydedildi. Eşitleme alanında önceki yapılandırma korunuyor.
+  retryHint: Otomatik olarak yeniden denenecek. Şimdi de deneyebilirsiniz.
+  quotaHint: Site kurallarını veya özel içeriği azaltıp yeniden deneyin.
+  retry: Yeniden dene
+  chooseTitle: Eşitlenmiş yapılandırma bulundu
+  chooseDescription: Cihazlar arasında kullanılacak yapılandırmayı seçin.
+  useRemote: Eşitlenmiş yapılandırmayı kullan
+  useLocal: Bu cihazın yapılandırmasını kullan
+  recommended: Önerilen
+  chooseHint: Seçiminiz diğer yapılandırmanın yerini alır. Kimlik bilgileri eşitlenmez.
+  enable: Eşitlemeyi etkinleştir
+  needsKeys: Bazı hizmetler için API anahtarı gerekli
+  needsKeysDescription: $1 hizmet bilgileri eşitlendi. Kullanmak için API anahtarlarını girin.
+  openServices: Çeviri hizmetlerine git →
+  fileBackup: Dosya yedeği
+  importReplace: "Uygulamak, kimlik bilgileri dahil bu cihazdaki tüm ayarları değiştirir."
+  importHint: "Bu cihazda eşitleme etkin. İçe aktarmak eşitlenen ayarları ve hizmet bilgilerini de günceller; API anahtarları, başlıklar ve istek parametreleri yerel kalır."
+  actionFailed: Eşitlenen yapılandırma okunamadı veya uygulanamadı. Yeniden deneyin.
+  choiceChanged: Eşitlenen yapılandırma değişti. Bu pencereyi kapatıp tekrar seçin.

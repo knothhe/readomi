@@ -5,9 +5,11 @@ import { createStore, Provider } from "jotai"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { fakeBrowser } from "wxt/testing/fake-browser"
 import { storage } from "#imports"
+import { TRANSLATION_FONT_FAMILIES } from "@/types/config/translation-font"
 import { configAtom } from "@/utils/atoms/config"
 import { CONFIG_STORAGE_KEY, DEFAULT_CONFIG } from "@/utils/constants/config"
 import { TRANSLATION_NODE_STYLE } from "@/utils/constants/translation-node-style"
+import { PAGE_TRANSLATION_FONT_VARIABLE } from "@/utils/host-translation-font"
 import { ReadingSection } from ".."
 
 const customCSS = "[data-readomi-custom-translation-style='custom'] { color: red; }"
@@ -35,6 +37,23 @@ async function openCustomCSS() {
 describe("reading settings", () => {
   beforeEach(() => fakeBrowser.reset())
   afterEach(cleanup)
+
+  it("persists the web font independently of subtitles and previews it in both display modes", async () => {
+    const { store, container } = await renderReading()
+    const fonts = within(screen.getByRole("group", { name: "subtitleStyle.translationFont" }))
+    expect(fonts.getByRole("button", { name: "subtitleStyle.translationFonts.sans" })).toHaveAttribute("aria-pressed", "true")
+    fireEvent.click(fonts.getByRole("button", { name: "subtitleStyle.translationFonts.serif" }))
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.translate.translationFont).toBe("serif"))
+    expect(container.querySelector<HTMLElement>(".settings-translation-preview")!.style.getPropertyValue(PAGE_TRANSLATION_FONT_VARIABLE)).toBe(TRANSLATION_FONT_FAMILIES.serif)
+    expect(store.get(configAtom).features.subtitleStyle).toEqual(DEFAULT_CONFIG.features.subtitleStyle)
+    fireEvent.click(screen.getByRole("button", { name: "options.reading.mode.translationOnly" }))
+    await waitFor(() => expect(store.get(configAtom).translate.mode).toBe("translationOnly"))
+    expect(fonts.getByRole("button", { name: "subtitleStyle.translationFonts.serif" })).toHaveAttribute("aria-pressed", "true")
+    expect(container.querySelector(".settings-translation-preview .readomi-translated-content-wrapper")).toHaveTextContent("阅读和经历")
+    fireEvent.click(fonts.getByRole("button", { name: "subtitleStyle.translationFonts.sans" }))
+    await waitFor(() => expect(store.get(configAtom).translate.translationFont).toBe("sans"))
+    expect(container.querySelector<HTMLElement>(".settings-translation-preview")!.style.getPropertyValue(PAGE_TRANSLATION_FONT_VARIABLE)).toBe(TRANSLATION_FONT_FAMILIES.sans)
+  })
 
   it("enables input translation by default and persists the toggle without changing language rules", async () => {
     const { store } = await renderReading()

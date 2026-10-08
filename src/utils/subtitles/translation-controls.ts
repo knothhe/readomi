@@ -415,7 +415,7 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     presetButtons[next].click()
   })
   const changeSize = (direction: number) => {
-    options.onStyleChange({ relativeFontSize: Math.max(SUBTITLE_RELATIVE_FONT_SIZE_MIN, Math.min(SUBTITLE_RELATIVE_FONT_SIZE_MAX, state.appearance.relativeFontSize + direction * SUBTITLE_RELATIVE_FONT_SIZE_STEP)) })
+    options.onStyleChange({ relativeFontSize: Math.max(SUBTITLE_RELATIVE_FONT_SIZE_MIN, Math.min(SUBTITLE_RELATIVE_FONT_SIZE_MAX, Number((state.appearance.relativeFontSize + direction * SUBTITLE_RELATIVE_FONT_SIZE_STEP).toFixed(12)))) })
   }
   smaller.addEventListener("click", () => changeSize(-1))
   larger.addEventListener("click", () => changeSize(1))

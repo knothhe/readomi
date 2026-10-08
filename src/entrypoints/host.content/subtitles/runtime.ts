@@ -22,6 +22,7 @@ import { subtitlePageKey } from "@/utils/subtitles/page-state"
 import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
 import { createTextTrackSession } from "@/utils/subtitles/text-track-session"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
+import { translateSubtitleBatch } from "@/utils/subtitles/translation-batch"
 import { createVideoTranslationControls } from "@/utils/subtitles/translation-controls"
 import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
 import { isVideoTranslationExcluded } from "@/utils/subtitles/video-site-rules"
@@ -121,7 +122,30 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
         targets.set(input, code)
       },
     })
+  }, async (items, signal, urgent, onProgress) => {
+    const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
+    if (!provider?.apiKey?.trim())
+      throw new Error("Translation service is not configured")
+    const generation = translationGeneration
+    const apply: typeof onProgress = (results) => {
+      if (disposed || generation !== translationGeneration || signal.aborted)
+        return
+      for (const outcome of results) {
+        const item = items.find(item => item.id === outcome.id)
+        if (item && outcome.result?.targetCode) {
+          if (targets.size >= 1000)
+            targets.delete(targets.keys().next().value!)
+          targets.set(item.text, outcome.result.targetCode)
+        }
+      }
+      onProgress(results)
+    }
+    const results = await translateSubtitleBatch({ items, langConfig: config.language, providerConfig: provider, customPromptsConfig: config.translate.customPromptsConfig, pageUrl: location.href, urgent }, AbortSignal.any([signal, requestController.signal]), apply)
+    apply(results)
+    return results
   })
+  const onSeeking = () => translations.seek()
+  video.addEventListener("seeking", onSeeking)
   const resetTranslations = () => {
     translationGeneration++
     requestController.abort()
@@ -259,6 +283,8 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     }
     const visible = !!text && rect.width > 0 && rect.height > 0 && !video.ended
     box.classList.toggle("empty", !visible)
+    // Update the active cue identity before resolving its context-aware cache.
+    translations.update(adPlaying || video.ended || youtube?.enabled === false ? [] : cues, video.currentTime, video.playbackRate, visible && (cues.length || Date.now() - changedAt >= 300) ? text : "")
     const result = translations.get(text)
     state = youtube?.enabled === false
       ? "disabled"
@@ -280,12 +306,6 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     translated.textContent = preserved ? "" : result ?? (translations.hasFailed(text) ? i18n.t("subtitleTranslation.failed") : i18n.t(cues.length ? "subtitleTranslation.prefetching" : "subtitleTranslation.pending"))
     setTranslationDirAndLang(translated, targets.get(text) ?? config.language.targetCode)
     positionCaption()
-    if (adPlaying || video.ended || youtube?.enabled === false) {
-      translations.update([], video.currentTime, video.playbackRate, "")
-      return
-    }
-    // Known timeline cues are stable; only DOM captions need the settling delay.
-    translations.update(cues, video.currentTime, video.playbackRate, visible && (cues.length || Date.now() - changedAt >= 300) ? text : "")
   }
   return {
     status: () => state,
@@ -305,6 +325,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     dispose: () => {
       disposed = true
       requestController.abort()
+      video.removeEventListener("seeking", onSeeking)
       targets.clear()
       view?.removeEventListener("scroll", schedulePosition, true)
       view?.removeEventListener("resize", schedulePosition)

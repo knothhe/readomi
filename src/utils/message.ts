@@ -1,4 +1,7 @@
+import type { BrowserEnvironment } from "./browser-environment"
+import type { ConfigSyncStatus } from "./config/sync-state"
 import type { RequestErrorMeta } from "./request/retry-policy"
+import type { SubtitleBatchOutcome, SubtitleBatchRequest } from "./subtitles/translation-batch"
 import type { LangCodeISO6393 } from "@/definitions"
 import type {
   BackgroundGenerateTextPayload,
@@ -18,6 +21,13 @@ import { isExtensionContextInvalidatedError, isExtensionContextValid, isMessageC
 import { attachRequestErrorMeta, getRequestErrorMeta } from "./request/retry-policy"
 
 interface ProtocolMap {
+  translateSubtitleBatch: (data: SubtitleBatchRequest) => Promise<SubtitleBatchOutcome[]>
+  subtitleBatchProgress: (data: { requestId: string, outcomes: SubtitleBatchOutcome[] }) => void
+  cancelSubtitleBatch: (data: { requestId: string }) => void
+  getConfigSyncInfo: () => Promise<{ environment: BrowserEnvironment, status: ConfigSyncStatus }>
+  inspectConfigSync: () => Promise<{ revision: string | null }>
+  setConfigSyncEnabled: (data: { enabled: false } | { enabled: true, source: "local" | "remote", revision: string | null }) => Promise<{ environment: BrowserEnvironment, status: ConfigSyncStatus }>
+  retryConfigSync: () => Promise<{ environment: BrowserEnvironment, status: ConfigSyncStatus }>
   getTopFrameUrl: () => Promise<string>
   // navigation
   openOptionsPage: (data?: { section?: string, siteRulesTab?: "builtin" | "custom" }) => void

@@ -508,7 +508,7 @@ manualService:
   advanced: 추가 매개변수
   compatible: OpenAI 호환 서비스
 configBackup:
-  title: 백업
+  title: 백업 및 동기화
   backup: 백업
   restore: 복원
   description: Exports include API keys and custom headers. Keep them private.
@@ -859,3 +859,42 @@ inputTranslation:
   pending: 입력 번역 중…
   failed: 입력 번역에 실패했습니다. 원문은 유지됩니다.
   replaceFailed: 입력을 바꿀 수 없습니다. 이 편집기에서는 직접 번역해 주세요.
+
+configSync:
+  title: Chrome 동기화
+  browser: 현재 브라우저 · $1
+  detecting: 확인 중…
+  otherBrowser: 다른 브라우저
+  toggle: 이 기기 동기화
+  toggleDescription: Chrome 계정으로 다른 기기에서도 설정을 사용합니다.
+  unsupported: 이 버전은 Chrome만 지원합니다. 파일 백업은 계속 사용할 수 있습니다.
+  scope: 동기화 내용
+  scopeDescription: "언어, 외관, 번역 설정, 단축키, 자막 스타일, 사이트 규칙과 서비스 이름, 모델, 주소."
+  localOnly: 이 기기에만 저장
+  localOnlyDescription: "API 키, 사용자 지정 헤더와 요청 매개변수. 새 기기에서는 인증 정보를 입력하세요."
+  requirement: Chrome에서 같은 계정으로 로그인하고 동기화를 켜세요. 이 스위치를 꺼도 로컬 및 동기화 설정은 유지됩니다.
+  pending: Chrome 동기화 저장소에 저장 중…
+  localSaved: 이 기기에 설정이 저장되었습니다.
+  saved: Chrome 동기화용으로 저장됨
+  lastSaved: 마지막 저장 · $1
+  failed: Chrome 동기화 저장소에 저장하지 못했습니다
+  quota: 설정이 동기화 용량을 초과했습니다
+  failureDescription: 로컬 설정은 저장되었습니다. 동기화 저장소에는 이전 설정이 유지됩니다.
+  retryHint: 자동으로 다시 시도합니다. 지금 다시 시도할 수도 있습니다.
+  quotaHint: 사이트 규칙이나 사용자 지정 내용을 줄이고 다시 시도하세요.
+  retry: 다시 시도
+  chooseTitle: 동기화된 설정을 찾았습니다
+  chooseDescription: 기기 간에 사용할 설정을 선택하세요.
+  useRemote: 동기화된 설정 사용
+  useLocal: 이 기기의 설정 사용
+  recommended: 권장
+  chooseHint: 선택한 설정으로 다른 설정을 대체합니다. 인증 정보는 동기화하지 않습니다.
+  enable: 동기화 켜기
+  needsKeys: 일부 서비스에 API 키가 필요합니다
+  needsKeysDescription: $1의 서비스 정보가 동기화되었습니다. API 키를 입력하면 사용할 수 있습니다.
+  openServices: 번역 서비스로 이동 →
+  fileBackup: 파일 백업
+  importReplace: 적용하면 인증 정보를 포함한 이 기기의 모든 설정이 대체됩니다.
+  importHint: "이 기기에서 동기화가 켜져 있습니다. 가져오면 동기화 대상 설정과 서비스 정보도 업데이트됩니다. API 키, 헤더와 요청 매개변수는 이 기기에만 저장됩니다."
+  actionFailed: 동기화된 설정을 읽거나 적용하지 못했습니다. 다시 시도하세요.
+  choiceChanged: 동기화된 설정이 변경되었습니다. 창을 닫고 다시 선택하세요.

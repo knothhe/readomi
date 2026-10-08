@@ -503,7 +503,7 @@ manualService:
   advanced: 更多参数
   compatible: OpenAI 兼容服务
 configBackup:
-  title: 备份
+  title: 备份与同步
   backup: 备份
   restore: 恢复
   description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
@@ -841,3 +841,42 @@ inputTranslation:
   pending: 输入框翻译中…
   failed: 输入框翻译失败，原文已保留。
   replaceFailed: 无法替换输入，请在此编辑器中手动翻译。
+
+configSync:
+  title: Chrome 同步
+  browser: 当前浏览器 · $1
+  detecting: 识别中…
+  otherBrowser: 其他浏览器
+  toggle: 同步此设备
+  toggleDescription: 使用 Chrome 帐号，在其他设备上沿用设置。
+  unsupported: 此版本仅支持 Chrome。你仍可使用文件备份。
+  scope: 同步内容
+  scopeDescription: 语言、外观、翻译偏好、快捷键、字幕样式、站点规则，以及服务名称、模型和地址。
+  localOnly: 仅保存在此设备
+  localOnlyDescription: API Key、自定义请求头和请求参数。新设备需要补填服务凭据。
+  requirement: 请在 Chrome 中登录同一帐号并开启同步。关闭此开关后，本机和同步区的配置都会保留。
+  pending: 正在保存到 Chrome 同步区…
+  localSaved: 本机设置已保存。
+  saved: 已交给 Chrome 同步
+  lastSaved: 上次保存 · $1
+  failed: 暂时无法保存到 Chrome 同步区
+  quota: 配置超出同步容量
+  failureDescription: 本机设置已保存，同步区保留上次的配置。
+  retryHint: 稍后会自动重试，也可以手动重试。
+  quotaHint: 精简站点规则或自定义内容后重试。
+  retry: 重试
+  chooseTitle: 发现已有同步配置
+  chooseDescription: 选择要在设备间使用的配置。
+  useRemote: 使用同步配置
+  useLocal: 使用本机配置
+  recommended: 推荐
+  chooseHint: 选择后会替换另一份配置。服务凭据不参与同步。
+  enable: 开启同步
+  needsKeys: 部分服务需要补填密钥
+  needsKeysDescription: $1 的服务信息已同步。补填 API Key 后即可使用。
+  openServices: 前往翻译服务 →
+  fileBackup: 文件备份
+  importReplace: 应用后会替换此设备的全部设置，包括服务凭据。
+  importHint: 此设备已开启同步。导入后，允许同步的设置与服务信息也会更新到 Chrome 同步区；API Key、自定义请求头和请求参数仍只保存在本机。
+  actionFailed: 无法读取或应用同步配置，请重试。
+  choiceChanged: 同步配置已更改，请关闭弹窗后重新选择。

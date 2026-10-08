@@ -8,6 +8,7 @@ import { TRANSLATION_PROTOCOL_VERSION } from "@/utils/host/translate/translation
 const DEFAULT_CONFIG = { ...READING_DEFAULT_CONFIG, language: { ...READING_DEFAULT_CONFIG.language, secondaryCode: "eng" as const } }
 
 const onMessageMock = vi.fn()
+const sendMessageMock = vi.fn()
 const ensureInitializedConfigMock = vi.fn()
 const executeTranslateMock = vi.fn()
 const requestTextStreamMock = vi.fn()
@@ -28,6 +29,7 @@ vi.mock("@/utils/logger", () => ({ logger: { error: logErrorMock, info: logInfoM
 
 vi.mock("@/utils/message", () => ({
   onMessage: onMessageMock,
+  sendMessage: sendMessageMock,
 }))
 
 vi.mock("../config", () => ({
@@ -69,7 +71,7 @@ function getRegisteredMessageHandler(name: string) {
   if (!registration) {
     throw new Error(`Message handler not registered: ${name}`)
   }
-  return registration[1] as (message: { data: Record<string, unknown>, sender?: { tab?: { url?: string } } }) => Promise<unknown>
+  return registration[1] as (message: { data: Record<string, unknown>, sender?: { tab?: { id?: number, url?: string }, frameId?: number } }) => Promise<unknown>
 }
 
 const llmProvider: ProviderConfig = {
@@ -133,6 +135,7 @@ describe("translation queue helpers", () => {
     translationCachePutMock.mockResolvedValue(undefined)
     translationCacheDeleteMock.mockResolvedValue(undefined)
     translationCacheClearMock.mockResolvedValue(undefined)
+    sendMessageMock.mockResolvedValue(undefined)
   })
 
   it("does not cache a translation that drops formula placeholders", async () => {
@@ -657,6 +660,66 @@ describe("translation queue helpers", () => {
       expect(translationCachePutMock).toHaveBeenLastCalledWith(expect.objectContaining({ pageKey: await sha256Hex(`domain:${hostname}`) }))
     }
     expect(new Set(translationCachePutMock.mock.calls.map(([record]) => record.key)).size).toBe(5)
+  })
+
+  it("caches subtitle cues independently with their adjacent context and video page", async () => {
+    const records = new Map<string, { key: string }>()
+    translationCacheGetMock.mockImplementation(async key => records.get(key))
+    translationCachePutMock.mockImplementation(async record => records.set(record.key, record))
+    executeTranslateMock.mockImplementation(async (_text, _language, _provider, resolver, options) => {
+      const prompt = await resolver("automatic", _text, { ...options, languagePolicy: DEFAULT_CONFIG.language })
+      const items = JSON.parse(prompt.prompt.split("Requested subtitle IDs and read-only context:\n").at(-1)) as { id: string }[]
+      return JSON.stringify(items.map(item => ({ id: item.id, translation: response("字幕译文") })))
+    })
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const request = getRegisteredMessageHandler("translateSubtitleBatch")
+    const base = { requestId: "first", langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, customPromptsConfig: DEFAULT_CONFIG.translate.customPromptsConfig, pageUrl: "https://youtube.com/watch?v=one", urgent: false }
+    const cue = { id: "a", text: "Yes.", before: ["Was it good?"], after: ["I liked it."] }
+    await request({ data: { ...base, items: [cue] } })
+    // IDs align replies but do not prevent cache reuse in another batch.
+    const result = await request({ data: { ...base, requestId: "second", items: [{ ...cue, id: "renamed" }, { ...cue, id: "b", text: "Next sentence." }] } })
+    expect(result).toEqual([{ id: "renamed", result: translated("字幕译文") }, { id: "b", result: translated("字幕译文") }])
+    expect(executeTranslateMock).toHaveBeenCalledTimes(2)
+    expect(executeTranslateMock.mock.calls[1][0]).toBe("Next sentence.")
+    await request({ data: { ...base, requestId: "context", items: [{ ...cue, before: ["Was it bad?"] }] } })
+    await request({ data: { ...base, requestId: "video", pageUrl: "https://youtube.com/watch?v=two", items: [cue] } })
+    expect(executeTranslateMock).toHaveBeenCalledTimes(4)
+    expect(records.size).toBe(4)
+  })
+
+  it("accepts subtitle cancellation only from its owner and discards the pending result", async () => {
+    const responseGate = deferred<string>()
+    executeTranslateMock.mockReturnValue(responseGate.promise)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const request = getRegisteredMessageHandler("translateSubtitleBatch")
+    const cancel = getRegisteredMessageHandler("cancelSubtitleBatch")
+    const sender = { tab: { id: 7, url: "https://youtube.com/watch?v=one" }, frameId: 0 }
+    const pending = request({ data: { requestId: "cancel", items: [{ id: "a", text: "A sentence.", before: [], after: [] }], langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, customPromptsConfig: DEFAULT_CONFIG.translate.customPromptsConfig, urgent: false }, sender })
+    await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledOnce())
+    await cancel({ data: { requestId: "cancel" }, sender: { ...sender, frameId: 1 } })
+    await cancel({ data: { requestId: "cancel" }, sender })
+    responseGate.resolve(JSON.stringify([{ id: "a", translation: response("字幕译文") }]))
+    await expect(pending).rejects.toThrow()
+    expect(translationCachePutMock).not.toHaveBeenCalled()
+  })
+
+  it("sends validated subtitle progress to its frame before unresolved cues finish", async () => {
+    const retry = deferred<string>()
+    executeTranslateMock.mockResolvedValueOnce(JSON.stringify([{ id: "a", translation: response("已完成") }])).mockReturnValueOnce(retry.promise)
+    const { setUpWebPageTranslationQueue } = await import("../translation-queues")
+    setUpWebPageTranslationQueue()
+    const pending = getRegisteredMessageHandler("translateSubtitleBatch")({
+      data: { requestId: "partial", items: ["a", "b"].map(id => ({ id, text: "Source sentence.", before: [], after: [] })), langConfig: DEFAULT_CONFIG.language, providerConfig: llmProvider, customPromptsConfig: DEFAULT_CONFIG.translate.customPromptsConfig, urgent: true },
+      sender: { tab: { id: 7, url: "https://youtube.com/watch?v=one" }, frameId: 5 },
+    })
+    await vi.waitFor(() => expect(executeTranslateMock).toHaveBeenCalledTimes(2))
+    expect(sendMessageMock).toHaveBeenCalledExactlyOnceWith("subtitleBatchProgress", { requestId: "partial", outcomes: [{ id: "a", result: translated("已完成") }] }, 7, 5)
+    expect(translationCachePutMock).toHaveBeenCalledOnce()
+    retry.resolve(JSON.stringify([{ id: "b", translation: response("后完成") }]))
+    await pending
+    expect(sendMessageMock).toHaveBeenCalledTimes(2)
   })
 
   it("uses the top-level domain for embedded web text and clears both domain and page scopes", async () => {

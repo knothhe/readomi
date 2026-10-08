@@ -13,6 +13,7 @@ import { deepEqual } from "@/utils/object"
 import { resolveBaseURL, resolveRequestApi } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
 import { formatRelativeTime } from "@/utils/relative-time"
+import { initialProviderPlaceholder, isProviderReady } from "@/utils/service-management"
 import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
 import { applySetupDocument, describeSetupDocument, exportSetupDocument, maskApiKey, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
 import { cn } from "@/utils/styles/utils"
@@ -28,14 +29,15 @@ const MONO = "font-mono text-xs text-muted-foreground"
 /** See design/Settings-Multi-Service*.html for the list and editor states. */
 export function ServiceSection() {
   const config = useAtomValue(configAtom)
-  const providers = config.providersConfig.filter(provider => provider.apiKey?.trim())
-  const [editing, setEditing] = useState<string | null>(() => providers.length ? null : "add")
+  const placeholder = initialProviderPlaceholder(config)
+  const providers = config.providersConfig.filter(provider => provider.id !== placeholder?.id)
+  const [editing, setEditing] = useState<string | null>(null)
   const [editorMode, setEditorMode] = useState<"manual" | "agent">("manual")
   const [busy, setBusy] = useState(false)
   const [makeCurrent, setMakeCurrent] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
   const current = editing && editing !== "add" ? config.providersConfig.find(provider => provider.id === editing) : undefined
-  const showingEditor = editing === "add" || !!current
+  const showingEditor = editing === "add" || !!current || !providers.length || busy
   const close = () => {
     setEditing(null)
     setFeedback(null)
@@ -159,7 +161,10 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
   const [testing, setTesting] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [now] = useState(Date.now)
-  const status = checkStatus(provider.connectionCheck, Math.max(now, provider.connectionCheck?.checkedAt ?? now))
+  const ready = isProviderReady(provider)
+  const status = !provider.apiKey?.trim()
+    ? { dot: "bg-destructive", tone: "text-destructive", label: i18n.t("options.service.keyMissing"), when: null }
+    : checkStatus(provider.connectionCheck, Math.max(now, provider.connectionCheck?.checkedAt ?? now))
 
   useEffect(() => {
     const closeOutside = (event: PointerEvent) => {
@@ -206,8 +211,8 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
         aria-checked={active}
         aria-label={`${provider.name} · ${provider.model}`}
         tabIndex={active ? 0 : -1}
-        disabled={!provider.enabled}
-        aria-disabled={busy || !provider.enabled}
+        disabled={!ready}
+        aria-disabled={busy || !ready}
         className="settings-service-choose"
         onClick={() => !busy && !active && void act("use")}
       >
@@ -244,7 +249,7 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
           <summary aria-label={i18n.t("options.service.actions", [provider.name])}><span aria-hidden="true">•••</span></summary>
           <div className="settings-service-menu-panel">
             <button type="button" disabled={busy} onClick={onEdit}>{i18n.t("options.service.edit")}</button>
-            <button type="button" disabled={busy} onClick={() => void act("test")}>{i18n.t("options.service.test")}</button>
+            <button type="button" disabled={busy || !ready} onClick={() => void act("test")}>{i18n.t("options.service.test")}</button>
             <button
               type="button"
               aria-expanded={showDetails}

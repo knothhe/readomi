@@ -6,6 +6,7 @@ import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { translateTextCore } from "@/utils/host/translate/translate-text"
 import { sendMessage } from "@/utils/message"
 import * as appearance from "@/utils/subtitles/appearance"
+import { translateSubtitleBatch } from "@/utils/subtitles/translation-batch"
 import { bootstrapVideoSubtitles, readActiveCueText } from "../runtime"
 
 const statusHandlers = vi.hoisted(() => new Map<string, (message?: { data: PageSubtitleState }) => unknown>())
@@ -23,6 +24,10 @@ vi.mock("@/utils/config/storage", () => ({ subscribeLocalConfig: (callback: type
   return vi.fn()
 } }))
 vi.mock("@/utils/host/translate/translate-text", () => ({ translateTextCore: vi.fn() }))
+vi.mock("@/utils/subtitles/translation-batch", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/utils/subtitles/translation-batch")>()
+  return { ...actual, translateSubtitleBatch: vi.fn(async (options: Parameters<typeof actual.translateSubtitleBatch>[0], signal: AbortSignal) => Promise.all(options.items.map(async item => ({ id: item.id, result: { action: "translate", text: await translateTextCore({ text: item.text, langConfig: options.langConfig, providerConfig: options.providerConfig, customPromptsConfig: options.customPromptsConfig, signal }) } })))) }
+})
 let youtube = { key: "", cues: [] as { start: number, end: number, text: string }[], enabled: null as boolean | null }
 vi.mock("@/utils/subtitles/youtube-client", () => ({ createYouTubeTimeline: () => ({ tick: () => youtube, dispose: vi.fn() }) }))
 let shadow: ShadowRoot
@@ -433,13 +438,13 @@ describe("local subtitle runtime", () => {
     const host = document.querySelector("[data-readomi-subtitles]")
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
     larger.click()
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18.9px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18.63px")
     await vi.advanceTimersByTimeAsync(250)
     expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18px")
     expect(controlsShadow.querySelector(".error[role='status']")?.textContent).toBe("videoTranslationControls.saveFailed")
     larger.click()
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18.9px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18.63px")
     expect(save).toHaveBeenCalledTimes(2)
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
@@ -455,14 +460,14 @@ describe("local subtitle runtime", () => {
     const larger = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='subtitleStyle.larger']")!
     larger.click()
     larger.click()
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("19.8px")
-    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 5.25 } } })
+    expect(Number.parseFloat(shadow.querySelector<HTMLElement>(".box")!.style.fontSize)).toBeCloseTo(19.26)
+    update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 5.175 } } })
     resolveFirst()
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("19.8px")
+    expect(Number.parseFloat(shadow.querySelector<HTMLElement>(".box")!.style.fontSize)).toBeCloseTo(19.26)
     rejectSecond(new Error("Second write failed"))
     await vi.advanceTimersByTimeAsync(250)
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18.9px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("18.63px")
   })
   it("does not mount a newly added video after the extension context expires", async () => {
     cleanup()
@@ -739,7 +744,7 @@ describe("local subtitle runtime", () => {
     const smaller = controlsShadow.querySelector<HTMLButtonElement>("button[aria-label=\"subtitleStyle.smaller\"]")!
     expect(larger.disabled).toBe(false)
     larger.click()
-    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("36.9px")
+    expect(shadow.querySelector<HTMLElement>(".box")?.style.fontSize).toBe("36.63px")
     await vi.advanceTimersByTimeAsync(0)
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, relativeFontSize: 25 } } })
     expect(larger.disabled).toBe(true)
@@ -1044,6 +1049,7 @@ describe("youTube timeline playback", () => {
     expect(shadow.textContent).toContain("subtitleTranslation.prefetching")
     await vi.advanceTimersByTimeAsync(1750)
     expect(translateTextCore).toHaveBeenCalledTimes(3)
+    expect(translateSubtitleBatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ id: "cue-0", text: "First sentence.", after: ["Second sentence.", "Third sentence."] })]) }), expect.any(AbortSignal), expect.any(Function))
     video.currentTime = 2
     await vi.advanceTimersByTimeAsync(250)
     expect(shadow.querySelector(".original")?.textContent).toBe("Second sentence.")

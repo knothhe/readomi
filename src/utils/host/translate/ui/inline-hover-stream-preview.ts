@@ -7,6 +7,7 @@ import customTranslationNodeCss from "@/assets/styles/custom-translation-node.cs
 import translationNodePresetCss from "@/assets/styles/translation-node-preset.css?raw"
 import { BLOCK_CONTENT_CLASS, CONTENT_WRAPPER_CLASS, NOTRANSLATE_CLASS } from "@/utils/constants/dom-labels"
 import { getLanguageDirectionAndLang } from "@/utils/content/language-direction"
+import { trackHostTranslationFontRoot } from "@/utils/host-translation-font"
 import { describePreviewElement, recordSiteRulePreview } from "@/utils/site-rules/preview-observations"
 import { findTranslationGroup, getTranslationGroup, registerTranslationGroupWrapper } from "../../dom/translation-group"
 import { hideGroupOriginalNodes, rememberGroupOriginalNodes, restoreGroupOriginalNodes } from "../dom/group-original-nodes"
@@ -52,6 +53,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
   }
   setTranslationDirAndLang(host, config)
   const shadow = host.attachShadow({ mode: "open" })
+  trackHostTranslationFontRoot(shadow)
   const style = doc.createElement("style")
   const styleConfig = config.translate.translationNodeStyle
   const translationCSS = only ? "" : styleConfig?.isCustom && styleConfig.customCSS ? styleConfig.customCSS : customTranslationNodeCss.replace(/@import[^;]+;/g, "")

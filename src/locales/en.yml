@@ -527,7 +527,7 @@ manualService:
   advanced: More parameters
   compatible: OpenAI-compatible service
 configBackup:
-  title: Backup
+  title: "Backup & sync"
   backup: Backup
   restore: Restore
   description: Exports include API keys and custom headers. Keep them private.
@@ -881,3 +881,42 @@ inputTranslation:
   pending: Translating input…
   failed: Input translation failed. Your original text was kept.
   replaceFailed: Could not replace the input. Please translate manually in this editor.
+
+configSync:
+  title: Chrome sync
+  browser: Current browser · $1
+  detecting: Detecting…
+  otherBrowser: Other browser
+  toggle: Sync this device
+  toggleDescription: Use your Chrome account to keep settings across devices.
+  unsupported: This version supports Chrome only. File backups are still available.
+  scope: Synced content
+  scopeDescription: "Languages, appearance, translation preferences, shortcuts, subtitle styles, site rules, and service names, models and addresses."
+  localOnly: Stored on this device only
+  localOnlyDescription: "API keys, custom headers and request parameters. Enter service credentials on new devices."
+  requirement: Sign in to the same account in Chrome and enable sync. Turning this switch off keeps both local and synced settings.
+  pending: Saving to Chrome sync storage…
+  localSaved: Settings saved on this device.
+  saved: Saved for Chrome to sync
+  lastSaved: Last saved · $1
+  failed: Could not save to Chrome sync storage
+  quota: Configuration exceeds sync capacity
+  failureDescription: Local settings are saved. Sync storage keeps the previous configuration.
+  retryHint: Will retry automatically. You can also retry now.
+  quotaHint: "Reduce site rules or custom content, then retry."
+  retry: Retry
+  chooseTitle: Synced configuration found
+  chooseDescription: Choose the configuration to use across devices.
+  useRemote: Use synced configuration
+  useLocal: Use this device’s configuration
+  recommended: Recommended
+  chooseHint: Your choice replaces the other configuration. Service credentials are not synced.
+  enable: Enable sync
+  needsKeys: Some services need API keys
+  needsKeysDescription: Service information for $1 is synced. Enter API keys to use these services.
+  openServices: Go to translation services →
+  fileBackup: File backup
+  importReplace: "Applying this file replaces all settings on this device, including service credentials."
+  importHint: "Sync is enabled on this device. Importing also updates synced settings and service information; API keys, custom headers and request parameters stay local."
+  actionFailed: Could not read or apply the synced configuration. Try again.
+  choiceChanged: The synced configuration changed. Close this dialog and choose again.

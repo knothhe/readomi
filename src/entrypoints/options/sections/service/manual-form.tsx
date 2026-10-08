@@ -11,7 +11,7 @@ import { PROVIDER_ITEMS } from "@/utils/constants/providers"
 import { fetchProviderModels } from "@/utils/providers/models"
 import { resolveBaseURL } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
-import { applySetupDocument, exportSetupDocument, setupDocumentSchema } from "@/utils/setup-document"
+import { applySetupDocument, exportSetupDocument, maskApiKey, setupDocumentSchema } from "@/utils/setup-document"
 import { SettingsSelect } from "../../components/settings-select"
 import { UseAfterAdd } from "./use-after-add"
 
@@ -157,7 +157,7 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
         </div>
         <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
           <label className={labelClass} htmlFor={keyId}>{i18n.t("manualService.key")}</label>
-          <input id={keyId} className={fieldClass} type="password" autoComplete="off" value={key} aria-describedby={`${keyId}-hint`} onChange={e => setKey(e.target.value)} />
+          <input id={keyId} className={fieldClass} type="password" autoComplete="off" value={key} placeholder={matching?.apiKey?.trim() ? maskApiKey(matching.apiKey) : undefined} aria-describedby={`${keyId}-hint`} onChange={e => setKey(e.target.value)} />
           <p id={`${keyId}-hint`} className="text-[11px] leading-[1.7] text-muted-foreground">{i18n.t("manualService.keyHint")}</p>
         </div>
         <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">

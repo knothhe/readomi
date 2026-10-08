@@ -9,6 +9,8 @@ interface SettingsSliderProps {
   "min": number
   "max": number
   "step"?: number
+  /** Align range stops while preserving the exact bounds for typed values. */
+  "stepBase"?: number
   "onValueChange": (value: number) => void
   "disabled"?: boolean
   "className"?: string
@@ -21,9 +23,11 @@ interface SettingsSliderProps {
 }
 
 /** Keeps the browser's range semantics and arrow keys, with visible progress and precise step controls. */
-export function SettingsSlider({ id, value, displayValue = value, min, max, step = 1, onValueChange, disabled, className, "aria-label": ariaLabel, unit = "", showLimits = true, allowDecimal = false, decrementLabel, incrementLabel }: SettingsSliderProps) {
+export function SettingsSlider({ id, value, displayValue = value, min, max, step = 1, stepBase, onValueChange, disabled, className, "aria-label": ariaLabel, unit = "", showLimits = true, allowDecimal = false, decrementLabel, incrementLabel }: SettingsSliderProps) {
   const generatedId = useId()
   const rangeId = id ?? generatedId
+  const rangeMin = stepBase === undefined ? min : stepBase + Math.ceil((min - stepBase) / step) * step
+  const rangeMax = stepBase === undefined ? max : stepBase + Math.floor((max - stepBase) / step) * step
   const [draft, setDraft] = useState<string | null>(null)
   const commit = () => {
     if (draft !== null && draft.trim() !== "") {
@@ -49,12 +53,12 @@ export function SettingsSlider({ id, value, displayValue = value, min, max, step
           type="range"
           aria-label={ariaLabel}
           aria-valuetext={`${displayValue}${unit ? ` ${unit}` : ""}`}
-          min={min}
-          max={max}
+          min={rangeMin}
+          max={rangeMax}
           step={step}
           value={value}
           disabled={disabled}
-          style={{ "--settings-range-progress": `${100 * (value - min) / (max - min)}%` } as CSSProperties}
+          style={{ "--settings-range-progress": `${Math.max(0, Math.min(100, 100 * (value - rangeMin) / (rangeMax - rangeMin)))}%` } as CSSProperties}
           onChange={event => change(Number(event.target.value))}
           className="settings-slider-input"
         />

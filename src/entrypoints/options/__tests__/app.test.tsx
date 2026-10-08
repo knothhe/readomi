@@ -168,8 +168,8 @@ describe("settings page", () => {
     expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     const fontSizeSlider = screen.getByRole("slider", { name: "subtitleStyle.fontSize" })
     const fontSizeInput = screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })
-    expect(fontSizeSlider).toHaveAttribute("min", "35.714285714285715")
-    expect(fontSizeSlider).toHaveAttribute("max", "714.2857142857143")
+    expect(fontSizeSlider).toHaveAttribute("min", "40")
+    expect(fontSizeSlider).toHaveAttribute("max", "710")
     expect(fontSizeSlider).toHaveAttribute("aria-valuetext", "100 %")
     fireEvent.change(fontSizeInput, { target: { value: "150" } })
     expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(3.5)
@@ -187,7 +187,9 @@ describe("settings page", () => {
     fireEvent.change(fontSizeInput, { target: { value: "169.64285714285714" } })
     fireEvent.keyDown(fontSizeInput, { key: "Enter" })
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(5.9375))
-    fireEvent.change(fontSizeSlider, { target: { value: "714.2857142857143" } })
+    fireEvent.change(fontSizeSlider, { target: { value: "710" } })
+    await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(24.85))
+    fireEvent.click(screen.getByRole("button", { name: "subtitleStyle.larger" }))
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle.relativeFontSize).toBe(25))
     expect(screen.getByText("subtitleStyle.modified")).toBeInTheDocument()
     expect(presets.getByRole("button", { name: "subtitleStyle.presets.ink" })).toHaveAttribute("aria-pressed", "false")
@@ -240,12 +242,12 @@ describe("settings page", () => {
       expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "true")
     }
     openSubtitleMore()
-    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "157.14285714285714" } })
-    const manualStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.ink, preset: "ink" as const, position, relativeFontSize: 5.5 }
+    fireEvent.change(screen.getByRole("slider", { name: "subtitleStyle.fontSize" }), { target: { value: "155" } })
+    const manualStyle = { ...DEFAULT_SUBTITLE_STYLE, ...SUBTITLE_PRESET_STYLES.ink, preset: "ink" as const, position, relativeFontSize: 5.425 }
     await waitFor(() => expect(store.get(configAtom).features.subtitleStyle).toEqual(manualStyle))
     expect(screen.getByText("subtitleStyle.modified")).toHaveAttribute("aria-hidden", "false")
     expect(presetControl.getAllByRole("button").every(button => button.getAttribute("aria-pressed") === "false")).toBe(true)
-    expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(157.14286)
+    expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(155)
   })
 
   it("saves normalized subtitle sizes and previews them at the actual card width", async () => {
@@ -270,9 +272,9 @@ describe("settings page", () => {
       const visibleFontSize = () => Number.parseFloat(caption.style.fontSize) * Number(caption.parentElement!.style.transform.match(/scale\(([^)]+)\)/)![1])
       expect(screen.queryByRole("group", { name: "subtitleStyle.fontSizeMode" })).toBeNull()
       expect(screen.getByText("subtitleStyle.relativeFontDescription")).toBeInTheDocument()
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("min", "35.714285714285715")
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("max", "714.2857142857143")
-      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("step", "7.142857142857143")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("min", "40")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("max", "710")
+      expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("step", "5")
       expect(screen.getByRole("slider", { name: "subtitleStyle.fontSize" })).toHaveAttribute("aria-valuetext", "100 %")
       expect(visibleFontSize()).toBeCloseTo(6.3)
       width = 640
@@ -290,7 +292,7 @@ describe("settings page", () => {
       width = 320
       act(() => resizePreview())
       expect(visibleFontSize()).toBeCloseTo(7.425)
-      expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(117.85714)
+      expect(screen.getByRole("spinbutton", { name: "subtitleStyle.fontSize" })).toHaveValue(117.86)
       expect(store.get(configAtom).features.subtitleStyle.position).toEqual(configured.features.subtitleStyle.position)
       await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.subtitleStyle.relativeFontSize).toBe(4.125))
     }

@@ -1,5 +1,6 @@
 .readomi-translated-content-wrapper,
 .readomi-translated-content-wrapper *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
+  font-family: var(--readomi-page-translation-font, inherit);
   overflow-wrap: anywhere;
   word-break: normal;
   user-select: text;
@@ -14,7 +15,7 @@
   display: inline-block;
   margin: 8px 0 !important;
   color: inherit;
-  font-family: inherit;
+  font-family: var(--readomi-page-translation-font, inherit);
 }
 
 .readomi-translated-block-content[data-readomi-float-wrap="true"] {
@@ -32,14 +33,15 @@
 .readomi-translated-inline-content {
   display: inline;
   color: inherit;
-  font-family: inherit;
+  font-family: var(--readomi-page-translation-font, inherit);
   text-decoration: inherit;
 }
 
 /* Simplified Chinese - macOS > Windows > Cross-platform > Fallback */
 .readomi-translated-content-wrapper[lang="zh"],
 .readomi-translated-content-wrapper[lang="zh"] *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
-  font-family:
+  font-family: var(
+    --readomi-page-translation-font,
     "PingFang SC",
     "Microsoft YaHei",
     "Source Han Sans SC",
@@ -51,13 +53,15 @@
     "Segoe UI",
     Helvetica,
     Arial,
-    sans-serif;
+    sans-serif
+  );
 }
 
 /* Traditional Chinese - macOS > Windows > Cross-platform > Fallback */
 .readomi-translated-content-wrapper[lang="zh-TW"],
 .readomi-translated-content-wrapper[lang="zh-TW"] *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
-  font-family:
+  font-family: var(
+    --readomi-page-translation-font,
     "PingFang TC",
     "Microsoft JhengHei",
     "Source Han Sans TC",
@@ -72,13 +76,15 @@
     "Segoe UI",
     Helvetica,
     Arial,
-    sans-serif;
+    sans-serif
+  );
 }
 
 /* Japanese - macOS/Windows high-quality > Cross-platform > Legacy > Fallback */
 .readomi-translated-content-wrapper[lang="ja"],
 .readomi-translated-content-wrapper[lang="ja"] *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
-  font-family:
+  font-family: var(
+    --readomi-page-translation-font,
     "Hiragino Kaku Gothic ProN",
     "Yu Gothic",
     "YuGothic",
@@ -93,7 +99,8 @@
     "Segoe UI",
     Arial,
     Helvetica,
-    sans-serif;
+    sans-serif
+  );
 }
 
 /* Arabic script languages - common typography features */
@@ -111,22 +118,28 @@
 /* Arabic - macOS high-quality > Cross-platform > macOS legacy > Fallback */
 .readomi-translated-content-wrapper[lang="ar"],
 .readomi-translated-content-wrapper[lang="ar"] *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
-  font-family:
+  font-family: var(
+    --readomi-page-translation-font,
     "SF Arabic", "Noto Sans Arabic", "Noto Naskh Arabic", "Geeza Pro", "Traditional Arabic", "Segoe UI", Tahoma, Arial,
-    sans-serif;
+    sans-serif
+  );
 }
 
 /* Persian/Farsi - macOS > Cross-platform > Platform-specific > Fallback */
 .readomi-translated-content-wrapper[lang="fa"],
 .readomi-translated-content-wrapper[lang="fa"] *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
-  font-family:
-    "SF Arabic", "Noto Sans Arabic", "Geeza Pro", "Iranian Sans", "Segoe UI", Tahoma, Arial, sans-serif !important;
+  font-family: var(
+    --readomi-page-translation-font,
+    "SF Arabic", "Noto Sans Arabic", "Geeza Pro", "Iranian Sans", "Segoe UI", Tahoma, Arial, sans-serif
+  ) !important;
 }
 
 /* Urdu - Specialized Nastaliq > Cross-platform > Fallback */
 .readomi-translated-content-wrapper[lang="ur"],
 .readomi-translated-content-wrapper[lang="ur"] *:not(:where(.readomi-inline-atom, .readomi-inline-atom *)) {
-  font-family:
+  font-family: var(
+    --readomi-page-translation-font,
     "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "SF Arabic", "Noto Sans Arabic", "Alvi Nastaleeq", "Segoe UI",
-    Tahoma, Arial, sans-serif;
+    Tahoma, Arial, sans-serif
+  );
 }

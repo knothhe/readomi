@@ -6,6 +6,7 @@ import type { PromptResolver } from "@/utils/host/translate/api/ai"
 import type { HoverStreamReply, HoverStreamRequest } from "@/utils/host/translate/stream-request"
 import type { TranslationResult } from "@/utils/host/translate/translation-result"
 import type { LanguagePolicyConfig } from "@/utils/language-policy"
+import type { SubtitleBatchOutcome } from "@/utils/subtitles/translation-batch"
 import { browser } from "#imports"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { BATCH_SEPARATOR, BATCH_SEPARATOR_LINE_PATTERN } from "@/utils/constants/prompt"
@@ -22,7 +23,7 @@ import { normalizePromptContextValue } from "@/utils/host/translate/translate-te
 import { AUTOMATIC_TARGET_LANGUAGE, parseTranslationPartial, parseTranslationResult, TRANSLATION_PROTOCOL_VERSION, TranslationQualityError, validateTranslationResult } from "@/utils/host/translate/translation-result"
 import { getSecondaryLanguage } from "@/utils/language-policy"
 import { logger } from "@/utils/logger"
-import { onMessage } from "@/utils/message"
+import { onMessage, sendMessage } from "@/utils/message"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
 import { requestTextStream } from "@/utils/providers/stream"
 import { BatchCountMismatchError, BatchQueue } from "@/utils/request/batch-queue"
@@ -30,6 +31,8 @@ import { Pace } from "@/utils/request/pace"
 import { RequestQueue } from "@/utils/request/request-queue"
 import { attachRequestErrorMeta } from "@/utils/request/retry-policy"
 import { serviceLimitsKey, ServiceLimitsStore } from "@/utils/request/service-limits"
+import { SUBTITLE_BATCH_ITEMS, SUBTITLE_BATCH_VERSION } from "@/utils/subtitles/translation-batch"
+import { executeSubtitleBatch } from "./subtitle-batch"
 
 // The background is the only translation-cache writer. Keep mutations in one
 // order so a pre-clear result cannot finish writing after the clear commits.
@@ -247,8 +250,8 @@ export interface TranslateBatchData<TContext = unknown> {
 
 /**
  * One request queue per service and model, each with the pace that service
- * tolerates. The pace and the batch sizes a service handles are learned while
- * translating and kept in `limits`, so the next session starts from them
+ * tolerates. The pace is learned while translating and kept in `limits`,
+ * so the next session starts from it
  * instead of probing again (design/Adaptive.html).
  */
 function createTranslationQueues<TContext>(promptResolver: PromptResolver<TContext>, limits: ServiceLimitsStore) {
@@ -291,10 +294,6 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
         data.context ? JSON.stringify(data.context) : "",
       )
     },
-    // Batch sizes a service has shown it cannot handle stay small for that service, across sessions.
-    getLimitKey: data => serviceLimitsKey(data.providerConfig),
-    learnedLimits: key => limits.get(key)?.batch,
-    onLimitsLearned: (key, batch) => limits.update(key, { batch }),
     getCharacters: data => data.text.length,
     executeBatch: async (dataList) => {
       const hash = `translation:${dataList[0].cacheGeneration ?? 0}:${await sha256Hex(...dataList.map(d => d.hash))}`
@@ -349,6 +348,54 @@ function createTranslationQueues<TContext>(promptResolver: PromptResolver<TConte
 export function setUpWebPageTranslationQueue() {
   const limits = new ServiceLimitsStore()
   const { requestQueueFor, batchQueue } = createTranslationQueues(getTranslatePrompt, limits)
+  void limits.load()
+
+  const subtitleRequests = new Map<string, { owner: string, controller: AbortController }>()
+  onMessage("cancelSubtitleBatch", ({ data, sender }) => {
+    const pending = subtitleRequests.get(data.requestId)
+    if (pending?.owner === `${sender?.tab?.id}:${sender?.frameId}`)
+      pending.controller.abort()
+  })
+  onMessage("translateSubtitleBatch", async ({ data, sender }) => {
+    if (!data.items.length || data.items.length > SUBTITLE_BATCH_ITEMS || new Set(data.items.map(item => item.id)).size !== data.items.length)
+      throw new Error("Invalid subtitle batch")
+    const controller = new AbortController()
+    const owner = `${sender?.tab?.id}:${sender?.frameId}`
+    subtitleRequests.set(data.requestId, { owner, controller })
+    try {
+      const pageKey = await pageCacheKey(requestPageUrl(sender?.tab?.url, data.pageUrl))
+      const generation = cacheGenerationFor(pageKey)
+      const prepared = await Promise.all(data.items.map(async (item) => {
+        const hash = await sha256Hex(pageKey ?? "", SUBTITLE_BATCH_VERSION, TRANSLATION_PROTOCOL_VERSION, JSON.stringify(data.providerConfig), JSON.stringify(data.langConfig), JSON.stringify(data.customPromptsConfig), JSON.stringify({ text: item.text, before: item.before, after: item.after }))
+        const cached = await getCachedTranslation(hash, item.text, data.langConfig, generation, pageKey)
+        return { item, hash, cached }
+      }))
+      controller.signal.throwIfAborted()
+      await limits.load()
+      const missing = prepared.filter(item => !item.cached)
+      const published = new Set<string>()
+      const publish = async (outcomes: SubtitleBatchOutcome[]) => {
+        controller.signal.throwIfAborted()
+        const valid = outcomes.filter(outcome => outcome.result && !published.has(outcome.id))
+        await Promise.all(valid.map(async (outcome) => {
+          const entry = prepared.find(entry => entry.item.id === outcome.id)
+          if (entry && !entry.cached && hasCacheableTranslation(entry.item.text, outcome.result!, data.langConfig))
+            await cacheTranslation(entry.hash, outcome.result!, generation, pageKey)
+          published.add(outcome.id)
+        }))
+        if (valid.length && !controller.signal.aborted && generation === cacheGenerationFor(pageKey) && sender?.tab?.id !== undefined)
+          await sendMessage("subtitleBatchProgress", { requestId: data.requestId, outcomes: valid }, sender.tab.id, sender.frameId).catch(() => {})
+      }
+      await publish(prepared.filter(entry => entry.cached).map(entry => ({ id: entry.item.id, result: entry.cached! })))
+      const translated = missing.length ? await executeSubtitleBatch({ ...data, items: missing.map(entry => entry.item) }, requestQueueFor(data.providerConfig), controller.signal, publish) : []
+      controller.signal.throwIfAborted()
+      const outcomes: SubtitleBatchOutcome[] = prepared.map(entry => entry.cached ? { id: entry.item.id, result: entry.cached } : translated.find(outcome => outcome.id === entry.item.id) ?? { id: entry.item.id, error: "Missing subtitle result" })
+      return outcomes
+    }
+    finally {
+      subtitleRequests.delete(data.requestId)
+    }
+  })
 
   onMessage("clearTranslationCache", clearTranslationCache)
   onMessage("clearPageTranslationCache", ({ data }) => clearPageTranslationCache(data.tabId, data.url))
@@ -453,7 +500,7 @@ export function setUpWebPageTranslationQueue() {
       webSummary: normalizePromptContextValue(webSummary),
     }
 
-    // Learned limits decide the first batch size and pace, so they must be read before the first request.
+    // Read the service's learned request pace before starting its first request.
     await limits.load()
     const data = { text, langConfig, providerConfig, hash, scheduleAt, context, customPromptsConfig: customPromptsConfig ?? DEFAULT_CONFIG.translate.customPromptsConfig, cacheGeneration }
     const result = await batchQueue.enqueue(data)
