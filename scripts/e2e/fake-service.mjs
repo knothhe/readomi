@@ -86,7 +86,7 @@ function responseSegment(segment, system, withExamples) {
  * `holdAnswers()` keeps the answers back until the function it returns is
  * called, like a slow service.
  */
-export async function startFakeService({ streaming = false, languageRules = false, subtitleInlineHeaders = false, subtitleBatchResponse } = {}) {
+export async function startFakeService({ streaming = false, languageRules = false, subtitleInlineHeaders = false, subtitleBatchResponse, models = ["fake-model", "second-model"] } = {}) {
   const requests = []
   const articleRequests = []
   let heldStreamCompletion
@@ -127,7 +127,7 @@ body{max-width:560px;margin:40px auto;font:16px/1.5 monospace}
     await heldAnswers
     if (request.method === "GET" && request.url === "/v1/models") {
       response.setHeader("Content-Type", "application/json")
-      response.end(JSON.stringify({ data: [{ id: "fake-model" }, { id: "second-model" }] }))
+      response.end(JSON.stringify({ data: models.map(id => ({ id })) }))
       return
     }
     if (request.method === "POST" && request.url === "/v1/chat/completions") {

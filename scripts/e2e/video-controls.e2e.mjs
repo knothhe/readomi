@@ -163,6 +163,7 @@ async function playerInspector(page) {
         const panel = shadow.find(node => attr(node, "class") === "panel")
         const dock = shadow.find(node => attr(node, "class") === "dock")
         const computed = dock && await cdp.send("CSS.getComputedStyleForNode", { nodeId: dock.nodeId }).catch(() => null)
+        const panelStyle = panel && await cdp.send("CSS.getComputedStyleForNode", { nodeId: panel.nodeId }).catch(() => null)
         const idle = attr(host, "data-idle") !== undefined
         return {
           enabled: attr(toggle, "aria-pressed") === "true",
@@ -173,6 +174,7 @@ async function playerInspector(page) {
           dockButtonCount: nodes(dock).filter(node => node.nodeName === "BUTTON").length,
           dock: await bounds(dock),
           panel: await bounds(panel),
+          scrollbarWidth: panelStyle?.computedStyle.find(property => property.name === "scrollbar-width")?.value,
           idle,
           hidden: idle || attr(host, "data-hidden") !== undefined,
           ariaHidden: attr(host, "aria-hidden") === "true",
@@ -198,6 +200,30 @@ async function playerInspector(page) {
     },
   }
 }
+
+it("player panel uses the shared scrollbar while leaving host page scrolling unchanged", async () => {
+  service = await startFakeService()
+  const launched = await launchBrowser()
+  context = launched.context
+  await configureService(launched.page, launched.extensionId, setupDocumentFor(service.origin))
+  await patchFeatures({ videoSubtitles: true, videoExcludedSites: [] })
+  await context.route("https://www.youtube.com/**", route => route.fulfill({ contentType: "text/html", body: fixture }))
+  const page = await context.newPage()
+  await page.setViewportSize({ width: 390, height: 700 })
+  await page.goto("https://www.youtube.com/watch?v=readomi-scrollbars")
+  const inspector = await playerInspector(page)
+  await waitFor(inspector.snapshot, state => state.controls.length === 2, "player controls did not mount")
+  await inspector.click(0, "label", "Adjust subtitle preset")
+  const opened = await waitFor(inspector.snapshot, state => state.controls[0]?.expanded && state.controls[0]?.panel, "player panel did not open")
+  assert.equal(opened.controls[0].scrollbarWidth, "thin", "the isolated player panel uses the shared scrollbar")
+  assert.equal(await page.locator("html").evaluate(element => getComputedStyle(element).scrollbarWidth), "auto", "Readomi leaves the host page scrollbar intact")
+  const panel = opened.controls[0].panel
+  await page.mouse.move((panel.left + panel.right) / 2, (panel.top + panel.bottom) / 2)
+  await page.mouse.wheel(0, 300)
+  await waitFor(() => inspector.controlBounds(0, "Reset subtitle position"), reset => reset && reset.top >= panel.top && reset.bottom <= panel.bottom + 1, "scrolling did not reveal the last panel action")
+  await page.emulateMedia({ forcedColors: "active" })
+  await waitFor(inspector.snapshot, state => state.controls[0]?.scrollbarWidth === "auto", "high contrast did not restore the system scrollbar")
+})
 
 it("player controls stop translation, share page scope and preserve cached captions through presets and resizing", async () => {
   service = await startFakeService()

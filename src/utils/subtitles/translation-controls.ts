@@ -1,5 +1,6 @@
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
 import { browser, i18n } from "#imports"
+import scrollbarCSS from "@/assets/styles/scrollbar.css?inline"
 import { SUBTITLE_PRESETS, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP, SUBTITLE_TRANSLATION_COLORS } from "@/types/config/subtitle-style"
 import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, SUBTITLE_POSITIONS, subtitleBackgroundPatch, subtitlePresetPatch } from "./appearance"
 import { xVideoContainer, xVideoControls, xVideoToolsStart } from "./x-player"
@@ -24,7 +25,7 @@ export interface VideoTranslationControls {
 const mountedControls = new WeakMap<HTMLVideoElement, VideoTranslationControls>()
 
 const CONTROL_CSS = `
-:host{all:initial;position:fixed!important;z-index:2147483647!important;display:block!important;width:max-content!important;box-sizing:border-box!important;border:0!important;padding:0!important;margin:0!important;background:transparent!important;overflow:visible!important;transform:none!important;bottom:auto!important;right:auto!important;pointer-events:none!important;direction:ltr!important;color-scheme:dark!important;font:12px system-ui!important}
+:host{--rf-scrollbar-thumb:#ffffff55;all:initial;position:fixed!important;z-index:2147483647!important;display:block!important;width:max-content!important;box-sizing:border-box!important;border:0!important;padding:0!important;margin:0!important;background:transparent!important;overflow:visible!important;transform:none!important;bottom:auto!important;right:auto!important;pointer-events:none!important;direction:ltr!important;color-scheme:dark!important;font:12px system-ui!important}
 :host([data-placement=inline]){position:relative!important;display:inline-flex!important;align-items:center!important;height:100%!important;vertical-align:middle!important;margin-right:8px!important;flex-shrink:0!important}
 :host([data-toolbar=x][data-placement=inline]){height:auto!important}
 :host([data-hidden]){display:none!important}
@@ -67,7 +68,8 @@ export function createVideoTranslationControls(video: HTMLVideoElement, options:
     return node
   }
   const style = element("style")
-  style.textContent = CONTROL_CSS
+  style.textContent = `${scrollbarCSS}
+${CONTROL_CSS}`
   // Keep the native row's geometry while the menu escapes its stacking context.
   // This is an inert placeholder owned by this controller, never a second UI.
   const anchor = element("span")

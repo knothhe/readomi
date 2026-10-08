@@ -1,0 +1,33 @@
+/* Loaded only in extension pages and Readomi shadow roots, never the host document. */
+@layer base {
+  :where(html, :host, *) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rf-scrollbar-thumb, color-mix(in srgb, var(--rf-muted-foreground, #716862) 80%, var(--rf-background, #faf8f5))) transparent;
+  }
+
+  :where(*)::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  :where(*)::-webkit-scrollbar-track,
+  :where(*)::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  :where(*)::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background: var(--rf-scrollbar-thumb, color-mix(in srgb, var(--rf-muted-foreground, #716862) 80%, var(--rf-background, #faf8f5)));
+  }
+
+  @media (forced-colors: active) {
+    :where(html, :host, *) {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+
+    :where(*)::-webkit-scrollbar-thumb {
+      background: CanvasText;
+    }
+  }
+}

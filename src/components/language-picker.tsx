@@ -137,7 +137,7 @@ export function LanguagePicker<V extends string>({ items, value, onChange, rende
             placeholder={searchPlaceholder}
             className="m-1 h-8 rounded-md border border-input/30 bg-input/30 px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring"
           />
-          <ul id={listId} role="listbox" className="no-scrollbar max-h-64 overflow-y-auto overscroll-contain p-1">
+          <ul id={listId} role="listbox" className="max-h-64 overflow-y-auto overscroll-contain p-1">
             {visible.length === 0 && <li className="py-2 text-center text-sm text-muted-foreground">{emptyText}</li>}
             {visible.map((item, index) => (
               <li
