@@ -391,15 +391,14 @@
             <div class="rd-row"><div><div class="rd-label">Show controls on videos</div><p class="rd-help">Shown only in supported YouTube and X players. Hiding controls does not affect subtitle translation.</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="Show controls on videos" data-video-controls checked></div>
             <div class="rd-row rd-stack"><span class="rd-label">Subtitle display mode</span><div class="rd-seg" role="group" aria-label="Subtitle display mode"><button type="button" class="cursor-interaction" data-submode="bilingual" aria-pressed="true">Bilingual</button><button type="button" class="cursor-interaction" data-submode="only" aria-pressed="false">Translation only</button></div></div>
             <div class="rd-row rd-choice-row"><div class="rd-label-line"><span class="rd-label">Subtitle preset</span><span class="rd-help" data-preset-modified>Adjusted</span></div><div class="rd-preset-grid" role="group" aria-label="Subtitle preset">
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>Transparent</strong><small>5% · 无背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="compact" aria-pressed="false"><strong>Compact</strong><small>4% · 35% 背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="study" aria-pressed="false"><strong>Focus</strong><small>6.25% · 65% 背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="cinema" aria-pressed="false"><strong>Cinema</strong><small>7.5% · 85% 背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>Transparent</strong><small>100% · 无背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="compact" aria-pressed="false"><strong>Compact</strong><small>80% · 35% 背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="study" aria-pressed="false"><strong>Focus</strong><small>125% · 65% 背景</small></button>
+              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="cinema" aria-pressed="false"><strong>Cinema</strong><small>150% · 85% 背景</small></button>
             </div></div>
-            <div class="rd-size-group" role="group" aria-label="字幕字号设置" data-size-group>
-              <div class="rd-size-mode-row"><span class="rd-label">Size mode</span><div class="rd-seg" role="group" aria-label="Size mode"><button class="cursor-interaction" type="button" data-sizemode="video" aria-pressed="true">Scale with video</button><button class="cursor-interaction" type="button" data-sizemode="fixed" aria-pressed="false">Fixed size</button></div></div>
-              <p class="rd-help" data-size-help>Size is a percentage of video width and scales with the window and fullscreen.</p>
-              <div class="rd-font-row"><div class="rd-font-heading"><span class="rd-label">Subtitle size</span><div class="rd-size-choices" role="group" aria-label="Common sizes" data-size-choices></div></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="1.25" max="25" step=".25" value="5" aria-label="Subtitle size" data-subsize><label class="rd-number-wrap"><input class="rd-number" type="number" min="1.25" max="25" step=".25" value="5" aria-label="字号数值" data-size-number><span data-size-unit>%</span></label></div></div>
+            <div class="rd-size-group" role="group" aria-label="字幕大小设置" data-size-group>
+              <p class="rd-help" data-size-help>Scales automatically with the video window and fullscreen. 100% is the default size.</p>
+              <div class="rd-font-row"><div class="rd-font-heading"><span class="rd-label">Subtitle size</span><div class="rd-size-choices" role="group" aria-label="Common sizes" data-size-choices></div></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="25" max="500" step="5" value="100" aria-label="Subtitle size" data-subsize><label class="rd-number-wrap"><input class="rd-number" type="number" min="25" max="500" step="5" value="100" aria-label="字号数值" data-size-number><span data-size-unit>%</span></label></div></div>
             </div>
             <div class="rd-row rd-choice-row" data-opacity-row><div class="rd-label-line"><span class="rd-label">Background depth</span><output data-opacity-value>0%</output></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="0" max="100" value="0" aria-label="Background depth" data-opacity><label class="rd-number-wrap"><input class="rd-number" type="number" min="0" max="100" value="0" aria-label="背景深度数值" data-opacity-number><span>%</span></label></div><p class="rd-help rd-opacity-help">0% means no background. Higher values make the background darker.</p></div>
           </div>
@@ -413,7 +412,7 @@
           </section>
           </details>
         </div>
-        <aside class="rd-preview"><div class="rd-section-label">Subtitle preview</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="Preview format"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="true">Landscape</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">Portrait</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="false">Square</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="landscape"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="Draggable subtitles"><span data-sub-original>So we beat on, boats against the current, borne back ceaselessly into the past.</span><span>于是我们奋力向前，逆流行舟，却不断被推回往昔。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:12px">Drag subtitles to reposition them; use arrow keys for fine adjustments.</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 5% · 无背景 · 底部</div></aside>
+        <aside class="rd-preview"><div class="rd-section-label">Subtitle preview</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="Preview format"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="true">Landscape</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">Portrait</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="false">Square</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="landscape"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="Draggable subtitles"><span data-sub-original>So we beat on, boats against the current, borne back ceaselessly into the past.</span><span>于是我们奋力向前，逆流行舟，却不断被推回往昔。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:12px">Drag subtitles to reposition them; use arrow keys for fine adjustments.</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 100% · 无背景 · 底部</div></aside>
       </div>
     </section>
   </template>
@@ -452,7 +451,7 @@
       const pages=shell.querySelector('.rd-pages');
       const nav=shell.querySelector('.rd-nav');
       const defs=[['service',"Translation service",'server'],['reading',"Web reading",'book-open'],['video',"Video subtitles",'captions'],['quality',"Translation quality",'sparkles'],['shortcut',"Shortcut",'keyboard'],['appearance',"Appearance",'sun-moon'],['backup',"Backup",'archive']];
-      const presets={clear:{name:"Transparent",relative:5,fixed:20,opacity:0},compact:{name:"Compact",relative:4,fixed:16,opacity:35},study:{name:"Focus",relative:6.25,fixed:24,opacity:65},cinema:{name:"Cinema",relative:7.5,fixed:28,opacity:85}};
+      const presets={clear:{name:"Transparent",relative:5,opacity:0},compact:{name:"Compact",relative:4,opacity:35},study:{name:"Focus",relative:6.25,opacity:65},cinema:{name:"Cinema",relative:7.5,opacity:85}};
       const positions={top:{x:50,y:18},center:{x:50,y:55},bottom:{x:50,y:88}};
       const positionLabels={top:"Top",center:"Center",bottom:"Bottom",custom:"Custom position"};
       const styleLabels={line:"Hairline",none:'无',fade:"Muted",color:"Tinted",bg:"Highlight",dashed:"Dashed underline",quote:"Quote bar",border:"Outline",blur:"Reveal on hover"};
@@ -462,7 +461,7 @@
       const defaultShortcuts={page:'Alt+E',mode:'Alt+M',video:'Alt+V'};
       const shortcutLabels={page:"Translate this page / Show original",mode:"Switch bilingual / translation only",video:"Toggle video subtitles"};
       const saved=BOARD_STATE;
-      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,videoControls:true,submode:'bilingual',subpreset:'clear',relative:5,fixed:20,sizemode:'video',opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
+      const state={version:5,page:'video',mode:'bilingual',style:'line',hover:false,bold:false,video:true,videoControls:true,submode:'bilingual',subpreset:'clear',relative:5,opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
       if(!presets[state.subpreset]) state.subpreset='clear';
       if(!styleLabels[state.style]) state.style='line';
       if(!Array.isArray(state.rules)) state.rules=[];
@@ -476,7 +475,6 @@
       const make=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
       const makeButton=(label,key)=>{const b=make('button','rd-button cursor-interaction',label);b.type='button';b.setAttribute(key,'');return b;};
       const controls=q('[data-page="video"] .rd-controls'),primary=q('[data-video-primary]'),fontGroup=q('[data-size-group]'),opacityRow=q('[data-opacity-row]'),more=q('[data-video-more]'),positionGroup=q('[data-position-group]');
-      const modeRow=make('div','rd-row rd-choice-row rd-mode-primary');modeRow.setAttribute('data-main-size-mode','');modeRow.append(fontGroup.querySelector('.rd-size-mode-row'),q('[data-size-help]'));primary.insertBefore(modeRow,q('[data-subpreset]').closest('.rd-row'));
       const positionRow=positionGroup.querySelector('.rd-row');positionGroup.remove();more.open=!!saved.moreOpen;
       if(scheme==='inline'){
         const details=make('details','rd-custom-details');details.setAttribute('data-custom-details','');details.open=state.customOpen;
@@ -496,19 +494,19 @@
           const editor=make('section','rd-edit-subview');editor.setAttribute('data-custom-editor','');editor.hidden=true;const back=makeButton('‹ 返回视频字幕','data-custom-close');back.className='rd-back cursor-interaction';editor.append(back);const group=make('div','rd-group');group.append(fontGroup,opacityRow);const actions=make('div','rd-actions rd-edit-done');const done=makeButton('完成','data-custom-close');done.classList.add('rd-primary');actions.append(done);editor.append(group,actions);controls.append(editor);
         }
       }
-      const currentSize=()=>state.sizemode==='fixed'?state.fixed:state.relative;
-      const currentUnit=()=>state.sizemode==='fixed'?'px':'%';
-      const sizeLimits=()=>state.sizemode==='fixed'?{min:8,max:80,step:1}:{min:1.25,max:25,step:.25};
+      const currentSize=()=>Number((state.relative*20).toFixed(5));
+      const currentUnit=()=>'%';
+      const sizeLimits=()=>({min:25,max:500,step:5});
       const positionName=()=>Object.keys(positions).find(k=>Math.abs(state.position.x-positions[k].x)<.5&&Math.abs(state.position.y-positions[k].y)<.5)||'custom';
       const prettyShortcut=value=>value?value.split('+').map(v=>({Alt:'⌥',Control:'⌃',Shift:'⇧',Meta:'⌘'})[v]||v).join(' '):"Not set";
-      function setSize(value){const limits=sizeLimits();const number=Number(value);if(!Number.isFinite(number))return;const size=Math.max(limits.min,Math.min(limits.max,Math.round(number/limits.step)*limits.step));if(state.sizemode==='fixed')state.fixed=size;else state.relative=size;}
+      function setSize(value){const limits=sizeLimits();const number=Number(value);if(!Number.isFinite(number))return;const size=Math.max(limits.min,Math.min(limits.max,Math.round(number/limits.step)*limits.step));state.relative=size/20;}
       function persist(){}
       let previewAspect="landscape";
       const previewRatios={landscape:9/16,portrait:16/9,square:1};
       function renderCaption(){
         qa('[data-caption]').forEach(caption=>{const stage=caption.closest('[data-video-stage]');
         const previewWidth=stage.getBoundingClientRect().width||320;
-        caption.style.fontSize=(state.sizemode==='fixed'?state.fixed:state.relative*Math.min(previewWidth,previewWidth*previewRatios[previewAspect])/100)+'px';
+        caption.style.fontSize=(state.relative*Math.min(previewWidth,previewWidth*previewRatios[previewAspect])/100)+'px';
         if(q('[data-preview-size]'))q('[data-preview-size]').textContent='Preview size: '+Number(parseFloat(caption.style.fontSize).toFixed(2))+' px';
         caption.style.background='rgba(15,20,35,'+state.opacity/100+')';
         // Geometry stays stable when background depth crosses zero.
@@ -568,7 +566,7 @@
         [...nav.querySelectorAll('button')].forEach(b=>{if(b.dataset.nav===(state.page==='rules'?'reading':state.page))b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
         if(scheme==='editor'){qa('[data-main-video-part]').forEach(el=>el.hidden=editorOpen);q('[data-custom-editor]').hidden=!editorOpen;if(editorOpen&&state.page==='video')q('.rd-heading h1').textContent='自定义字幕样式';}
         if(scheme==='dialog'){qa('[data-custom-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.customTab===state.customTab)));qa('[data-custom-panel]').forEach(panel=>panel.hidden=panel.dataset.customPanel!==state.customTab);}
-        ['mode','style','submode','sizemode','theme'].forEach(key=>qa('[data-'+key+']').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[key]===state[key]))));
+        ['mode','style','submode','theme'].forEach(key=>qa('[data-'+key+']').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[key]===state[key]))));
         q('[data-hover]').checked=state.hover;q('[data-bold]').checked=state.bold;q('[data-video]').checked=state.video;q('[data-video-controls]').checked=state.videoControls;q('[data-stream-row]').hidden=!state.hover;
         q('[data-style-row]').hidden=state.mode==='only';
         const original=q('[data-original]');original.hidden=state.mode==='only';const sentence='Reading and experience train your model of the world.';original.replaceChildren();
@@ -584,14 +582,14 @@
         if(state.mode==='bilingual'&&state.style==='quote'){translation.style.borderLeft='4px solid var(--rd-brand)';translation.style.padding='6px 10px';translation.style.background='var(--rd-side)';}
         if(state.mode==='bilingual'&&state.style==='border'){translation.style.border='1px solid var(--rd-brand)';translation.style.padding='8px 10px';translation.style.borderRadius='5px';}
         qa('[data-sub-original]').forEach(el=>el.hidden=state.submode==='only');
-        const preset=presets[state.subpreset],expectedSize=state.sizemode==='fixed'?preset.fixed:preset.relative;
+        const preset=presets[state.subpreset],expectedSize=preset.relative*20;
         const modified=Math.abs(currentSize()-expectedSize)>.01||state.opacity!==preset.opacity;
         q('[data-preset-modified]').classList.toggle('rd-is-modified',modified);q('[data-preset-modified]').setAttribute('aria-hidden',String(!modified));
-        qa('[data-subpreset]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.subpreset===state.subpreset&&!modified));const p=presets[b.dataset.subpreset];b.querySelector('small').textContent=(state.sizemode==='fixed'?p.fixed+' px':p.relative+'%')+' · '+(p.opacity?p.opacity+'% background':"No background");});
-        const limits=sizeLimits(),sizes=state.sizemode==='fixed'?[16,20,24,28]:[4,5,6.25,7.5];
-        qa('[data-size]').forEach((b,index)=>{b.dataset.size=String(sizes[index]);b.textContent=sizes[index]+(state.sizemode==='fixed'?' px':'%');b.setAttribute('aria-pressed',String(Math.abs(currentSize()-sizes[index])<.01));});
+        qa('[data-subpreset]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.subpreset===state.subpreset&&!modified));const p=presets[b.dataset.subpreset];b.querySelector('small').textContent=(p.relative*20+'%')+' · '+(p.opacity?p.opacity+'% background':"No background");});
+        const limits=sizeLimits(),sizes=[80,100,125,150];
+        qa('[data-size]').forEach((b,index)=>{b.dataset.size=String(sizes[index]);b.textContent=sizes[index]+'%';b.setAttribute('aria-pressed',String(Math.abs(currentSize()-sizes[index])<.01));});
         ['[data-subsize]','[data-size-number]'].forEach(selector=>{const input=q(selector);input.min=limits.min;input.max=limits.max;input.step=limits.step;if(document.activeElement!==input||selector==='[data-subsize]')input.value=currentSize();});
-        q('[data-size-unit]').textContent=currentUnit();q('[data-size-help]').textContent=state.sizemode==='fixed'?"The font size stays fixed when the window resizes.":"Size is a percentage of video width and scales with the window and fullscreen.";
+        q('[data-size-unit]').textContent=currentUnit();q('[data-size-help]').textContent="Scales automatically with the video window and fullscreen. 100% is the default size.";
         q('[data-opacity]').value=state.opacity;if(document.activeElement!==q('[data-opacity-number]'))q('[data-opacity-number]').value=state.opacity;q('[data-opacity-value]').textContent=state.opacity+'%';
         q('[data-custom-summary]').replaceChildren(document.createTextNode(currentSize()+currentUnit()+' · '+(state.opacity?state.opacity+'% background':"No background")),make('span','rd-position-summary',' · '+positionLabels[positionName()]));
         qa('[data-position]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.position===positionName())));
@@ -625,8 +623,8 @@
         const b=event.target.closest('button');if(!b)return;
         if(b.type==='submit'&&b.closest('[data-excluded-form]')){event.preventDefault();addRule();return;}
         if(b.dataset.nav)state.page=b.dataset.nav;
-        ['mode','style','submode','sizemode','theme','color'].forEach(key=>{if(b.dataset[key])state[key]=b.dataset[key];});
-        if(b.dataset.subpreset){const p=presets[b.dataset.subpreset];state.subpreset=b.dataset.subpreset;state.relative=p.relative;state.fixed=p.fixed;state.opacity=p.opacity;}
+        ['mode','style','submode','theme','color'].forEach(key=>{if(b.dataset[key])state[key]=b.dataset[key];});
+        if(b.dataset.subpreset){const p=presets[b.dataset.subpreset];state.subpreset=b.dataset.subpreset;state.relative=p.relative;state.opacity=p.opacity;}
         if(b.hasAttribute('data-custom-open')){if(scheme==='dialog')dialog.showModal();else editorOpen=true;}
         if(b.hasAttribute('data-custom-close')){if(scheme==='dialog')dialog.close();else editorOpen=false;}
         if(b.dataset.customTab)state.customTab=b.dataset.customTab;
