@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" style="color-scheme:light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>网页阅读 · 九种译文样式横向平铺 — Readomi</title>
+<html lang="zh-CN" style="color-scheme:light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>网页阅读 · 宋体译文 — Readomi</title>
 <style>html,body{margin:0;min-width:0;min-height:900px;background:light-dark(#faf8f4,#242321)}body{width:100%}
     #readomi-settings-light .rd-preview-aspects { display:flex; margin-bottom:14px; width:max-content; max-width:100%; }
     #readomi-settings-light .rd-preview-aspects button { min-width:0; padding:6px 11px; }
@@ -431,7 +431,7 @@
     (() => {
       const root=document.getElementById('readomi-settings-light');
       const models=[];
-      const BOARD_STATE={"page": "reading"};
+      const BOARD_STATE={"page":"reading","readingFont":"serif"};
 
       function createLocalIcons(){
         const names={server:'service','book-open':'reading',captions:'video',sparkles:'quality',keyboard:'shortcut','sun-moon':'appearance',archive:'backup','chevron-right':'arrow',x:'close'};
