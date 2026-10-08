@@ -4,6 +4,7 @@ import { AnimatePresence } from "motion/react"
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { i18n } from "#imports"
 import { BrandIcon } from "@/components/brand-icon"
+import { CornerFade } from "@/components/corner-fade"
 import { copyText } from "@/utils/clipboard"
 import { getLocalConfig } from "@/utils/config/storage"
 import { onMessage, sendMessage } from "@/utils/message"
@@ -206,45 +207,6 @@ export function SiteRulePanel({ controller }: { controller: SiteRulePreviewContr
       setView("hidden")
   }
 
-  if (view === "hidden" || view === "saved") {
-    return (
-      <AnimatePresence>
-        {view === "saved" && (
-          <SiteRuleSavedNotice
-            key={saveCount}
-            pending={pending}
-            undoAvailable={!!session?.undoAvailable}
-            undone={notice === "undone"}
-            error={error ? i18n.t(`siteRuleAgent.${error}`) : null}
-            onUndo={() => void run("undo", () => sendMessage("undoSiteRuleSave", undefined))}
-            onManage={() => {
-              void sendMessage("openOptionsPage", { section: "reading/site-rules", siteRulesTab: "custom" }).catch(() => {
-                if (aliveRef.current)
-                  setError("operationFailed")
-              })
-            }}
-            onDismiss={() => setView("hidden")}
-          />
-        )}
-      </AnimatePresence>
-    )
-  }
-
-  if (view === "folded") {
-    return (
-      <div className="site-rule-folded" data-testid="readomi-rule-session-panel">
-        <button type="button" className="site-rule-expand" aria-label={i18n.t("siteRuleAgent.expand")} onClick={() => setView("expanded")}>
-          <BrandIcon size={32} />
-          <span>
-            {i18n.t(previewing ? "siteRuleAgent.previewing" : "siteRuleAgent.title")}
-            <small>{host}</small>
-          </span>
-        </button>
-        {session?.status === "previewing" && <button type="button" className="site-rule-link" disabled={pending} onClick={() => void stop()}>{i18n.t("siteRuleAgent.stop")}</button>}
-      </div>
-    )
-  }
-
   const editor = (
     <form onSubmit={(event) => {
       event.preventDefault()
@@ -269,8 +231,8 @@ export function SiteRulePanel({ controller }: { controller: SiteRulePreviewContr
     </form>
   )
 
-  return (
-    <section className="site-rule-panel" data-testid="readomi-rule-session-panel" aria-label={i18n.t("siteRuleAgent.title")}>
+  const expanded = (
+    <CornerFade key="expanded" role="region" className="site-rule-panel" data-testid="readomi-rule-session-panel" aria-label={i18n.t("siteRuleAgent.title")}>
       <header className="site-rule-header">
         <BrandIcon size={32} />
         <div>
@@ -353,6 +315,43 @@ export function SiteRulePanel({ controller }: { controller: SiteRulePreviewContr
         {copyStatus && <p className="site-rule-copy-status" role="status">{i18n.t(`siteRuleAgent.${copyStatus}`)}</p>}
         {fallbackText && <textarea className="site-rule-code" readOnly value={fallbackText} aria-label={i18n.t("siteRuleAgent.copyFailed")} onFocus={event => event.target.select()} />}
       </div>
-    </section>
+    </CornerFade>
+  )
+
+  return (
+    <AnimatePresence mode="wait">
+      {view === "saved"
+        ? (
+            <SiteRuleSavedNotice
+              key={`saved-${saveCount}-${notice ?? "saved"}`}
+              pending={pending}
+              undoAvailable={!!session?.undoAvailable}
+              undone={notice === "undone"}
+              error={error ? i18n.t(`siteRuleAgent.${error}`) : null}
+              onUndo={() => void run("undo", () => sendMessage("undoSiteRuleSave", undefined))}
+              onManage={() => {
+                void sendMessage("openOptionsPage", { section: "reading/site-rules", siteRulesTab: "custom" }).catch(() => {
+                  if (aliveRef.current)
+                    setError("operationFailed")
+                })
+              }}
+              onDismiss={() => setView("hidden")}
+            />
+          )
+        : view === "folded"
+          ? (
+              <CornerFade key="folded" className="site-rule-folded" data-testid="readomi-rule-session-panel">
+                <button type="button" className="site-rule-expand" aria-label={i18n.t("siteRuleAgent.expand")} onClick={() => setView("expanded")}>
+                  <BrandIcon size={32} />
+                  <span>
+                    {i18n.t(previewing ? "siteRuleAgent.previewing" : "siteRuleAgent.title")}
+                    <small>{host}</small>
+                  </span>
+                </button>
+                {session?.status === "previewing" && <button type="button" className="site-rule-link" disabled={pending} onClick={() => void stop()}>{i18n.t("siteRuleAgent.stop")}</button>}
+              </CornerFade>
+            )
+          : view === "expanded" ? expanded : null}
+    </AnimatePresence>
   )
 }

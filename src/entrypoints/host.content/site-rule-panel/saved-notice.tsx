@@ -1,6 +1,6 @@
-import { motion, useIsPresent, useReducedMotion } from "motion/react"
-import { useEffect, useRef, useState } from "react"
 import { browser, i18n } from "#imports"
+import { CornerFade } from "@/components/corner-fade"
+import { useFeedbackDismiss } from "@/components/use-feedback-dismiss"
 
 export function SiteRuleSavedNotice({ pending, undoAvailable, undone = false, error, onUndo, onManage, onDismiss }: {
   pending: boolean
@@ -11,54 +11,14 @@ export function SiteRuleSavedNotice({ pending, undoAvailable, undone = false, er
   onManage: () => void
   onDismiss: () => void
 }) {
-  const isPresent = useIsPresent()
-  const reducedMotion = useReducedMotion()
-  const duration = undone ? 3000 : 8000
-  const durationRef = useRef(duration)
-  const remainingRef = useRef(duration)
-  const [hovered, setHovered] = useState(false)
-  const [focused, setFocused] = useState(false)
-  const [visible, setVisible] = useState(() => !document.hidden)
-
-  useEffect(() => {
-    const update = () => setVisible(!document.hidden)
-    document.addEventListener("visibilitychange", update)
-    return () => document.removeEventListener("visibilitychange", update)
-  }, [])
-
-  useEffect(() => {
-    if (durationRef.current !== duration) {
-      durationRef.current = duration
-      remainingRef.current = duration
-    }
-    if (!isPresent || !visible || hovered || focused || pending || error)
-      return
-    const started = performance.now()
-    const timer = setTimeout(onDismiss, remainingRef.current)
-    return () => {
-      clearTimeout(timer)
-      remainingRef.current = Math.max(0, remainingRef.current - (performance.now() - started))
-    }
-  }, [duration, isPresent, visible, hovered, focused, pending, error, onDismiss])
+  const interaction = useFeedbackDismiss(undone ? 3000 : 8000, onDismiss, pending || !!error)
 
   return (
-    <motion.div
+    <CornerFade
       className="site-rule-saved"
       role="status"
       aria-live="polite"
-      aria-hidden={!isPresent || undefined}
-      inert={!isPresent}
-      initial={false}
-      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
-      transition={{ duration: reducedMotion ? 0 : 0.26, ease: [0.4, 0, 1, 1] }}
-      style={{ transformOrigin: "bottom right" }}
-      onPointerEnter={() => setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget))
-          setFocused(false)
-      }}
+      {...interaction}
     >
       <div className="site-rule-saved-heading">
         <svg className="site-rule-saved-check" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -99,6 +59,6 @@ export function SiteRuleSavedNotice({ pending, undoAvailable, undone = false, er
         </div>
       )}
       {error && <p className="site-rule-error" role="alert">{error}</p>}
-    </motion.div>
+    </CornerFade>
   )
 }

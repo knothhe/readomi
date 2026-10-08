@@ -1,5 +1,9 @@
-import { useSyncExternalStore } from "react"
+import { AnimatePresence } from "motion/react"
+import { useCallback, useSyncExternalStore } from "react"
+import { i18n } from "#imports"
 import { BrandIcon } from "@/components/brand-icon"
+import { CornerFade } from "@/components/corner-fade"
+import { useFeedbackDismiss } from "@/components/use-feedback-dismiss"
 import { APP_NAME } from "@/utils/constants/app"
 import { NOTRANSLATE_CLASS } from "@/utils/constants/dom-labels"
 
@@ -14,6 +18,7 @@ export interface ToastItem {
   kind: "success" | "error"
   message: string
   description?: string
+  durationMs: number
 }
 
 const DEFAULT_DURATION_MS = 4000
@@ -28,9 +33,8 @@ function publish(next: ToastItem[]) {
 }
 
 function show(kind: ToastItem["kind"], message: string, options?: { description?: string, durationMs?: number }) {
-  const item: ToastItem = { id: nextId++, kind, message, description: options?.description }
+  const item: ToastItem = { id: nextId++, kind, message, description: options?.description, durationMs: options?.durationMs ?? DEFAULT_DURATION_MS }
   publish([...items, item])
-  setTimeout(dismiss, options?.durationMs ?? DEFAULT_DURATION_MS, item.id)
   return item.id
 }
 
@@ -48,6 +52,8 @@ function subscribe(listener: (items: ToastItem[]) => void) {
   listeners.add(listener)
   return () => {
     listeners.delete(listener)
+    if (!listeners.size)
+      items = []
   }
 }
 
@@ -55,38 +61,41 @@ function useToasts() {
   return useSyncExternalStore(subscribe, () => items, () => items)
 }
 
-export function Toasts() {
-  const current = useToasts()
-  if (current.length === 0)
-    return null
-
+function ToastCard({ item }: { item: ToastItem }) {
+  const onDismiss = useCallback(() => dismiss(item.id), [item.id])
+  const interaction = useFeedbackDismiss(item.durationMs, onDismiss)
   return (
-    <div
-      role="region"
-      aria-label={`${APP_NAME} notifications`}
-      className={`${NOTRANSLATE_CLASS} pointer-events-none fixed bottom-4 left-4 z-[2147483647] flex w-[min(356px,calc(100vw-2rem))] flex-col gap-2`}
+    <CornerFade
+      role={item.kind === "error" ? "alert" : "status"}
+      className="readomi-toast-card"
+      {...interaction}
     >
-      {current.map(item => (
-        <div
-          key={item.id}
-          role={item.kind === "error" ? "alert" : "status"}
-          className="pointer-events-auto flex items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-sm text-foreground shadow-md animate-[readomi-fade-in_150ms_ease-out]"
-        >
-          <BrandIcon className="mt-px size-5 shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className={item.kind === "error" ? "font-medium text-destructive" : "font-medium"}>{item.message}</div>
-            {item.description && <div className="mt-0.5 text-xs text-muted-foreground">{item.description}</div>}
-          </div>
-          <button
-            type="button"
-            aria-label="Dismiss"
-            onClick={() => dismiss(item.id)}
-            className="-m-1 rounded p-1 text-muted-foreground hover:text-foreground"
-          >
-            ×
-          </button>
-        </div>
-      ))}
+      <BrandIcon className="mt-px size-[22px] shrink-0" />
+      <div className="min-w-0 flex-1">
+        <div className={item.kind === "error" ? "font-medium text-destructive" : "font-medium"}>{item.message}</div>
+        {item.description && <div className="mt-0.5 text-xs text-muted-foreground">{item.description}</div>}
+      </div>
+      <button
+        type="button"
+        aria-label={i18n.t("siteRuleAgent.close")}
+        onClick={onDismiss}
+        className="readomi-toast-close"
+      >
+        ×
+      </button>
+    </CornerFade>
+  )
+}
+
+export function Toasts({ embedded = false }: { embedded?: boolean }) {
+  const current = useToasts()
+  // Keep AnimatePresence mounted when the last toast leaves.
+  const stack = (
+    <div role="region" aria-label={`${APP_NAME} notifications`} className={`${NOTRANSLATE_CLASS} readomi-toast-stack`}>
+      <AnimatePresence>
+        {current.map(item => <ToastCard key={item.id} item={item} />)}
+      </AnimatePresence>
     </div>
   )
+  return embedded ? stack : <div className="readomi-corner-dock">{stack}</div>
 }
