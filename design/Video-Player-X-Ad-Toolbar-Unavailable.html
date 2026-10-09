@@ -6,7 +6,7 @@
   <title>X · 仅广告操作栏可用，无 Readomi 入口</title>
   <style>
     :root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#faf8f5;color:#302b29;font:13px -apple-system,BlinkMacSystemFont,'PingFang SC',system-ui}button{font:inherit;cursor:pointer}button:focus-visible{outline:2px solid #e8b29b;outline-offset:3px}main{padding:36px 40px;width:720px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}h1{font-size:15px;font-weight:550;margin:0}header p{margin:0;color:#776d64;font-size:11px}.video{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:linear-gradient(140deg,#24343d,#55505c)}.scene{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 140%,#4d6156 0 38%,transparent 39%),radial-gradient(ellipse at 120% 140%,#667460 0 43%,transparent 44%)}.ad-copy{position:absolute;top:108px;left:50%;transform:translateX(-50%);width:310px;text-align:center;font-size:24px;font-weight:700;color:#fff;text-shadow:0 2px 4px #0005}.ad-copy strong{display:block;margin-top:9px;padding:5px 12px;border-radius:30px;background:#d31312;font-size:26px}.ad-top{position:absolute;top:20px;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff}.ad-link{display:flex;align-items:center;gap:7px;border:0;border-radius:24px;padding:7px 14px;background:#111b;color:#fff;white-space:nowrap;font-size:16px;font-weight:600}.ad-brand{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:white;color:#c22;font-size:6px;font-weight:700}.ad-menu{display:grid;place-items:center;flex-shrink:0;width:34px;height:28px;border:0;border-radius:5px;background:#111a;color:white;font-size:20px;line-height:1}.ad-footer{position:absolute;bottom:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff}.ad-status{display:flex;align-items:center;gap:9px;background:#111b;border-radius:5px;padding:5px 9px;font-size:13px;font-weight:600}.ad-status span+span{border-left:1px solid #fff7;padding-left:9px}.skip{border:0;border-radius:24px;background:#172311dc;color:white;padding:8px 17px;font-size:14px;font-weight:600}
-  </style>
+  </style><style>.subtitles,.caption{line-height:1.4;text-shadow:0 2px 4px #0008;-webkit-text-stroke:.075em #17201ccc;paint-order:stroke fill}.subtitles .original,.caption .original{font-size:1em;margin-bottom:.22em}.caption .translated,.subtitles .translated{font-size:1em}</style>
 </head>
 <body>
   <main>
@@ -21,5 +21,5 @@
       <div class="ad-footer"><div class="ad-status"><span>0:02</span><span>视频将在广告后播放</span></div><button class="skip">跳过 <span aria-hidden="true">⏭</span></button></div>
     </div>
   </main>
-</body>
+<script>(()=>{for(const frame of document.querySelectorAll('.video,.player')){const caption=frame.querySelector('.subtitles,.caption');if(!caption)continue;const update=()=>{const rect=frame.getBoundingClientRect();caption.style.fontSize=Math.min(rect.width,rect.height)*.035*1+'px';};new ResizeObserver(update).observe(frame);update();}})();</script></body>
 </html>

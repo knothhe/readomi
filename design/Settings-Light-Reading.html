@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" style="color-scheme:light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>网页阅读 · 九种译文样式横向平铺 — Readomi</title>
+<html lang="zh-CN" style="color-scheme:light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>网页阅读 · Readomi</title>
 <style>html,body{margin:0;min-width:0;min-height:900px;background:light-dark(#faf8f4,#242321)}body{width:100%}
     #readomi-settings-light .rd-preview-aspects { display:flex; margin-bottom:14px; width:max-content; max-width:100%; }
     #readomi-settings-light .rd-preview-aspects button { min-width:0; padding:6px 11px; }
@@ -28,7 +28,7 @@
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4"></path></symbol>
 <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V3m-4 4 4-4 4 4M4 16v4h16v-4"></path></symbol>
 <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"></path></symbol>
-</defs></svg>
+<symbol id="i-language" viewBox="0 0 24 24"><path d="M3 5h12M9 3v2M5 5c0 6 4 9 8 11M13 5c0 6-4 9-8 11m9 5 4-11 4 11m-7-3h6"/></symbol><symbol id="i-cache" viewBox="0 0 24 24"><path d="M4 7c0-2 16-2 16 0s-16 2-16 0Zm0 0v10c0 2 16 2 16 0V7M4 12c0 2 16 2 16 0"/></symbol></defs></svg>
 <div id="readomi-settings-light">
   <style>
     #readomi-settings-light { --rd-bg: light-dark(#faf8f4,#242321); --rd-panel: light-dark(#fffefa,#2c2a27); --rd-side: light-dark(#f3f0e9,#201f1d); --rd-ink: light-dark(#302e2b,#eeeae4); --rd-muted: light-dark(#77716a,#b1aaa1); --rd-line: light-dark(#e7e2d9,#433e38); --rd-brand: light-dark(#b6533e,#e49a83); --rd-tint: light-dark(#f4e6de,#40302a); --rd-success: light-dark(#4b7560,#9ab6a1); --rd-radius: 10px; --rd-row: 18px; color:var(--rd-ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif; }
@@ -300,7 +300,7 @@
   <div class="rd-stage" aria-label="Readomi 设置页">
     <section data-scheme="inline" aria-label="按需展开方案">
       <div class="rd-shell" data-layout="list" data-scheme="inline" aria-label="按需展开设计">
-        <aside class="rd-side"><div class="rd-brand"><img alt="Readomi" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjQjY1MzNFIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNFOUFCOTEiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjwvc3ZnPgo="><span>Readomi</span></div><nav class="rd-nav" aria-label="设置分区"></nav><div class="rd-version">版本 1.2.1</div></aside>
+        <aside class="rd-side"><div class="rd-brand"><img alt="Readomi" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjQjY1MzNFIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNFOUFCOTEiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjwvc3ZnPgo="><span>Readomi</span></div><nav class="rd-nav" aria-label="设置分区"></nav><div class="rd-version">版本 1.2.7</div></aside>
         <main class="rd-main"><header class="rd-heading"><h1>网页阅读</h1></header><div class="rd-pages"></div></main>
       </div>
     </section>
@@ -326,6 +326,7 @@
             </div></div>
             <div class="rd-row"><div><div class="rd-label">悬停翻译</div><p class="rd-help">鼠标停在段落上，按触发键翻译。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="悬停翻译" data-hover></div>
             <div class="rd-row" data-stream-row hidden><div><div class="rd-label">悬停翻译流式渲染</div><p class="rd-help">逐步显示译文，减少等待。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="悬停翻译流式渲染" data-stream checked></div>
+<div class="rd-row"><div><div class="rd-label">输入框翻译</div><p class="rd-help">在输入框中快速按三次空格，按翻译语言设置原地替换文字；每次间隔不超过 300 毫秒。<br>其他语言译成主要语言，主要语言译成第二语言；选择保持原文时不替换。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="输入框翻译" data-input-translation checked></div>
           </div>
           <details class="rd-more"><summary class="cursor-interaction">更多阅读选项</summary><div class="rd-group"><div class="rd-row"><div><div class="rd-label">英文词首加粗</div><p class="rd-help">应用于所有网页。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="英文词首加粗" data-bold></div><details class="rd-compact-detail"><summary class="cursor-interaction">自定义 CSS</summary><label class="rd-field">自定义 CSS<textarea class="rd-textarea" spellcheck="false" data-css-placeholder placeholder="输入译文样式"></textarea></label><div class="rd-actions"><button type="button" class="rd-button cursor-interaction" data-css-cancel>取消</button><button type="button" class="rd-button rd-primary cursor-interaction" data-css-save>保存</button></div><p class="rd-help" data-css-result aria-live="polite"></p></details></div></details>
           <button type="button" class="rd-site cursor-interaction" data-nav="rules"><div><div class="rd-label">站点规则</div><p class="rd-help">针对不同网站调整网页翻译范围与展示。</p></div><i data-lucide="chevron-right" aria-hidden="true"></i></button>
@@ -334,107 +335,26 @@
       </div>
     </section>
   </template>
-  <template id="rd-service-template">
-    <section class="rd-view" data-page="service" hidden>
-      <div class="rd-narrow rd-service-content">
-        <div class="rd-section-label" data-service-current-title>当前翻译服务</div>
-        <div class="rd-group rd-service">
-          <div data-service-summary>
-            <div class="rd-service-top"><div><h3>DeepSeek</h3><p class="rd-model">deepseek-chat</p></div><span class="rd-status" data-service-status>已连接</span></div>
-            <p class="rd-service-host">网页文本发往 api.deepseek.com</p>
-            <div class="rd-actions"><button class="rd-button rd-primary cursor-interaction" type="button" data-test>测试连接</button><button class="rd-button cursor-interaction" type="button" data-edit-service>修改</button></div>
-            <p class="rd-help" aria-live="polite" data-test-result></p>
-            <details class="rd-connection-details" data-service-details><summary class="cursor-interaction">连接详情</summary><dl class="rd-dl"><dt>API 地址</dt><dd>https://api.deepseek.com/v1</dd><dt>服务类型</dt><dd>deepseek</dd><dt>请求格式</dt><dd>openai-chat</dd><dt>API Key</dt><dd>sk-••••••</dd><dt>自定义请求头</dt><dd><code>{ "X-Readomi": "example" }</code></dd><dt>请求参数（思考程度等）</dt><dd><code>{ "thinking": { "type": "disabled" } }</code></dd><dt>采样温度</dt><dd>0.2</dd><dt>服务 ID</dt><dd>deepseek-main</dd></dl></details>
-          </div>
-          <div data-service-empty hidden><h3>还没有翻译服务</h3></div>
-          <div class="rd-edit" data-service-editor hidden>
-            <div class="rd-seg rd-service-method" role="group" aria-label="配置方式"><button type="button" class="cursor-interaction" data-service-method="manual" aria-pressed="false">手动配置</button><button type="button" class="cursor-interaction" data-service-method="agent" aria-pressed="true">agent 配置</button></div>
-            <div data-agent-form class="rd-spaced">
-              <p class="rd-help" data-agent-empty-description>把说明交给你的 agent。它用你的密钥验证好翻译服务的配置，放进剪贴板，你贴到下面。</p>
-              <div class="rd-agent-current" data-agent-current><span>当前</span><span><strong>DeepSeek</strong> <code>deepseek-chat</code></span></div>
-              <label class="rd-field rd-spaced">翻译服务配置<textarea class="rd-textarea rd-service-document" spellcheck="false" data-service-document placeholder='{ "type": "deepseek", "apiKey": "…", "model": "…" }'></textarea></label>
-              <p class="rd-help" data-agent-unchanged>与当前相同。已全选，粘贴即可整体替换，也可以只改一个字段。</p>
-              <div class="rd-agent-current" data-agent-after hidden><span>应用后</span><span><strong>DeepSeek</strong> <code>deepseek-reasoner</code><small class="rd-help">网页文本发往 api.deepseek.com · 沿用已存的 Key</small></span></div>
-            </div>
-            <div data-manual-form hidden class="rd-spaced rd-manual-grid">
-              <label class="rd-field">名称<input class="rd-input" value="DeepSeek"></label><label class="rd-field">服务类型<select class="rd-select" aria-label="服务类型"><option>openai</option><option>anthropic</option><option>gemini</option><option selected>deepseek</option><option>openai-compatible</option></select></label>
-              <label class="rd-field rd-manual-wide">API 地址<input class="rd-input" type="url" value="https://api.deepseek.com/v1"></label>
-              <label class="rd-field rd-manual-wide">API Key<input class="rd-input" type="password" autocomplete="off" placeholder="留空沿用原密钥"><span class="rd-help">修改时留空沿用原密钥；无鉴权服务请勾选“无需 API Key”。</span></label>
-              <label class="rd-field rd-manual-wide">模型<span class="rd-model-input"><input class="rd-input" value="deepseek-chat"><button class="rd-button" type="button" data-model-fetch>获取模型</button></span><span class="rd-help">从当前服务获取模型列表，也可以手动填写模型 ID。</span></label>
-              <label class="rd-field rd-manual-wide">请求格式<select class="rd-select" aria-label="请求格式"><option>openai-chat</option><option>openai-responses</option><option>anthropic</option><option>gemini</option></select></label>
-              <details class="rd-manual-wide"><summary>请求参数（思考程度等）</summary><label class="rd-field"><textarea class="rd-textarea" aria-label="请求参数（思考程度等）" spellcheck="false">{ "thinking": { "type": "disabled" } }</textarea><span class="rd-help">填写 body 内的 JSON 对象，无需再包一层 body；留空使用服务默认值。参数会合并进每次请求，并覆盖同名字段。</span><span class="rd-help">思考参数示例（请按模型文档调整）： <code>{ "thinking": { "type": "disabled" } }</code></span></label></details>
-            </div>
-            <div class="rd-service-error" role="alert" data-service-error hidden><strong>失败，没有保存</strong><p>HTTP 401 · API Key 无效</p></div>
-            <div class="rd-service-edit-actions"><div class="rd-service-copy"><button class="rd-quiet-button" type="button" data-agent-instructions>复制给 agent 的说明</button><p class="rd-help" data-agent-help aria-live="polite"></p></div><div class="rd-actions"><button type="button" class="rd-button cursor-interaction" data-service-cancel>取消</button><button type="button" class="rd-button rd-primary cursor-interaction" data-service-apply>应用</button></div></div>
-          </div>
-        </div>
-        <div data-service-quality></div>
-      </div>
-    </section>
-  </template>
   <template id="rd-quality-template">
     <div class="rd-narrow rd-quality-content">
       <div class="rd-section-label">网页翻译</div>
-      <div class="rd-group"><div class="rd-row"><div><div class="rd-label">使用网页摘要</div><p class="rd-help">让段落翻译参考文章主题。</p><p class="rd-help">首次生成需要额外请求翻译服务。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="使用网页摘要" checked></div></div>
+      <div class="rd-group"><div class="rd-row"><div><div class="rd-label">结合文章上下文</div><p class="rd-help">让段落翻译参考文章主题。</p><p class="rd-help">首次生成需要额外请求翻译服务。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="结合文章上下文" checked></div></div>
       <div class="rd-section-label rd-spaced">网页与视频字幕共用</div>
       <div class="rd-group"><div class="rd-row"><div><div class="rd-label">翻译提示词</div><p class="rd-help">设置译文的语气、术语和表达方式。</p></div><button type="button" class="rd-button cursor-interaction" data-prompt-edit>修改</button></div><div class="rd-compact-detail" data-prompt-editor hidden><label class="rd-field">系统提示词<textarea class="rd-textarea">你是一位专业翻译。保留专业术语，用自然的中文表达。</textarea></label><label class="rd-field">提示词模板<textarea class="rd-textarea">翻译为 {{targetLanguage}}：
 {{input}}</textarea></label><div class="rd-actions"><button type="button" class="rd-button cursor-interaction" data-prompt-cancel>取消</button><button type="button" class="rd-button rd-primary cursor-interaction" data-prompt-apply>应用</button></div></div></div>
     </div>
   </template>
-  <template id="rd-video-template">
-    <section class="rd-view" data-page="video" hidden>
-      <div class="rd-grid">
-        <div class="rd-controls">
-          <div class="rd-section-label">翻译与样式</div>
-          <div class="rd-group" data-video-primary>
-            <div class="rd-row"><div><div class="rd-label">默认开启视频字幕翻译</div><p class="rd-help">作为新页面的默认状态，当前页开关不会改写此设置。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。</p></div><input type="checkbox" class="rd-toggle cursor-interaction" aria-label="默认开启视频字幕翻译" data-video checked></div>
-            <div class="rd-row rd-stack"><span class="rd-label">字幕显示方式</span><div class="rd-seg" role="group" aria-label="字幕显示方式"><button type="button" class="cursor-interaction" data-submode="bilingual" aria-pressed="true">双语对照</button><button type="button" class="cursor-interaction" data-submode="only" aria-pressed="false">仅译文</button></div></div>
-            <div class="rd-row rd-choice-row"><div class="rd-label-line"><span class="rd-label">字幕预设</span><span class="rd-help" data-preset-modified>已调整</span></div><div class="rd-preset-grid" role="group" aria-label="字幕预设">
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="clear" aria-pressed="true"><strong>清透</strong><small>100% · 无背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="compact" aria-pressed="false"><strong>轻量</strong><small>80% · 35% 背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="study" aria-pressed="false"><strong>专注</strong><small>125% · 65% 背景</small></button>
-              <button type="button" class="rd-preset-choice cursor-interaction" data-subpreset="cinema" aria-pressed="false"><strong>影院</strong><small>150% · 85% 背景</small></button>
-            </div></div>
-            <div class="rd-size-group" role="group" aria-label="字幕大小设置" data-size-group>
-              <p class="rd-help" data-size-help>随视频窗口和全屏自动缩放，100% 为默认大小。</p>
-              <div class="rd-font-row"><div class="rd-font-heading"><span class="rd-label">字幕大小</span><div class="rd-size-choices" role="group" aria-label="常用大小" data-size-choices></div></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="25" max="500" step="5" value="100" aria-label="字幕大小" data-subsize><label class="rd-number-wrap"><input class="rd-number" type="number" min="25" max="500" step="5" value="100" aria-label="字号数值" data-size-number><span data-size-unit>%</span></label></div></div>
-            </div>
-            <div class="rd-row rd-choice-row" data-opacity-row><div class="rd-label-line"><span class="rd-label">背景深度</span><output data-opacity-value>0%</output></div><div class="rd-size-adjust"><input class="rd-range cursor-interaction" type="range" min="0" max="100" value="0" aria-label="背景深度" data-opacity><label class="rd-number-wrap"><input class="rd-number" type="number" min="0" max="100" value="0" aria-label="背景深度数值" data-opacity-number><span>%</span></label></div><p class="rd-help rd-opacity-help">0% 为无背景，数值越大背景越深。</p></div>
-          </div>
-          <details class="rd-more" data-video-more><summary class="cursor-interaction"><span>更多选项</span><span class="rd-more-hint">不翻译的网站</span></summary>
-            <div class="rd-group" data-position-group>
-            <div class="rd-row rd-choice-row"><div class="rd-label-line"><span class="rd-label">字幕位置</span><button class="rd-quiet-button cursor-interaction" type="button" data-position-reset>复位</button></div><div class="rd-seg rd-position-seg" role="group" aria-label="字幕位置"><button class="cursor-interaction" type="button" data-position="top" aria-pressed="false"><i data-lucide="align-start-vertical" aria-hidden="true"></i>顶部</button><button class="cursor-interaction" type="button" data-position="center" aria-pressed="false"><i data-lucide="align-center-vertical" aria-hidden="true"></i>居中</button><button class="cursor-interaction" type="button" data-position="bottom" aria-pressed="true"><i data-lucide="align-end-vertical" aria-hidden="true"></i>底部</button></div><p class="rd-help" data-position-status aria-live="polite">也可拖动预览中的字幕，调整到任意位置。</p></div>
-          </div>
-          <section class="rd-excluded rd-spaced" aria-label="不翻译的网站">
-            <div class="rd-label-line rd-excluded-heading"><h2>不翻译的网站</h2><span class="rd-rule-saved" data-excluded-saved hidden>已保存</span></div>
-            <div class="rd-group rd-excluded-body"><p class="rd-help">匹配的网站不会启动视频翻译；不影响网页翻译。</p><form data-excluded-form><label class="rd-field">规则类型<select class="rd-select cursor-interaction" aria-label="规则类型" data-excluded-type><option value="domain">域名（含子域名）</option><option value="pattern">网址通配符</option><option value="regex">正则表达式</option></select></label><label class="rd-field">网站规则<div class="rd-excluded-input"><input class="rd-input" aria-label="网站规则" autocomplete="off" spellcheck="false" placeholder="example.com" data-excluded-input><button type="submit" class="rd-button rd-primary cursor-interaction">添加网站</button></div></label><p class="rd-help" data-excluded-hint>填写 example.com，将同时排除该域名及所有子域名。</p><p class="rd-rule-error" role="alert" data-excluded-error hidden></p></form><div data-excluded-list></div><p class="rd-help rd-empty" data-excluded-empty>还没有排除的网站</p></div>
-          </section>
-          </details>
-        </div>
-        <aside class="rd-preview"><div class="rd-section-label">字幕预览</div><div class="rd-preview-aspects rd-seg" role="group" aria-label="预览画面"><button type="button" class="cursor-interaction" data-preview-aspect="landscape" aria-pressed="true">横版</button><button type="button" class="cursor-interaction" data-preview-aspect="portrait" aria-pressed="false">竖版</button><button type="button" class="cursor-interaction" data-preview-aspect="square" aria-pressed="false">正方形</button></div><div class="rd-preview-samples rd-seg" role="group" aria-label="示例字幕"><button type="button" data-preview-sample="short" aria-pressed="true">短句</button><button type="button" data-preview-sample="long" aria-pressed="false">长句</button></div><div class="rd-video-preview" data-video-stage data-preview-shape="landscape"><div class="rd-video-scene" aria-hidden="true"></div><button type="button" class="rd-caption cursor-interaction" data-caption aria-label="可拖动的字幕"><span data-sub-original>Let’s begin our journey.</span><span>让我们开始这段旅程。</span></button></div><output class="rd-preview-size" data-preview-size></output><p class="rd-help" style="margin-top:10px">画面与字幕按同一比例缩小；长句可查看换行效果。</p><p class="rd-preview-overflow" role="status" hidden>字幕已超出画面，建议减小字号或原文比例。</p><p class="rd-help" style="margin-top:12px">拖动字幕调整位置；方向键也可精调。</p><div class="rd-preview-setting-summary" data-video-summary>清透 · 100% · 无背景 · 底部</div></aside>
-      </div>
-    </section>
-  </template>
   <template id="rd-shortcut-template">
     <section class="rd-view" data-page="shortcut" hidden><div class="rd-narrow"><div class="rd-group"><div class="rd-row"><span class="rd-label">翻译此页 / 显示原文</span><button class="rd-shortcut cursor-interaction" type="button" data-shortcut="page">⌥ E</button></div><div class="rd-row"><div><div class="rd-label">切换双语 / 仅译文</div><p class="rd-help">仅切换网页的显示方式。</p></div><button class="rd-shortcut cursor-interaction" type="button" data-shortcut="mode">⌥ M</button></div><div class="rd-row"><div><div class="rd-label">切换视频字幕</div><p class="rd-help">开关当前页面的视频翻译。</p></div><button class="rd-shortcut cursor-interaction" type="button" data-shortcut="video">⌥ V</button></div><div class="rd-row rd-stack"><span class="rd-label">悬停翻译触发方式</span><select class="rd-select cursor-interaction" aria-label="悬停翻译触发方式"><option>Option / Alt</option><option>Control</option><option>Shift</option><option>反引号 (`)</option><option>鼠标左键长按</option></select></div></div><p class="rd-help rd-spaced">macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。</p><div class="rd-actions rd-spaced"><button class="rd-button cursor-interaction" type="button" data-shortcut-reset>恢复默认</button></div><details class="rd-more"><summary class="cursor-interaction">触发方式说明</summary><p class="rd-help">鼠标停在段落上，点按触发键并松开即可翻译；按住 500 毫秒也会自动翻译。再次触发恢复原文；输入框中不触发。</p></details><p class="rd-help" data-shortcut-status aria-live="polite"></p></div></section>
   </template>
-  <template id="rd-appearance-template">
-    <div class="rd-narrow rd-general-group"><div class="rd-section-label">界面偏好</div><div class="rd-group"><div class="rd-row"><span class="rd-label">界面语言</span><select class="rd-select cursor-interaction" aria-label="界面语言"><option>跟随浏览器</option><option>简体中文</option><option>English</option></select></div><div class="rd-row rd-stack"><span class="rd-label">明暗主题</span><div class="rd-seg" role="group" aria-label="明暗主题"><button type="button" class="cursor-interaction" data-theme="system" aria-pressed="true">跟随系统</button><button type="button" class="cursor-interaction" data-theme="light" aria-pressed="false">亮色</button><button type="button" class="cursor-interaction" data-theme="dark" aria-pressed="false">暗色</button></div></div><div class="rd-row rd-stack"><span class="rd-label">主题色</span><div class="rd-swatches" role="group" aria-label="主题色"><button class="rd-swatch cursor-interaction" type="button" data-color="#b6533e" aria-pressed="true"><span class="rd-dot" style="--dot:#b6533e"></span>陶红</button><button class="rd-swatch cursor-interaction" type="button" data-color="#80627c" aria-pressed="false"><span class="rd-dot" style="--dot:#80627c"></span>暖紫</button><button class="rd-swatch cursor-interaction" type="button" data-color="#ac7427" aria-pressed="false"><span class="rd-dot" style="--dot:#ac7427"></span>琥珀</button><button class="rd-swatch cursor-interaction" type="button" data-color="#397574" aria-pressed="false"><span class="rd-dot" style="--dot:#397574"></span>墨青</button></div></div></div><p class="rd-help" style="margin-top:12px">同时应用到界面、译文标记和工具栏图标。</p></div>
-  </template>
-  <template id="rd-backup-template">
-    <div class="rd-narrow rd-general-group"><div class="rd-section-label">备份</div><div class="rd-group"><div class="rd-row"><div><div class="rd-label">导出配置</div><p class="rd-help">保存当前设置。</p></div><button type="button" class="rd-button cursor-interaction" data-backup="export">导出</button></div><div class="rd-row"><div><div class="rd-label">导入配置</div><p class="rd-help">从备份恢复设置。</p></div><button type="button" class="rd-button cursor-interaction" data-backup="import">导入</button></div></div><p class="rd-help rd-spaced">导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。</p><p class="rd-help" data-backup-status aria-live="polite"></p></div>
-  </template>
-  <template id="rd-rules-template">
-    <section class="rd-view" data-page="rules" hidden><button class="rd-back cursor-interaction" type="button" data-nav="reading">‹ 返回网页阅读</button><div class="rd-narrow"><div class="rd-section-label">内置规则</div><p class="rd-inline-note">内置规则自动生效。某个网站显示异常时，可在这里停用对应规则。</p><div class="rd-group"><div class="rd-rule"><div class="rd-label-line"><div><div class="rd-label">hackerNews</div><p class="rd-help">news.ycombinator.com</p></div><input class="rd-toggle cursor-interaction" type="checkbox" aria-label="启用 hackerNews" checked></div></div><div class="rd-rule"><div class="rd-label-line"><div><div class="rd-label">reddit</div><p class="rd-help">www.reddit.com</p></div><input class="rd-toggle cursor-interaction" type="checkbox" aria-label="启用 reddit" checked></div></div></div><details class="rd-more"><summary class="cursor-interaction">自定义规则</summary><p class="rd-help">以 JSON 数组编写；保存后应用，取消恢复已保存内容。</p><label class="rd-field rd-spaced">自定义站点规则<textarea class="rd-textarea" placeholder="[]">[]</textarea></label><button type="button" class="rd-button rd-primary cursor-interaction" data-rule-save>保存规则</button><p class="rd-help" data-rule-status aria-live="polite"></p></details></div></section>
-  </template>
+  <template id="rd-appearance-template"><div class="rd-narrow rd-general-group"><div class="rd-section-label">界面偏好</div><div class="rd-group"><div class="rd-row"><span class="rd-label">界面语言</span><select class="rd-select cursor-interaction" aria-label="界面语言"><option>跟随浏览器</option><option>简体中文</option><option>English</option></select></div><div class="rd-row rd-stack"><span class="rd-label">明暗主题</span><div class="rd-seg" role="group" aria-label="明暗主题"><button type="button" class="cursor-interaction" data-theme="system" aria-pressed="true">跟随系统</button><button type="button" class="cursor-interaction" data-theme="light" aria-pressed="false">亮色</button><button type="button" class="cursor-interaction" data-theme="dark" aria-pressed="false">暗色</button></div></div><div class="rd-row rd-stack"><span class="rd-label">主题色</span><div class="rd-swatches" role="group" aria-label="主题色"><button class="rd-swatch cursor-interaction" type="button" data-color="#b6533e" aria-pressed="true"><span class="rd-dot" style="--dot:#b6533e"></span>陶红</button><button class="rd-swatch cursor-interaction" type="button" data-color="#79546d" aria-pressed="false"><span class="rd-dot" style="--dot:#79546d"></span>暖紫</button><button class="rd-swatch cursor-interaction" type="button" data-color="#946214" aria-pressed="false"><span class="rd-dot" style="--dot:#946214"></span>琥珀</button><button class="rd-swatch cursor-interaction" type="button" data-color="#246f73" aria-pressed="false"><span class="rd-dot" style="--dot:#246f73"></span>墨青</button></div></div></div><p class="rd-help" style="margin-top:12px">同时应用到界面、译文标记和工具栏图标。</p></div></template>
   <script>
-    (() => {
-      const root=document.getElementById('readomi-settings-light');
-      const models=[];
-      const BOARD_STATE={"page": "reading"};
 
+    (()=>{
+      const root=document.getElementById('readomi-settings-light');
+      const BOARD_STATE={"page": "reading"};
       function createLocalIcons(){
-        const names={server:'service','book-open':'reading',captions:'video',sparkles:'quality',keyboard:'shortcut','sun-moon':'appearance',archive:'backup','chevron-right':'arrow',x:'close'};
+        const names={language:'language',cache:'cache',server:'service','book-open':'reading',captions:'video',sparkles:'quality',keyboard:'shortcut','sun-moon':'appearance',archive:'backup','chevron-right':'arrow',x:'close'};
         root.querySelectorAll('i[data-lucide]').forEach(icon=>{
           const name=names[icon.dataset.lucide];
           if(!name){icon.remove();return;}
@@ -444,131 +364,43 @@
         });
       }
 
+
       root.querySelectorAll('.rd-shell[data-scheme]').forEach(shell=>{
-      const scheme=shell.dataset.scheme;
-      const schemeName='按需展开';
-      const pages=shell.querySelector('.rd-pages');
-      const nav=shell.querySelector('.rd-nav');
-      const defs=[['service','翻译服务','server'],['reading','网页阅读','book-open'],['video','视频字幕','captions'],['quality','译文质量','sparkles'],['shortcut','快捷键','keyboard'],['appearance','外观','sun-moon'],['backup','备份','archive']];
-      const presets={clear:{name:'清透',relative:5,opacity:0},compact:{name:'轻量',relative:4,opacity:35},study:{name:'专注',relative:6.25,opacity:65},cinema:{name:'影院',relative:7.5,opacity:85}};
-      const positions={top:{x:50,y:18},center:{x:50,y:55},bottom:{x:50,y:88}};
-      const positionLabels={top:'顶部',center:'居中',bottom:'底部',custom:'自定义位置'};
-      const styleLabels={line:'左侧细线',none:'无',fade:'淡化',color:'着色',bg:'底色',dashed:'虚线下划',quote:'引用条',border:'边框',blur:'悬停显示'};
-      const ruleLabels={domain:'域名（含子域名）',pattern:'网址通配符',regex:'正则表达式'};
-      const ruleHints={domain:'填写 example.com，将同时排除该域名及所有子域名。',pattern:'例如 *.example.com/watch/*，可限定域名和路径。',regex:'匹配完整网址，忽略大小写。例如 ^https://([^.]+\\.)?example\\.com/'};
-      const rulePlaceholders={domain:'example.com',pattern:'*.example.com/watch/*',regex:'^https://example\\.com/'};
-      const defaultShortcuts={page:'Alt+E',mode:'Alt+M',video:'Alt+V'};
+      const q=s=>shell.querySelector(s),qa=s=>[...shell.querySelectorAll(s)];
+      const params=new URLSearchParams(location.search);
+      const state={page:'reading',theme:'system',color:'#b6533e',mode:'bilingual',readingFont:'sans',style:'line',hover:false,bold:false,inputTranslation:true,shortcuts:{page:'Alt+E',mode:'Alt+M',video:'Alt+V'},...BOARD_STATE};
+      for(const key of ['theme','color','page'])if(params.has(key))state[key]=params.get(key);
+      const defs=[['service','翻译服务','server'],['language','翻译语言','language'],['reading','网页阅读','book-open'],['video','视频字幕','captions'],['quality','译文质量','sparkles'],['shortcut','快捷键','keyboard'],['appearance','外观','sun-moon'],['cache','翻译缓存','cache'],['backup','备份与同步','archive']];
+      const routes={language:'Settings-Languages.html',cache:'Reading-Refinement-Cache-Default.html',service:'Settings-Service-A-Refined.html',video:'Settings-Subtitle-Size-Default.html',backup:'Settings-Sync-Off.html',rules:'Settings-Site-Rules.html'};
+      const nav=q('.rd-nav'),pages=q('.rd-pages');
+      defs.forEach(([key,title,icon])=>{const b=document.createElement('button');b.type='button';b.dataset.nav=key;b.innerHTML='<i data-lucide="'+icon+'" aria-hidden="true"></i><span>'+title+'</span>';nav.append(b);});
+      ['reading','quality','shortcut','appearance'].forEach(name=>{let el=document.createElement('section');el.className='rd-view';el.dataset.page=name;el.hidden=true;const template=document.getElementById('rd-'+name+'-template');el.append(template.content.cloneNode(true));if(name==='reading'||name==='shortcut'){const inner=el.firstElementChild;inner.hidden=false;el.replaceWith(inner);pages.append(inner);}else pages.append(el);});
+      function navigate(page){if(!routes[page]){state.page=page;render();return;}const url=new URL(routes[page],location.href);for(const key of ['theme','color'])url.searchParams.set(key,state[key]);location.href=url.href;}
+      // This prototype only updates design state, never extension storage.
+      const appearancePalettes={"terra": {"light": "#b6533e", "dark": "#e9ab91", "tint": "#f6e8e1"}, "plum": {"light": "#79546d", "dark": "#c7a5be", "tint": "#f0e8ef"}, "amber": {"light": "#946214", "dark": "#e2bd78", "tint": "#f5edd9"}, "teal": {"light": "#246f73", "dark": "#8ac1c3", "tint": "#e4efed"}};
+      const appearanceIcons={"terra": {"classic": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjQjY1MzNFIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNFOUFCOTEiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjwvc3ZnPgo=", "classicTranslated": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjQjY1MzNFIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNFOUFCOTEiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjxjaXJjbGUgY3g9IjEwNSIgY3k9IjEwNSIgcj0iMTciIGZpbGw9IiNGRkY4RUMiIHN0cm9rZT0iI0I2NTMzRSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0ibTk3IDEwNSA1IDUgMTEtMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0I2NTMzRSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K"}, "plum": {"classic": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjNzk1NDZEIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNDN0E1QkUiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjwvc3ZnPgo=", "classicTranslated": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjNzk1NDZEIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNDN0E1QkUiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjxjaXJjbGUgY3g9IjEwNSIgY3k9IjEwNSIgcj0iMTciIGZpbGw9IiNGRkY4RUMiIHN0cm9rZT0iIzc5NTQ2RCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0ibTk3IDEwNSA1IDUgMTEtMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzc5NTQ2RCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K"}, "amber": {"classic": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjOTQ2MjE0Ii8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNFMkJENzgiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjwvc3ZnPgo=", "classicTranslated": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjOTQ2MjE0Ii8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiNFMkJENzgiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjxjaXJjbGUgY3g9IjEwNSIgY3k9IjEwNSIgcj0iMTciIGZpbGw9IiNGRkY4RUMiIHN0cm9rZT0iIzk0NjIxNCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0ibTk3IDEwNSA1IDUgMTEtMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzk0NjIxNCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K"}, "teal": {"classic": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjMjQ2RjczIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiM4QUMxQzMiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjwvc3ZnPgo=", "classicTranslated": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjMjQ2RjczIi8+PHBhdGggZD0iTTE3IDUzQzE3IDIzIDYxIDIzIDYyIDUxVjk0QzQ4IDgwIDMyIDgwIDIwIDkyUTE3IDk1IDE3IDkwWiIgZmlsbD0iI0ZGRjhFQyIvPjxwYXRoIGQ9Ik02NCA1MkM2NCAyNyA5NSAyMyAxMDkgNDNWOTBRMTA5IDk1IDEwNiA5MkM5MiA4MCA3OSA4MCA2NCA5NFoiIGZpbGw9IiM4QUMxQzMiLz48cGF0aCBkPSJNNjQgNTJDNjQgMjggOTUgMjMgMTA0IDQwQzEwMyAzMSAxMDkgMjkgMTExIDM4QzExNyA2MCA4MSA2NyA2OCA4NUM3OSA3MiA5NyA3MyAxMDYgODRRMTEwIDg4IDEwOSA5MlExMDkgOTUgMTA2IDkyQzkyIDgwIDc5IDgwIDY0IDk0WiIgZmlsbD0iI0ZGRjhFQyIvPjxjaXJjbGUgY3g9IjEwNSIgY3k9IjEwNSIgcj0iMTciIGZpbGw9IiNGRkY4RUMiIHN0cm9rZT0iIzI0NkY3MyIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0ibTk3IDEwNSA1IDUgMTEtMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzI0NkY3MyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K"}};
+
+
+      function renderAppearance(){
+        const mode=state.theme==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):state.theme;
+        const paletteName=Object.keys(appearancePalettes).find(key=>appearancePalettes[key].light===(state.color||'#b6533e'))||'terra';
+        const brand=appearancePalettes[paletteName][mode];
+        document.documentElement.style.colorScheme=mode;
+        shell.style.colorScheme=mode;
+        shell.style.setProperty('--rd-brand',brand);
+        shell.style.setProperty('--rd-tint','color-mix(in srgb,'+brand+' 13%,var(--rd-bg))');
+        q('.rd-brand img').src=appearanceIcons[paletteName].classic;
+      }
       const shortcutLabels={page:'翻译此页 / 显示原文',mode:'切换双语 / 仅译文',video:'切换视频字幕'};
-      const saved=BOARD_STATE;
-      const state={version:5,page:'video',mode:'bilingual',readingFont:'sans',style:'line',hover:false,bold:false,video:true,submode:'bilingual',subpreset:'clear',relative:5,opacity:0,position:{x:50,y:88},rules:[],ruleType:'domain',shortcuts:{...defaultShortcuts},theme:'system',color:'',density:18,radius:10,customOpen:false,customTab:'font',serviceConfigured:true,serviceEditing:false,serviceMethod:'agent',servicePending:false,serviceTesting:false,serviceError:false,...saved};
-      if(!presets[state.subpreset]) state.subpreset='clear';
-      if(!styleLabels[state.style]) state.style='line';
-      if(!Array.isArray(state.rules)) state.rules=[];
-      const q=s=>shell.querySelector(s);
-      const qa=s=>[...shell.querySelectorAll(s)];
-      defs.forEach(([key,title,icon])=>{ const b=document.createElement('button'); b.type='button'; b.className='cursor-interaction'; b.dataset.nav=key; const i=document.createElement('i'); i.dataset.lucide=icon; i.setAttribute('aria-hidden','true'); const wrap=document.createElement('span');wrap.className='rd-nav-label-wrap';const span=document.createElement('span');span.className='rd-nav-label';span.textContent=title;const sizer=document.createElement('span');sizer.className='rd-nav-sizer';sizer.textContent=title;sizer.setAttribute('aria-hidden','true');wrap.append(span,sizer);b.append(i,wrap);b.setAttribute('aria-label',title);nav.append(b); });
-      ['reading','service','video','shortcut','rules'].forEach(name=>pages.append(document.getElementById('rd-'+name+'-template').content.cloneNode(true)));
-      ['quality','appearance','backup'].forEach(name=>{const s=document.createElement('section');s.className='rd-view';s.dataset.page=name;s.hidden=true;s.append(document.getElementById('rd-'+name+'-template').content.cloneNode(true));pages.append(s);});
-      for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';b.className='rd-size-choice cursor-interaction';b.dataset.size='';q('[data-size-choices]').append(b);}
-      let ruleError='',rulesSaved=false,renderedRules='',recording=null,drag=null,editorOpen=false;
-      const make=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;};
-      const makeButton=(label,key)=>{const b=make('button','rd-button cursor-interaction',label);b.type='button';b.setAttribute(key,'');return b;};
-      const controls=q('[data-page="video"] .rd-controls'),primary=q('[data-video-primary]'),fontGroup=q('[data-size-group]'),opacityRow=q('[data-opacity-row]'),more=q('[data-video-more]'),positionGroup=q('[data-position-group]');
-      const positionRow=positionGroup.querySelector('.rd-row');positionGroup.remove();more.open=!!saved.moreOpen;
-      if(scheme==='inline'){
-        const details=make('details','rd-custom-details');details.setAttribute('data-custom-details','');details.open=state.customOpen;
-        const summary=make('summary','cursor-interaction');summary.setAttribute('aria-label','自定义大小、背景与字幕位置');summary.append(make('span','rd-label','自定义'));const values=make('span','rd-custom-summary');values.setAttribute('data-custom-summary','');summary.append(values);details.append(summary,fontGroup,opacityRow,positionRow);primary.append(details);
-        details.addEventListener('toggle',()=>{if(state.customOpen===details.open)return;state.customOpen=details.open;persist();});
-      }else{
-        const launch=make('div','rd-custom-launch');const values=make('p','rd-help');values.setAttribute('data-custom-summary','');launch.append(values,makeButton('自定义','data-custom-open'));primary.append(launch);
-        if(scheme==='dialog'){
-          const dialog=make('dialog','rd-dialog');dialog.setAttribute('data-custom-dialog','');dialog.setAttribute('aria-label','自定义字幕样式');
-          const header=make('div','rd-dialog-header');header.append(make('h2','','自定义字幕样式'));const close=makeButton('','data-custom-close');close.setAttribute('aria-label','关闭自定义字幕样式');const icon=make('i');icon.dataset.lucide='x';icon.setAttribute('aria-hidden','true');close.append(icon);header.append(close);
-          const preview=make('div','rd-dialog-preview');preview.append(q('[data-video-stage]').cloneNode(true));
-          const tabs=make('div','rd-local-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','自定义样式分类');
-          const panels=make('div');
-          [['font','字号',fontGroup],['background','背景',opacityRow]].forEach(([key,label,content])=>{const tab=make('button','rd-local-tab cursor-interaction',label);tab.type='button';tab.id='rd-'+scheme+'-'+key+'-tab';tab.dataset.customTab=key;tab.setAttribute('role','tab');tab.setAttribute('aria-controls','rd-'+scheme+'-'+key+'-panel');tabs.append(tab);const panel=make('div','rd-local-panel');panel.id='rd-'+scheme+'-'+key+'-panel';panel.dataset.customPanel=key;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',tab.id);panel.append(content);panels.append(panel);});
-          const footer=make('div','rd-dialog-footer');footer.append(make('p','rd-help','修改会自动保存。'),makeButton('完成','data-custom-close'));dialog.append(header,preview,tabs,panels,footer);controls.append(dialog);
-        }else{
-          const editor=make('section','rd-edit-subview');editor.setAttribute('data-custom-editor','');editor.hidden=true;const back=makeButton('‹ 返回视频字幕','data-custom-close');back.className='rd-back cursor-interaction';editor.append(back);const group=make('div','rd-group');group.append(fontGroup,opacityRow);const actions=make('div','rd-actions rd-edit-done');const done=makeButton('完成','data-custom-close');done.classList.add('rd-primary');actions.append(done);editor.append(group,actions);controls.append(editor);
-        }
-      }
-      const currentSize=()=>Number((state.relative*20).toFixed(5));
-      const currentUnit=()=>'%';
-      const sizeLimits=()=>({min:25,max:500,step:5});
-      const positionName=()=>Object.keys(positions).find(k=>Math.abs(state.position.x-positions[k].x)<.5&&Math.abs(state.position.y-positions[k].y)<.5)||'custom';
-      const prettyShortcut=value=>value?value.split('+').map(v=>({Alt:'⌥',Control:'⌃',Shift:'⇧',Meta:'⌘'})[v]||v).join(' '):'未设置';
-      function setSize(value){const limits=sizeLimits();const number=Number(value);if(!Number.isFinite(number))return;const size=Math.max(limits.min,Math.min(limits.max,Math.round(number/limits.step)*limits.step));state.relative=size/20;}
-      function persist(){}
-      let previewAspect="landscape", previewSample="short";
-      qa('[data-preview-sample]').forEach(button=>button.addEventListener('click',()=>{previewSample=button.dataset.previewSample;qa('[data-preview-sample]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.previewSample===previewSample)));renderCaption();}));
-      const previewRatios={landscape:9/16,portrait:16/9,square:1};
-      function renderCaption(){
-        qa('[data-caption]').forEach(caption=>{const stage=caption.closest('[data-video-stage]');
-        const previewWidth=stage.getBoundingClientRect().width||320;
-        caption.style.fontSize=(state.relative*Math.min(previewWidth,previewWidth*previewRatios[previewAspect])/100)+'px';
-        if(q('[data-preview-size]'))q('[data-preview-size]').textContent='预览字号：'+Number(parseFloat(caption.style.fontSize).toFixed(2))+' px';
-        caption.style.background='rgba(15,20,35,'+state.opacity/100+')';
-        const previewScale=previewWidth/(previewAspect==='landscape'?1280:720);
-        const samples={short:['Let’s begin our journey.','让我们开始这段旅程。'],long:['So we beat on, boats against the current, borne back ceaselessly into the past.','于是我们奋力向前，逆流行舟，却不断被推回往昔。']};
-        caption.querySelector('[data-sub-original]').textContent=samples[previewSample][0];caption.lastElementChild.textContent=samples[previewSample][1];
-        caption.style.padding=state.opacity?(state.subpreset==='compact'?8:10)*previewScale+'px '+(state.subpreset==='compact'?14:16)*previewScale+'px':'0';caption.style.borderRadius=state.opacity?8*previewScale+'px':'0';caption.querySelector('[data-sub-original]').style.marginBottom=4*previewScale+'px';caption.style.textShadow='0 '+2*previewScale+'px '+4*previewScale+'px #000,0 0 '+2*previewScale+'px #000';caption.style.fontWeight=state.subpreset==='compact'?'500':'600';
-        const measured=caption.getBoundingClientRect();
-        stage.style.minHeight='';const overflow=stage.parentElement.querySelector('.rd-preview-overflow');if(overflow)overflow.hidden=measured.height<=stage.getBoundingClientRect().height;
-        const box=stage.getBoundingClientRect();
-        let x=state.position.x,y=state.position.y;
-        if(box.width&&box.height){
-          const margin=Math.min(12,box.width/20,box.height/20);
-          const bottom=positionName()==='bottom';
-          const bottomMargin=Math.min(margin,bottom?box.height*.02:margin);
-          const half=Math.min(measured.width/2,box.width/2-margin);
-          const height=Math.min(measured.height,box.height-margin-bottomMargin);
-          // Stored bottom remains 88%; the shared player anchor renders at 98%.
-          if(bottom)y=98;
-          x=Math.max((half+margin)/box.width*100,Math.min(x,(box.width-half-margin)/box.width*100));
-          y=Math.max((height+margin)/box.height*100,Math.min(y,(box.height-bottomMargin)/box.height*100));
-        }
-        caption.style.left=x+'%';caption.style.top=y+'%';
-        });
-      }
-      qa('[data-preview-aspect]').forEach(button=>button.addEventListener('click',()=>{
-        previewAspect=button.dataset.previewAspect;
-        qa('[data-preview-aspect]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.previewAspect===previewAspect)));
-        qa('[data-video-stage]').forEach(stage=>stage.dataset.previewShape=previewAspect);
-        renderCaption();
-      }));
-      function renderRules(){
-        q('[data-excluded-type]').value=state.ruleType;
-        q('[data-excluded-hint]').textContent=ruleHints[state.ruleType];q('[data-excluded-input]').placeholder=rulePlaceholders[state.ruleType];
-        q('[data-excluded-error]').hidden=!ruleError;q('[data-excluded-error]').textContent=ruleError;q('[data-excluded-input]').setAttribute('aria-invalid',String(!!ruleError));
-        q('[data-excluded-empty]').hidden=state.rules.length>0;q('[data-excluded-saved]').hidden=!rulesSaved||!!ruleError;
-        const next=JSON.stringify(state.rules);if(next===renderedRules)return;renderedRules=next;
-        const list=q('[data-excluded-list]');list.replaceChildren();
-        state.rules.forEach((rule,index)=>{const row=document.createElement('div');row.className='rd-excluded-item';const body=document.createElement('div');const value=document.createElement('code');value.textContent=rule.type==='pattern'?rule.value.replace(/^\*:\/\//,''):rule.value;const type=document.createElement('p');type.className='rd-help';type.textContent=ruleLabels[rule.type];body.append(value,type);const b=document.createElement('button');b.type='button';b.className='cursor-interaction';b.dataset.removeRule=String(index);b.textContent='删除规则';b.setAttribute('aria-label','删除 '+rule.value);row.append(body,b);list.append(row);});
-      }
-      function renderService(){
-        const configured=state.serviceConfigured;
-        q('[data-service-current-title]').hidden=!configured;q('[data-service-summary]').hidden=!configured;q('[data-service-empty]').hidden=configured;
-        q('[data-service-editor]').hidden=configured&&!state.serviceEditing;
-        q('[data-service-editor]').style.borderTop=configured?'':'0';q('[data-service-editor]').style.paddingTop=configured?'':'18px';
-        q('[data-manual-form]').hidden=state.serviceMethod!=='manual';q('[data-agent-form]').hidden=state.serviceMethod!=='agent';
-        qa('[data-service-method]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.serviceMethod===state.serviceMethod)));
-        q('[data-agent-current]').hidden=!configured;q('[data-agent-empty-description]').hidden=configured;
-        q('[data-agent-unchanged]').hidden=!configured||state.servicePending||state.serviceError;q('[data-agent-after]').hidden=!state.servicePending;
-        q('[data-service-error]').hidden=!state.serviceError;q('.rd-service-copy').hidden=state.serviceMethod!=='agent';q('[data-agent-instructions]').hidden=state.serviceMethod!=='agent';q('[data-service-cancel]').hidden=!configured;
-        q('[data-service-apply]').textContent=state.serviceMethod==='manual'?'测试并保存':'应用';q('[data-service-apply]').disabled=state.serviceMethod==='agent'&&!state.servicePending;
-        q('[data-service-status]').textContent=state.serviceTesting?'测试中…':'已连接';q('[data-service-status]').dataset.testing=String(state.serviceTesting);
-        q('[data-test]').disabled=state.serviceTesting;q('[data-edit-service]').disabled=state.serviceTesting;
-      }
+      let recording=null;
+      const pretty=value=>value?value.split('+').map(k=>({Alt:'⌥',Control:'⌃',Shift:'⇧',Meta:'⌘'})[k]||k).join(' '):'未设置';
       function render(){
-        renderService();
-        if(!q('[data-page="'+state.page+'"]'))state.page='video';
-        qa('[data-page]').forEach(p=>p.hidden=p.dataset.page!==state.page);q('.rd-heading h1').textContent=state.page==='rules'?'站点规则':defs.find(d=>d[0]===state.page)[1];
-        [...nav.querySelectorAll('button')].forEach(b=>{if(b.dataset.nav===(state.page==='rules'?'reading':state.page))b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
-        if(scheme==='editor'){qa('[data-main-video-part]').forEach(el=>el.hidden=editorOpen);q('[data-custom-editor]').hidden=!editorOpen;if(editorOpen&&state.page==='video')q('.rd-heading h1').textContent='自定义字幕样式';}
-        if(scheme==='dialog'){qa('[data-custom-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.customTab===state.customTab)));qa('[data-custom-panel]').forEach(panel=>panel.hidden=panel.dataset.customPanel!==state.customTab);}
-        ['mode','style','submode','theme'].forEach(key=>qa('[data-'+key+']').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[key]===state[key]))));
-        q('[data-hover]').checked=state.hover;q('[data-bold]').checked=state.bold;q('[data-video]').checked=state.video;q('[data-stream-row]').hidden=!state.hover;
+        if(!q('[data-page="'+state.page+'"]'))state.page='reading';
+        qa('[data-page]').forEach(el=>el.hidden=el.dataset.page!==state.page);
+        q('.rd-heading h1').textContent=defs.find(d=>d[0]===state.page)[1];
+        qa('[data-nav]').forEach(b=>{if(b.dataset.nav===state.page)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+        for(const key of ['mode','style','theme','color'])qa('[data-'+key+']').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[key]===state[key])));
+        q('[data-hover]').checked=state.hover;q('[data-bold]').checked=state.bold;q('[data-stream-row]').hidden=!state.hover;q('[data-input-translation]').checked=state.inputTranslation;
         q('[data-style-row]').hidden=state.mode==='only';
         const original=q('[data-original]');original.hidden=state.mode==='only';const sentence='Reading and experience train your model of the world.';original.replaceChildren();
         sentence.split(' ').forEach((word,index)=>{if(index)original.append(' ');const span=document.createElement('span');if(state.bold){const b=document.createElement('strong');const n=Math.ceil(word.length/2);b.textContent=word.slice(0,n);span.append(b,word.slice(n));}else span.textContent=word;original.append(span);});
@@ -582,110 +414,30 @@
         if(state.mode==='bilingual'&&state.style==='dashed'){translation.style.textDecoration='underline dashed var(--rd-brand)';translation.style.textUnderlineOffset='5px';}
         if(state.mode==='bilingual'&&state.style==='quote'){translation.style.borderLeft='4px solid var(--rd-brand)';translation.style.padding='6px 10px';translation.style.background='var(--rd-side)';}
         if(state.mode==='bilingual'&&state.style==='border'){translation.style.border='1px solid var(--rd-brand)';translation.style.padding='8px 10px';translation.style.borderRadius='5px';}
-        qa('[data-sub-original]').forEach(el=>el.hidden=state.submode==='only');
-        const preset=presets[state.subpreset],expectedSize=preset.relative*20;
-        const modified=Math.abs(currentSize()-expectedSize)>.01||state.opacity!==preset.opacity;
-        q('[data-preset-modified]').classList.toggle('rd-is-modified',modified);q('[data-preset-modified]').setAttribute('aria-hidden',String(!modified));
-        qa('[data-subpreset]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.subpreset===state.subpreset&&!modified));const p=presets[b.dataset.subpreset];b.querySelector('small').textContent=(p.relative*20+'%')+' · '+(p.opacity?p.opacity+'% 背景':'无背景');});
-        const limits=sizeLimits(),sizes=[80,100,125,150];
-        qa('[data-size]').forEach((b,index)=>{b.dataset.size=String(sizes[index]);b.textContent=sizes[index]+'%';b.setAttribute('aria-pressed',String(Math.abs(currentSize()-sizes[index])<.01));});
-        ['[data-subsize]','[data-size-number]'].forEach(selector=>{const input=q(selector);input.min=limits.min;input.max=limits.max;input.step=limits.step;if(document.activeElement!==input||selector==='[data-subsize]')input.value=currentSize();});
-        q('[data-size-unit]').textContent=currentUnit();q('[data-size-help]').textContent='随视频窗口和全屏自动缩放，100% 为默认大小。';
-        q('[data-opacity]').value=state.opacity;if(document.activeElement!==q('[data-opacity-number]'))q('[data-opacity-number]').value=state.opacity;q('[data-opacity-value]').textContent=state.opacity+'%';
-        q('[data-custom-summary]').replaceChildren(document.createTextNode(currentSize()+currentUnit()+' · '+(state.opacity?state.opacity+'% 背景':'无背景')),make('span','rd-position-summary',' · '+positionLabels[positionName()]));
-        qa('[data-position]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.position===positionName())));
-        q('[data-position-status]').textContent=positionName()==='custom'?'自定义位置 · 拖动字幕或用方向键精调。':'也可拖动预览中的字幕，调整到任意位置。';
-        q('[data-video-summary]').textContent=presets[state.subpreset].name+(modified?'（已调整）':'')+' · '+currentSize()+currentUnit()+' · '+(state.opacity?state.opacity+'% 背景':'无背景')+' · '+positionLabels[positionName()];
-        if(state.theme==='system')shell.style.removeProperty('color-scheme');else shell.style.colorScheme=state.theme;
-        if(state.color){shell.style.setProperty('--rd-brand',state.color);shell.style.setProperty('--rd-tint','color-mix(in srgb,'+state.color+' 13%,var(--rd-bg))');}
-        qa('[data-color]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.color===(state.color||'#b6533e'))));shell.style.setProperty('--rd-radius',state.radius+'px');shell.style.setProperty('--rd-row',state.density+'px');
-        qa('[data-shortcut]').forEach(b=>{b.setAttribute('aria-label',shortcutLabels[b.dataset.shortcut]);if(recording!==b)b.textContent=prettyShortcut(state.shortcuts[b.dataset.shortcut]);});
-        renderRules();renderCaption();
+
+        qa('[data-shortcut]').forEach(b=>{b.setAttribute('aria-label',shortcutLabels[b.dataset.shortcut]);if(b!==recording)b.textContent=pretty(state.shortcuts[b.dataset.shortcut]);});
+        renderAppearance();
       }
-      function normalizeDomain(raw){
-        if(!raw||/[\s/?#@\\%*]/.test(raw))return null;
-        if(raw.startsWith('[')&&!raw.endsWith(']'))return null;
-        try{const host=raw.includes(':')&&!raw.startsWith('[')?'['+raw+']':raw;const url=new URL('http://'+host);if(url.port||url.username||url.password||url.pathname!=='/')return null;const name=url.hostname.toLowerCase().replace(/\.$/,'');if(name.startsWith('['))return name;if(name.length>253||!name.split('.').every(label=>/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label)))return null;return name;}catch{return null;}
-      }
-      function normalizeRule(type,input){
-        let value=input.trim();if(!value)return null;
-        if(type==='domain')value=normalizeDomain(value);
-        if(type==='regex'){try{new RegExp(value,'i');}catch{return null;}}
-        if(type==='pattern'){
-          if(/[\s?#\\]/.test(value))return null;if(!value.includes('://'))value='*://'+value;
-          const m=value.match(/^(https?|\*):\/\/([^/]+)(\/.*)?$/i);if(!m)return null;
-          const rawHost=m[2].toLowerCase();if(rawHost!=='*'&&!normalizeDomain(rawHost.replaceAll('*','a')))return null;
-          value=m[1].toLowerCase()+'://'+rawHost+(m[3]||'/*');
-        }
-        return value?{type,value}:null;
-      }
-      shell.addEventListener('click',event=>{
-        const dialog=q('[data-custom-dialog]');if(dialog&&event.target===dialog){const box=dialog.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)dialog.close();}
-        const b=event.target.closest('button');if(!b)return;
-        if(b.type==='submit'&&b.closest('[data-excluded-form]')){event.preventDefault();addRule();return;}
-        if(b.dataset.nav)state.page=b.dataset.nav;
-        ['mode','style','submode','theme','color'].forEach(key=>{if(b.dataset[key])state[key]=b.dataset[key];});
-        if(b.dataset.subpreset){const p=presets[b.dataset.subpreset];state.subpreset=b.dataset.subpreset;state.relative=p.relative;state.opacity=p.opacity;}
-        if(b.hasAttribute('data-custom-open')){if(scheme==='dialog')dialog.showModal();else editorOpen=true;}
-        if(b.hasAttribute('data-custom-close')){if(scheme==='dialog')dialog.close();else editorOpen=false;}
-        if(b.dataset.customTab)state.customTab=b.dataset.customTab;
-        if(b.hasAttribute('data-size'))setSize(b.dataset.size);
-        if(b.dataset.position)state.position={...positions[b.dataset.position]};
-        if(b.hasAttribute('data-position-reset'))state.position={...positions.bottom};
-        if(b.hasAttribute('data-remove-rule')){state.rules.splice(Number(b.dataset.removeRule),1);rulesSaved=true;ruleError='';}
-        if(b.hasAttribute('data-shortcut')){if(recording&&recording!==b)recording.textContent=prettyShortcut(state.shortcuts[recording.dataset.shortcut]);recording=b;b.textContent='按组合键…';q('[data-shortcut-status]').textContent='按组合键录制；Esc 取消，Delete / Backspace 清空。';}
-        if(b.hasAttribute('data-shortcut-reset')){recording=null;state.shortcuts={...defaultShortcuts};q('[data-shortcut-status]').textContent='已恢复默认快捷键。';}
-        if(b.hasAttribute('data-test'))q('[data-test-result]').textContent='已连接';
-        if(b.hasAttribute('data-edit-service')){state.serviceEditing=true;state.serviceMethod='agent';}
-        if(b.dataset.serviceMethod){state.serviceMethod=b.dataset.serviceMethod;}
-        if(b.hasAttribute('data-agent-instructions'))q('[data-agent-help]').textContent='已复制';
-        if(b.hasAttribute('data-service-cancel')||b.hasAttribute('data-service-apply')){state.serviceEditing=false;state.serviceError=false;if(b.hasAttribute('data-service-apply'))state.serviceConfigured=true;}
+      shell.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+        if(b.dataset.nav){navigate(b.dataset.nav);return;}
+
+        for(const key of ['mode','style','theme','color','readingFont'])if(b.dataset[key])state[key]=b.dataset[key];
+        if(b.hasAttribute('data-shortcut')){recording=b;b.textContent='按组合键…';q('[data-shortcut-status]').textContent='按组合键录制；Esc 取消，Delete / Backspace 清空。';}
+        if(b.hasAttribute('data-shortcut-reset')){state.shortcuts={page:'Alt+E',mode:'Alt+M',video:'Alt+V'};recording=null;q('[data-shortcut-status]').textContent='已恢复默认快捷键。';}
         if(b.hasAttribute('data-prompt-edit'))q('[data-prompt-editor]').hidden=false;
         if(b.hasAttribute('data-prompt-cancel')||b.hasAttribute('data-prompt-apply'))q('[data-prompt-editor]').hidden=true;
         if(b.hasAttribute('data-css-save'))q('[data-css-result]').textContent='已保存';
         if(b.hasAttribute('data-css-cancel')){q('[data-css-placeholder]').value='';q('[data-css-result]').textContent='';}
-        if(b.dataset.backup)q('[data-backup-status]').textContent='';
-        if(b.hasAttribute('data-rule-save'))q('[data-rule-status]').textContent='已保存';
-        render();persist();
-        if(b.hasAttribute('data-custom-open')&&scheme==='editor')q('[data-custom-editor] [data-custom-close]').focus({preventScroll:true});
-        if(b.hasAttribute('data-custom-close')&&scheme==='editor')q('[data-custom-open]').focus({preventScroll:true});
-        if(b.dataset.style)b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});
+        render();
       });
-      function addRule(){const rule=normalizeRule(state.ruleType,q('[data-excluded-input]').value);if(!rule)ruleError='请输入有效的网站规则。';else if(state.rules.some(r=>r.type===rule.type&&r.value===rule.value))ruleError='这条规则已存在。';else{state.rules.push(rule);q('[data-excluded-input]').value='';ruleError='';rulesSaved=true;}renderRules();persist();}
-      q('[data-excluded-form]').addEventListener('submit',event=>{event.preventDefault();addRule();});
-      qa('[data-reading-font]').forEach(button=>button.addEventListener('click',()=>{state.readingFont=button.dataset.readingFont;render();}));
-      shell.addEventListener('change',event=>{const el=event.target;if(el.hasAttribute('data-hover'))state.hover=el.checked;if(el.hasAttribute('data-bold'))state.bold=el.checked;if(el.hasAttribute('data-video'))state.video=el.checked;if(el.hasAttribute('data-subsize')||el.hasAttribute('data-size-number')){setSize(el.value);el.value=currentSize();}if(el.hasAttribute('data-opacity')||el.hasAttribute('data-opacity-number')){state.opacity=Math.max(0,Math.min(100,Math.round(Number(el.value)||0)));el.value=state.opacity;}if(el.hasAttribute('data-excluded-type')){state.ruleType=el.value;ruleError='';}render();persist();});
-      shell.addEventListener('input',event=>{const el=event.target;if(el.hasAttribute('data-subsize')||el.hasAttribute('data-size-number')){if(el.value!==''){setSize(el.value);render();persist();}}if(el.hasAttribute('data-opacity')||el.hasAttribute('data-opacity-number')){if(el.value!==''){state.opacity=Math.max(0,Math.min(100,Math.round(Number(el.value)||0)));render();persist();}}if(el.hasAttribute('data-excluded-input')){ruleError='';renderRules();}});
-      shell.addEventListener('keydown',event=>{
-        if(event.target.dataset.customTab&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();state.customTab=state.customTab==='font'?'background':'font';render();q('[data-custom-tab="'+state.customTab+'"]').focus();persist();return;}
-        if(event.target.hasAttribute('data-excluded-input')&&event.key==='Enter'){event.preventDefault();addRule();return;}
-        if(event.target.hasAttribute('data-caption')&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();const d=event.shiftKey?10:2;const current={x:Number.parseFloat(event.target.style.left)||state.position.x,y:Number.parseFloat(event.target.style.top)||state.position.y};state.position={x:Math.max(0,Math.min(100,current.x+(event.key==='ArrowLeft'?-d:event.key==='ArrowRight'?d:0))),y:Math.max(0,Math.min(100,current.y+(event.key==='ArrowUp'?-d:event.key==='ArrowDown'?d:0)))};render();persist();return;}
-        if(!recording||event.target!==recording)return;
-        if(event.key==='Tab'){recording=null;render();return;}event.preventDefault();
-        if(event.key==='Escape'){recording=null;q('[data-shortcut-status]').textContent='已取消录制。';render();return;}
-        if(['Alt','Control','Shift','Meta'].includes(event.key))return;
-        if(['Delete','Backspace'].includes(event.key)&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey){state.shortcuts[recording.dataset.shortcut]='';recording=null;render();persist();return;}
-        if(!event.altKey&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey){q('[data-shortcut-status]').textContent='请使用修饰键和一个普通按键。';return;}
-        const key=(event.altKey||event.key==='Dead')&&/^Key[A-Z]$/.test(event.code)?event.code.slice(3):(event.altKey||event.key==='Dead')&&/^Digit[0-9]$/.test(event.code)?event.code.slice(5):event.key.length===1?event.key.toUpperCase():event.key;const combo=[event.ctrlKey?'Control':'',event.altKey?'Alt':'',event.shiftKey?'Shift':'',event.metaKey?'Meta':'',key].filter(Boolean).join('+');
-        if(Object.keys(state.shortcuts).some(k=>k!==recording.dataset.shortcut&&state.shortcuts[k]===combo)){q('[data-shortcut-status]').textContent='此快捷键已用于其他操作，请录制不同的组合键。';return;}
-        state.shortcuts[recording.dataset.shortcut]=combo;recording=null;q('[data-shortcut-status]').textContent='快捷键已保存';render();persist();
-      });
-      shell.addEventListener('focusout',event=>{if(recording===event.target){recording=null;render();}});
-      qa('[data-caption]').forEach(caption=>{
-      caption.addEventListener('pointerdown',event=>{const stage=caption.closest('[data-video-stage]').getBoundingClientRect(),c=caption.getBoundingClientRect();drag={startX:event.clientX,startY:event.clientY,x:(c.left+c.width/2-stage.left)/stage.width*100,y:(c.bottom-stage.top)/stage.height*100,stage};caption.setPointerCapture(event.pointerId);});
-      caption.addEventListener('pointermove',event=>{if(!drag)return;const c=caption.getBoundingClientRect(),edge=Math.min(49,(c.width/2+7)/drag.stage.width*100),top=Math.min(95,(c.height+7)/drag.stage.height*100);state.position={x:Math.max(edge,Math.min(100-edge,drag.x+(event.clientX-drag.startX)/drag.stage.width*100)),y:Math.max(top,Math.min(96,drag.y+(event.clientY-drag.startY)/drag.stage.height*100))};render();});
-      caption.addEventListener('pointerup',()=>{if(drag){drag=null;persist();}});caption.addEventListener('pointercancel',()=>{drag=null;});
-      });
-      const resize=new ResizeObserver(()=>renderCaption());qa('[data-video-stage]').forEach(stage=>resize.observe(stage));
-      q('[data-service-details]').open=!!saved.serviceDetails;
-      q('[data-service-document]').value=state.serviceConfigured?JSON.stringify({type:'deepseek',name:'DeepSeek',baseURL:'https://api.deepseek.com/v1',apiKey:'sk-••••••',model:state.servicePending?'deepseek-reasoner':'deepseek-chat',api:'openai-chat',headers:{'X-Readomi':'example'},body:{thinking:{type:'disabled'}},temperature:.2},null,2):'';
-      q('[data-service-document]').addEventListener('input',()=>{state.servicePending=!!q('[data-service-document]').value.trim();renderService();});
-      models.push({scheme,state,render,shell});
-      render();
-      createLocalIcons();
+      shell.addEventListener('change',e=>{const el=e.target;for(const [attr,key] of [['data-hover','hover'],['data-bold','bold'],['data-input-translation','inputTranslation']])if(el.hasAttribute(attr))state[key]=el.checked;render();});
+      shell.addEventListener('keydown',e=>{if(!recording||e.target!==recording||e.key==='Tab')return;e.preventDefault();if(e.key==='Escape'){recording=null;render();return;}if(['Alt','Control','Shift','Meta'].includes(e.key))return;let combo='';if(!['Delete','Backspace'].includes(e.key)){if(!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey){q('[data-shortcut-status]').textContent='请使用修饰键和一个普通按键。';return;}const key=/^Key[A-Z]$/.test(e.code)?e.code.slice(3):e.key.toUpperCase();combo=[e.ctrlKey?'Control':'',e.altKey?'Alt':'',e.shiftKey?'Shift':'',e.metaKey?'Meta':'',key].filter(Boolean).join('+');if(Object.entries(state.shortcuts).some(([k,v])=>k!==recording.dataset.shortcut&&v===combo)){q('[data-shortcut-status]').textContent='此快捷键已用于其他操作，请录制不同的组合键。';return;}}state.shortcuts[recording.dataset.shortcut]=combo;recording=null;q('[data-shortcut-status]').textContent='快捷键已保存';render();});
+      shell.addEventListener('focusout',e=>{if(recording===e.target){recording=null;render();}});
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+      render();createLocalIcons();
       });
     })();
+
   </script>
 </div>
-
 </body></html>

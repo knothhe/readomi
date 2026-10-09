@@ -21,7 +21,7 @@
 .readomi-tools .video-toggle .toggle-thumb{display:block;position:absolute;left:2px;top:2px;width:var(--thumb-size);height:var(--thumb-size);border-radius:50%;background:#ffffffb3;box-shadow:none}
 .readomi-tools .video-toggle[aria-pressed=true] .toggle-track{background:#b6533e;box-shadow:none}
 .readomi-tools .video-toggle[aria-pressed=true] .toggle-thumb{background:#fff8ec;transform:translateX(calc(var(--track-width) - var(--thumb-size) - 4px))}
-</style>
+</style><style>.subtitles,.caption{line-height:1.4;text-shadow:0 2px 4px #0008;-webkit-text-stroke:.075em #17201ccc;paint-order:stroke fill}.subtitles .original,.caption .original{font-size:1em;margin-bottom:.22em}.caption .translated,.subtitles .translated{font-size:1em}</style>
 </head>
 <body class="x-toolbar">
   <main>
@@ -47,5 +47,5 @@
     </div>
     <p class="scope">仅对当前页面生效</p>
   </main>
-</body>
+<script>(()=>{for(const frame of document.querySelectorAll('.video,.player')){const caption=frame.querySelector('.subtitles,.caption');if(!caption)continue;const update=()=>{const rect=frame.getBoundingClientRect();caption.style.fontSize=Math.min(rect.width,rect.height)*.035*1+'px';};new ResizeObserver(update).observe(frame);update();}})();</script></body>
 </html>

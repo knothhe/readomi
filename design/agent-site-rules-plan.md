@@ -12,7 +12,7 @@
 
 面板自动读取当前网站和 URL，问题说明可选。复制指令包含站点、相关规则、阅读设置和文档格式；用户交给支持浏览器操作的 agent。Agent 查看真实 DOM 后，在面板的「更多」里提交规则并点击「预览规则」。提交后的最新有效候选替换当前预览，不再有交付动作、设置页审核步骤、显式稿次或默认确认清单。
 
-用户直接查看网页的 hover、网页翻译和段落样式。满意后点击「保存规则」。保存只合并此文档影响的用户规则，保留其他网站和内置开关。成功后面板收起，显示「站点规则已保存」toast，带「撤销」、「查看站点规则」可点击块和关闭按钮。保存提示已按 B 版接入 8 秒自动消失、交互暂停与 Motion 退场，查看规则直达自定义页签，详见 `site-rule-flow.md`。停止预览恢复已保存的有效规则，候选文档保留供继续编辑。
+用户直接查看网页的 hover、网页翻译和段落样式。满意后点击「保存规则」。保存只合并此文档影响的用户规则，保留其他网站和内置开关。成功后面板收起，显示「站点规则已保存」toast，带「撤销」、「查看站点规则」可点击块和关闭按钮。保存提示采用 8 秒自动消失、交互暂停与仅透明度淡出，查看规则直达自定义页签，详见 `site-rule-flow.md`。停止预览恢复已保存的有效规则，候选文档保留供继续编辑。
 
 Agent 仍返回同一份可复制规则文档，供普通文本 agent、备份或其他设备使用。用户有文本时通过「已有规则？粘贴配置」打开更多，把文档粘贴后点击预览。预览和保存贯穿同一份规范化文档；复制不会包含会话、服务凭据或全量配置。
 
@@ -174,7 +174,7 @@ Hover 与网页翻译共用最终渲染逻辑和阅读样式；流式预览结�
 | 无效与零匹配 | [Invalid](Page-Site-Rule-Invalid.html)、[Blocked](Page-Site-Rule-Preview-Blocked.html) |
 | 保存和并发 | [Conflict](Page-Site-Rule-Conflict.html)、[Save-Failed](Page-Site-Rule-Save-Failed.html)、[Undo-Conflict](Page-Site-Rule-Undo-Conflict.html) |
 | 导航和恢复 | [Paused](Page-Site-Rule-Paused.html)、[Restoring](Page-Site-Rule-Restoring.html) |
-| 入口与窄屏 | [Popup](Popup-Site-Rule-Agent.html)、[Mobile](Page-Site-Rule-Preview-Mobile.html) |
+| 入口与窄屏 | [Popup](Popup-Design-A.html)、[Mobile](Page-Site-Rule-Preview-Mobile.html) |
 | 长期管理 | [Custom-Saved](Settings-Site-Rules-Custom-Saved.html)、[Custom-Empty](Settings-Site-Rules-Custom-Empty.html)、[Built-in](Settings-Site-Rules.html) |
 | 指令内容 | [Agent 指令](Site-Rule-Agent-Instructions.html) |
 

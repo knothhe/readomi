@@ -1,523 +1,2498 @@
-/*
- * Layout of design/index.html: where each board sits on the canvas (CSS px),
- * listed back to front, and the row titles. Add a board here when you add its
- * HTML file. A script rather than JSON so index.html also opens from file://.
- */
+/* Current design boards. */
 window.READOMI_CANVAS = {
-  title: "Readomi Design",
-  boards: [
-    { file: "Settings-Service-Models-Open.html", title: "统一滚动条 · 模型列表展开", x: 0, y: 245150, w: 1280, h: 900 },
-    { file: "Settings-Service-Document-Scroll.html", title: "统一滚动条 · 长配置滚动", x: 1360, y: 245150, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Key-Missing.html", title: "A 版精修 · 需要补充本机密钥", x: 1360, y: 244000, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Review.html", title: "A 版精修 · 日常 / 测试反馈 / agent 配置", x: 0, y: 240450, w: 1440, h: 1000 },
-    { file: "Settings-Service-A-Refined.html", title: "A 版精修 · 日常列表 · 无常驻连接状态", x: 0, y: 241700, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Edit.html", title: "A 版精修 · 聚焦编辑", x: 1360, y: 241700, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Add.html", title: "A 版精修 · 添加服务", x: 2720, y: 241700, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Test-Passed.html", title: "A 版精修 · 一次测试通过 · 短暂提示", x: 0, y: 242850, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Test-Failed.html", title: "A 版精修 · 测试失败 · 原因与重试", x: 1360, y: 242850, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined-Agent.html", title: "A 版精修 · agent 配置", x: 2720, y: 242850, w: 1280, h: 900 },
-    { file: "Settings-Service-A-Refined.html", title: "A 版精修 · 列表窄屏", x: 0, y: 244000, w: 390, h: 844 },
-    { file: "Settings-Service-A-Refined-Edit.html", title: "A 版精修 · 编辑窄屏", x: 480, y: 244000, w: 390, h: 1000 },
-    { file: "Settings-Service-Design-Review.html", title: "翻译服务 · A / B 两版精简设计 · 待选择", x: 0, y: 236600, w: 1440, h: 1000 },
-    { file: "Settings-Service-Design-A.html", title: "翻译服务 · A · 轻量列表", x: 0, y: 237850, w: 1280, h: 900 },
-    { file: "Settings-Service-Design-A-Edit.html", title: "翻译服务 · A · 独立编辑 · 移除更多参数", x: 1360, y: 237850, w: 1280, h: 900 },
-    { file: "Settings-Service-Design-B.html", title: "翻译服务 · B · 服务分栏与同页编辑", x: 2720, y: 237850, w: 1280, h: 900 },
-    { file: "Settings-Service-Design-A-Agent.html", title: "翻译服务 · A · agent 配置", x: 0, y: 239000, w: 1280, h: 900 },
-    { file: "Settings-Service-Design-B-Agent.html", title: "翻译服务 · B · agent 配置", x: 1360, y: 239000, w: 1280, h: 900 },
-    { file: "Settings-Service-Design-A-Edit.html", title: "翻译服务 · A · 窄屏", x: 2720, y: 239000, w: 390, h: 1000 },
-    { file: "Settings-Service-Design-B.html", title: "翻译服务 · B · 窄屏", x: 3200, y: 239000, w: 390, h: 1120 },
-    { file: "Corner-Feedback-Review.html", title: "右下角提示 · 统一位置与 Motion 淡入淡出 · 交互预览", x: 0, y: 229300, w: 1360, h: 1120 },
-    { file: "Corner-Feedback-Error.html", title: "右下角提示 · 输入翻译失败", x: 0, y: 230700, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Success.html", title: "右下角提示 · 设置恢复成功", x: 1360, y: 230700, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Api-Key.html", title: "右下角提示 · 缺少 API Key", x: 2720, y: 230700, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Replace-Failed.html", title: "右下角提示 · 无法替换输入", x: 0, y: 231800, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Saved.html", title: "右下角提示 · 站点规则已保存", x: 1360, y: 231800, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Undone.html", title: "右下角提示 · 已撤销", x: 2720, y: 231800, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Panel.html", title: "右下角提示 · 适配面板展开", x: 0, y: 232900, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Folded.html", title: "右下角提示 · 适配面板收起", x: 1360, y: 232900, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Stack.html", title: "右下角提示 · 通知与面板同时出现", x: 2720, y: 232900, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Multiple.html", title: "右下角提示 · 多条通知", x: 0, y: 234000, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Dark.html", title: "右下角提示 · 深色通知", x: 1360, y: 234000, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Mobile.html", title: "右下角提示 · 窄屏堆叠", x: 2720, y: 234000, w: 390, h: 844 },
-    { file: "Corner-Feedback-Entering.html", title: "右下角提示 · 淡入中间帧", x: 0, y: 235100, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Exiting.html", title: "右下角提示 · 淡出中间帧", x: 1360, y: 235100, w: 1280, h: 900 },
-    { file: "Corner-Feedback-Dismissed.html", title: "右下角提示 · 提示消失", x: 2720, y: 235100, w: 1280, h: 900 },
-    { file: "Settings-Service-No-Api-Key.html", title: "翻译服务 · 本地模型 · 无需 API Key", x: 0, y: 227900, w: 1280, h: 1100 },
-    { file: "Settings-Sync-Services-Missing-Key.html", title: "Synced service: missing local key", x: 0, y: 185500, w: 1280, h: 900 },
-    { file: "Settings-Sync-Service-Key-Edit.html", title: "Synced service: saved masked key", x: 1360, y: 185500, w: 1280, h: 960 },
-    { file: "Settings-Sync-Edge.html", title: "备份与同步 · Microsoft Edge · 同步不可用", x: 0, y: 224350, w: 1280, h: 960 },
-    { file: "Settings-Sync-Edge-Import.html", title: "备份与同步 · Microsoft Edge · 本机导入确认", x: 1360, y: 224350, w: 1280, h: 960 },
-    { file: "Settings-Sync-Edge-Import-Saved.html", title: "备份与同步 · Microsoft Edge · 本机导入完成", x: 2720, y: 224350, w: 1280, h: 960 },
-    { file: "Settings-Sync-Firefox.html", title: "备份与同步 · Firefox · 同步不可用", x: 0, y: 225600, w: 1280, h: 960 },
-    { file: "Settings-Sync-Firefox-Import.html", title: "备份与同步 · Firefox · 本机导入确认", x: 1360, y: 225600, w: 1280, h: 960 },
-    { file: "Settings-Sync-Firefox-Import-Saved.html", title: "备份与同步 · Firefox · 本机导入完成", x: 2720, y: 225600, w: 1280, h: 960 },
-    { file: "Settings-Sync-Other.html", title: "备份与同步 · 其他浏览器 · 同步不可用", x: 0, y: 226850, w: 1280, h: 960 },
-    { file: "Settings-Sync-Other-Import.html", title: "备份与同步 · 其他浏览器 · 本机导入确认", x: 1360, y: 226850, w: 1280, h: 960 },
-    { file: "Settings-Sync-Other-Import-Saved.html", title: "备份与同步 · 其他浏览器 · 本机导入完成", x: 2720, y: 226850, w: 1280, h: 960 },
-    { file: "Settings-Sync-Review.html", title: "备份与同步 · 交互设计预览", x: 0, y: 218000, w: 1320, h: 1200 },
-    { file: "Settings-Sync-Off.html", title: "备份与同步 · 未开启", x: 0, y: 219350, w: 1280, h: 960 },
-    { file: "Settings-Sync-On.html", title: "备份与同步 · 已开启", x: 1360, y: 219350, w: 1280, h: 960 },
-    { file: "Settings-Sync-First.html", title: "备份与同步 · 首次开启 · 已有同步配置", x: 2720, y: 219350, w: 1280, h: 960 },
-    { file: "Settings-Sync-Pending.html", title: "备份与同步 · 正在保存", x: 0, y: 220600, w: 1280, h: 960 },
-    { file: "Settings-Sync-Missing-Key.html", title: "备份与同步 · 新设备 · 待补填密钥", x: 1360, y: 220600, w: 1280, h: 960 },
-    { file: "Settings-Sync-Failed.html", title: "备份与同步 · 保存失败", x: 2720, y: 220600, w: 1280, h: 960 },
-    { file: "Settings-Sync-Quota.html", title: "备份与同步 · 容量超限", x: 0, y: 221850, w: 1280, h: 960 },
-    { file: "Settings-Sync-Import.html", title: "备份与同步 · 导入备份 · 同步已开启", x: 1360, y: 221850, w: 1280, h: 960 },
-    { file: "Settings-Sync-Import-Saved.html", title: "备份与同步 · 导入完成 · 等待同步", x: 2720, y: 221850, w: 1280, h: 960 },
-    { file: "Settings-Sync-Mobile.html", title: "备份与同步 · 窄屏 · 已开启", x: 0, y: 223100, w: 390, h: 1120 },
-    { file: "Settings-Sync-Dark.html", title: "备份与同步 · 深色 · 已开启", x: 1360, y: 223100, w: 1280, h: 960 },
-    { file: "Video-Player-Appearance.html", title: "播放器弹窗 · 背景深度与译文颜色", x: 0, y: 217000, w: 1040, h: 740 },
-    { file: "Video-Player-Size-Step-5.html", title: "播放器字幕大小 · 每次调节 5% · 105%", x: 6400, y: 217000, w: 720, h: 520 },
-    { file: "Video-Player-Appearance-Adjusted.html", title: "播放器弹窗 · 调整背景与译文颜色", x: 1120, y: 217000, w: 1040, h: 740 },
-    { file: "Video-Player-Appearance-Mobile.html", title: "播放器弹窗 · 窄屏滚动调整", x: 2240, y: 217000, w: 390, h: 450 },
-    { file: "Settings-Subtitle-Preset-Color-Invalid.html", title: "字幕预设 · 无效颜色草稿 · 保留已保存预览", x: 2720, y: 210850, w: 1280, h: 1650 },
-    { file: "Settings-Subtitle-Preview-Short-150.html", title: "字幕预览 · 短句 150%", x: 0, y: 212600, w: 1280, h: 1500 },
-    { file: "Settings-Subtitle-Preview-Long-150.html", title: "字幕预览 · 长句 150%", x: 1360, y: 212600, w: 1280, h: 1500 },
-    { file: "Settings-Subtitle-Preview-Portrait-150.html", title: "字幕预览 · 竖版短句 150%", x: 2720, y: 212600, w: 1280, h: 1500 },
-    { file: "Settings-Subtitle-Preview-Overflow.html", title: "字幕预览 · 长句 500% 超出画面", x: 0, y: 214200, w: 1280, h: 1500 },
-    { file: "Settings-Subtitle-Preview-Mobile-150.html", title: "字幕预览 · 窄屏短句 150%", x: 1360, y: 214200, w: 390, h: 1950 },
-    { file: "Settings-Subtitle-Preset-Gold.html", title: "字幕预设 · 暖金 · 自定义内译文字体与颜色", x: 0, y: 210850, w: 1280, h: 1650 },
-    { file: "Settings-Subtitle-Preset-Adjusted.html", title: "字幕预设 · 已调整 · 无衬线与柔白译文", x: 1360, y: 210850, w: 1280, h: 1650 },
-    { file: "Settings-Subtitle-Size-Precision.html", title: "字幕大小 · 78.57% · 百分比显示两位小数", x: 4080, y: 210850, w: 1280, h: 1650 },
-    { file: "Settings-Subtitle-Size-Step-5.html", title: "字幕大小 · 每次调节 5% · 105%", x: 5440, y: 210850, w: 1280, h: 1650 },
-    { file: "Video-Preset-Review.html", title: "字幕预设 · 素白 / 暖金 / 墨笺 · 三版提案", x: 0, y: 208100, w: 1440, h: 1400 },
-    { file: "Video-Preset-A-White.html", title: "字幕预设 · A 素白 · 大图 / 仅译文 / 长字幕", x: 0, y: 209650, w: 1280, h: 1050 },
-    { file: "Video-Preset-B-Gold.html", title: "字幕预设 · B 暖金 · 大图 / 仅译文 / 长字幕", x: 1360, y: 209650, w: 1280, h: 1050 },
-    { file: "Video-Preset-C-Ink.html", title: "字幕预设 · C 墨笺 · 大图 / 仅译文 / 长字幕", x: 2720, y: 209650, w: 1280, h: 1050 },
-    { file: "Settings-Subtitle-Size-Default.html", title: "字幕相对大小 · 默认 100%", x: 0, y: 205000, w: 1280, h: 1400 },
-    { file: "Settings-Subtitle-Size-Adjusted.html", title: "字幕相对大小 · 大小 125%", x: 1360, y: 205000, w: 1280, h: 1400 },
-    { file: "Settings-Subtitle-Size-Minimum.html", title: "字幕相对大小 · 最小 25%", x: 2720, y: 205000, w: 1280, h: 1400 },
-    { file: "Settings-Subtitle-Size-Maximum.html", title: "字幕相对大小 · 最大 500%", x: 0, y: 206450, w: 1280, h: 1400 },
-    { file: "Settings-Subtitle-Size-Mobile.html", title: "字幕相对大小 · 窄屏 100%", x: 1360, y: 206450, w: 390, h: 1800 },
-    { file: "Popup-Site-Translated.html", title: "弹窗 · 已翻译 · 当前页字幕关闭", x: 0, y: 203800, w: 320, h: 650 },
-    { file: "Popup-Site-Translated-Disabled.html", title: "弹窗 · 已翻译后禁用 · 保留布局与字幕选择", x: 400, y: 203800, w: 320, h: 650 },
-    { file: "Popup-Site-Translated-Resumed.html", title: "弹窗 · 恢复网站 · 保留布局与字幕关闭选择", x: 800, y: 203800, w: 320, h: 650 },
-    { file: "Popup-Motion-Review.html", title: "弹窗动效 · 三版交互对比 · A 已采用", x: 0, y: 202700, w: 1120, h: 1000 },
-    { file: "Popup-Motion-A.html", title: "弹窗动效 · A · 叠层淡化 · 已采用", x: 1200, y: 202700, w: 320, h: 500 },
-    { file: "Popup-Motion-B.html", title: "弹窗动效 · B · 柔和过渡 · 对照", x: 1600, y: 202700, w: 320, h: 500 },
-    { file: "Popup-Motion-C.html", title: "弹窗动效 · C · 轻错峰", x: 2000, y: 202700, w: 320, h: 500 },
-    { file: "Popup-Site-Resuming.html", title: "弹窗 · 网站扩展 · 恢复字幕状态中 · 无临时提示", x: 2800, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Site-Disable-Review.html", title: "弹窗 · 网站禁用 · 同列表与置灰对照", x: 0, y: 201800, w: 1120, h: 620 },
-    { file: "Popup-Site-Enabling-Failed.html", title: "弹窗 · 网站扩展 · 重新启用失败", x: 2400, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Design-A-Disabled-Dark.html", title: "弹窗 · 紧凑列表 · 网站禁用 · 深色", x: 3200, y: 196500, w: 320, h: 560 },
-    { file: "Page-Site-Rule-Saved-Undone.html", title: "保存提示 · B · 已撤销本次修改 · 3 秒后消失", x: 2720, y: 200600, w: 1280, h: 900 },
-    { file: "Page-Site-Rule-Saved-Manage-Hover.html", title: "保存提示 · B · 查看站点规则悬停 · 无底块", x: 1360, y: 200600, w: 1280, h: 900 },
-    { file: "Page-Site-Rule-Saved-Undo-Hover.html", title: "保存提示 · B · 撤销悬停 · 文字变深与细下划线", x: 0, y: 200600, w: 1280, h: 900 },
-    { file: "Page-Site-Rule-Saved-A.html", title: "保存提示 · A · 一行轻提示", x: 0, y: 199500, w: 1280, h: 900 },
-    { file: "Page-Site-Rule-Saved-B.html", title: "保存提示 · B · 紧凑小卡片", x: 1360, y: 199500, w: 1280, h: 900 },
-    { file: "Page-Site-Rule-Saved-C.html", title: "保存提示 · C · 深色分区条", x: 2720, y: 199500, w: 1280, h: 900 },
-    { file: "Page-Site-Rule-Saved-Exiting.html", title: "站点规则已保存 · Motion 退场 · 中间帧", x: 2800, y: 198200, w: 1280, h: 900 },
-    { file: "Site-Rule-Saved-Review.html", title: "站点规则已保存 · 三版对比 · Motion 交互预览", x: 0, y: 198200, w: 1360, h: 1040 },
-    { file: "Page-Site-Rule-Saved-Dismissed.html", title: "站点规则已保存 · 提示消失 · 规则继续生效", x: 1440, y: 198200, w: 1280, h: 900 },
-    { file: "Popup-Subtitle-Page-On.html", title: "字幕状态统一 · 当前页开启", x: 0, y: 197400, w: 320, h: 500 },
-    { file: "Popup-Subtitle-Page-Off.html", title: "字幕状态统一 · 当前页关闭", x: 400, y: 197400, w: 320, h: 500 },
-    { file: "Popup-Subtitle-Page-Pending.html", title: "字幕状态统一 · 读取中", x: 800, y: 197400, w: 320, h: 500 },
-    { file: "Popup-Subtitle-Page-Failed.html", title: "字幕状态统一 · 切换失败", x: 1200, y: 197400, w: 320, h: 500 },
-    { file: "Popup-Subtitle-Page-Unavailable.html", title: "字幕状态统一 · 不可用", x: 1600, y: 197400, w: 320, h: 500 },
-    { file: "Popup-Design-A-Help.html", title: "弹窗 · 紧凑列表 · 帮助展开", x: 1600, y: 196500, w: 320, h: 560 },
-    { file: "Popup-Design-A-Dark.html", title: "弹窗 · 紧凑列表 · 深色", x: 2000, y: 196500, w: 320, h: 560 },
-    { file: "Popup-Design-A-Disabled.html", title: "弹窗 · 紧凑列表 · 网站禁用", x: 2400, y: 196500, w: 320, h: 560 },
-    { file: "Popup-Design-A-Setup.html", title: "弹窗 · 紧凑列表 · 未配置", x: 2800, y: 196500, w: 320, h: 560 },
-    { file: "Popup-Design-A.html", title: "弹窗 · 紧凑列表 · 已采用", x: 0, y: 196500, w: 320, h: 480 },
-    { file: "Popup-Design-B.html", title: "弹窗方案 · B · 轻量分组", x: 400, y: 196500, w: 320, h: 480 },
-    { file: "Popup-Design-C.html", title: "弹窗方案 · C · 极简工具面板", x: 800, y: 196500, w: 320, h: 480 },
-    { file: "Popup-Design-C-Help.html", title: "弹窗方案 · C · 翻译帮助展开", x: 1200, y: 196500, w: 320, h: 480 },
-    { file: "Popup-Site-Enabling.html", title: "弹窗 · 网站扩展 · 重新启用保存中", x: 2000, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Site-Enabled.html", title: "弹窗 · 网站扩展 · 启用", x: 0, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Site-Disabled.html", title: "弹窗 · 网站扩展 · 禁用", x: 400, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Site-Saving.html", title: "弹窗 · 网站扩展 · 保存中", x: 800, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Site-Failed.html", title: "弹窗 · 网站扩展 · 保存失败", x: 1200, y: 195400, w: 320, h: 650 },
-    { file: "Popup-Site-Unavailable.html", title: "弹窗 · 网站扩展 · 页面不可用", x: 1600, y: 195400, w: 320, h: 650 },
-    { file: "Store-Origins-zh-CN.html", title: "商店与 README · 项目来源与定制理念 · 中文", x: 0, y: 194300, w: 1120, h: 900 },
-    { file: "Store-Origins-en.html", title: "商店与 README · 项目来源与定制理念 · 英文", x: 1200, y: 194300, w: 1120, h: 900 },
-    { file: "Settings-Multi-Service-Switched-Keyboard.html", title: "翻译服务 · 键盘切换为 Gemini · 保留焦点", x: 1360, y: 193200, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Reorder-Hover.html", title: "翻译服务 · 拖动排序 · 悬停 Gemini 行显示手柄", x: 0, y: 193200, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Dragging.html", title: "翻译服务 · 拖动排序 · 拖动中 · Gemini 移到 DeepSeek 前", x: 0, y: 191000, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Reordered.html", title: "翻译服务 · 拖动排序 · 排序完成 · 当前服务仍为 DeepSeek", x: 1360, y: 191000, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Reorder-Saving.html", title: "翻译服务 · 拖动排序 · 保存中锁定排序 · 无提示", x: 2720, y: 191000, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Reorder-Failed.html", title: "翻译服务 · 拖动排序 · 保存失败 · 恢复原顺序", x: 0, y: 192100, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Reorder-Keyboard.html", title: "翻译服务 · 拖动排序 · 键盘排序", x: 1360, y: 192100, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Reorder-Review.html", title: "翻译服务 · 拖动排序 · 状态预览", x: 2720, y: 192100, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Details.html", title: "翻译服务 · 一行无外框 · 连接详情", x: 0, y: 188000, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Connection-Checking.html", title: "翻译服务 · 一行无外框 · 测试中", x: 1360, y: 188000, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Connection-Failed.html", title: "翻译服务 · 一行无外框 · 连接失败", x: 2720, y: 188000, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Switched.html", title: "翻译服务 · 一行无外框 · 切换为 Gemini", x: 1360, y: 189100, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Anthropic.html", title: "翻译服务 · 一行无外框 · 切换为 Anthropic", x: 2720, y: 189100, w: 1280, h: 900 },
-    { file: "Settings-Subtitle-Ratio-Option-A.html", title: "字幕比例 · A 定稿 · 自定义内字幕字号下方", x: 0, y: 184500, w: 1280, h: 1340 },
-    { file: "Settings-Subtitle-Ratio-Option-B.html", title: "字幕比例 · B · 译文字号与原文比例合并", x: 1360, y: 184500, w: 1280, h: 1100 },
-    { file: "Settings-Subtitle-Ratio-Option-C.html", title: "字幕比例 · C · 预览旁视觉选择与精调", x: 2720, y: 184500, w: 1280, h: 1100 },
-    { file: "Settings-Subtitle-Ratio-Review.html", title: "字幕比例 · 三版设置页面切换审阅", x: 0, y: 185900, w: 1360, h: 1660 },
-    { file: "Settings-Subtitle-Ratio-Invalid.html", title: "字幕字号比例 · 输入 175% · 保留有效预览", x: 3190, y: 178450, w: 1280, h: 1380 },
-    { file: "Video-Subtitle-Ratio-Comparison.html", title: "字幕字号比例 · 默认 1:1 · 能力与横竖效果", x: 0, y: 175600, w: 1120, h: 1000 },
-    { file: "Settings-Subtitle-Ratio-Default.html", title: "字幕字号比例 · 默认 100% · 自定义展开", x: 0, y: 176900, w: 1280, h: 1340 },
-    { file: "Settings-Subtitle-Ratio-Adjusted.html", title: "字幕字号比例 · 85% 已保存 · 预设保留", x: 1360, y: 176900, w: 1280, h: 1340 },
-    { file: "Settings-Subtitle-Ratio-Fixed.html", title: "历史方案 · 已由相对大小替代 · 字幕字号比例 · 固定 20px · 原文 125%", x: 2720, y: 176900, w: 1280, h: 1340 },
-    { file: "Settings-Subtitle-Ratio-Only.html", title: "字幕字号比例 · 仅译文 · 保留 85%", x: 0, y: 178450, w: 1280, h: 1340 },
-    { file: "Settings-Subtitle-Ratio-Mobile.html", title: "字幕字号比例 · 390px 窄屏 · 默认 1:1", x: 1360, y: 178450, w: 390, h: 1900 },
-    { file: "Settings-Subtitle-Ratio-Save-Failed.html", title: "字幕字号比例 · 保存失败 · 保留预览并重试", x: 1830, y: 178450, w: 1280, h: 1450 },
-    { file: "Settings-Subtitle-Preview-Portrait.html", title: "字幕设置 · 现有预览 · 竖版长字幕", x: 0, y: 174000, w: 1280, h: 1000 },
-    { file: "Settings-Subtitle-Preview-Square.html", title: "字幕设置 · 现有预览 · 正方形长字幕", x: 1360, y: 174000, w: 1280, h: 1000 },
-    { file: "Video-Short-Side-Comparison.html", title: "字幕 · 短边 5% · 横竖画面对比", x: 0, y: 172000, w: 1120, h: 1520 },
-    { file: "Page-Input-Translation-Replace-Failed.html", title: "输入框翻译 · 超过字数限制 · 原文保留", x: 1360, y: 172000, w: 720, h: 900 },
-    { file: "Page-Input-Translation-Iframe-Ready.html", title: "输入框翻译 · 内嵌编辑器 · 网页翻译未开启", x: 2160, y: 172000, w: 720, h: 900 },
-    { file: "Page-Input-Translation-Cancelled.html", title: "输入框翻译 · 失焦取消 · 原文保留", x: 1360, y: 171000, w: 720, h: 900 },
-    { file: "Settings-Input-Translation.html", title: "输入框翻译 · 设置", x: 0, y: 169000, w: 1280, h: 900 },
-    { file: "Settings-Input-Translation-Off.html", title: "输入框翻译 · Off", x: 1360, y: 169000, w: 1280, h: 900 },
-    { file: "Page-Input-Translation-Pending.html", title: "输入框翻译 · Pending", x: 2720, y: 169000, w: 720, h: 900 },
-    { file: "Page-Input-Translation-Ready.html", title: "输入框翻译 · Ready", x: 0, y: 170000, w: 720, h: 900 },
-    { file: "Page-Input-Translation-Preserved.html", title: "输入框翻译 · Preserved", x: 1360, y: 170000, w: 720, h: 900 },
-    { file: "Page-Input-Translation-Failed.html", title: "输入框翻译 · Failed", x: 2720, y: 170000, w: 720, h: 900 },
-    { file: "Reading-Refinement-Backup.html", title: "备份 · 独立页面", x: 0, y: 167250, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Popup-Help-Dark.html", title: "弹窗 · 深色问题操作按钮", x: 1360, y: 166250, w: 320, h: 650 },
-    { file: "Reading-Refinement-Setup-Empty.html", title: "首次配置 · 空白", x: 0, y: 165000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Popup-Recovery-Pending.html", title: "弹窗 · 重试处理中", x: 1360, y: 165000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Recovery-Error.html", title: "弹窗 · 重试未完成", x: 2720, y: 165000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Excluded.html", title: "弹窗 · 字幕被站点规则排除", x: 4080, y: 165000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Cache-Hover.html", title: "弹窗 · 翻译缓存解释", x: 0, y: 166250, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Off.html", title: "弹窗 · 有视频但字幕翻译关闭", x: 0, y: 164000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup.html", title: "弹窗 · 阅读优先 · 中文保持原文", x: 0, y: 155000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Help.html", title: "弹窗 · 翻译问题操作", x: 1360, y: 155000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Failed.html", title: "弹窗 · 集中重试失败段落", x: 2720, y: 155000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Cache-pending.html", title: "弹窗 · 翻译缓存 · pending", x: 4080, y: 155000, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Cache-success.html", title: "弹窗 · 翻译缓存 · success", x: 0, y: 156250, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Cache-error.html", title: "弹窗 · 翻译缓存 · error", x: 1360, y: 156250, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Ready.html", title: "弹窗 · 字幕状态 · Ready", x: 2720, y: 156250, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Disabled.html", title: "弹窗 · 字幕状态 · Disabled", x: 4080, y: 156250, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Missing.html", title: "弹窗 · 字幕状态 · Missing", x: 0, y: 157500, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Waiting.html", title: "弹窗 · 字幕状态 · Waiting", x: 1360, y: 157500, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Delayed.html", title: "弹窗 · 字幕状态 · Delayed", x: 2720, y: 157500, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-Failed.html", title: "弹窗 · 字幕状态 · Failed", x: 4080, y: 157500, w: 320, h: 650 },
-    { file: "Reading-Refinement-Popup-Video-None.html", title: "弹窗 · 字幕状态 · None", x: 0, y: 158750, w: 320, h: 650 },
-    { file: "Reading-Refinement-Setup.html", title: "首次配置 · 简化手动配置", x: 1360, y: 158750, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Setup-Advanced.html", title: "首次配置 · 展开连接参数", x: 2720, y: 158750, w: 1280, h: 1050 },
-    { file: "Reading-Refinement-Languages.html", title: "翻译语言 · 默认保持主要语言", x: 4080, y: 158750, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Context.html", title: "译文质量 · 结合文章上下文", x: 0, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Default.html", title: "翻译缓存 · Default", x: 1360, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Pending.html", title: "翻译缓存 · Pending", x: 2720, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Success.html", title: "翻译缓存 · Success", x: 4080, y: 160000, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Cache-Failed.html", title: "翻译缓存 · Failed", x: 0, y: 161250, w: 1280, h: 900 },
-    { file: "Reading-Refinement-Error-Key.html", title: "段落翻译 · Key", x: 1360, y: 161250, w: 960, h: 620 },
-    { file: "Reading-Refinement-Error-Rate.html", title: "段落翻译 · Rate", x: 2720, y: 161250, w: 960, h: 620 },
-    { file: "Reading-Refinement-Error-Timeout.html", title: "段落翻译 · Timeout", x: 4080, y: 161250, w: 960, h: 620 },
-    { file: "Reading-Refinement-Error-Network.html", title: "段落翻译 · Network", x: 0, y: 162500, w: 960, h: 620 },
-    { file: "Reading-Refinement-Error-Quality.html", title: "段落翻译 · Quality", x: 1360, y: 162500, w: 960, h: 620 },
-    { file: "Page-Paragraph-Layout-Streaming.html", title: "完整段落 · 流式译文保持竖线，链接与按钮保持行内", x: 0, y: 153900, w: 960, h: 820 },
-    { file: "Page-Paragraph-Layout-Ready.html", title: "完整段落 · 单 span 与带链接正文保持相同译文样式", x: 1040, y: 153900, w: 960, h: 820 },
-    { file: "Hover-Multi-Paragraph-Waiting.html", title: "悬停 · 两段同时等待", x: 0, y: 152900, w: 880, h: 720 },
-    { file: "Hover-Multi-Paragraph-Streaming.html", title: "悬停 · 两段独立流式翻译", x: 960, y: 152900, w: 880, h: 720 },
-    { file: "Hover-Multi-Paragraph-Mixed.html", title: "悬停 · 一段完成，另一段继续翻译", x: 1920, y: 152900, w: 880, h: 720 },
-    { file: "Hover-Multi-Paragraph-Only-Streaming.html", title: "悬停 · 仅译文两段独立流式翻译", x: 2880, y: 152900, w: 880, h: 720 },
-    { file: "Settings-Light-Video-Controls-Off.html", title: "视频字幕 · 关闭视频控件，字幕翻译保持开启", x: 0, y: 151800, w: 1280, h: 900 },
-    { file: "Popup-Content-Fits.html", title: "弹窗 · 中文不可用页面 · 内容完整显示，无滚动条", x: 0, y: 150800, w: 320, h: 600 },
-    { file: "Popup-Content-Scroll.html", title: "弹窗 · 高度不足 · 细滚动条与透明轨道", x: 400, y: 150800, w: 320, h: 480 },
-    { file: "Popup-Content-Scroll-Light.html", title: "弹窗 · 浅色高度不足 · 细滚动条与透明轨道", x: 800, y: 150800, w: 320, h: 480 },
-    { file: "Page-Hover-Chat-Ready.html", title: "悬停 · 聊天正文翻译 · 输入框保持空白", x: 0, y: 150050, w: 960, h: 620 },
-    { file: "Page-Hover-Chat-Typing.html", title: "悬停 · 已聚焦输入框 · 反引号正常输入", x: 1040, y: 150050, w: 960, h: 620 },
-    { file: "Popup-Clear-Translation-Cache-Default.html", title: "弹窗 · 全局清空缓存 · 默认", x: 0, y: 129000, w: 320, h: 556 },
-    { file: "Popup-Clear-Translation-Cache-Clearing.html", title: "弹窗 · 全局清空缓存 · 等待", x: 400, y: 129000, w: 320, h: 556 },
-    { file: "Popup-Clear-Translation-Cache-Cleared.html", title: "弹窗 · 全局清空缓存 · 完成", x: 800, y: 129000, w: 320, h: 556 },
-    { file: "Popup-Clear-Translation-Cache-Failed.html", title: "弹窗 · 全局清空缓存 · 失败可重试", x: 1200, y: 129000, w: 320, h: 556 },
-    { file: "Page-Translation-Quality-Retry.html", title: "译文校验 · 自动重试 · 保留原文与等待标记", x: 0, y: 128050, w: 960, h: 620 },
-    { file: "Page-Translation-Quality-Failed.html", title: "译文校验 · 重试后仍失败 · 内联原因与重试", x: 1040, y: 128050, w: 960, h: 620 },
-    { file: "Page-Translation-Quality-Ready.html", title: "译文校验 · 完成 · 英语原文与中文译文", x: 2080, y: 128050, w: 960, h: 620 },
-    { file: "Popup-Languages.html", title: "语言规则 · 弹窗 · 主要语言中文 / 第二语言英语", x: 0, y: 111640, w: 320, h: 556 },
-    { file: "Popup-Languages-Keep.html", title: "语言规则 · 弹窗 · 中文保持原文", x: 400, y: 111640, w: 320, h: 556 },
-    { file: "Popup-Languages-Menu.html", title: "语言规则 · 弹窗 · 第二语言选择展开", x: 800, y: 111640, w: 320, h: 556 },
-    { file: "Popup-Languages-Dark.html", title: "语言规则 · 弹窗 · 深色", x: 1200, y: 111640, w: 320, h: 556 },
-    { file: "Settings-Languages.html", title: "语言规则 · 设置 · 中文 / 英语", x: 0, y: 112470, w: 1280, h: 900 },
-    { file: "Settings-Languages-Keep.html", title: "语言规则 · 设置 · 中文保持原文", x: 1360, y: 112470, w: 1280, h: 900 },
-    { file: "Settings-Languages-Menu.html", title: "语言规则 · 设置 · 第二语言菜单", x: 2720, y: 112470, w: 1280, h: 900 },
-    { file: "Settings-Languages-Dark.html", title: "语言规则 · 设置 · 深色", x: 0, y: 113570, w: 1280, h: 900 },
-    { file: "Settings-Languages-Mobile.html", title: "语言规则 · 设置 · 窄屏", x: 1360, y: 113570, w: 390, h: 900 },
-    { file: "Settings-Languages-Same.html", title: "语言规则 · 设置 · 主次同语言时保持原文", x: 1880, y: 113570, w: 1280, h: 900 },
-    { file: "Page-Bilingual.html", title: "语言规则 · 网页 · 中英双向 / 双语对照", x: 0, y: 114820, w: 960, h: 620 },
-    { file: "Page-Keep.html", title: "语言规则 · 网页 · 中文保持原文 / 双语对照", x: 1040, y: 114820, w: 960, h: 620 },
-    { file: "Page-Only-Keep.html", title: "语言规则 · 网页 · 中文保持原文 / 仅译文", x: 2080, y: 114820, w: 960, h: 620 },
-    { file: "Video-Bilingual.html", title: "语言规则 · 字幕 · 中文原文 / 英文译文", x: 0, y: 115730, w: 800, h: 450 },
-    { file: "Video-Keep.html", title: "语言规则 · 字幕 · 中文保持原文，仅显示一次", x: 880, y: 115730, w: 800, h: 450 },
-    { file: "Settings-Multi-Service.html", title: "翻译服务 · 一行无外框 · 当前服务", x: 0, y: 106960, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Menu.html", title: "多服务 · 服务操作 · 使用 / 测试 / 修改", x: 1360, y: 106960, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service.html", title: "翻译服务 · 一行无外框 · 窄屏", x: 2720, y: 106960, w: 390, h: 900 },
-    { file: "Popup-Service-Switch.html", title: "多服务 · 弹窗 · 点击服务名快速切换", x: 0, y: 108120, w: 320, h: 500 },
-    { file: "Popup-Service-Switch-Open.html", title: "多服务 · 弹窗 · 服务列表展开", x: 400, y: 108120, w: 320, h: 500 },
-    { file: "Popup-Service-Switch-Switched.html", title: "多服务 · 弹窗 · 已切换为 Gemini", x: 800, y: 108120, w: 320, h: 540 },
-    { file: "Popup-Service-Switch-Failed.html", title: "多服务 · 弹窗 · 切换失败保留原服务", x: 1200, y: 108120, w: 320, h: 540 },
-    { file: "Settings-Multi-Service-Add.html", title: "多服务 · 添加服务 · agent 配置", x: 0, y: 108920, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Manual.html", title: "多服务 · 添加服务 · 手动配置", x: 1360, y: 108920, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Checking.html", title: "多服务 · 添加服务 · 正在检查", x: 2720, y: 108920, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Failed.html", title: "多服务 · 添加服务 · 失败保留输入", x: 4080, y: 108920, w: 1280, h: 900 },
-    { file: "Settings-Multi-Service-Edit.html", title: "多服务 · 修改服务 · 保存前保留现有配置", x: 0, y: 110080, w: 1280, h: 900 },
-    { file: "Settings-Light-Service-Empty.html", title: "轻量设置 · 翻译服务 · 未配置agent入口", x: 2700, y: 101300, w: 1280, h: 1000 },
-    { file: "Settings-Light-Service-Empty-Manual.html", title: "轻量设置 · 翻译服务 · 未配置手动入口", x: 5400, y: 101300, w: 1280, h: 1280 },
-    { file: "Settings-Light-Video-Wide.html", title: "轻量设置 · 视频字幕 · 3840px轻导航工作区", x: 0, y: 104500, w: 3840, h: 1600 },
-    { file: "Settings-Light-Video-English.html", title: "轻量设置 · 视频字幕 · 英文默认导航稳定", x: 3920, y: 104500, w: 1280, h: 900 },
-    { file: "Settings-Light-Video.html", title: "轻量设置 · 视频字幕 · 默认清透 · 自定义收起", x: 0, y: 91900, w: 1280, h: 900 },
-    { file: "Settings-Light-Video-Custom.html", title: "轻量设置 · 视频字幕 · 自定义展开 · 无背景", x: 1360, y: 91900, w: 1280, h: 1080 },
-    { file: "Settings-Light-Video-Compact.html", title: "轻量设置 · 视频字幕 · 轻量 · 35% 背景", x: 2720, y: 91900, w: 1280, h: 1080 },
-    { file: "Settings-Light-Video-Fixed.html", title: "历史方案 · 已由相对大小替代 · 轻量设置 · 视频字幕 · 固定字号 · 20 px", x: 0, y: 93800, w: 1280, h: 1080 },
-    { file: "Settings-Light-Video-Focus.html", title: "轻量设置 · 视频字幕 · 专注 · 65% 背景", x: 1360, y: 93800, w: 1280, h: 900 },
-    { file: "Settings-Light-Video-Cinema.html", title: "轻量设置 · 视频字幕 · 影院 · 85% 背景", x: 2720, y: 93800, w: 1280, h: 900 },
-    { file: "Settings-Light-Video-More.html", title: "轻量设置 · 视频字幕 · 更多仅网站排除", x: 0, y: 95700, w: 1280, h: 1140 },
-    { file: "Settings-Light-Video-Mobile.html", title: "轻量设置 · 视频字幕 · 窄屏自定义展开", x: 1360, y: 95700, w: 390, h: 1740 },
-    { file: "Settings-Light-Video-Dark.html", title: "轻量设置 · 视频字幕 · 暗色专注 · 自定义展开", x: 2720, y: 95700, w: 1280, h: 1080 },
-    { file: "Settings-Light-Reading.html", title: "轻量设置 · 网页阅读 · 九种译文样式横向平铺", x: 0, y: 97600, w: 1280, h: 900 },
-    { file: "Settings-Reading-Serif.html", title: "网页阅读 · 译文字体 · 宋体", x: 4080, y: 97600, w: 1280, h: 900 },
-    { file: "Settings-Reading-Only-Serif.html", title: "网页阅读 · 仅译文 · 宋体", x: 5440, y: 97600, w: 1280, h: 900 },
-    { file: "Settings-Light-Shortcut.html", title: "轻量设置 · 快捷键 · Option / Alt E、M、V", x: 1360, y: 97600, w: 1280, h: 900 },
-    { file: "Settings-Light-Backup.html", title: "轻量设置 · 备份 · 导入与导出", x: 2720, y: 97600, w: 1280, h: 900 },
-    { file: "Video-Player-X-Ad-Toolbar.html", title: "X · 广告顶部栏与底部播放栏，入口在全屏前", x: 0, y: 90500, w: 720, h: 520 },
-    { file: "Video-Player-X-Ad-Toolbar-Unavailable.html", title: "X · 仅广告操作栏可用，无 Readomi 入口", x: 800, y: 90500, w: 720, h: 520 },
-    { file: "Video-Player-Toolbar-Unavailable.html", title: "播放器 · 原生工具栏不可用，无入口", x: 0, y: 89100, w: 720, h: 520 },
-    { file: "Video-Player-Toolbar-Crowded.html", title: "播放器 · 320 px 空间不足，无入口", x: 800, y: 89100, w: 320, h: 320 },
-    { file: "Video-Player-Menu-Hidden.html", title: "播放器 · 菜单与原生播放条一同隐藏", x: 1200, y: 89100, w: 720, h: 520 },
-    { file: "Popup-Video-Site-Saving.html", title: "弹窗 · 正在保存网站排除规则", x: 0, y: 89800, w: 320, h: 500 },
-    { file: "Popup-Video-Site-Excluded.html", title: "弹窗 · 当前网站已排除", x: 400, y: 89800, w: 320, h: 500 },
-    { file: "Popup-Video-Site-Managed.html", title: "弹窗 · 其他规则排除当前网站", x: 800, y: 89800, w: 320, h: 500 },
-    { file: "Popup-Video-Site-Failed.html", title: "弹窗 · 网站排除保存失败", x: 1200, y: 89800, w: 320, h: 500 },
-    { file: "Popup-Video-Site-Unavailable.html", title: "弹窗 · 当前页面不可用", x: 1600, y: 89800, w: 320, h: 500 },
-    { file: "Popup-Video-Site-Dark.html", title: "弹窗 · 深色网站排除", x: 2000, y: 89800, w: 320, h: 500 },
-    { file: "Popup-Video-Site-Long-Hostname.html", title: "弹窗 · 长网站域名", x: 2400, y: 89800, w: 320, h: 500 },
-    { file: "Video-Bilibili-Search-No-Controls.html", title: "Bilibili 搜索 · 预览视频无 Readomi 控件", x: 0, y: 88300, w: 1120, h: 560 },
-    { file: "Video-Bilibili-Player-No-Controls.html", title: "Bilibili 主播放器 · 原生工具栏", x: 1200, y: 88300, w: 1120, h: 700 },
-    { file: "Video-Player-Exclusion-Removed.html", title: "播放器 · 取消网站排除后恢复入口", x: 2000, y: 87300, w: 720, h: 520 },
-    { file: "Video-Player-HTML5-Toolbar.html", title: "HTML5 · 仅自动字幕翻译，无 Readomi 控件", x: 1200, y: 87300, w: 720, h: 520 },
-    { file: "Video-Player-X-Toolbar-Mobile.html", title: "X · 320 px 图标与开关加入右侧工具组", x: 800, y: 87300, w: 352, h: 330 },
-    { file: "Video-Player-Playing-Hidden.html", title: "播放器 · 播放中自然隐藏控件", x: 0, y: 87300, w: 720, h: 520 },
-    { file: "Settings-Video-Excluded-Empty.html", title: "视频字幕 · 默认无排除规则", x: 2720, y: 83300, w: 1280, h: 1200 },
-    { file: "Video-Player-Save-Failed.html", title: "播放器 · 字幕外观保存失败", x: 2240, y: 86300, w: 720, h: 520 },
-    { file: "Settings-Video-Excluded-Saved.html", title: "视频字幕 · 不翻译的网站 · 已保存", x: 0, y: 81800, w: 1280, h: 1380 },
-    { file: "Settings-Video-Excluded-Invalid.html", title: "视频字幕 · 无效正则表达式", x: 1360, y: 81800, w: 1280, h: 1380 },
-    { file: "Settings-Video-Excluded-Duplicate.html", title: "视频字幕 · 重复网站规则", x: 2720, y: 81800, w: 1280, h: 1380 },
-    { file: "Settings-Video-Excluded-Save-Failed.html", title: "视频字幕 · 保存失败保留输入", x: 0, y: 83300, w: 1280, h: 1420 },
-    { file: "Settings-Video-Excluded-Mobile.html", title: "视频字幕 · 窄屏网站规则", x: 1360, y: 83300, w: 390, h: 1840 },
-    { file: "Video-Player-Enabled.html", title: "播放器 · 两段式入口 · 视频翻译开启", x: 0, y: 85600, w: 720, h: 520 },
-    { file: "Video-Player-Disabled.html", title: "播放器 · 当前视频关闭，入口保留", x: 800, y: 85600, w: 720, h: 520 },
-    { file: "Video-Player-Preset-English-Mobile.html", title: "播放器 · 窄屏英文两列预设与复位", x: 4460, y: 85600, w: 390, h: 360 },
-    { file: "Video-Player-Preset-English.html", title: "播放器 · 英文预设两列完整显示", x: 3660, y: 85600, w: 720, h: 520 },
-    { file: "Video-Player-Preset-Open.html", title: "播放器 · 点击右侧工具组的 Readomi 图标打开设置", x: 1600, y: 85600, w: 720, h: 520 },
-    { file: "Video-Player-Excluded.html", title: "播放器 · 网站已排除，入口与菜单隐藏", x: 2400, y: 85600, w: 720, h: 520 },
-    { file: "Video-Player-Mobile.html", title: "播放器 · 窄屏右侧图标与设置", x: 3200, y: 85600, w: 390, h: 360 },
-    { file: "Video-Player-X-Toolbar.html", title: "X · 原生工具栏中的紧凑两段式入口", x: 0, y: 86300, w: 720, h: 520 },
-    { file: "Video-Player-Fullscreen.html", title: "播放器 · 全屏右侧图标与设置", x: 800, y: 86300, w: 1360, h: 860 },
-
-    { file: "Settings-Subtitle-More.html", title: "视频字幕 · 更多选项展开", x: 5440, y: 80600, w: 1280, h: 900 },
-    { file: "Settings-Subtitle-Background-Custom.html", title: "视频字幕 · 已调整 · 字号 3.5% · 背景 70%", x: 4080, y: 80600, w: 1280, h: 900 },
-    { file: "Settings-Subtitle-Fixed-Compact.html", title: "历史方案 · 已由相对大小替代 · 视频字幕 · 轻量 · 固定 16 px", x: 1360, y: 80600, w: 1280, h: 900 },
-    { file: "Settings-Subtitle-Fixed-Study.html", title: "历史方案 · 已由相对大小替代 · 视频字幕 · 学习 · 固定 24 px", x: 2720, y: 80600, w: 1280, h: 900 },
-    { file: "Settings-Site-Rules-Expanded.html", title: "站点规则 · 展开与复制", x: 0, y: 76200, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-No-Matches.html", title: "站点规则 · 无搜索结果", x: 1360, y: 76200, w: 1280, h: 900 },
-    { file: "Settings-Site-Rules-Custom-Empty.html", title: "站点规则 · 自定义空状态", x: 2720, y: 76200, w: 1280, h: 900 },
-    { file: "Settings-Site-Rules-Custom-Saved.html", title: "站点规则 · 自定义已保存", x: 4080, y: 76200, w: 1280, h: 900 },
-    { file: "Settings-Site-Rules-Editing.html", title: "站点规则 · JSON 编辑", x: 0, y: 77300, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-Validating.html", title: "站点规则 · 检查中", x: 1360, y: 77300, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-Save-Failed.html", title: "站点规则 · 保存失败保留草稿", x: 2720, y: 77300, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-Editing-Mobile.html", title: "站点规则 · 窄屏编辑", x: 4080, y: 77300, w: 390, h: 1000 },
-    { file: "Settings-Site-Rules-Dark.html", title: "站点规则 · 暗色", x: 0, y: 78400, w: 1280, h: 900 },
-    { file: "Page-Inline-Math-Waiting.html", title: "正文 · 行内公式 · 等待完整结果", x: 0, y: 75300, w: 720, h: 330 },
-    { file: "Page-Inline-Math-Ready.html", title: "正文 · 行内公式 · 保留公式", x: 800, y: 75300, w: 720, h: 330 },
-    { file: "Video-X-Controls-Hidden.html", title: "X 视频 · 控件隐藏", x: 0, y: 73600, w: 720, h: 490 },
-    { file: "Video-X-Controls-Visible.html", title: "X 视频 · 避让播放器控件", x: 800, y: 73600, w: 720, h: 490 },
-    { file: "Video-X-Switch-Prefetching.html", title: "X 视频 · 切换后提前翻译", x: 1600, y: 73600, w: 720, h: 490 },
-    { file: "Video-X-Scrolling.html", title: "X 视频 · 滚动时字幕跟随", x: 2400, y: 73600, w: 720, h: 490 },
-    { file: "Settings-Site-Rules.html", title: "站点规则 · 内置与自定义规则", x: 0, y: 74200, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-Disabled.html", title: "站点规则 · 停用 X 内置规则", x: 1360, y: 74200, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-Invalid.html", title: "站点规则 · 自定义字段错误", x: 2720, y: 74200, w: 1280, h: 1000 },
-    { file: "Settings-Site-Rules-Mobile.html", title: "站点规则 · 窄屏搜索与编辑", x: 4080, y: 74200, w: 390, h: 1420 },
-    { file: "Settings-Subtitle-Fixed-Mobile.html", title: "视频字幕 · 窄屏展开更多选项 · 最小 8 px", x: 3190, y: 71600, w: 390, h: 1420 },
-    { file: "Video-Window-Scale.html", title: "视频字幕 · 不同窗口大小", x: 3660, y: 71600, w: 1120, h: 1240 },
-    { file: "Page-X-Tweet-Streaming.html", title: "X 推文 · 引用样式 · 流式", x: 0, y: 71100, w: 720, h: 380 },
-    { file: "Page-X-Tweet-Ready.html", title: "X 推文 · 完成后保持所选样式", x: 800, y: 71100, w: 720, h: 380 },
-    { file: "Settings-Refresh-Shortcut-Changed.html", title: "设置新版 · 自定义快捷键与恢复默认", x: 0, y: 70000, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Shortcut-Restore-Failed.html", title: "设置新版 · 快捷键恢复失败", x: 1360, y: 70000, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Prompt-Wide.html", title: "设置新版 · 大屏原版提示词编辑", x: 0, y: 67300, w: 2504, h: 1302 },
-    { file: "Settings-Refresh-Shortcut-Recording.html", title: "设置新版 · 快捷键录制中", x: 0, y: 68900, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Shortcut-Conflict.html", title: "设置新版 · 快捷键冲突", x: 1360, y: 68900, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Shortcut-Mobile.html", title: "设置新版 · 窄屏按键按钮", x: 2720, y: 68900, w: 390, h: 900 },
-    { file: "Settings-Refresh-Quality.html", title: "设置新版 · 译文质量", x: 4080, y: 55200, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Appearance.html", title: "设置新版 · 外观", x: 1360, y: 57100, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Service-Failed.html", title: "设置新版 · 服务检查失败", x: 1360, y: 59000, w: 1280, h: 1060 },
-    { file: "Settings-Refresh-Prompt-Editing.html", title: "设置新版 · 原版提示词编辑", x: 2720, y: 59000, w: 1280, h: 1100 },
-    { file: "Settings-Refresh-Prompt-Invalid.html", title: "设置新版 · 模板缺少待翻译文字", x: 4080, y: 59000, w: 1280, h: 1100 },
-    { file: "Settings-Refresh-Prompt-Mobile.html", title: "设置新版 · 窄屏提示词编辑", x: 0, y: 60900, w: 390, h: 1600 },
-    { file: "Settings-Refresh-Select-Open.html", title: "设置新版 · 界面语言下拉展开", x: 1360, y: 60900, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Shortcut-Select-Open.html", title: "设置新版 · 触发方式下拉展开", x: 2720, y: 60900, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Range-Focus.html", title: "设置新版 · 字幕滑杆键盘焦点", x: 4080, y: 60900, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Video-Max.html", title: "设置新版 · 最大字幕字号 · 视频宽度 12.5%", x: 0, y: 62800, w: 1280, h: 900 },
-    { file: "Settings-Refresh-Mobile.html", title: "设置新版 · 窄屏网页阅读", x: 1360, y: 62800, w: 390, h: 1600 },
-    { file: "Settings-Refresh-Dark.html", title: "设置新版 · 暗色外观", x: 4080, y: 62800, w: 1280, h: 900 },
-    { file: "Page-YouTube-Comment-Streaming.html", title: "页面 · YouTube 评论 · 流式译文", x: 0, y: 54000, w: 1200, h: 360 },
-    { file: "Page-YouTube-Comment-Ready.html", title: "页面 · YouTube 评论 · 翻译完成", x: 1280, y: 54000, w: 1200, h: 360 },
-    { file: "Video-Drag-Fullscreen-Letterbox.html", title: "视频 · 宽银幕字幕拖动中", x: 1200, y: 52520, w: 2000, h: 1160 },
-    { file: "Video-Bottom-Fullscreen-Letterbox.html", title: "视频 · 宽银幕全屏底部字幕", x: 1200, y: 51280, w: 2000, h: 1160 },
-    { file: "Video-Bottom-Fullscreen-Hidden.html", title: "视频 · 全屏底部字幕 · 播放条隐藏", x: 1200, y: 48800, w: 2000, h: 1160 },
-    { file: "Video-Bottom-Fullscreen-Controls.html", title: "视频 · 全屏底部字幕 · 播放条显示", x: 1200, y: 50040, w: 2000, h: 1160 },
-    { file: "Settings-Hover-Stream-On.html", title: "设置 · 悬停翻译流式渲染开启", x: 0, y: 47800, w: 1120, h: 860 },
-    { file: "Settings-Hover-Stream-Off.html", title: "设置 · 悬停翻译流式渲染关闭", x: 1200, y: 47800, w: 1120, h: 860 },
-    { file: "Hover-Stream-Inline-Waiting.html", title: "悬停 · 流式首次输出前 · 等待点", x: 3840, y: 46600, w: 880, h: 720 },
-    { file: "Hover-Complete-Waiting.html", title: "悬停 · 完整结果返回前 · 等待点", x: 4800, y: 46600, w: 880, h: 720 },
-    { file: "Hover-Stream-Inline-Streaming.html", title: "悬停 · 正文原位 · 双语流式", x: 0, y: 46600, w: 880, h: 720 },
-    { file: "Hover-Stream-Inline-Only-Streaming.html", title: "悬停 · 正文原位 · 仅译文流式", x: 960, y: 46600, w: 880, h: 720 },
-    { file: "Hover-Stream-Inline-Long.html", title: "悬停 · 正文原位 · 长译文", x: 1920, y: 46600, w: 880, h: 1080 },
-    { file: "Hover-Stream-Inline-Only-Ready.html", title: "悬停 · 正文原位 · 完成后保持原位", x: 2880, y: 46600, w: 880, h: 720 },
-    { file: "Hover-Stream-Inline-Ready.html", title: "悬停 · 正文原位 · 双语完成", x: 3840, y: 45000, w: 880, h: 720 },
-    { file: "Quality-Prompt-Variables-Expanded.html", title: "译文质量 · 可用网页信息展开", x: 0, y: 43400, w: 1120, h: 1460 },
-    { file: "Store-Materials.html", title: "商店 · 1.2.6 素材预览", x: 2400, y: 204800, w: 1360, h: 4000 },
-    { file: "Store-Listing-zh-CN.html", title: "商店 · 1.2.6 中文介绍", x: 0, y: 204800, w: 1120, h: 2200 },
-    { file: "Store-Listing-en.html", title: "商店 · 1.2.6 英文介绍", x: 1200, y: 204800, w: 1120, h: 2200 },
-    { file: "Store-Privacy-zh-CN.html", title: "商店 · 隐私政策中文译文", x: 1200, y: 208900, w: 1120, h: 2700 },
-    { file: "Store-Privacy.html", title: "商店 · 隐私政策", x: 0, y: 208900, w: 1120, h: 3200 },
-    { file: "Store-01-bilingual-zh-CN.html", title: "商店 · zh-CN · 页面翻译，接着读", x: 0, y: 33800, w: 1280, h: 800 },
-    { file: "Store-02-translation-only-zh-CN.html", title: "商店 · zh-CN · 双语对照，或只看译文", x: 1360, y: 33800, w: 1280, h: 800 },
-    { file: "Store-03-hover-zh-CN.html", title: "商店 · zh-CN · 只翻译你想读的一段", x: 2720, y: 33800, w: 1280, h: 800 },
-    { file: "Store-04-subtitles-zh-CN.html", title: "商店 · zh-CN · 已有字幕，也能双语阅读", x: 4080, y: 33800, w: 1280, h: 800 },
-    { file: "Store-05-service-zh-CN.html", title: "商店 · zh-CN · 翻译服务，由你选择", x: 5440, y: 33800, w: 1280, h: 800 },
-    { file: "Store-01-bilingual-en.html", title: "商店 · en · 页面翻译，接着读", x: 0, y: 34700, w: 1280, h: 800 },
-    { file: "Store-02-translation-only-en.html", title: "商店 · en · 双语对照，或只看译文", x: 1360, y: 34700, w: 1280, h: 800 },
-    { file: "Store-03-hover-en.html", title: "商店 · en · 只翻译你想读的一段", x: 2720, y: 34700, w: 1280, h: 800 },
-    { file: "Store-04-subtitles-en.html", title: "商店 · en · 已有字幕，也能双语阅读", x: 4080, y: 34700, w: 1280, h: 800 },
-    { file: "Store-05-service-en.html", title: "商店 · en · 翻译服务，由你选择", x: 5440, y: 34700, w: 1280, h: 800 },
-    { file: "Store-Promo-Small.html", title: "商店 · Small 宣传图", x: 0, y: 35600, w: 440, h: 280 },
-    { file: "Store-Promo-Marquee.html", title: "商店 · Marquee 宣传图", x: 520, y: 35600, w: 1400, h: 560 },
-    { file: "Settings-Language-English.html", title: "设置 · 界面语言 · English", x: 1200, y: 32300, w: 1120, h: 940 },
-    { file: "Settings-Language-Failed.html", title: "设置 · 界面语言 · 保存失败", x: 2400, y: 32300, w: 1120, h: 940 },
-    { file: "Popup-Theme-Teal.html", title: "弹窗 · 墨青翻译按钮", x: 1600, y: 28550, w: 320, h: 500 },
-    { file: "Video-Bottom-Hidden.html", title: "视频 · 底部字幕 · 播放条隐藏", x: 0, y: 28550, w: 720, h: 500 },
-    { file: "Video-Bottom-Controls.html", title: "视频 · 底部字幕 · 播放条显示", x: 800, y: 28550, w: 720, h: 500 },
-    { file: "Settings-Subtitle-Custom.html", title: "设置 · 手调 24 px · 背景 70% · 自定义位置", x: 2000, y: 25800, w: 1120, h: 1360 },
-    { file: "Video-Style-Comparison.html", title: "字幕样式 · 四种可调整预设", x: 0, y: 27300, w: 1400, h: 940 },
-    { file: "Video-Drag.html", title: "视频 · 拖动与快捷调整", x: 1480, y: 27300, w: 720, h: 500 },
-    { file: "Video-Compact.html", title: "视频 · 轻量", x: 2280, y: 27300, w: 720, h: 500 },
-    { file: "Video-Study.html", title: "视频 · 醒目", x: 2280, y: 27880, w: 720, h: 500 },
-    { file: "Popup-Page-Only-Subtitles-Bilingual.html", title: "弹窗 · 网页仅译文，字幕双语", x: 1200, y: 25800, w: 320, h: 500 },
-    { file: "Popup-Page-Bilingual-Subtitles-Only.html", title: "弹窗 · 网页双语，字幕仅译文", x: 1600, y: 25800, w: 320, h: 500 },
-    { file: "Video-Prefetching.html", title: "视频 · 提前翻译中", x: 1600, y: 8760, w: 720, h: 720 },
-    { file: "Settings-Request-Parameters-Gemini.html", title: "设置 · 请求参数 · Gemini", x: 0, y: 24600, w: 1120, h: 1120 },
-    { file: "Settings-Request-Parameters-Anthropic.html", title: "设置 · 请求参数 · Anthropic", x: 2400, y: 23300, w: 1120, h: 1120 },
-    { file: "Settings-Request-Parameters-DeepSeek.html", title: "设置 · 请求参数 · DeepSeek", x: 1200, y: 23300, w: 1120, h: 1120 },
-    { file: "Settings-Request-Parameters-Chat.html", title: "设置 · 请求参数 · Chat", x: 0, y: 23300, w: 1120, h: 1120 },
-    { file: "Settings-Request-Parameters.html", title: "设置 · 思考程度与请求参数", x: 0, y: 22000, w: 1120, h: 1120 },
-    { file: "Settings-Request-Parameters-Invalid.html", title: "设置 · 请求参数无效", x: 1200, y: 22000, w: 1120, h: 1120 },
-    { file: "Settings-Custom-CSS.html", title: "设置 · 阅读 · 自定义 CSS", x: 2400, y: 14290, w: 1120, h: 900 },
-    { file: "Settings-Appearance-terra-Mobile.html", title: "设置 · 外观 · 窄屏", x: 1200, y: 19940, w: 390, h: 1120 },
-    { file: "Settings-Appearance-Failed.html", title: "设置 · 外观 · 保存失败", x: 0, y: 19940, w: 1120, h: 860 },
-    { file: "Agent-Setup-Document.html", title: "Readomi · agent 配置说明", x: 2400, y: 18990, w: 1120, h: 860 },
-    { file: "Settings-Appearance-plum.html", title: "设置 · 外观 · 暖紫", x: 1200, y: 18040, w: 1120, h: 860 },
-    { file: "Settings-Appearance-amber.html", title: "设置 · 外观 · 琥珀", x: 2400, y: 18040, w: 1120, h: 860 },
-    { file: "Settings-Appearance-teal.html", title: "设置 · 外观 · 墨青", x: 0, y: 18990, w: 1120, h: 860 },
-    { file: "Settings-Appearance-terra-Dark.html", title: "设置 · 外观 · 陶红 · 深色", x: 1200, y: 18990, w: 1120, h: 860 },
-
-    { file: "Page-Grid-Contents-Original.html", title: "页面 · 网格布局 · 原文", x: 0, y: 17140, w: 880, h: 680 },
-    { file: "Page-Grid-Contents-Bilingual.html", title: "页面 · 网格布局 · 双语对照", x: 960, y: 17140, w: 880, h: 680 },
-    { file: "Page-Grid-Contents-Only.html", title: "页面 · 网格布局 · 仅译文", x: 1920, y: 17140, w: 880, h: 680 },
-    { file: "Settings-Models-Loading.html", title: "设置 · 翻译服务 · 获取中", x: 1200, y: 10920, w: 1120, h: 1120 },
-    { file: "Settings-Models-List.html", title: "设置 · 翻译服务 · 选择模型", x: 2400, y: 10920, w: 1120, h: 1120 },
-    { file: "Settings-Models-Empty.html", title: "设置 · 翻译服务 · 空列表", x: 0, y: 12130, w: 1120, h: 1120 },
-    { file: "Settings-Models-Failed.html", title: "设置 · 翻译服务 · 获取失败", x: 1200, y: 12130, w: 1120, h: 1120 },
-    { file: "Settings-Models-No-Key.html", title: "设置 · 翻译服务 · 缺少密钥", x: 2400, y: 12130, w: 1120, h: 1120 },
-    { file: "Settings-Shortcut-Control.html", title: "快捷键 · Control", x: 0, y: 15240, w: 1120, h: 860 },
-    { file: "Settings-Shortcut-Shift.html", title: "快捷键 · Shift", x: 1200, y: 15240, w: 1120, h: 860 },
-    { file: "Settings-Shortcut-Backtick.html", title: "快捷键 · 反引号 (`)", x: 2400, y: 15240, w: 1120, h: 860 },
-    { file: "Settings-Shortcut-Mouse.html", title: "快捷键 · 鼠标左键长按", x: 0, y: 16190, w: 1120, h: 860 },
-
-    { file: "Translation-Features-Off.html", title: "设置 · 视频字幕关闭", x: 0, y: 9560, w: 720, h: 720 },
-    { file: "Video-Translation-Only.html", title: "视频 · 仅译文", x: 800, y: 9560, w: 720, h: 720 },
-    { file: "Config-Imported.html", title: "配置 · 导入成功", x: 1600, y: 9560, w: 720, h: 720 },
-    { file: "Service-Form-Checking.html", title: "翻译服务 · 检查中", x: 2400, y: 9560, w: 720, h: 980 },
-    { file: "Config-Import-Preview.html", title: "配置 · 导入预览", x: 2400, y: 6900, w: 720, h: 720 },
-    { file: "Config-Import-Failed.html", title: "配置 · 导入失败", x: 0, y: 7960, w: 720, h: 720 },
-    { file: "Page-Hover.html", title: "页面 · 悬停段落翻译", x: 1600, y: 7960, w: 720, h: 720 },
-    { file: "Video-Subtitles.html", title: "视频 · 双语字幕", x: 2400, y: 7960, w: 720, h: 720 },
-    { file: "Video-Pending.html", title: "视频 · 翻译中", x: 0, y: 8760, w: 720, h: 720 },
-    { file: "Video-Failed.html", title: "视频 · 翻译失败", x: 800, y: 8760, w: 720, h: 720 },
-
-    { file: "Popup-Setup-Agent.html", title: "弹窗 · 未配置（引导去设置页）", x: 0, y: 0, w: 320, h: 540 },
-    { file: "Main.html", title: "弹窗 · 就绪（亮色）", x: 400, y: 0, w: 320, h: 500 },
-    { file: "Popup-Translating.html", title: "弹窗 · 翻译中", x: 800, y: 0, w: 320, h: 520 },
-    { file: "Popup-Dark.html", title: "历史方案 · 已由相对大小替代 · 弹窗 · 深色（跟随系统或固定）", x: 1200, y: 0, w: 320, h: 500 },
-    { file: "Popup-Emphasis.html", title: "弹窗 · 英文词首加粗已打开：底栏按钮按下，与翻译操作分开", x: 1600, y: 0, w: 320, h: 500 },
-    { file: "Popup-Hover.html", title: "弹窗 · 悬停翻译已打开", x: 2400, y: 0, w: 320, h: 500 },
-    { file: "Popup-Unavailable.html", title: "弹窗 · 当前页面不能翻译", x: 2800, y: 0, w: 320, h: 520 },
-    { file: "Popup-Video.html", title: "弹窗 · 视频字幕翻译已打开", x: 3200, y: 0, w: 320, h: 500 },
-    { file: "Popup-Context.html", title: "弹窗 · 使用网页摘要已打开", x: 3600, y: 0, w: 320, h: 500 },
-    { file: "Page.html", title: "页面内 · 主题色译文细线 + 工具栏图标状态", x: 0, y: 780, w: 880, h: 600 },
-    { file: "Icon.html", title: "图标 · 16 / 32 / 48 / 128 与工具栏两种状态", x: 960, y: 780, w: 1120, h: 760 },
-    { file: "Palette.html", title: "配色 · 浅色 / 深色", x: 2160, y: 780, w: 1040, h: 640 },
-    { file: "Page-Emphasis.html", title: "页面内 · 英文词首加粗（未翻译）：每个英文单词的前一半加粗，标题不变", x: 3280, y: 780, w: 880, h: 600 },
-    { file: "Page-Emphasis-Translated.html", title: "页面内 · 英文词首加粗（双语对照）：原文按同一规则加粗，中文译文和标题不变", x: 4240, y: 780, w: 880, h: 680 },
-    { file: "Adaptive.html", title: "高级参数自动调整：各项改由什么自动决定", x: 1200, y: 1760, w: 1040, h: 840 },
-    { file: "Settings-Emphasis.html", title: "网页阅读 · 英文词首加粗已打开：两段预览里的英文都加粗，中文不变", x: 2320, y: 1760, w: 720, h: 680 },
-    { file: "Settings-Translation-Only.html", title: "网页阅读 · 仅译文：预览只剩译文；译文样式只作用于双语对照，所以隐藏", x: 3120, y: 1760, w: 720, h: 560 },
-    { file: "Service-States.html", title: "翻译服务 · 状态关系", x: 0, y: 4020, w: 1520, h: 620 },
-    { file: "Agent-Flow.html", title: "流程 · 用户 → agent → 粘贴 → 预览 → 应用", x: 1600, y: 4020, w: 880, h: 700 },
-    { file: "Settings-Agent.html", title: "翻译服务 · 未配置：直接显示输入框", x: 0, y: 5060, w: 720, h: 450 },
-    { file: "Settings-Idle-Failed.html", title: "翻译服务 · 平时：上次检查失败", x: 1600, y: 5060, w: 720, h: 310 },
-    { file: "Settings-Edited.html", title: "翻译服务 · 待应用：当前 / 应用后上下对照", x: 3200, y: 5060, w: 720, h: 490 },
-    { file: "Settings-Failed.html", title: "翻译服务 · 应用失败：多一行连接结果，不保存", x: 4000, y: 5060, w: 720, h: 550 },
-    { file: "Quality-Prompt-Editing.html", title: "译文质量 · 修改共用提示词", x: 0, y: 39000, w: 1120, h: 1460 },
-    { file: "Quality-Summary-On.html", title: "译文质量 · 网页摘要开启", x: 2400, y: 39000, w: 1120, h: 860 },
-    { file: "Quality-Prompt-Help.html", title: "译文质量 · 共用提示词帮助", x: 3600, y: 40600, w: 1120, h: 860 },
-    { file: "Quality-Summary-Help.html", title: "译文质量 · 网页摘要帮助", x: 2400, y: 40600, w: 1120, h: 860 },
-    { file: "Quality-Prompt-Variables.html", title: "译文质量 · 提示词模板帮助", x: 1200, y: 40600, w: 1120, h: 1460 },
-    { file: "Quality-Prompt-Default.html", title: "译文质量 · 恢复默认待应用", x: 0, y: 40600, w: 1120, h: 1460 },
-
-    // Implemented single-panel site adaptation; real-site behavior awaits user verification.
-
-    {"file": "Page-Site-Rule-Prepare.html", "title": "站点适配 · 准备 · 自动读取网站与复制指令", "x": 0, "y": 130300, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Preview-Reddit.html", "title": "站点适配 · 预览 · Reddit · 直接保存", "x": 1360, "y": 130300, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Preview-Threads.html", "title": "站点适配 · 预览 · Threads · 正文排版待补充", "x": 2720, "y": 130300, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Saved.html", "title": "站点适配 · 保存 · 面板收起 · toast 撤销与查看规则", "x": 4080, "y": 130300, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Invalid.html", "title": "站点适配 · 候选无效 · 错误定位与保留输入", "x": 0, "y": 131450, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Preview-Blocked.html", "title": "站点适配 · 预览失败 · 当前未匹配到正文", "x": 1360, "y": 131450, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Conflict.html", "title": "站点适配 · 相关规则冲突 · 重新读取", "x": 2720, "y": 131450, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Save-Failed.html", "title": "站点适配 · 保存失败 · 预览仍保留", "x": 4080, "y": 131450, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Paused.html", "title": "站点适配 · 离站暂停 · 返回目标网站", "x": 0, "y": 132600, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Restoring.html", "title": "站点适配 · 刷新恢复 · 禁止提前保存", "x": 1360, "y": 132600, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Undo-Conflict.html", "title": "站点适配 · 撤销冲突 · 保留后来修改", "x": 2720, "y": 132600, "w": 1280, "h": 900},
-    {"file": "Settings-Site-Rules-Custom-Saved.html", "title": "站点适配 · 长期管理 · 启停 / 复制 / 删除", "x": 4080, "y": 132600, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Preview-Mobile.html", "title": "站点适配 · 窄屏 · 折叠预览条与停止", "x": 0, "y": 133750, "w": 390, "h": 844},
-    {"file": "Popup-Site-Rule-Agent.html", "title": "站点适配 · 弹窗 · 当前网站适配入口", "x": 1360, "y": 133750, "w": 320, "h": 600},
-    {"file": "Page-Site-Rule-More.html", "title": "站点适配 · 更多展开 · 候选配置与诊断", "x": 2720, "y": 133750, "w": 1280, "h": 900},
-    {"file": "Page-Site-Rule-Preview-Updated.html", "title": "站点适配 · 候选更新 · 清理旧预览并应用最新规则", "x": 4080, "y": 133750, "w": 1280, "h": 900},
-    {"file": "Site-Rule-Agent-Instructions.html", "title": "站点适配 · 当前网页的 agent 指令示意", "x": 0, "y": 134900, "w": 1280, "h": 1050},
-    {"file": "Page-Threads-Multi-Paragraph-Streaming.html", "title": "Threads · 多段原文与保留分段的流式译文", "x": 0, "y": 146400, "w": 960, "h": 820},
-    {"file": "Page-Threads-Multi-Paragraph-Ready.html", "title": "Threads · 完成后保留原文段落与竖线样式", "x": 1040, "y": 146400, "w": 960, "h": 820},
-    {"file": "Page-Reddit-Reading-Streaming.html", "title": "Reddit · 首页整帖译文与详情竖线 · 流式", "x": 0, "y": 147450, "w": 1200, "h": 900},
-    {"file": "Page-Reddit-Reading-Ready.html", "title": "Reddit · 首页整帖译文与详情竖线 · 完成", "x": 1280, "y": 147450, "w": 1200, "h": 900},
-    {"file": "Page-Reddit-Reading-Waiting.html", "title": "Reddit · 原文后图片前 · 等待位置与流式/完成一致", "x": 0, "y": 148550, "w": 1200, "h": 900},
+  "title": "Readomi Design",
+  "boards": [
+    {
+      "file": "Settings-Light-Appearance.html",
+      "title": "外观",
+      "x": 0,
+      "y": 220,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-Models-Open.html",
+      "title": "统一滚动条 · 模型列表展开",
+      "x": 0,
+      "y": 1570,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-Document-Scroll.html",
+      "title": "统一滚动条 · 长配置滚动",
+      "x": 1360,
+      "y": 1570,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Key-Missing.html",
+      "title": "当前布局 · 需要补充本机密钥",
+      "x": 2720,
+      "y": 1570,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Review.html",
+      "title": "当前布局 · 日常 / 测试反馈 / agent 配置",
+      "x": 0,
+      "y": 2580,
+      "w": 1440,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Service-A-Refined.html",
+      "title": "当前布局 · 列表窄屏",
+      "x": 1520,
+      "y": 2580,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Edit.html",
+      "title": "当前布局 · 编辑窄屏",
+      "x": 2880,
+      "y": 2580,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Add.html",
+      "title": "当前布局 · 添加服务",
+      "x": 0,
+      "y": 3690,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Test-Passed.html",
+      "title": "当前布局 · 一次测试通过 · 短暂提示",
+      "x": 1360,
+      "y": 3690,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Test-Failed.html",
+      "title": "当前布局 · 测试失败 · 原因与重试",
+      "x": 2720,
+      "y": 3690,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-A-Refined-Agent.html",
+      "title": "当前布局 · agent 配置",
+      "x": 4080,
+      "y": 3690,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Service-No-Api-Key.html",
+      "title": "翻译服务 · 本地模型 · 无需 API Key",
+      "x": 0,
+      "y": 4700,
+      "w": 1280,
+      "h": 1100
+    },
+    {
+      "file": "Agent-Setup-Document.html",
+      "title": "agent 配置说明",
+      "x": 1360,
+      "y": 4700,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Agent-Flow.html",
+      "title": "Agent 配置流程",
+      "x": 2560,
+      "y": 4700,
+      "w": 880,
+      "h": 700
+    },
+    {
+      "file": "Settings-Service-A-Refined-Reorder-Failed.html",
+      "title": "翻译服务 · 当前布局",
+      "x": 3520,
+      "y": 4700,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Service-A-Refined-Switched.html",
+      "title": "翻译服务 · 当前布局",
+      "x": 0,
+      "y": 5910,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Service-A-Refined-Reordered.html",
+      "title": "翻译服务 · 当前布局",
+      "x": 1360,
+      "y": 5910,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Service-A-Refined-Empty.html",
+      "title": "翻译服务 · 当前布局",
+      "x": 2720,
+      "y": 5910,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Service-A-Refined-Testing.html",
+      "title": "翻译服务 · 当前布局",
+      "x": 4080,
+      "y": 5910,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Languages.html",
+      "title": "翻译语言",
+      "x": 0,
+      "y": 7360,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Languages-Keep.html",
+      "title": "翻译语言",
+      "x": 2720,
+      "y": 7360,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Languages-Menu.html",
+      "title": "翻译语言",
+      "x": 4080,
+      "y": 7360,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Languages-Dark.html",
+      "title": "翻译语言",
+      "x": 0,
+      "y": 8370,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Languages-Mobile.html",
+      "title": "翻译语言",
+      "x": 1360,
+      "y": 8370,
+      "w": 390,
+      "h": 900
+    },
+    {
+      "file": "Settings-Languages-Same.html",
+      "title": "翻译语言",
+      "x": 1830,
+      "y": 8370,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Input-Translation.html",
+      "title": "网页阅读",
+      "x": 0,
+      "y": 9720,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Input-Translation-Off.html",
+      "title": "网页阅读",
+      "x": 1360,
+      "y": 9720,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Light-Reading.html",
+      "title": "网页阅读",
+      "x": 2720,
+      "y": 9720,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Reading-Serif.html",
+      "title": "网页阅读",
+      "x": 4080,
+      "y": 9720,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Reading-Only-Serif.html",
+      "title": "网页阅读",
+      "x": 0,
+      "y": 10730,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Light-Shortcut.html",
+      "title": "快捷键",
+      "x": 1360,
+      "y": 10730,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Refresh-Shortcut-Changed.html",
+      "title": "快捷键已修改",
+      "x": 2720,
+      "y": 10730,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Refresh-Shortcut-Restore-Failed.html",
+      "title": "快捷键恢复失败",
+      "x": 4080,
+      "y": 10730,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Refresh-Shortcut-Recording.html",
+      "title": "快捷键录制中",
+      "x": 0,
+      "y": 11740,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Refresh-Shortcut-Conflict.html",
+      "title": "快捷键冲突",
+      "x": 1360,
+      "y": 11740,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Refresh-Shortcut-Mobile.html",
+      "title": "快捷键窄屏",
+      "x": 2720,
+      "y": 11740,
+      "w": 390,
+      "h": 900
+    },
+    {
+      "file": "Settings-Refresh-Shortcut-Select-Open.html",
+      "title": "触发方式下拉展开",
+      "x": 3190,
+      "y": 11740,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Shortcut-Control.html",
+      "title": "设置 · 快捷键",
+      "x": 0,
+      "y": 12750,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Settings-Shortcut-Shift.html",
+      "title": "设置 · 快捷键",
+      "x": 1200,
+      "y": 12750,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Settings-Shortcut-Backtick.html",
+      "title": "设置 · 快捷键",
+      "x": 2400,
+      "y": 12750,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Settings-Shortcut-Mouse.html",
+      "title": "设置 · 快捷键",
+      "x": 3600,
+      "y": 12750,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Settings-Subtitle-Preset-Color-Invalid.html",
+      "title": "暖金 · 无效颜色草稿",
+      "x": 0,
+      "y": 14060,
+      "w": 1280,
+      "h": 1650
+    },
+    {
+      "file": "Settings-Subtitle-Preview-Short-150.html",
+      "title": "字幕预览 · 短句 150%",
+      "x": 1360,
+      "y": 14060,
+      "w": 1280,
+      "h": 1500
+    },
+    {
+      "file": "Settings-Subtitle-Preview-Long-150.html",
+      "title": "字幕预览 · 长句 150%",
+      "x": 2720,
+      "y": 14060,
+      "w": 1280,
+      "h": 1500
+    },
+    {
+      "file": "Settings-Subtitle-Preview-Portrait-150.html",
+      "title": "字幕预览 · 竖版短句 150%",
+      "x": 4080,
+      "y": 14060,
+      "w": 1280,
+      "h": 1500
+    },
+    {
+      "file": "Settings-Subtitle-Preview-Overflow.html",
+      "title": "字幕预览 · 长句 500% 超出画面",
+      "x": 0,
+      "y": 15820,
+      "w": 1280,
+      "h": 1500
+    },
+    {
+      "file": "Settings-Subtitle-Preview-Mobile-150.html",
+      "title": "字幕预览 · 窄屏短句 150%",
+      "x": 1360,
+      "y": 15820,
+      "w": 390,
+      "h": 1950
+    },
+    {
+      "file": "Settings-Subtitle-Preset-Gold.html",
+      "title": "暖金 · 译文字体与颜色",
+      "x": 1830,
+      "y": 15820,
+      "w": 1280,
+      "h": 1650
+    },
+    {
+      "file": "Settings-Subtitle-Preset-Adjusted.html",
+      "title": "暖金 · 已调整字体与颜色",
+      "x": 3190,
+      "y": 15820,
+      "w": 1280,
+      "h": 1650
+    },
+    {
+      "file": "Settings-Subtitle-Size-Precision.html",
+      "title": "字幕大小 · 百分比显示两位小数",
+      "x": 0,
+      "y": 17880,
+      "w": 1280,
+      "h": 1650
+    },
+    {
+      "file": "Settings-Subtitle-Size-Step-5.html",
+      "title": "字幕大小 · 每次调节 5% · 105%",
+      "x": 1360,
+      "y": 17880,
+      "w": 1280,
+      "h": 1650
+    },
+    {
+      "file": "Settings-Subtitle-Size-Default.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 2720,
+      "y": 17880,
+      "w": 1280,
+      "h": 1400
+    },
+    {
+      "file": "Settings-Subtitle-Size-Adjusted.html",
+      "title": "字幕相对大小 · 大小 125%",
+      "x": 4080,
+      "y": 17880,
+      "w": 1280,
+      "h": 1400
+    },
+    {
+      "file": "Settings-Subtitle-Size-Minimum.html",
+      "title": "字幕相对大小 · 最小 35.71%",
+      "x": 0,
+      "y": 19640,
+      "w": 1280,
+      "h": 1400
+    },
+    {
+      "file": "Settings-Subtitle-Size-Maximum.html",
+      "title": "字幕相对大小 · 最大 714.29%",
+      "x": 1360,
+      "y": 19640,
+      "w": 1280,
+      "h": 1400
+    },
+    {
+      "file": "Settings-Subtitle-Size-Mobile.html",
+      "title": "字幕相对大小 · 窄屏 100%",
+      "x": 2720,
+      "y": 19640,
+      "w": 390,
+      "h": 1800
+    },
+    {
+      "file": "Settings-Subtitle-Ratio-Invalid.html",
+      "title": "字幕大小比例 · 数值超出范围",
+      "x": 3190,
+      "y": 19640,
+      "w": 1280,
+      "h": 1380
+    },
+    {
+      "file": "Settings-Subtitle-Ratio-Default.html",
+      "title": "字幕大小比例 · 1:1 等大",
+      "x": 0,
+      "y": 21550,
+      "w": 1280,
+      "h": 1350
+    },
+    {
+      "file": "Settings-Subtitle-Ratio-Adjusted.html",
+      "title": "字幕大小比例 · 原文 85% · 已保存",
+      "x": 1360,
+      "y": 21550,
+      "w": 1280,
+      "h": 1350
+    },
+    {
+      "file": "Settings-Subtitle-Ratio-Only.html",
+      "title": "字幕大小比例 · 仅译文 · 保留比例",
+      "x": 2720,
+      "y": 21550,
+      "w": 1280,
+      "h": 1350
+    },
+    {
+      "file": "Settings-Subtitle-Ratio-Mobile.html",
+      "title": "字幕大小比例 · 窄屏 · 1:1 等大",
+      "x": 4080,
+      "y": 21550,
+      "w": 390,
+      "h": 1900
+    },
+    {
+      "file": "Settings-Subtitle-Ratio-Save-Failed.html",
+      "title": "字幕大小比例 · 比例保存失败",
+      "x": 0,
+      "y": 23560,
+      "w": 1280,
+      "h": 1450
+    },
+    {
+      "file": "Settings-Video-Excluded-Empty.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 1360,
+      "y": 23560,
+      "w": 1280,
+      "h": 1350
+    },
+    {
+      "file": "Settings-Video-Excluded-Saved.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 2720,
+      "y": 23560,
+      "w": 1280,
+      "h": 1380
+    },
+    {
+      "file": "Settings-Video-Excluded-Invalid.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 4080,
+      "y": 23560,
+      "w": 1280,
+      "h": 1380
+    },
+    {
+      "file": "Settings-Video-Excluded-Duplicate.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 0,
+      "y": 25120,
+      "w": 1280,
+      "h": 1380
+    },
+    {
+      "file": "Settings-Video-Excluded-Save-Failed.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 1360,
+      "y": 25120,
+      "w": 1280,
+      "h": 1420
+    },
+    {
+      "file": "Settings-Video-Excluded-Mobile.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 2720,
+      "y": 25120,
+      "w": 390,
+      "h": 1840
+    },
+    {
+      "file": "Settings-Subtitle-Off.html",
+      "title": "字幕相对大小 · 默认 100%",
+      "x": 3190,
+      "y": 25120,
+      "w": 1280,
+      "h": 1350
+    },
+    {
+      "file": "Settings-Refresh-Quality.html",
+      "title": "译文质量",
+      "x": 0,
+      "y": 27410,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Reading-Refinement-Error-Quality.html",
+      "title": "段落翻译 · Quality",
+      "x": 1360,
+      "y": 27410,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Translation-Quality-Retry.html",
+      "title": "网页 · 译文校验 · 自动重试中",
+      "x": 2400,
+      "y": 27410,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Translation-Quality-Failed.html",
+      "title": "网页 · 译文校验 · 重试后仍失败",
+      "x": 3440,
+      "y": 27410,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Translation-Quality-Ready.html",
+      "title": "网页 · 译文校验 · 正确的中文结果",
+      "x": 0,
+      "y": 28420,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Settings-Refresh-Prompt-Wide.html",
+      "title": "原版提示词编辑 · 大屏",
+      "x": 1040,
+      "y": 28420,
+      "w": 2504,
+      "h": 1302
+    },
+    {
+      "file": "Settings-Refresh-Prompt-Editing.html",
+      "title": "原版提示词编辑",
+      "x": 0,
+      "y": 29832,
+      "w": 1280,
+      "h": 1100
+    },
+    {
+      "file": "Settings-Refresh-Prompt-Invalid.html",
+      "title": "模板缺少待翻译文字",
+      "x": 1360,
+      "y": 29832,
+      "w": 1280,
+      "h": 1100
+    },
+    {
+      "file": "Settings-Refresh-Prompt-Mobile.html",
+      "title": "窄屏提示词编辑",
+      "x": 2720,
+      "y": 29832,
+      "w": 390,
+      "h": 1600
+    },
+    {
+      "file": "Quality-Prompt-Variables-Expanded.html",
+      "title": "设置 · 译文质量",
+      "x": 3190,
+      "y": 29832,
+      "w": 1120,
+      "h": 1460
+    },
+    {
+      "file": "Quality-Prompt-Editing.html",
+      "title": "设置 · 译文质量",
+      "x": 0,
+      "y": 31542,
+      "w": 1120,
+      "h": 1460
+    },
+    {
+      "file": "Quality-Summary-On.html",
+      "title": "设置 · 译文质量",
+      "x": 1200,
+      "y": 31542,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Quality-Prompt-Help.html",
+      "title": "设置 · 译文质量",
+      "x": 2400,
+      "y": 31542,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Quality-Summary-Help.html",
+      "title": "设置 · 译文质量",
+      "x": 3600,
+      "y": 31542,
+      "w": 1120,
+      "h": 860
+    },
+    {
+      "file": "Quality-Prompt-Variables.html",
+      "title": "设置 · 译文质量",
+      "x": 0,
+      "y": 33112,
+      "w": 1120,
+      "h": 1460
+    },
+    {
+      "file": "Quality-Prompt-Default.html",
+      "title": "设置 · 译文质量",
+      "x": 1200,
+      "y": 33112,
+      "w": 1120,
+      "h": 1460
+    },
+    {
+      "file": "Reading-Refinement-Cache-Default.html",
+      "title": "翻译缓存 · Default",
+      "x": 0,
+      "y": 35022,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Reading-Refinement-Cache-Pending.html",
+      "title": "翻译缓存 · Pending",
+      "x": 1360,
+      "y": 35022,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Reading-Refinement-Cache-Success.html",
+      "title": "翻译缓存 · Success",
+      "x": 2720,
+      "y": 35022,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Reading-Refinement-Cache-Failed.html",
+      "title": "翻译缓存 · Failed",
+      "x": 4080,
+      "y": 35022,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Sync-Edge.html",
+      "title": "备份与同步 · Microsoft Edge · 同步不可用",
+      "x": 0,
+      "y": 36372,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Edge-Import.html",
+      "title": "备份与同步 · Microsoft Edge · 导入确认",
+      "x": 1360,
+      "y": 36372,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Edge-Import-Saved.html",
+      "title": "备份与同步 · Microsoft Edge · 导入完成",
+      "x": 2720,
+      "y": 36372,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Firefox.html",
+      "title": "备份与同步 · Firefox · 同步不可用",
+      "x": 4080,
+      "y": 36372,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Firefox-Import.html",
+      "title": "备份与同步 · Firefox · 导入确认",
+      "x": 0,
+      "y": 37442,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Firefox-Import-Saved.html",
+      "title": "备份与同步 · Firefox · 导入完成",
+      "x": 1360,
+      "y": 37442,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Other.html",
+      "title": "备份与同步 · 其他浏览器 · 同步不可用",
+      "x": 2720,
+      "y": 37442,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Other-Import.html",
+      "title": "备份与同步 · 其他浏览器 · 导入确认",
+      "x": 4080,
+      "y": 37442,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Other-Import-Saved.html",
+      "title": "备份与同步 · 其他浏览器 · 导入完成",
+      "x": 0,
+      "y": 38512,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Review.html",
+      "title": "备份与同步 · 设计预览",
+      "x": 1360,
+      "y": 38512,
+      "w": 1320,
+      "h": 1200
+    },
+    {
+      "file": "Settings-Sync-Off.html",
+      "title": "备份与同步 · 未开启",
+      "x": 2760,
+      "y": 38512,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-On.html",
+      "title": "备份与同步 · 已开启",
+      "x": 0,
+      "y": 39822,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-First.html",
+      "title": "备份与同步 · 首次开启 · 已有同步配置",
+      "x": 1360,
+      "y": 39822,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Pending.html",
+      "title": "备份与同步 · 正在保存",
+      "x": 2720,
+      "y": 39822,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Missing-Key.html",
+      "title": "备份与同步 · 新设备 · 待补填密钥",
+      "x": 4080,
+      "y": 39822,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Failed.html",
+      "title": "备份与同步 · 保存失败",
+      "x": 0,
+      "y": 40892,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Quota.html",
+      "title": "备份与同步 · 容量超限",
+      "x": 1360,
+      "y": 40892,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Import.html",
+      "title": "备份与同步 · 导入备份 · 同步已开启",
+      "x": 2720,
+      "y": 40892,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Import-Saved.html",
+      "title": "备份与同步 · 导入完成 · 等待同步",
+      "x": 4080,
+      "y": 40892,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Sync-Mobile.html",
+      "title": "备份与同步 · 窄屏 · 已开启",
+      "x": 0,
+      "y": 41962,
+      "w": 390,
+      "h": 1120
+    },
+    {
+      "file": "Settings-Sync-Dark.html",
+      "title": "备份与同步 · 深色 · 已开启",
+      "x": 470,
+      "y": 41962,
+      "w": 1280,
+      "h": 960
+    },
+    {
+      "file": "Settings-Site-Rules-Expanded.html",
+      "title": "站点规则",
+      "x": 0,
+      "y": 43532,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-No-Matches.html",
+      "title": "站点规则",
+      "x": 1360,
+      "y": 43532,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Site-Rules-Custom-Empty.html",
+      "title": "站点规则",
+      "x": 2720,
+      "y": 43532,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Site-Rules-Custom-Saved.html",
+      "title": "站点规则",
+      "x": 4080,
+      "y": 43532,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Site-Rules-Editing.html",
+      "title": "站点规则",
+      "x": 0,
+      "y": 44642,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Validating.html",
+      "title": "站点规则",
+      "x": 1360,
+      "y": 44642,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Save-Failed.html",
+      "title": "站点规则",
+      "x": 2720,
+      "y": 44642,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Editing-Mobile.html",
+      "title": "站点规则",
+      "x": 4080,
+      "y": 44642,
+      "w": 390,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Dark.html",
+      "title": "站点规则",
+      "x": 0,
+      "y": 45752,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Settings-Site-Rules.html",
+      "title": "站点规则",
+      "x": 1360,
+      "y": 45752,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Disabled.html",
+      "title": "站点规则",
+      "x": 2720,
+      "y": 45752,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Invalid.html",
+      "title": "站点规则",
+      "x": 4080,
+      "y": 45752,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Site-Rules-Mobile.html",
+      "title": "站点规则",
+      "x": 0,
+      "y": 46862,
+      "w": 390,
+      "h": 1420
+    },
+    {
+      "file": "Popup-Site-Translated.html",
+      "title": "弹窗 · 已翻译 · 当前页字幕关闭",
+      "x": 0,
+      "y": 48732,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Translated-Disabled.html",
+      "title": "弹窗 · 已翻译后禁用 · 保留布局与字幕选择",
+      "x": 400,
+      "y": 48732,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Translated-Resumed.html",
+      "title": "弹窗 · 恢复网站 · 保留布局与字幕关闭选择",
+      "x": 800,
+      "y": 48732,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Motion-A.html",
+      "title": "弹窗动效 · A · 叠层淡化（已采用）",
+      "x": 1200,
+      "y": 48732,
+      "w": 320,
+      "h": 500
+    },
+    {
+      "file": "Popup-Site-Resuming.html",
+      "title": "弹窗 · 网站扩展 · 恢复字幕状态中",
+      "x": 1600,
+      "y": 48732,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Disable-Review.html",
+      "title": "弹窗 · 网站禁用 · 设计对照",
+      "x": 2000,
+      "y": 48732,
+      "w": 1120,
+      "h": 620
+    },
+    {
+      "file": "Popup-Site-Enabling-Failed.html",
+      "title": "弹窗 · 网站扩展 · 重新启用失败",
+      "x": 3200,
+      "y": 48732,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Design-A-Disabled-Dark.html",
+      "title": "弹窗 · 网站禁用 · 深色",
+      "x": 3600,
+      "y": 48732,
+      "w": 320,
+      "h": 560
+    },
+    {
+      "file": "Popup-Subtitle-Page-On.html",
+      "title": "弹窗 · 当前页字幕已开启",
+      "x": 4000,
+      "y": 48732,
+      "w": 320,
+      "h": 500
+    },
+    {
+      "file": "Popup-Subtitle-Page-Off.html",
+      "title": "弹窗 · 当前页字幕已关闭",
+      "x": 4400,
+      "y": 48732,
+      "w": 320,
+      "h": 500
+    },
+    {
+      "file": "Popup-Subtitle-Page-Pending.html",
+      "title": "弹窗 · 当前页字幕状态读取中",
+      "x": 4800,
+      "y": 48732,
+      "w": 320,
+      "h": 500
+    },
+    {
+      "file": "Popup-Subtitle-Page-Failed.html",
+      "title": "弹窗 · 当前页字幕切换失败",
+      "x": 0,
+      "y": 49492,
+      "w": 320,
+      "h": 500
+    },
+    {
+      "file": "Popup-Subtitle-Page-Unavailable.html",
+      "title": "弹窗 · 当前页字幕不可用",
+      "x": 400,
+      "y": 49492,
+      "w": 320,
+      "h": 500
+    },
+    {
+      "file": "Popup-Design-A-Help.html",
+      "title": "弹窗 · 紧凑列表 · 帮助展开",
+      "x": 800,
+      "y": 49492,
+      "w": 320,
+      "h": 560
+    },
+    {
+      "file": "Popup-Design-A-Dark.html",
+      "title": "弹窗 · 紧凑列表 · 深色",
+      "x": 1200,
+      "y": 49492,
+      "w": 320,
+      "h": 560
+    },
+    {
+      "file": "Popup-Design-A-Disabled.html",
+      "title": "弹窗 · 紧凑列表 · 网站禁用",
+      "x": 1600,
+      "y": 49492,
+      "w": 320,
+      "h": 560
+    },
+    {
+      "file": "Popup-Design-A-Setup.html",
+      "title": "弹窗 · 紧凑列表 · 未配置",
+      "x": 2000,
+      "y": 49492,
+      "w": 320,
+      "h": 560
+    },
+    {
+      "file": "Popup-Design-A.html",
+      "title": "弹窗 · 紧凑列表（已采用）",
+      "x": 2400,
+      "y": 49492,
+      "w": 320,
+      "h": 480
+    },
+    {
+      "file": "Popup-Site-Enabling.html",
+      "title": "弹窗 · 网站扩展 · Enabling",
+      "x": 2800,
+      "y": 49492,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Enabled.html",
+      "title": "弹窗 · 网站扩展 · Enabled",
+      "x": 3200,
+      "y": 49492,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Disabled.html",
+      "title": "弹窗 · 网站扩展 · Disabled",
+      "x": 3600,
+      "y": 49492,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Saving.html",
+      "title": "弹窗 · 网站扩展 · Saving",
+      "x": 4000,
+      "y": 49492,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Failed.html",
+      "title": "弹窗 · 网站扩展 · Failed",
+      "x": 4400,
+      "y": 49492,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Popup-Site-Unavailable.html",
+      "title": "弹窗 · 网站扩展 · Unavailable",
+      "x": 4800,
+      "y": 49492,
+      "w": 320,
+      "h": 650
+    },
+    {
+      "file": "Corner-Feedback-Review.html",
+      "title": "右下角提示 · 设计预览",
+      "x": 0,
+      "y": 50592,
+      "w": 1360,
+      "h": 1120
+    },
+    {
+      "file": "Corner-Feedback-Error.html",
+      "title": "右下角统一提示 · Error",
+      "x": 1440,
+      "y": 50592,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Success.html",
+      "title": "右下角统一提示 · Success",
+      "x": 2800,
+      "y": 50592,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Api-Key.html",
+      "title": "右下角统一提示 · Api-Key",
+      "x": 0,
+      "y": 51822,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Replace-Failed.html",
+      "title": "右下角统一提示 · Replace-Failed",
+      "x": 1360,
+      "y": 51822,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Saved.html",
+      "title": "右下角统一提示 · Saved",
+      "x": 2720,
+      "y": 51822,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Undone.html",
+      "title": "右下角统一提示 · Undone",
+      "x": 4080,
+      "y": 51822,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Panel.html",
+      "title": "右下角统一提示 · Panel",
+      "x": 0,
+      "y": 52832,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Folded.html",
+      "title": "右下角统一提示 · Folded",
+      "x": 1360,
+      "y": 52832,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Stack.html",
+      "title": "右下角统一提示 · Stack",
+      "x": 2720,
+      "y": 52832,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Multiple.html",
+      "title": "右下角统一提示 · Multiple",
+      "x": 4080,
+      "y": 52832,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Dark.html",
+      "title": "右下角统一提示 · Dark",
+      "x": 0,
+      "y": 53842,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Mobile.html",
+      "title": "右下角统一提示 · Mobile",
+      "x": 1360,
+      "y": 53842,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Corner-Feedback-Entering.html",
+      "title": "右下角统一提示 · Entering",
+      "x": 1830,
+      "y": 53842,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Exiting.html",
+      "title": "右下角统一提示 · Exiting",
+      "x": 3190,
+      "y": 53842,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Corner-Feedback-Dismissed.html",
+      "title": "右下角统一提示 · Dismissed",
+      "x": 0,
+      "y": 54852,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Prepare.html",
+      "title": "页面 · 适配此网站 · 准备指令",
+      "x": 0,
+      "y": 56202,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Preview-Reddit.html",
+      "title": "页面 · Reddit · 预览并保存",
+      "x": 1360,
+      "y": 56202,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Preview-Threads.html",
+      "title": "页面 · Threads · 预览并保存",
+      "x": 2720,
+      "y": 56202,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Saved.html",
+      "title": "站点规则保存提示 · 无外框入口",
+      "x": 4080,
+      "y": 56202,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Invalid.html",
+      "title": "页面 · 候选无效 · 保留输入",
+      "x": 0,
+      "y": 57212,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Preview-Blocked.html",
+      "title": "页面 · 正文零匹配",
+      "x": 1360,
+      "y": 57212,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Conflict.html",
+      "title": "页面 · 相关规则冲突",
+      "x": 2720,
+      "y": 57212,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Save-Failed.html",
+      "title": "页面 · 保存失败 · 保留预览",
+      "x": 4080,
+      "y": 57212,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Paused.html",
+      "title": "页面 · 离站暂停",
+      "x": 0,
+      "y": 58222,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Restoring.html",
+      "title": "页面 · 刷新恢复",
+      "x": 1360,
+      "y": 58222,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Undo-Conflict.html",
+      "title": "页面 · 撤销冲突",
+      "x": 2720,
+      "y": 58222,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Preview-Mobile.html",
+      "title": "页面 · 窄屏站点适配",
+      "x": 4080,
+      "y": 58222,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Page-Site-Rule-More.html",
+      "title": "页面 · 更多展开 · 候选与诊断",
+      "x": 0,
+      "y": 59232,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Page-Site-Rule-Preview-Updated.html",
+      "title": "页面 · 最新候选自动替换",
+      "x": 1360,
+      "y": 59232,
+      "w": 1280,
+      "h": 900
+    },
+    {
+      "file": "Site-Rule-Agent-Instructions.html",
+      "title": "给 agent 的站点适配指令",
+      "x": 2720,
+      "y": 59232,
+      "w": 1280,
+      "h": 1050
+    },
+    {
+      "file": "Page-Input-Translation-Replace-Failed.html",
+      "title": "输入框翻译 · 超过字数限制",
+      "x": 0,
+      "y": 60732,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Page-Input-Translation-Iframe-Ready.html",
+      "title": "输入框翻译 · 内嵌编辑器",
+      "x": 800,
+      "y": 60732,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Page-Input-Translation-Cancelled.html",
+      "title": "输入框翻译 · 失焦取消",
+      "x": 1600,
+      "y": 60732,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Page-Input-Translation-Pending.html",
+      "title": "输入框翻译 · Pending",
+      "x": 2400,
+      "y": 60732,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Page-Input-Translation-Ready.html",
+      "title": "输入框翻译 · Ready",
+      "x": 3200,
+      "y": 60732,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Page-Input-Translation-Preserved.html",
+      "title": "输入框翻译 · Preserved",
+      "x": 4000,
+      "y": 60732,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Page-Input-Translation-Failed.html",
+      "title": "输入框翻译 · Failed",
+      "x": 0,
+      "y": 61742,
+      "w": 720,
+      "h": 900
+    },
+    {
+      "file": "Reading-Refinement-Error-Key.html",
+      "title": "段落翻译 · Key",
+      "x": 800,
+      "y": 61742,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Reading-Refinement-Error-Rate.html",
+      "title": "段落翻译 · Rate",
+      "x": 1840,
+      "y": 61742,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Reading-Refinement-Error-Timeout.html",
+      "title": "段落翻译 · Timeout",
+      "x": 2880,
+      "y": 61742,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Reading-Refinement-Error-Network.html",
+      "title": "段落翻译 · Network",
+      "x": 3920,
+      "y": 61742,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Paragraph-Layout-Streaming.html",
+      "title": "完整段落 · 流式翻译",
+      "x": 0,
+      "y": 62752,
+      "w": 960,
+      "h": 820
+    },
+    {
+      "file": "Page-Paragraph-Layout-Ready.html",
+      "title": "完整段落 · 双语对照",
+      "x": 1040,
+      "y": 62752,
+      "w": 960,
+      "h": 820
+    },
+    {
+      "file": "Hover-Multi-Paragraph-Waiting.html",
+      "title": "悬停 · 两段同时等待",
+      "x": 2080,
+      "y": 62752,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Multi-Paragraph-Streaming.html",
+      "title": "悬停 · 两段独立流式翻译",
+      "x": 3040,
+      "y": 62752,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Multi-Paragraph-Mixed.html",
+      "title": "悬停 · 一段完成，另一段继续翻译",
+      "x": 4000,
+      "y": 62752,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Multi-Paragraph-Only-Streaming.html",
+      "title": "悬停 · 仅译文两段独立流式翻译",
+      "x": 0,
+      "y": 63682,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Page-Bilingual.html",
+      "title": "网页 · 中英双向 · 双语对照",
+      "x": 960,
+      "y": 63682,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Keep.html",
+      "title": "网页 · 中文保持原文 · 双语对照",
+      "x": 2000,
+      "y": 63682,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Only-Keep.html",
+      "title": "网页 · 中文保持原文 · 仅译文",
+      "x": 3040,
+      "y": 63682,
+      "w": 960,
+      "h": 620
+    },
+    {
+      "file": "Page-Inline-Math-Waiting.html",
+      "title": "行内公式",
+      "x": 4080,
+      "y": 63682,
+      "w": 720,
+      "h": 330
+    },
+    {
+      "file": "Page-Inline-Math-Ready.html",
+      "title": "行内公式",
+      "x": 0,
+      "y": 64512,
+      "w": 720,
+      "h": 330
+    },
+    {
+      "file": "Page-X-Tweet-Streaming.html",
+      "title": "页面 · X 推文 · 引用样式流式译文",
+      "x": 800,
+      "y": 64512,
+      "w": 720,
+      "h": 380
+    },
+    {
+      "file": "Page-X-Tweet-Ready.html",
+      "title": "页面 · X 推文 · 完成后保持引用样式",
+      "x": 1600,
+      "y": 64512,
+      "w": 720,
+      "h": 380
+    },
+    {
+      "file": "Page-YouTube-Comment-Streaming.html",
+      "title": "页面 · YouTube 评论 · 流式译文",
+      "x": 2400,
+      "y": 64512,
+      "w": 1200,
+      "h": 360
+    },
+    {
+      "file": "Page-YouTube-Comment-Ready.html",
+      "title": "页面 · YouTube 评论 · 翻译完成",
+      "x": 3680,
+      "y": 64512,
+      "w": 1200,
+      "h": 360
+    },
+    {
+      "file": "Hover-Stream-Inline-Waiting.html",
+      "title": "悬停 · 流式首次输出前 · 等待点",
+      "x": 0,
+      "y": 65002,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Complete-Waiting.html",
+      "title": "悬停 · 完整结果返回前 · 等待点",
+      "x": 960,
+      "y": 65002,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Stream-Inline-Streaming.html",
+      "title": "悬停 · 正文原位 · 双语流式",
+      "x": 1920,
+      "y": 65002,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Stream-Inline-Only-Streaming.html",
+      "title": "悬停 · 正文原位 · 仅译文流式",
+      "x": 2880,
+      "y": 65002,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Stream-Inline-Long.html",
+      "title": "悬停 · 正文原位 · 长译文",
+      "x": 3840,
+      "y": 65002,
+      "w": 880,
+      "h": 1080
+    },
+    {
+      "file": "Hover-Stream-Inline-Only-Ready.html",
+      "title": "悬停 · 正文原位 · 仅译文完成",
+      "x": 0,
+      "y": 66192,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Hover-Stream-Inline-Ready.html",
+      "title": "悬停 · 正文原位 · 双语完成",
+      "x": 960,
+      "y": 66192,
+      "w": 880,
+      "h": 720
+    },
+    {
+      "file": "Page-Grid-Contents-Original.html",
+      "title": "页面 · 网格布局 · 原文",
+      "x": 1920,
+      "y": 66192,
+      "w": 880,
+      "h": 680
+    },
+    {
+      "file": "Page-Grid-Contents-Bilingual.html",
+      "title": "页面 · 网格布局 · 双语对照",
+      "x": 2880,
+      "y": 66192,
+      "w": 880,
+      "h": 680
+    },
+    {
+      "file": "Page-Grid-Contents-Only.html",
+      "title": "页面 · 网格布局 · 仅译文",
+      "x": 3840,
+      "y": 66192,
+      "w": 880,
+      "h": 680
+    },
+    {
+      "file": "Page-Hover.html",
+      "title": "页面 · 悬停段落翻译",
+      "x": 0,
+      "y": 67022,
+      "w": 720,
+      "h": 720
+    },
+    {
+      "file": "Page.html",
+      "title": "页面内 · 双语对照",
+      "x": 800,
+      "y": 67022,
+      "w": 880,
+      "h": 600
+    },
+    {
+      "file": "Page-Emphasis.html",
+      "title": "页面内 · 词首强调",
+      "x": 1760,
+      "y": 67022,
+      "w": 880,
+      "h": 600
+    },
+    {
+      "file": "Page-Emphasis-Translated.html",
+      "title": "页面内 · 词首强调 · 双语对照",
+      "x": 2720,
+      "y": 67022,
+      "w": 880,
+      "h": 680
+    },
+    {
+      "file": "Page-Threads-Multi-Paragraph-Streaming.html",
+      "title": "页面 · Threads · 多段译文 · 流式",
+      "x": 3680,
+      "y": 67022,
+      "w": 960,
+      "h": 820
+    },
+    {
+      "file": "Page-Threads-Multi-Paragraph-Ready.html",
+      "title": "页面 · Threads · 多段译文 · 完成",
+      "x": 0,
+      "y": 67952,
+      "w": 960,
+      "h": 820
+    },
+    {
+      "file": "Page-Reddit-Reading-Streaming.html",
+      "title": "页面 · Reddit · 首页与详情 · 流式",
+      "x": 1040,
+      "y": 67952,
+      "w": 1200,
+      "h": 900
+    },
+    {
+      "file": "Page-Reddit-Reading-Ready.html",
+      "title": "页面 · Reddit · 首页与详情 · 完成",
+      "x": 2320,
+      "y": 67952,
+      "w": 1200,
+      "h": 900
+    },
+    {
+      "file": "Page-Reddit-Reading-Waiting.html",
+      "title": "页面 · Reddit · 首页等待 · 详情参考",
+      "x": 3600,
+      "y": 67952,
+      "w": 1200,
+      "h": 900
+    },
+    {
+      "file": "Video-Player-Appearance.html",
+      "title": "播放器 · 字幕背景与译文颜色",
+      "x": 0,
+      "y": 69302,
+      "w": 1040,
+      "h": 740
+    },
+    {
+      "file": "Video-Player-Size-Step-5.html",
+      "title": "播放器字幕大小 · 每次调节 5% · 105%",
+      "x": 1120,
+      "y": 69302,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Appearance-Adjusted.html",
+      "title": "播放器 · 字幕背景与译文颜色",
+      "x": 1920,
+      "y": 69302,
+      "w": 1040,
+      "h": 740
+    },
+    {
+      "file": "Video-Player-Appearance-Mobile.html",
+      "title": "播放器 · 字幕背景与译文颜色",
+      "x": 3040,
+      "y": 69302,
+      "w": 390,
+      "h": 450
+    },
+    {
+      "file": "Video-Bilingual.html",
+      "title": "字幕 · 中文原文与英文译文",
+      "x": 1200,
+      "y": 70412,
+      "w": 800,
+      "h": 450
+    },
+    {
+      "file": "Video-Keep.html",
+      "title": "字幕 · 保持原文只显示一行",
+      "x": 2080,
+      "y": 70412,
+      "w": 800,
+      "h": 450
+    },
+    {
+      "file": "Video-Player-X-Ad-Toolbar.html",
+      "title": "X · 广告层显示，入口保留在底部播放栏",
+      "x": 2960,
+      "y": 70412,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-X-Ad-Toolbar-Unavailable.html",
+      "title": "X · 仅广告操作栏可用，无  入口",
+      "x": 3760,
+      "y": 70412,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Toolbar-Unavailable.html",
+      "title": "YouTube · 原生工具栏不可用",
+      "x": 4560,
+      "y": 70412,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Toolbar-Crowded.html",
+      "title": "YouTube · 窄屏原生工具栏空间不足",
+      "x": 0,
+      "y": 72042,
+      "w": 320,
+      "h": 320
+    },
+    {
+      "file": "Video-Player-Menu-Hidden.html",
+      "title": "YouTube · 播放条隐藏时菜单一同隐藏",
+      "x": 400,
+      "y": 72042,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Bilibili-Search-No-Controls.html",
+      "title": "Bilibili 搜索 · 预览视频无  工具栏",
+      "x": 1200,
+      "y": 72042,
+      "w": 1120,
+      "h": 560
+    },
+    {
+      "file": "Video-Bilibili-Player-No-Controls.html",
+      "title": "Bilibili 播放器 · 保留原生工具栏",
+      "x": 2400,
+      "y": 72042,
+      "w": 1120,
+      "h": 700
+    },
+    {
+      "file": "Video-Player-Exclusion-Removed.html",
+      "title": "YouTube · 取消网站排除后恢复入口",
+      "x": 3600,
+      "y": 72042,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-HTML5-Toolbar.html",
+      "title": "HTML5 · 字幕自动翻译，无  工具栏",
+      "x": 4400,
+      "y": 72042,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-X-Toolbar-Mobile.html",
+      "title": "X · 320 px 右侧工具组入口",
+      "x": 0,
+      "y": 72852,
+      "w": 352,
+      "h": 330
+    },
+    {
+      "file": "Video-Player-Playing-Hidden.html",
+      "title": "视频播放中 · 控件自然隐藏",
+      "x": 432,
+      "y": 72852,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Save-Failed.html",
+      "title": "YouTube · 保存失败",
+      "x": 1232,
+      "y": 72852,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Enabled.html",
+      "title": "YouTube · 视频翻译已开启",
+      "x": 2032,
+      "y": 72852,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Disabled.html",
+      "title": "YouTube · 视频翻译已关闭",
+      "x": 2832,
+      "y": 72852,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Preset-English-Mobile.html",
+      "title": "Subtitle preset",
+      "x": 3632,
+      "y": 72852,
+      "w": 390,
+      "h": 360
+    },
+    {
+      "file": "Video-Player-Preset-English.html",
+      "title": "Subtitle preset",
+      "x": 4102,
+      "y": 72852,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Preset-Open.html",
+      "title": "YouTube ·  图标打开字幕设置",
+      "x": 0,
+      "y": 73482,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Excluded.html",
+      "title": "YouTube · 此网站已排除",
+      "x": 800,
+      "y": 73482,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Mobile.html",
+      "title": "YouTube · 窄屏右侧工具组字幕设置",
+      "x": 1600,
+      "y": 73482,
+      "w": 390,
+      "h": 360
+    },
+    {
+      "file": "Video-Player-X-Toolbar.html",
+      "title": "X · 右侧工具组前端的  入口",
+      "x": 2070,
+      "y": 73482,
+      "w": 720,
+      "h": 520
+    },
+    {
+      "file": "Video-Player-Fullscreen.html",
+      "title": "YouTube · 全屏右侧工具组字幕设置",
+      "x": 2870,
+      "y": 73482,
+      "w": 1360,
+      "h": 860
+    },
+    {
+      "file": "Video-X-Controls-Hidden.html",
+      "title": "X 视频控件隐藏",
+      "x": 4310,
+      "y": 73482,
+      "w": 720,
+      "h": 490
+    },
+    {
+      "file": "Video-X-Controls-Visible.html",
+      "title": "X 视频控件显示",
+      "x": 0,
+      "y": 74452,
+      "w": 720,
+      "h": 490
+    },
+    {
+      "file": "Video-X-Switch-Prefetching.html",
+      "title": "X 视频切换字幕",
+      "x": 800,
+      "y": 74452,
+      "w": 720,
+      "h": 490
+    },
+    {
+      "file": "Video-X-Scrolling.html",
+      "title": "X 时间线滚动字幕",
+      "x": 1600,
+      "y": 74452,
+      "w": 720,
+      "h": 490
+    },
+    {
+      "file": "Video-Drag-Fullscreen-Letterbox.html",
+      "title": "视频 · 宽银幕字幕拖动中",
+      "x": 0,
+      "y": 75802,
+      "w": 2000,
+      "h": 1160
+    },
+    {
+      "file": "Video-Bottom-Fullscreen-Letterbox.html",
+      "title": "视频 · 宽银幕全屏底部字幕 · 默认 100%",
+      "x": 2080,
+      "y": 75802,
+      "w": 2000,
+      "h": 1160
+    },
+    {
+      "file": "Video-Bottom-Fullscreen-Hidden.html",
+      "title": "视频 · 全屏底部字幕 · 播放条隐藏 · 默认 100%",
+      "x": 0,
+      "y": 77072,
+      "w": 2000,
+      "h": 1160
+    },
+    {
+      "file": "Video-Bottom-Fullscreen-Controls.html",
+      "title": "视频 · 全屏底部字幕 · 播放条显示 · 默认 100%",
+      "x": 2080,
+      "y": 77072,
+      "w": 2000,
+      "h": 1160
+    },
+    {
+      "file": "Video-Bottom-Hidden.html",
+      "title": "视频 · 底部字幕",
+      "x": 4160,
+      "y": 77072,
+      "w": 720,
+      "h": 500
+    },
+    {
+      "file": "Video-Bottom-Controls.html",
+      "title": "视频 · 底部字幕",
+      "x": 0,
+      "y": 78342,
+      "w": 720,
+      "h": 500
+    },
+    {
+      "file": "Video-Drag.html",
+      "title": "视频 · 拖动字幕与快捷调整 · 已保存手调 190.48%",
+      "x": 800,
+      "y": 78342,
+      "w": 720,
+      "h": 500
+    },
+    {
+      "file": "Video-Prefetching.html",
+      "title": "视频 · 提前翻译中",
+      "x": 3200,
+      "y": 78342,
+      "w": 720,
+      "h": 720
+    },
+    {
+      "file": "Video-Translation-Only.html",
+      "title": "视频 · 仅译文",
+      "x": 4000,
+      "y": 78342,
+      "w": 720,
+      "h": 720
+    },
+    {
+      "file": "Video-Subtitles.html",
+      "title": "视频 · 双语字幕",
+      "x": 0,
+      "y": 79172,
+      "w": 720,
+      "h": 720
+    },
+    {
+      "file": "Video-Pending.html",
+      "title": "视频 · 翻译中",
+      "x": 800,
+      "y": 79172,
+      "w": 720,
+      "h": 720
+    },
+    {
+      "file": "Video-Failed.html",
+      "title": "视频 · 翻译失败",
+      "x": 1600,
+      "y": 79172,
+      "w": 720,
+      "h": 720
+    },
+    {
+      "file": "Settings-Language-English.html",
+      "title": "Appearance · English",
+      "x": 0,
+      "y": 80342,
+      "w": 1120,
+      "h": 940
+    },
+    {
+      "file": "Settings-Language-Failed.html",
+      "title": "界面语言 · 保存失败",
+      "x": 1200,
+      "y": 80342,
+      "w": 1120,
+      "h": 940
+    },
+    {
+      "file": "Icon.html",
+      "title": "图标",
+      "x": 2400,
+      "y": 80342,
+      "w": 1120,
+      "h": 760
+    },
+    {
+      "file": "Palette.html",
+      "title": "配色",
+      "x": 3600,
+      "y": 80342,
+      "w": 1040,
+      "h": 640
+    },
+    {
+      "file": "Store-Origins-zh-CN.html",
+      "title": "项目来源与定制理念",
+      "x": 0,
+      "y": 82682,
+      "w": 1120,
+      "h": 900
+    },
+    {
+      "file": "Store-Origins-en.html",
+      "title": "Origins and customization",
+      "x": 1200,
+      "y": 82682,
+      "w": 1120,
+      "h": 900
+    },
+    {
+      "file": "Store-Materials.html",
+      "title": "Chrome 商店资料",
+      "x": 2400,
+      "y": 82682,
+      "w": 1360,
+      "h": 4000
+    },
+    {
+      "file": "Store-Listing-zh-CN.html",
+      "title": "商店介绍",
+      "x": 3840,
+      "y": 82682,
+      "w": 1120,
+      "h": 2200
+    },
+    {
+      "file": "Store-Listing-en.html",
+      "title": "Store Listing",
+      "x": 0,
+      "y": 86792,
+      "w": 1120,
+      "h": 2200
+    },
+    {
+      "file": "Store-Privacy-zh-CN.html",
+      "title": "隐私政策",
+      "x": 1200,
+      "y": 86792,
+      "w": 1120,
+      "h": 2700
+    },
+    {
+      "file": "Store-Privacy.html",
+      "title": "Privacy Policy",
+      "x": 2400,
+      "y": 86792,
+      "w": 1120,
+      "h": 3200
+    },
+    {
+      "file": "Store-01-bilingual-zh-CN.html",
+      "title": "页面翻译，接着读",
+      "x": 3600,
+      "y": 86792,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-02-translation-only-zh-CN.html",
+      "title": "双语对照，或只看译文",
+      "x": 0,
+      "y": 90102,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-03-hover-zh-CN.html",
+      "title": "只翻译你想读的一段",
+      "x": 1360,
+      "y": 90102,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-04-subtitles-zh-CN.html",
+      "title": "已有字幕，也能双语阅读",
+      "x": 2720,
+      "y": 90102,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-05-service-zh-CN.html",
+      "title": "翻译服务，由你选择",
+      "x": 4080,
+      "y": 90102,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-01-bilingual-en.html",
+      "title": "Translate the page. Keep reading.",
+      "x": 0,
+      "y": 91012,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-02-translation-only-en.html",
+      "title": "Bilingual or translation only.",
+      "x": 1360,
+      "y": 91012,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-03-hover-en.html",
+      "title": "Translate a paragraph at a time.",
+      "x": 2720,
+      "y": 91012,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-04-subtitles-en.html",
+      "title": "Read existing captions in two languages.",
+      "x": 4080,
+      "y": 91012,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-05-service-en.html",
+      "title": "Bring your own translation service.",
+      "x": 0,
+      "y": 91922,
+      "w": 1280,
+      "h": 800
+    },
+    {
+      "file": "Store-Promo-Small.html",
+      "title": "Small promotional image",
+      "x": 1360,
+      "y": 91922,
+      "w": 440,
+      "h": 280
+    },
+    {
+      "file": "Store-Promo-Marquee.html",
+      "title": "Marquee promotional image",
+      "x": 1880,
+      "y": 91922,
+      "w": 1400,
+      "h": 560
+    }
   ],
-  notes: [
-    { text: "统一滚动条：语言、模型、设置下拉选项及弹窗服务列表，设置和弹窗页面、长文本编辑、网页样式横向列表、规则 JSON / 诊断 / 帮助、页面适配面板与播放器菜单全部共用同一套细滚动条；滚轮 / 触控 / 键盘滚动仍可用，轨道透明，颜色随主题；高对比模式恢复原生可访问的滚动条。样式仅覆盖 Readomi 页面和隔离的 shadow UI，不覆盖网站原有滚动条。", x: 0, y: 244930, maxW: 4000 },
-    { text: "翻译服务 · 用户确认 A 方向的精修稿：列表仅常驻当前服务标记，删除已连接 / 未检查 / 上次失败的正常行标签；主动测试以测试中、测试通过或测试失败反馈表达单次结果。通过提示 4 秒后消失；失败展示原因和重试，关闭或测试成功后消失。保留真实凭据缺失等需要行动的配置提示。模型与服务名桌面同排；编辑标题带服务标记，无需 API Key 与字段标题同排。旧 A / B 保留为历史对照，本组作为实现依据。名称与 API 地址直接展开；手动界面移除请求格式与参数编辑。已保存的请求格式和参数继续沿用。添加时保留添加后使用此服务的勾选项，仅显示一行。", x: 0, y: 240220, maxW: 4000 },
-    { text: "翻译服务 · 待选设计提案：A 轻量列表与独立编辑 / B 服务分栏与同页编辑。两版删除更多参数及请求格式、请求参数编辑；必要的名称与 API 地址直接展开。新增服务与操作图标，去掉介绍、作用范围、模型说明和重复保存提示。仅新增设计提案，选定后同步实现与 locale。", x: 0, y: 236370, maxW: 4000 },
-    { text: "右下角提示 · 最新设计：所有页面角落提示距右 / 下各 20 px（窄屏 12 px），间距 8 px、右对齐向上堆叠；面板保留底部锚点，通知在其上方。统一 Motion 纯透明度：淡入 180 ms，淡出 160 ms，无位移 / 缩放；减少动态效果时即时切换。普通通知 4 秒，规则保存 8 秒、撤销 3 秒；悬停 / 聚焦 / 页面隐藏暂停。旧保存提示的位移退场方案保留作历史对照，本组覆盖其动效。已按本组设计同步实现。", x: 0, y: 229070, maxW: 4000 },
-    { text: "字幕比例 · 三版设置页面", x: 0, y: 184260 },
-    { text: "视频字幕 · 原文 / 译文默认 1:1", x: 0, y: 175380 },
-    { text: "输入框翻译默认开启；同一输入框内三次独立空格相邻间隔不超过 300 毫秒触发。输入法组合、长按、修饰键、密码与只读字段不触发。使用当前服务、共用提示词与主要/第二语言规则，保留段落；成功后原地替换并支持撤销。等待时保留输入，加载提示始终贴在输入框内部右下角，距右侧与底部各 12 px，并随输入框滚动、调整尺寸或页面布局移动；仅在内容、焦点与设置未改变时替换；任何失焦立即取消，即使随后回到同一输入框也不应用旧结果。普通与动态 srcdoc iframe 中，普通与富文本输入框均可独立翻译，无需开启网页翻译；译文超过输入框字数限制时不改动原文或选区，并提示手动翻译；失败保留原文。", x: 0, y: 168740, maxW: 4000 },
-    { text: "完整语义段落（正文、标题、列表项、引用与图注）在深入单个 span 插入译文时保留原段落布局；包含链接与不包含链接的段落显示一致。局部短语、链接、按钮与 flex 容器继续使用行内布局；站点显式样式规则优先。流式与完成使用同一布局，不增加设置或产品文案。", x: 0, y: 153740, maxW: 2000 },
-    { text: "悬停多段连续触发：A 未完成时可以触发 B，各段独立等待、输出与完成；仅译文同样适用。重复触发正在处理的段落不重复请求，完成后再次触发恢复原文。Escape 取消所有未完成任务，已完成译文保留；不增加设置或产品文案。", x: 0, y: 152740, maxW: 3760 },
-    { text: "反引号悬停键冲突：开启悬停翻译并选择反引号，鼠标指向可翻译正文且当前不在编辑或输入法组合上下文时，捕获阶段认领反引号直到松开，阻止网站抢走字符并聚焦消息框。点按或长按仍只翻译一次；已聚焦输入框时保留正常输入。其他触发方式沿用现有行为，无需域名判断、新设置或新文案。", x: 0, y: 149840, maxW: 2000 },
-    {"text": "Threads / Reddit 内置适配展示目标：首页 hover 与网页翻译同效果；Threads 整帖一次请求、同一译文容器保留多段结构。Reddit 首页保留完整标题与摘录/正文，原文之后、媒体之前，通过 text-body named slot 只显示一个竖线译文容器包含翻译标题与正文，等待/流式/完成位置一致，每帖一次请求，不把图片、点赞、分享元数据纳入译文；详情保持原设计。本次撤回首页标题/摘录分别插入译文的旧稿目标，流式与完成均按整帖展示，实际行为待用户确认。", "x": 0, "y": 146220, "maxW": 2600},
-    { text: "弹窗清空缓存：底部服务名、词首强调与设置保持原位，以次级文字入口清空所有页面已保存的译文。等待时按钮禁用；成功或失败文案原位显示，3秒后回到默认，失败也可直接重试。当前页面与已有译文保留，下次翻译重新请求；不清网页摘要、设置或密钥。", x: 0, y: 128840, maxW: 1520 },
-    {"text": "站点适配当前方案：网页单面板完成复制指令、最新候选预览与保存。JSON、诊断、复制规则按需展开；设置只长期管理。所有实际效果待用户测试。", "x": 0, "y": 130140, "maxW": 5200},
-    { text: "译文校验：检测到语言方向或内容不符合要求时自动重试，原文保留并继续显示现有等待标记；重试仍失败时，复用内联失败原因与重试按钮。有效译文通过校验后才替换等待标记；不增加设置项。", x: 0, y: 127890, maxW: 3040 },
-    { text: "语言规则：其他语言译成主要语言，主要语言内容译成第二语言；模型按段落或字幕句段自动识别。第二语言为保持原文或与主要语言同语种时，只显示一次原文；仅译文模式也保留这些原文。设置与弹窗共用规则，弹窗底栏保留多服务快速切换。翻译规则不套外框，控件与效果预览保留边框。", x: 0, y: 111440, maxW: 4000 },
-    { text: "02  设置 · 主要语言与第二语言", x: 0, y: 112315 },
-    { text: "03  混合语言网页 · 按段落生效", x: 0, y: 114660 },
-    { text: "04  视频字幕 · 保持原文只显示一次", x: 0, y: 115560 },
-    { text: "多 Provider：多服务管理与弹窗快速切换；设置和弹窗共用一个当前服务选择。切换只影响后续网页、段落和字幕翻译，已有译文保留。添加和修改检查成功后保存；切换保存失败保留原服务。实现与此组设计保持一致。", x: 0, y: 106800, maxW: 5360 },
-    { text: "最终轻量设置方案：此组覆盖 Settings-Refresh 与 Settings-Subtitle 的常规设置状态；未覆盖的编辑、错误与边界案例继续保留。透明自然高度导航最小 184 px，与内容组成轻导航工作区；字幕字号方式常驻，自定义默认收起并包含字号、背景深度和位置。背景深度 0% 即无背景；切换预设不增加设置行，预览背景保留同样内边距。更多仅包含不翻译的网站。预设为清透 / 轻量 / 专注 / 影院；网页译文九种样式水平滚动；快捷键默认 Option / Alt E、M、V。", x: 0, y: 91720, maxW: 4000 },
-    { text: "X 广告：访问 CTA、广告选项和跳过按钮均不作为播放工具栏。入口仅在真实底部播放栏的右侧工具组、全屏按钮前；仅广告操作栏可用时无入口。", x: 0, y: 90320, maxW: 1520 },
-    { text: "弹窗网站排除：平时仅一行标签与开关。完整域名及影响范围在悬停提示与读屏描述中；保存中、失败和不可用按需显示状态，只有其他规则托管时显示管理入口。行为保持独立。", x: 0, y: 89620, maxW: 3200 },
-    { text: "控件站点白名单：YouTube / youtube-nocookie / X / Twitter。Bilibili 搜索和主播放器均保留原生工具栏；通用 HTML5 字幕自动翻译仍可使用，但不注入 Readomi 控件。不增加按网站隐藏工具栏的弹窗开关。", x: 0, y: 88120, maxW: 2400 },
-    { text: "播放器控件只位于原生工具栏：播放条隐藏时入口与菜单一同隐藏，鼠标移动使原生栏恢复后回到同一位置。菜单和键盘焦点不覆盖原生显隐；无栏或空间不足时无入口，禁止右下角回退。字幕继续正常显示。", x: 0, y: 87120, maxW: 2200 },
-    { text: "不翻译的网站：域名规则覆盖根域及全部子域名；通配符限定网址与路径；正则匹配完整网址并忽略大小写。添加与删除立即保存，失败保留输入和已保存列表；排除仅影响视频翻译。", x: 0, y: 81620, maxW: 4000 },
-    { text: "播放器：Readomi 控件只出现在 YouTube、youtube-nocookie、X 与 Twitter 的支持播放器中，位于右侧工具组最前端。其他网站不显示控件；HTML5 自动字幕翻译保持独立。设置页的“在视频上显示控件”默认开启；关闭会移除入口和菜单，字幕翻译与当前视频的开关状态保留，重新开启按原状态恢复。默认只有 terra 图标与独立开关，以极轻共同底色与内部竖线表达归属，无品牌文字、外框或阴影。菜单向上、右对齐展开。当前视频关闭保留入口；网站排除完全隐藏入口与菜单，取消排除后按全局设置恢复。字幕继续支持拖动。", x: 0, y: 85420, maxW: 3600 },
-    { text: "设置：分区导航与大屏适配；提示词内容保留原版，支持编辑；下拉选项与字号滑杆可用键盘操作；快捷键可录制、清空并恢复默认", x: 0, y: 55020, maxW: 5360 },
-    { text: "页面内、图标和配色：四种主题色同步到界面、译文标记和工具栏图标；默认陶红", x: 0, y: 520, maxW: 3200 },
-    { text: "弹窗：整页翻译用轻量按钮，悬停、视频字幕翻译与使用网页摘要用开关", x: 0, y: -260, maxW: 1520 },
-    { text: "设置：左侧保持单层导航，网页阅读包含悬停翻译，视频字幕独立成页，并显示插件版本；右侧保留编辑内容，支持链接直达和浏览器返回", x: 0, y: 1620, maxW: 2240 },
-    { text: "翻译服务：平时只显示预览，需要时原地出现编辑框；配置只含服务本身", x: 0, y: 3760, maxW: 2480 },
-    { text: "翻译服务一节的各个状态", x: 0, y: 4800, maxW: 5520 },
-    { text: "译文质量：区分网页背景、视频字幕及共用翻译规则；没有背景时省略", x: 0, y: 5640, maxW: 1520 },
+  "notes": [
+    {
+      "text": "外观：界面语言、明暗主题与陶红 / 暖紫 / 琥珀 / 墨青四色；图标随主题色更新。",
+      "x": 0,
+      "y": 0,
+      "maxW": 4400
+    },
+    {
+      "text": "翻译服务：当前精修列表与独立编辑；仅常驻当前标记。测试通过短暂提示，失败保留原因与重试。",
+      "x": 0,
+      "y": 1350,
+      "maxW": 4400
+    },
+    {
+      "text": "翻译语言：主要语言与第二语言共用规则；新安装默认第二语言为保持原文。",
+      "x": 0,
+      "y": 7140,
+      "maxW": 4400
+    },
+    {
+      "text": "网页阅读与快捷键：九种译文样式、两种译文字体、悬停流式、输入框翻译；三个组合键与悬停触发方式。",
+      "x": 0,
+      "y": 9500,
+      "maxW": 4400
+    },
+    {
+      "text": "视频字幕设置：素白 / 暖金 / 墨笺；相对大小 100% 对应短边 3.5%，原文默认 1:1；预览和字幕等比缩小。",
+      "x": 0,
+      "y": 13840,
+      "maxW": 4400
+    },
+    {
+      "text": "译文质量：网页摘要与共用提示词分别设置，保留模板校验、帮助、恢复默认和编辑状态。",
+      "x": 0,
+      "y": 27190,
+      "maxW": 4400
+    },
+    {
+      "text": "翻译缓存：清空翻译与摘要缓存；保留进行中、成功和失败。",
+      "x": 0,
+      "y": 34802,
+      "maxW": 4400
+    },
+    {
+      "text": "备份与同步：Chrome 配置同步与文件备份；密钥留在本机。其他浏览器保留文件导入导出。",
+      "x": 0,
+      "y": 36152,
+      "maxW": 4400
+    },
+    {
+      "text": "站点规则管理：网页阅读的子页面；内置规则与自定义规则、搜索、编辑、错误和窄屏状态。",
+      "x": 0,
+      "y": 43312,
+      "maxW": 4400
+    },
+    {
+      "text": "工具栏弹窗：已采用的紧凑列表；网站禁用、当前页字幕、服务选择与帮助。",
+      "x": 0,
+      "y": 48512,
+      "maxW": 4400
+    },
+    {
+      "text": "右下角提示：20 px 边距，窄屏 12 px；淡入 180 ms、淡出 160 ms，无位移或缩放。",
+      "x": 0,
+      "y": 50372,
+      "maxW": 4400
+    },
+    {
+      "text": "网页站点适配：同一面板完成指令、候选预览、保存与撤销；设置页仅长期管理。",
+      "x": 0,
+      "y": 55982,
+      "maxW": 4400
+    },
+    {
+      "text": "网页与悬停翻译：保留原文布局、行内与整段翻译、流式输出、等待和错误重试。",
+      "x": 0,
+      "y": 60512,
+      "maxW": 4400
+    },
+    {
+      "text": "播放器字幕：控件仅位于支持播放器的原生工具栏；菜单与工具栏同步显隐，字幕状态独立。",
+      "x": 0,
+      "y": 69082,
+      "maxW": 4400
+    },
+    {
+      "text": "标识与配色：沿用原有书页轮廓和四色主题。",
+      "x": 0,
+      "y": 80122,
+      "maxW": 4400
+    },
+    {
+      "text": "商店与项目资料：商店文案和素材画板。",
+      "x": 0,
+      "y": 82462,
+      "maxW": 4400
+    }
   ],
+  "sections": [
+    {
+      "id": "appearance",
+      "title": "外观",
+      "y": 0
+    },
+    {
+      "id": "service",
+      "title": "翻译服务",
+      "y": 1350
+    },
+    {
+      "id": "language",
+      "title": "翻译语言",
+      "y": 7140
+    },
+    {
+      "id": "reading",
+      "title": "网页阅读与快捷键",
+      "y": 9500
+    },
+    {
+      "id": "subtitle",
+      "title": "视频字幕设置",
+      "y": 13840
+    },
+    {
+      "id": "quality",
+      "title": "译文质量",
+      "y": 27190
+    },
+    {
+      "id": "cache",
+      "title": "翻译缓存",
+      "y": 34802
+    },
+    {
+      "id": "backup",
+      "title": "备份与同步",
+      "y": 36152
+    },
+    {
+      "id": "rules",
+      "title": "站点规则管理",
+      "y": 43312
+    },
+    {
+      "id": "popup",
+      "title": "工具栏弹窗",
+      "y": 48512
+    },
+    {
+      "id": "feedback",
+      "title": "右下角提示",
+      "y": 50372
+    },
+    {
+      "id": "site",
+      "title": "网页站点适配",
+      "y": 55982
+    },
+    {
+      "id": "page",
+      "title": "网页与悬停翻译",
+      "y": 60512
+    },
+    {
+      "id": "player",
+      "title": "播放器字幕",
+      "y": 69082
+    },
+    {
+      "id": "identity",
+      "title": "标识与配色",
+      "y": 80122
+    },
+    {
+      "id": "store",
+      "title": "商店与项目资料",
+      "y": 82462
+    }
+  ]
 }

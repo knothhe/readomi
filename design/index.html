@@ -66,7 +66,9 @@ header p { margin: 0; flex: 1; min-width: 200px; color: var(--muted); }
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 5300px;
+  font-size: 44px;
 }
 .board { position: absolute; }
 .board a {
@@ -95,6 +97,8 @@ header p { margin: 0; flex: 1; min-width: 200px; color: var(--muted); }
 <header>
   <h1 id="title"></h1>
   <p>拖动平移，捏合或按住 ⌘/Ctrl 滚动缩放，<kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd> 也可以。点画板标题单独打开，布局在 canvas.js。</p>
+  <label style="display:flex;gap:8px;align-items:center">页面分区 <select id="section-picker" aria-label="页面分区" style="font:inherit;color:var(--ink);background:var(--ground);border:1px solid var(--line);padding:5px;border-radius:6px"></select></label>
+  <a href="Settings-Light-Appearance.html" style="color:var(--accent)">交互设置预览</a>
   <div class="zoom" role="group" aria-label="缩放">
     <button type="button" data-action="out" aria-label="缩小">−</button>
     <button type="button" data-action="reset" aria-label="恢复到 100%" id="zoom-level">100%</button>
@@ -296,6 +300,13 @@ if (Number.isFinite(stored) && stored > 0)
   setZoom(stored)
 else
   fitWidth()
+
+const sectionPicker=document.getElementById('section-picker')
+for(const section of layout.sections){const option=document.createElement('option');option.value=section.id;option.textContent=section.title;sectionPicker.append(option)}
+sectionPicker.addEventListener('change',()=>{location.hash=sectionPicker.value})
+function showSection(){const id=location.hash.slice(1);const section=layout.sections.find(s=>s.id===id);if(!section)return;sectionPicker.value=id;setZoom(viewport.clientWidth/width);viewport.scrollLeft=0;viewport.scrollTop=(section.y-minY-20)*zoom}
+window.addEventListener('hashchange',showSection)
+showSection()
 </script>
 </body>
 </html>
