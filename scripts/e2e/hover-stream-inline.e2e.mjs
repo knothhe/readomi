@@ -231,16 +231,19 @@ for (const { mode, customCSS, expected } of [
 }
 it("separate streaming groups retain each nested comment's typography", async () => {
   const page = await setup("bilingual")
-  const paragraph = page.locator("p").first()
+  const source = page.locator("p").first()
   const expected = [
     commentTypography,
     { fontSize: "20px", lineHeight: "28px", fontWeight: "700", letterSpacing: "0.6px" },
   ]
-  await paragraph.evaluate((node, styles) => {
-    const text = node.textContent
+  await source.evaluate((source, styles) => {
+    const text = source.textContent
+    const node = document.createElement("div")
+    node.id = "nested-comments"
+    source.replaceWith(node)
     node.style.cssText = "display:flow-root;font-size:10px;line-height:normal;font-weight:400;letter-spacing:normal;padding:12px"
     node.replaceChildren(...styles.map((style, index) => {
-      const block = document.createElement("div")
+      const block = document.createElement("p")
       block.dataset.commentGroup = index
       const comment = document.createElement("span")
       Object.assign(comment.style, style)
@@ -249,6 +252,8 @@ it("separate streaming groups retain each nested comment's typography", async ()
       return block
     }))
   }, expected)
+  const paragraph = page.locator("#nested-comments")
+  // Semantic paragraphs reserve block previews for each comment.
   // The outer container owns the padding, so this pointer position translates
   // both nested blocks in one hover rather than only the inner text under it.
   await paragraph.hover({ position: { x: 5, y: 5 } })
@@ -392,7 +397,7 @@ for (const mode of ["bilingual", "translationOnly"]) {
     const page = await setup(mode)
     const { options } = await setStreaming(false)
     await options.reload()
-    assert.equal(await options.getByRole("switch", { name: "Stream hover translations", exact: true }).isChecked(), false)
+    await options.getByRole("switch", { name: "Stream hover translations", exact: true, checked: false }).waitFor()
     if (mode === "bilingual")
       await options.screenshot({ path: "/tmp/readomi-hover-stream-settings.png", fullPage: true })
     const resume = service.holdAnswers()

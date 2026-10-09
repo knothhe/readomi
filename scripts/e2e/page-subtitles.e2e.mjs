@@ -140,8 +140,6 @@ it("synchronizes shortcut, popup and player without changing the default or anot
   await waitFor(() => reader.read(), state => !state.toggle && state.layers === 0, "website disabling did not stop the subtitle runtime")
   await waitFor(() => siteSwitch.isEnabled(), Boolean, "website disable did not settle")
   await siteSwitch.click()
-  await expectState(popup, reader, false)
-  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
   await expectState(popup, reader, true)
   const exclude = excluded => context.serviceWorkers()[0].evaluate(async (excluded) => {
     const { config } = await chrome.storage.local.get("config")

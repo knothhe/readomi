@@ -1,7 +1,7 @@
 /* global chrome -- callbacks run in the extension service worker. */
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
+import { chooseDisplayMode, configureService, launchBrowser, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
 import { LANGUAGE_RULES_FIXTURES, setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -36,14 +36,6 @@ async function chooseLanguage(page, label, value) {
   await trigger.click()
   await page.locator(`[role="option"][data-value="${value}"]`).click()
   await waitFor(() => trigger.getAttribute("data-value"), selected => selected === value, `${label} updates to ${value}`)
-}
-
-async function chooseMode(popup, label, mode) {
-  const group = popup.getByRole("group", { name: label, exact: true })
-  const name = mode === "bilingual" ? "Bilingual" : "Translation only"
-  await group.getByRole("button", { name, exact: true }).click()
-  await group.getByRole("button", { name, exact: true, pressed: true }).waitFor()
-  await waitFor(() => storedConfig(context), config => label === "Web text display mode" ? config.translate.mode === mode : config.features.subtitleMode === mode, "the display mode is persisted")
 }
 
 async function openArticle(suffix) {
@@ -176,12 +168,12 @@ it("shares automatic language rules across settings and popup, isolates cached p
     await waitFor(() => popup.getByRole("button", { name: "Second language", exact: true }).getAttribute("data-value"), value => value === second, "settings immediately update the popup")
     await waitFor(() => storedConfig(context), config => config.language.secondaryCode === second, "the secondary language is saved")
     for (const mode of ["bilingual", "translationOnly"]) {
-      await chooseMode(popup, "Web text display mode", mode)
+      await chooseDisplayMode(popup, mode)
       const before = service.translationRequests().length
       const page = await translateArticle(`${second}-${mode}`, { "en-before": design.zh, "en-after": curious.zh })
       await assertPreserved(page, "zh-middle", world.zh)
       if (second === "original" && mode === "bilingual") {
-        assert.ok(service.translationRequests().length > before, "changing the policy cannot reuse the cached Chinese-to-English result")
+        assert.equal(service.translationRequests().length, before, "returning to the original policy reuses its preserved result, not the cached Chinese-to-English translation")
         assert.ok(service.translationRequests().some((messages) => {
           const system = messages.filter(message => message.role === "system").map(message => message.content).join("\n")
           const user = messages.at(-1).content
@@ -203,7 +195,7 @@ it("shares automatic language rules across settings and popup, isolates cached p
       assert.equal(await hover.locator("[data-readomi-inline-preview]").count(), 0, "a preserved streamed header leaves no inline preview")
       await hover.close()
 
-      await chooseMode(popup, "Subtitle display mode", mode)
+      await chooseDisplayMode(popup, mode, true)
       const caption = await captionPage(`caption-${second}-${mode}`, world.zh)
       const readSubtitle = await subtitleReader(caption)
       const preserved = await waitFor(readSubtitle, state => state.original === world.zh && state.translated === "" && state.translationHidden && !state.originalHidden && !state.boxHidden, "preserved subtitles show one original in either mode")
@@ -217,7 +209,7 @@ it("shares automatic language rules across settings and popup, isolates cached p
   await chooseLanguage(popup, "Primary language", "eng")
   await chooseLanguage(popup, "Second language", "original")
   await waitFor(() => settings.getByRole("button", { name: "Primary language", exact: true }).getAttribute("data-value"), value => value === "eng", "popup updates the settings primary language")
-  await chooseMode(popup, "Web text display mode", "bilingual")
+  await chooseDisplayMode(popup, "bilingual")
   const changedPrimary = await translateArticle("english-primary", { "zh-middle": world.en })
   await assertPreserved(changedPrimary, "en-before", design.en)
   await assertPreserved(changedPrimary, "en-after", curious.en)

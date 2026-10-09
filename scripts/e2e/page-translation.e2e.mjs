@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { after, afterEach, before, it } from "node:test"
-import { configureService, launchBrowser, pressTranslateShortcut, reportFailure } from "./browser.mjs"
+import { chooseDisplayMode, configureService, launchBrowser, pressTranslateShortcut, reportFailure } from "./browser.mjs"
 import { OTHER_REQUEST_PREFIXES, setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let service
@@ -87,13 +87,12 @@ it("user translates an HTTP page without Web Crypto: Given a non-secure page, Wh
   assert.ok(service.translationRequests().length > requestsBefore, "HTTP page translation requests reached the service")
 })
 
-it("user changes the display mode: Given a translated article in bilingual mode, When the popup changes to Translation only, Then the article shows only the translations and sends no new request", async () => {
+it("user changes the display mode: Given a translated article in bilingual mode, When settings change to Translation only, Then the article shows only the translations and sends no new request", async () => {
   const { popup } = await setUpService()
   const { article } = await translateArticle()
   const requestsBefore = service.completions().length
 
-  await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", exact: true }).click()
-  await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", pressed: true }).waitFor()
+  await chooseDisplayMode(popup, "translationOnly")
 
   // Each paragraph changes on its own when its translation comes back, so wait until all of them show only a translation.
   await article.waitForFunction(() => [...document.querySelectorAll("h1, p")].every(element => element.textContent.trim().startsWith("【译】")), undefined, { timeout: 10_000 })
@@ -104,7 +103,7 @@ it("user changes the display mode: Given a translated article in bilingual mode,
   assert.equal(service.completions().length, requestsBefore, "the translations came from the cache")
 })
 
-it("user changes the display mode while the page is translating: Given a slow service and an article translating in bilingual mode, When the popup changes to Translation only before the translations arrive, Then the article shows only the translations", async () => {
+it("user changes the display mode while the page is translating: Given a slow service and an article translating in bilingual mode, When settings change to Translation only before the translations arrive, Then the article shows only the translations", async () => {
   const { popup } = await setUpService()
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
@@ -115,8 +114,7 @@ it("user changes the display mode while the page is translating: Given a slow se
     await article.keyboard.press("Alt+E")
     await article.locator(".readomi-spinner").first().waitFor({ timeout: 10_000 })
 
-    await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", exact: true }).click()
-    await popup.getByRole("group", { name: "Web text display mode" }).getByRole("button", { name: "Translation only", pressed: true }).waitFor()
+    await chooseDisplayMode(popup, "translationOnly")
     // The page translation restarts: each paragraph waits again for its translation in the new mode.
     await article.locator(".readomi-translated-content-wrapper[data-readomi-translation-mode=\"translationOnly\"]").first().waitFor({ timeout: 10_000 })
   }
@@ -134,8 +132,8 @@ it("user changes the display mode while the page is translating: Given a slow se
 it("user translates a copy of an article: Given page context is on and the built-in prompt, When the article is translated and then a copy with another description, Then the copy gets its translations from the cache without a new request", async () => {
   const { popup, extensionId } = await setUpService()
   await popup.goto(`chrome-extension://${extensionId}/options.html#quality`)
-  await popup.getByRole("switch", { name: "Use page summary" }).click()
-  await popup.getByRole("switch", { name: "Use page summary", checked: true }).waitFor()
+  await popup.getByRole("switch", { name: "Use article context" }).click()
+  await popup.getByRole("switch", { name: "Use article context", checked: true }).waitFor()
 
   const requestsBefore = service.translationRequests().length
   const { translations: first } = await translateArticle("/article?description=First")

@@ -59,6 +59,7 @@ async function setUp(mode = "bilingual") {
   const { page: options, extensionId } = launched
   await configureService(options, extensionId, setupDocumentFor(service.origin))
   await options.goto(`chrome-extension://${extensionId}/options.html#reading`)
+  await options.locator(".settings-reading-more > summary").click()
   await options.getByRole("button", { name: MODE_LABELS[mode], exact: true }).click()
   await options.getByRole("button", { name: MODE_LABELS[mode], exact: true, pressed: true }).waitFor()
   return options

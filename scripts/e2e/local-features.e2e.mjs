@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { Buffer } from "node:buffer"
 import { readFile } from "node:fs/promises"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, openPopupForPage, reportFailure, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -236,14 +236,14 @@ it("manual setup and local backup restore work without an account", async () => 
   await custom.locator("summary").click()
   const sizeSlider = features.getByRole("slider", { name: "Subtitle size", exact: true })
   const sizeNumber = features.getByRole("spinbutton", { name: "Subtitle size", exact: true })
-  assert.equal(await sizeSlider.getAttribute("min"), "35.714285714285715")
-  assert.equal(await sizeSlider.getAttribute("max"), "714.2857142857143")
+  assert.equal(await sizeSlider.getAttribute("min"), "40")
+  assert.equal(await sizeSlider.getAttribute("max"), "710")
   assert.equal(await sizeSlider.inputValue(), "100")
   await sizeSlider.press("End")
-  await waitForSaved(config => config.features.subtitleStyle.relativeFontSize === 25)
+  await waitForSaved(config => config.features.subtitleStyle.relativeFontSize === 24.85)
   await sizeSlider.blur()
-  assert.equal(await sizeNumber.inputValue(), "714.28571")
-  assert.ok(await features.locator(".subtitle-preview-scene").evaluate(scene => Math.abs(Number.parseFloat(scene.lastElementChild.style.fontSize) - scene.clientWidth * 9 / 16 * 0.25) < 0.05))
+  assert.equal(await sizeNumber.inputValue(), "710")
+  assert.ok(await features.locator(".subtitle-preview-scene").evaluate(scene => Math.abs(Number.parseFloat(scene.lastElementChild.style.fontSize) - scene.clientWidth * 9 / 16 * 0.2485) < 0.05))
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: "/tmp/readomi-subtitle-settings.png", fullPage: true })
   await page.getByRole("link", { name: "Appearance", exact: true }).click()
@@ -277,11 +277,11 @@ it("manual setup and local backup restore work without an account", async () => 
 it("hover translates and restores one paragraph without enabling whole-page translation", async () => {
   const { page, extensionId } = await setUp()
   await configureService(page, extensionId, setupDocumentFor(service.origin))
-  await page.goto(`chrome-extension://${extensionId}/popup.html`)
-  await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
-  await page.getByRole("switch", { name: "Hover translation", exact: true, checked: true }).waitFor()
   const article = await context.newPage()
   await article.goto(`${service.origin}/article`)
+  const popup = await openPopupForPage(article, extensionId)
+  await popup.getByRole("switch", { name: "Hover translation", exact: true }).click()
+  await popup.getByRole("switch", { name: "Hover translation", exact: true, checked: true }).waitFor()
   await article.bringToFront()
   const paragraph = article.locator("p").first()
   await paragraph.hover()
@@ -297,7 +297,7 @@ it("hover translates and restores one paragraph without enabling whole-page tran
   await article.keyboard.up("Alt")
   await article.locator(".readomi-translated-block-content").waitFor({ state: "detached" })
   // Turning the popup switch off stops hover translation on the existing tab.
-  await page.getByRole("switch", { name: "Hover translation", exact: true }).click()
+  await popup.getByRole("switch", { name: "Hover translation", exact: true }).click()
   await waitForSaved(config => !config.features.hoverTranslation)
   await article.bringToFront()
   await paragraph.hover()

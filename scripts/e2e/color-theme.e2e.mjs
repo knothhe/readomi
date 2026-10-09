@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, openPopupForPage, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -60,8 +60,7 @@ it("switches all four themes across settings, popup, translated pages and toolba
   await expectIcon(worker, "terra", tabId, true)
   await article.waitForFunction(() => document.querySelectorAll(".readomi-translated-block-content").length === 5)
   const requests = service.completions().length
-  const popup = await context.newPage()
-  await popup.goto(`chrome-extension://${extensionId}/popup.html`)
+  const popup = await openPopupForPage(article, extensionId)
   await page.goto(`chrome-extension://${extensionId}/options.html#appearance`)
   const themes = [
     ["plum", "Plum", "#79546D"], ["amber", "Amber", "#946214"],
@@ -87,7 +86,7 @@ it("switches all four themes across settings, popup, translated pages and toolba
     await expectIcon(worker, color, undefined, false)
     await expectIcon(worker, color, tabId, true)
     await popup.waitForFunction((primary) => {
-      const button = document.querySelector("section[aria-label=\"Web text\"] button[aria-label]")
+      const button = document.querySelector("section[aria-label=\"Web text\"] .popup-translate")
       if (!button)
         return false
       const probe = document.createElement("span")
@@ -104,7 +103,7 @@ it("switches all four themes across settings, popup, translated pages and toolba
   await page.emulateMedia({ colorScheme: "dark" })
   await popup.emulateMedia({ colorScheme: "dark" })
   await popup.waitForFunction(() => {
-    const button = document.querySelector("section[aria-label=\"Web text\"] button[aria-label]")
+    const button = document.querySelector("section[aria-label=\"Web text\"] .popup-translate")
     return button && getComputedStyle(button).backgroundColor === "rgb(199, 165, 190)" && getComputedStyle(button).color === "rgb(28, 25, 23)"
   })
   await page.waitForFunction(() => getComputedStyle(document.documentElement).getPropertyValue("--rf-primary").trim() === "#C7A5BE")

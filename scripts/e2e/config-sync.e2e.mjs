@@ -2,10 +2,14 @@
 import assert from "node:assert/strict"
 import { Buffer } from "node:buffer"
 import { mkdir } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
+import process from "node:process"
 import { it } from "node:test"
 import { launchBrowser, storedConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
+
+const screenshots = process.env.E2E_ARTIFACTS || join(tmpdir(), "readomi-sync-browser-qa")
 
 it("shows browser availability, retains file backup, and fits desktop and narrow screens", async () => {
   const { context, page, extensionId } = await launchBrowser()
@@ -21,8 +25,8 @@ it("shows browser availability, retains file backup, and fits desktop and narrow
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 960 })
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true)
-      await mkdir("/private/tmp/readomi-sync-browser-qa", { recursive: true })
-      await page.screenshot({ path: join("/private/tmp/readomi-sync-browser-qa", `backup-${width}.png`), fullPage: true })
+      await mkdir(screenshots, { recursive: true })
+      await page.screenshot({ path: join(screenshots, `backup-${width}.png`), fullPage: true })
     }
     if (nativeChrome) {
       await toggle.click()
@@ -41,7 +45,7 @@ it("shows browser availability, retains file backup, and fits desktop and narrow
     const centered = await dialog.boundingBox()
     assert.ok(centered.y > 100, "confirmation dialog is centered rather than pinned to the corner")
     assert.equal((await storedConfig(context)).features.hoverTranslation, previous.features.hoverTranslation)
-    await page.screenshot({ path: "/private/tmp/readomi-sync-browser-qa/import-confirmation.png", fullPage: true })
+    await page.screenshot({ path: join(screenshots, "import-confirmation.png"), fullPage: true })
     await dialog.getByRole("button", { name: "Replace all settings", exact: true }).click()
     await page.getByText("Configuration imported.", { exact: true }).waitFor()
     assert.equal((await storedConfig(context)).features.hoverTranslation, candidate.features.hoverTranslation)
@@ -72,6 +76,7 @@ it("fills a synced service key, retains its identity and shows a masked saved ke
     await row.getByRole("button", { name: /^Edit / }).click()
     await section.getByLabel("API Key", { exact: true }).fill("sk-filled-local-key")
     await section.getByRole("button", { name: "Test and save", exact: true }).click()
+    await section.locator(".settings-service-editor").waitFor({ state: "detached" })
     await section.getByRole("heading", { name: synced.name, exact: true }).waitFor()
     const saved = await storedConfig(context)
     assert.equal(saved.providersConfig.length, 1)
@@ -83,9 +88,10 @@ it("fills a synced service key, retains its identity and shows a masked saved ke
     const key = section.getByLabel("API Key", { exact: true })
     assert.equal(await key.inputValue(), "")
     assert.equal(await key.getAttribute("placeholder"), "Leave blank to keep the saved key")
-    await mkdir("/private/tmp/readomi-sync-browser-qa", { recursive: true })
-    await page.screenshot({ path: "/private/tmp/readomi-sync-browser-qa/saved-key-editor.png", fullPage: true })
+    await mkdir(screenshots, { recursive: true })
+    await page.screenshot({ path: join(screenshots, "saved-key-editor.png"), fullPage: true })
     await section.getByRole("button", { name: "Test and save", exact: true }).click()
+    await section.locator(".settings-service-editor").waitFor({ state: "detached" })
     await section.getByRole("heading", { name: synced.name, exact: true }).waitFor()
     assert.equal((await storedConfig(context)).providersConfig[0].apiKey, "sk-filled-local-key")
   }

@@ -326,7 +326,7 @@ it("player controls stop translation, share page scope and preserve cached capti
   const fullscreenBounds = await page.locator("#first").boundingBox()
   assert.ok(fullscreen.controls[0].panel.left >= fullscreenBounds.x && fullscreen.controls[0].panel.right <= fullscreenBounds.x + fullscreenBounds.width)
   await inspector.click(0, "label", "Increase subtitle size")
-  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.relativeFontSize === 3.75, "fullscreen size action did not save")
+  await waitFor(() => storedConfig(context), config => config.features.subtitleStyle.relativeFontSize === 3.675, "fullscreen size action did not save")
   await page.evaluate(() => document.exitFullscreen())
   await page.setViewportSize({ width: 390, height: 700 })
   const { state: narrow, videoBounds } = await waitFor(async () => ({ state: await read(), videoBounds: await page.locator("#first video").boundingBox() }), ({ state, videoBounds }) => {

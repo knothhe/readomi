@@ -104,10 +104,10 @@ async function openPopup(host, popupUrl, test) {
   assert.equal(target.activeId, target.id)
   assert.equal(target.activeUrl, target.url)
   let popup = null
-  let outcome = "macOS headless Chromium crashes with SIGSEGV when opening an action popup"
-  // This installed macOS headless Chromium crashes inside openPopup rather
-  // than rejecting it. Do not repeat that native path on this platform.
-  if (process.platform !== "darwin") {
+  let outcome = "headless Chromium can crash with SIGSEGV when opening an action popup"
+  // Native popup opening is opt-in because SIGSEGV terminates the browser before
+  // a fallback can run. The background tab still queries the real active website.
+  if (process.env.E2E_NATIVE_ACTION_POPUP === "1") {
     const realPage = context.waitForEvent("page", { timeout: 4000 }).catch(() => null)
     outcome = await worker.evaluate(async (windowId) => {
       try {

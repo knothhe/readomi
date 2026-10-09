@@ -1,7 +1,7 @@
 import type { Config } from "@/types/config/config"
 import type { SiteRulesConfig } from "@/types/config/site-rules"
 import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
-import { isExtensionContextValid } from "@/utils/extension-context"
+import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
 import { logger } from "@/utils/logger"
 
 export interface HostPreviewConfig {
@@ -41,9 +41,17 @@ export function watchHostConfig(callback: (next: Config | null, previous: Config
       callback(overlay(next), overlay(previous))
   })
   const changed = async (next: HostPreviewConfig | null, previous: HostPreviewConfig | null, version: number) => {
-    const stored = await getLocalConfig()
-    if (!stopped && version === revision && isExtensionContextValid())
-      callback(overlay(stored, next), overlay(stored, previous))
+    if (stopped || !isExtensionContextValid())
+      return
+    try {
+      const stored = await getLocalConfig()
+      if (!stopped && version === revision && isExtensionContextValid())
+        callback(overlay(stored, next), overlay(stored, previous))
+    }
+    catch (error) {
+      if (!isExtensionContextInvalidatedError(error))
+        throw error
+    }
   }
   listeners.add(changed)
   return () => {

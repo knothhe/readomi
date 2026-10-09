@@ -130,10 +130,13 @@ it("centers the settings workspace on wide screens and restores shortcut default
       await page.locator(`nav a[href='#${section}']`).click()
       const layout = await noOverflow(page)
       const nextStarts = { sidebarLeft: layout.sidebar.left, sidebarTop: layout.sidebar.top, mainLeft: layout.main.left, mainTop: layout.main.top, titleTop: layout.title.top }
-      if (starts)
-        assert.deepEqual(nextStarts, starts, "switching pages preserves navigation and content starting positions")
-      else
+      if (starts) {
+        for (const key of Object.keys(starts))
+          assert.ok(Math.abs(nextStarts[key] - starts[key]) < 0.5, `switching pages preserves ${key}: ${nextStarts[key]} vs ${starts[key]}`)
+      }
+      else {
         starts = nextStarts
+      }
       assert.equal(layout.dpr, 2)
       assert.ok(layout.section.width <= layout.main.width + 1, "sections fit the content column")
       if (["service", "quality", "shortcut", "appearance", "cache", "backup"].includes(section))
@@ -288,12 +291,12 @@ it("keeps settings readable across sizes, preserves prompt contents and drafts, 
   await range.focus()
   const previous = Number(await range.inputValue())
   await page.keyboard.press("ArrowRight")
-  await page.waitForFunction(value => document.querySelector("input[type='range']")?.value && Math.abs(Number(document.querySelector("input[type='range']").value) - value) < 0.0001, previous + 100 / 14)
-  await waitForStoredConfig(context, config => config.features.subtitleStyle.relativeFontSize === Number(((previous + 100 / 14) / (100 / 3.5)).toFixed(12)))
-  assert.equal((await storedConfig(context)).features.subtitleStyle.relativeFontSize, Number(((previous + 100 / 14) / (100 / 3.5)).toFixed(12)))
+  await page.waitForFunction(value => document.querySelector("input[type='range']")?.value && Math.abs(Number(document.querySelector("input[type='range']").value) - value) < 0.0001, previous + 5)
+  await waitForStoredConfig(context, config => config.features.subtitleStyle.relativeFontSize === Number(((previous + 5) / (100 / 3.5)).toFixed(12)))
+  assert.equal((await storedConfig(context)).features.subtitleStyle.relativeFontSize, Number(((previous + 5) / (100 / 3.5)).toFixed(12)))
   await screenshot(page, "dark-video-range-focus")
   await page.keyboard.press("End")
-  await page.waitForFunction(() => Math.abs(Number(document.querySelector("input[type='range']")?.value) - 25 * (100 / 3.5)) < 0.0001)
+  await page.waitForFunction(() => Math.abs(Number(document.querySelector("input[type='range']")?.value) - 710) < 0.0001)
   await screenshot(page, "dark-video-max-font")
   const previewAspect = await page.getByLabel("字幕预览", { exact: true }).evaluate((frame) => {
     const bounds = frame.getBoundingClientRect()

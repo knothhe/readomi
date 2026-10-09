@@ -101,7 +101,7 @@ it("subtitle presets and editable translation typography stay synchronized acros
   }
   await presets.getByRole("button", { name: "Warm gold", exact: true }).click()
   await settings.locator(".subtitle-custom > summary").click()
-  await settings.getByLabel("Translation font", { exact: true }).selectOption("sans")
+  await settings.locator("#features").getByRole("group", { name: "Translation font", exact: true }).getByRole("button", { name: "Default (sans serif)", exact: true }).click()
   const color = settings.getByRole("textbox", { name: "Translation color hex value", exact: true })
   await color.fill("#ABCDEF")
   await color.press("Enter")
@@ -117,7 +117,7 @@ it("subtitle presets and editable translation typography stay synchronized acros
   assert.equal(await color.inputValue(), "#ABCDEF")
   await settings.reload()
   await settings.locator(".subtitle-custom > summary").click()
-  assert.equal(await settings.getByLabel("Translation font", { exact: true }).inputValue(), "sans")
+  await settings.locator("#features").getByRole("group", { name: "Translation font", exact: true }).getByRole("button", { name: "Default (sans serif)", exact: true, pressed: true }).waitFor()
   assert.equal(await color.inputValue(), "#ABCDEF")
   await presets.getByRole("button", { name: "Warm gold", exact: true }).click()
   await waitForStoredConfig(context, config => config.features.subtitleStyle.translationFont === "serif" && config.features.subtitleStyle.translationColor === "#ffe0a0" && config.features.subtitleStyle.originalFontScale === 100)

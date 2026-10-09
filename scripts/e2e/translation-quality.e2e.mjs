@@ -124,6 +124,7 @@ async function setup(mode = "bilingual") {
   await configureService(launched.page, launched.extensionId, setupDocumentFor(service.origin))
   await context.serviceWorkers()[0].evaluate(async (mode) => {
     const { config } = await chrome.storage.local.get("config")
+    config.language.secondaryCode = "eng"
     config.translate.enableAIContentAware = false
     config.translate.mode = mode
     config.features.hoverTranslation = true
@@ -151,7 +152,8 @@ async function assertSourceOnce(paragraph) {
 
 async function assertFailure(page) {
   const paragraph = page.locator("#source")
-  await paragraph.getByText(INVALID_REASON, { exact: false }).waitFor({ timeout: 20_000 })
+  await paragraph.getByText("Error details", { exact: true }).click({ timeout: 20_000 })
+  await paragraph.getByText(INVALID_REASON, { exact: false }).waitFor()
   await paragraph.getByRole("button", { name: "Retry", exact: true }).waitFor()
   await assertSourceOnce(paragraph)
   assert.equal(await paragraph.locator(".readomi-spinner").count(), 0, "bounded retries finish instead of spinning indefinitely")

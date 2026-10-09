@@ -18,15 +18,29 @@ export async function launchBrowser({ userDataDir = "", extension = extensionPat
     throw new Error(`no built extension in ${extension}; run pnpm build first`)
   })
   // An empty path makes Playwright create a temporary profile and delete it on close.
-  const context = await chromium.launchPersistentContext(userDataDir, {
+  const options = {
     // Headless Chromium loads extensions; the headless shell does not.
     channel: "chromium",
     headless: true,
     deviceScaleFactor,
+    timeout: 30_000,
     // On Linux, Chromium takes the extension UI language from LANGUAGE. The tests find elements by their English names.
     env: { ...process.env, LANGUAGE: "en" },
     args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`],
-  })
+  }
+  let context
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      context = await chromium.launchPersistentContext(userDataDir, options)
+      break
+    }
+    catch (error) {
+      // Retry only browser startup. A stalled launch must end before the test timeout,
+      // and Playwright closes its failed browser before rejecting this promise.
+      if (attempt || error.name !== "TimeoutError")
+        throw error
+    }
+  }
   recordBrowserEvents(context)
   try {
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent("serviceworker")
@@ -205,4 +219,39 @@ export async function trackClipboard(page) {
 /** Every text written to the clipboard since trackClipboard, oldest first. */
 export function readClipboardWrites(page) {
   return page.evaluate(() => window.__clipboardWrites ?? [])
+}
+
+/** Change a display mode through its settings page, then wait for committed storage. */
+export async function chooseDisplayMode(page, mode, subtitles = false) {
+  const context = page.context()
+  const extensionId = new URL(page.url()).host
+  const settings = await context.newPage()
+  try {
+    await settings.goto(`chrome-extension://${extensionId}/options.html#${subtitles ? "features" : "reading"}`)
+    const group = settings.locator(subtitles ? "#features" : "#reading").getByRole("group", { name: subtitles ? "Subtitle display mode" : "Display", exact: true })
+    const name = mode === "bilingual" ? "Bilingual" : "Translation only"
+    await group.getByRole("button", { name, exact: true }).click()
+    await group.getByRole("button", { name, exact: true, pressed: true }).waitFor()
+    await waitForStoredConfig(context, config => (subtitles ? config.features.subtitleMode : config.translate.mode) === mode)
+  }
+  finally {
+    await settings.close()
+  }
+}
+
+/** Open popup.html without making it the active tab that the popup queries. */
+export async function openPopupForPage(host, extensionId) {
+  const context = host.context()
+  const next = context.waitForEvent("page")
+  await context.serviceWorkers()[0].evaluate(async ({ hostUrl, popupUrl }) => {
+    const tab = (await chrome.tabs.query({})).find(tab => tab.url === hostUrl)
+    if (!tab?.id)
+      throw new Error(`Host tab not found: ${hostUrl}`)
+    await chrome.tabs.update(tab.id, { active: true })
+    await chrome.windows.update(tab.windowId, { focused: true })
+    await chrome.tabs.create({ windowId: tab.windowId, url: popupUrl, active: false })
+  }, { hostUrl: host.url(), popupUrl: `chrome-extension://${extensionId}/popup.html` })
+  const popup = await next
+  await popup.getByRole("switch", { name: "Disable extension on this site", exact: true }).waitFor({ state: "visible" })
+  return popup
 }
