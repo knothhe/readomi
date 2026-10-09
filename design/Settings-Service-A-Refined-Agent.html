@@ -72,5 +72,7 @@ if(document.getElementById('manual-panel').hidden)return;
 try{if(bodyField.value.trim()){const value=JSON.parse(bodyField.value);if(!value||typeof value!=='object'||Array.isArray(value))throw new Error();}}
 catch{event.preventDefault();event.stopImmediatePropagation();bodyField.setAttribute('aria-invalid','true');bodyField.setAttribute('aria-describedby','body-hint body-example body-error');bodyError.hidden=false;bodyField.focus();}
 },true);
-document.getElementById('type').addEventListener('change',()=>{bodyField.value='';bodyField.removeAttribute('aria-invalid');bodyError.hidden=true;const type=document.getElementById('type').value;const sample=type==='openai'?{reasoning:{effort:'low'}}:type==='gemini'?{generationConfig:{thinkingConfig:{thinkingLevel:'minimal'}}}:type==='compatible'?{reasoning_effort:'low'}:{thinking:{type:'disabled'}};const text=JSON.stringify(sample);bodyField.placeholder=text;document.querySelector('#body-example code').textContent=text;});
+function updateBodyExample(){const type=document.getElementById('type').value;const sample=type==='openai'?{reasoning:{effort:'low'}}:type==='gemini'?{generationConfig:{thinkingConfig:{thinkingLevel:'minimal'}}}:type==='compatible'?{reasoning_effort:'low'}:{thinking:{type:'disabled'}};const text=JSON.stringify(sample);bodyField.placeholder=text;document.querySelector('#body-example code').textContent=text;}
+document.getElementById('type').addEventListener('change',()=>{bodyField.value='';bodyField.removeAttribute('aria-invalid');bodyError.hidden=true;updateBodyExample();});
+updateBodyExample();
 </script></body></html>
