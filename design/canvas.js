@@ -56,7 +56,7 @@ window.READOMI_CANVAS = {
       "x": 2880,
       "y": 2580,
       "w": 1280,
-      "h": 900
+      "h": 1060
     },
     {
       "file": "Settings-Service-A-Refined-Add.html",
@@ -64,7 +64,7 @@ window.READOMI_CANVAS = {
       "x": 0,
       "y": 3690,
       "w": 1280,
-      "h": 900
+      "h": 1060
     },
     {
       "file": "Settings-Service-A-Refined-Test-Passed.html",
@@ -2313,6 +2313,30 @@ window.READOMI_CANVAS = {
       "y": 91922,
       "w": 1400,
       "h": 560
+    },
+    {
+      "file": "Settings-Service-Parameters.html",
+      "title": "翻译服务 · 自定义请求参数",
+      "x": 4320,
+      "y": 2580,
+      "w": 1280,
+      "h": 1060
+    },
+    {
+      "file": "Settings-Service-Parameters-Invalid.html",
+      "title": "翻译服务 · 参数格式错误",
+      "x": 5680,
+      "y": 2580,
+      "w": 1280,
+      "h": 1060
+    },
+    {
+      "file": "Settings-Service-Parameters-Mobile.html",
+      "title": "翻译服务 · 自定义参数窄屏",
+      "x": 7040,
+      "y": 2580,
+      "w": 390,
+      "h": 1060
     }
   ],
   "notes": [
