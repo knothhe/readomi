@@ -94,7 +94,7 @@ window.READOMI_CANVAS = {
       "file": "Settings-Service-No-Api-Key.html",
       "title": "翻译服务 · 本地模型 · 无需 API Key",
       "x": 0,
-      "y": 4700,
+      "y": 4860,
       "w": 1280,
       "h": 1100
     },
@@ -102,7 +102,7 @@ window.READOMI_CANVAS = {
       "file": "Agent-Setup-Document.html",
       "title": "agent 配置说明",
       "x": 1360,
-      "y": 4700,
+      "y": 4860,
       "w": 1120,
       "h": 860
     },
@@ -110,7 +110,7 @@ window.READOMI_CANVAS = {
       "file": "Agent-Flow.html",
       "title": "Agent 配置流程",
       "x": 2560,
-      "y": 4700,
+      "y": 4860,
       "w": 880,
       "h": 700
     },
@@ -118,7 +118,7 @@ window.READOMI_CANVAS = {
       "file": "Settings-Service-A-Refined-Reorder-Failed.html",
       "title": "翻译服务 · 当前布局",
       "x": 3520,
-      "y": 4700,
+      "y": 4860,
       "w": 1280,
       "h": 1000
     },
@@ -126,7 +126,7 @@ window.READOMI_CANVAS = {
       "file": "Settings-Service-A-Refined-Switched.html",
       "title": "翻译服务 · 当前布局",
       "x": 0,
-      "y": 5910,
+      "y": 6070,
       "w": 1280,
       "h": 1000
     },
@@ -134,7 +134,7 @@ window.READOMI_CANVAS = {
       "file": "Settings-Service-A-Refined-Reordered.html",
       "title": "翻译服务 · 当前布局",
       "x": 1360,
-      "y": 5910,
+      "y": 6070,
       "w": 1280,
       "h": 1000
     },
@@ -142,7 +142,7 @@ window.READOMI_CANVAS = {
       "file": "Settings-Service-A-Refined-Empty.html",
       "title": "翻译服务 · 当前布局",
       "x": 2720,
-      "y": 5910,
+      "y": 6070,
       "w": 1280,
       "h": 1000
     },
@@ -150,7 +150,7 @@ window.READOMI_CANVAS = {
       "file": "Settings-Service-A-Refined-Testing.html",
       "title": "翻译服务 · 当前布局",
       "x": 4080,
-      "y": 5910,
+      "y": 6070,
       "w": 1280,
       "h": 1000
     },
