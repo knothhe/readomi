@@ -66,6 +66,27 @@ it("user translates a page with the shortcut: Given a configured service, When A
   await popup.getByText("5 paragraphs").waitFor({ timeout: 10_000 })
 })
 
+it("user translates an HTTP page without Web Crypto: Given a non-secure page, When Alt+E is pressed, Then every paragraph reaches the service and gets translated", async () => {
+  await setUpService()
+  // Loopback HTTP is trusted by Chromium, so the ordinary localhost fixtures
+  // cannot reproduce content scripts running without crypto.subtle.
+  const fixture = await context.request.get(`${service.origin}/article`)
+  await context.route("http://readomi-http.test/article", route => route.fulfill({ response: fixture }))
+  const article = await context.newPage()
+  await article.goto("http://readomi-http.test/article")
+  assert.equal(await article.evaluate(() => window.isSecureContext), false)
+  assert.equal(await article.evaluate(() => typeof crypto.subtle), "undefined")
+
+  const requestsBefore = service.translationRequests().length
+  await pressTranslateShortcut(article)
+  const blocks = article.locator(".readomi-translated-block-content")
+  await blocks.nth(4).waitFor({ timeout: 20_000 })
+  const translations = await blocks.allTextContents()
+  assert.equal(translations.length, 5)
+  assert.ok(translations.every(text => text.startsWith("【译】")))
+  assert.ok(service.translationRequests().length > requestsBefore, "HTTP page translation requests reached the service")
+})
+
 it("user changes the display mode: Given a translated article in bilingual mode, When the popup changes to Translation only, Then the article shows only the translations and sends no new request", async () => {
   const { popup } = await setUpService()
   const { article } = await translateArticle()

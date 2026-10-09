@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { translateTextCore } from "../translate-text"
 
@@ -14,6 +14,20 @@ const options = {
 
 describe("translation results at the string boundary", () => {
   beforeEach(() => vi.clearAllMocks())
+  afterEach(() => vi.unstubAllGlobals())
+
+  it("enqueues translation on HTTP pages without Web Crypto using the same cache key", async () => {
+    mocks.sendMessage.mockResolvedValue({ action: "translate", text: "English translation", targetCode: "eng" })
+    await translateTextCore(options)
+    const secureRequest = mocks.sendMessage.mock.calls[0][1]
+    vi.stubGlobal("crypto", { getRandomValues: crypto.getRandomValues.bind(crypto) })
+
+    await expect(translateTextCore(options)).resolves.toBe("English translation")
+    expect(mocks.sendMessage).toHaveBeenLastCalledWith("enqueueTranslateRequest", expect.objectContaining({
+      text: secureRequest.text,
+      hash: secureRequest.hash,
+    }))
+  })
 
   it("reports the actual target while retaining the string result API", async () => {
     mocks.sendMessage.mockResolvedValueOnce({ action: "translate", text: "English translation", targetCode: "eng" })

@@ -1,3 +1,5 @@
+import { sha256 } from "./sha256"
+
 /**
  * SHA-256 of the texts joined with a separator, as lowercase hex. Cache keys
  * use it, so the digest must stay stable across releases: the Web Crypto
@@ -10,8 +12,12 @@ export async function sha256Hex(...texts: string[]): Promise<string> {
 
   // The separator keeps ("a", "bc") and ("ab", "c") apart.
   const bytes = new TextEncoder().encode(texts.join("|"))
-  const digest = await crypto.subtle.digest("SHA-256", bytes)
-  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("")
+  // Content scripts on HTTP pages inherit the page's non-secure context,
+  // where crypto.subtle is unavailable. Keep the same SHA-256 cache keys there.
+  const digest = globalThis.crypto?.subtle
+    ? new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", bytes))
+    : sha256(bytes)
+  return Array.from(digest, byte => byte.toString(16).padStart(2, "0")).join("")
 }
 
 /**
