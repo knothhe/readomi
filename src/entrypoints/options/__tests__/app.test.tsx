@@ -901,7 +901,7 @@ describe("manual service configuration", () => {
     const { store } = await renderSettings(existing)
     chooseServiceMethod("manual")
     expect(screen.queryByText("manualService.advanced")).toBeNull()
-    expect(screen.queryByLabelText("manualService.body")).toBeNull()
+    expect(screen.getByLabelText("manualService.body")).toHaveValue(JSON.stringify(body, null, 2))
     expect(screen.queryByLabelText("manualService.api")).toBeNull()
     fireEvent.change(screen.getByLabelText("manualService.model"), { target: { value: "updated-model" } })
     fireEvent.click(screen.getByRole("button", { name: "options.service.checkSave" }))

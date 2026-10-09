@@ -64,6 +64,11 @@
 .settings-service-input, .settings-service .settings-select.settings-service-input { width: 100%; min-width: 0; height: 42px; padding: 11px 12px; border: 1px solid var(--rf-border); border-radius: 7px; background: var(--options-surface, var(--rf-card)); color: var(--rf-foreground); font-size: 12px; outline: none; }
 .settings-service-input::placeholder { color: var(--rf-muted-foreground); opacity: .7; }
 .settings-service-input:focus-visible { border-color: var(--rf-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--rf-primary) 20%, transparent); }
+.settings-service-input.settings-service-body { height: auto; min-height: 144px; resize: vertical; line-height: 1.7; }
+.settings-service-body[aria-invalid="true"] { border-color: var(--rf-destructive); }
+.settings-service-body-help, .settings-service-body-error { font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
+.settings-service-body-help { color: var(--rf-muted-foreground); }
+.settings-service-body-error { color: var(--rf-destructive); }
 .settings-service-input.settings-service-with-icon, .settings-service .settings-select.settings-service-with-icon { padding-left: 38px; }
 .settings-service-input.settings-service-key-input { padding-right: 42px; }
 .settings-service-key-visibility { position: absolute; right: 6px; }

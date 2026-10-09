@@ -150,6 +150,14 @@ it("manages independent services and switches future translations from the popup
   assert.equal(await section.getByLabel("Model", { exact: true }).inputValue(), "agent-model")
   assert.equal(await section.getByLabel("API Key", { exact: true }).inputValue(), "")
   await section.getByLabel("Model", { exact: true }).fill("manual-model")
+  const parameters = section.getByLabel("Request parameters (thinking effort, etc.)", { exact: true })
+  const requestsBeforeInvalidParameters = service.completions().length
+  await parameters.fill("[]")
+  await section.getByRole("button", { name: "Test and save", exact: true }).click()
+  await section.getByRole("alert").filter({ hasText: "Enter a valid JSON object" }).waitFor()
+  assert.equal(service.completions().length, requestsBeforeInvalidParameters)
+  const customBody = { reasoning_effort: "low", temperature: 0.2, metadata: { purpose: "translation" } }
+  await parameters.fill(JSON.stringify(customBody, null, 2))
   await page.setViewportSize({ width: 390, height: 844 })
   await fitsViewport(page)
   await screenshot(page, "service-multi-mobile-manual")
@@ -158,6 +166,10 @@ it("manages independent services and switches future translations from the popup
   assert.equal(saved.translate.providerId, active.id)
   assert.equal(saved.providersConfig.find(provider => provider.id === second.id).model, "manual-model")
   assert.equal(saved.providersConfig.find(provider => provider.id === second.id).apiKey, setup.apiKey)
+  assert.deepEqual(saved.providersConfig.find(provider => provider.id === second.id).body, customBody)
+  const checkedBody = JSON.parse(service.completions().at(-1).body)
+  for (const [key, value] of Object.entries(customBody))
+    assert.deepEqual(checkedBody[key], value)
   await fitsViewport(page)
   await screenshot(page, "service-multi-mobile-list")
 
@@ -204,6 +216,11 @@ it("manages independent services and switches future translations from the popup
   const futureRequests = service.completions().slice(requestsBeforeNextArticle)
   assert.ok(futureRequests.length > 0, "a new page uses the selected service")
   assert.ok(futureRequests.every(request => JSON.parse(request.body).model === "manual-model"), "future request payloads use the selected model")
+  for (const request of futureRequests) {
+    const body = JSON.parse(request.body)
+    for (const [key, value] of Object.entries(customBody))
+      assert.deepEqual(body[key], value, "future translations include the saved custom parameters")
+  }
 
   // Menu management opens the service settings; Escape returns focus to the footer.
   const newTrigger = popup.getByRole("button", { name: "Current service: Second gateway. Switch service", exact: true })

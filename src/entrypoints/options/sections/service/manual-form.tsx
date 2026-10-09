@@ -10,7 +10,7 @@ import { configAtom } from "@/utils/atoms/config"
 import { saveProviderAtom } from "@/utils/atoms/service"
 import { PROVIDER_ITEMS } from "@/utils/constants/providers"
 import { fetchProviderModels } from "@/utils/providers/models"
-import { resolveBaseURL } from "@/utils/providers/request"
+import { resolveBaseURL, resolveRequestApi } from "@/utils/providers/request"
 import { checkConnection } from "@/utils/providers/test-connection"
 import { applySetupDocument, exportSetupDocument, setupDocumentSchema } from "@/utils/setup-document"
 import { SettingsSelect } from "../../components/settings-select"
@@ -26,6 +26,9 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
   }))
   const [key, setKey] = useState("")
   const [showKey, setShowKey] = useState(false)
+  const [bodyText, setBodyText] = useState(() => current?.body ? JSON.stringify(current.body, null, 2) : "")
+  const [bodyInvalid, setBodyInvalid] = useState(false)
+  const bodyRef = useRef<HTMLTextAreaElement>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [modelResult, setModelResult] = useState<{ signature: string, models: string[], state: "idle" | "loading" | "list" | "empty" | "failed" }>({ signature: "", models: [], state: "idle" })
@@ -74,16 +77,40 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
   const nameId = useId()
   const urlId = useId()
   const keyId = useId()
+  const bodyId = useId()
+  const bodyHintId = `${bodyId}-hint`
+  const bodyExampleId = `${bodyId}-example`
+  const bodyErrorId = `${bodyId}-error`
+  const api = resolveRequestApi({ provider: draft.type, api: draft.api })
+  const bodyExample = JSON.stringify(draft.type === "deepseek" && api === "openai-chat"
+    ? { thinking: { type: "disabled" } }
+    : {
+        "openai-responses": { reasoning: { effort: "low" } },
+        "openai-chat": { reasoning_effort: "low" },
+        "anthropic": { thinking: { type: "disabled" } },
+        "gemini": { generationConfig: { thinkingConfig: { thinkingLevel: "minimal" } } },
+      }[api])
   const fieldClass = "settings-service-input"
   const labelClass = "text-xs font-medium"
 
   const save = async () => {
+    setError(null)
+    let body: SetupDocument["body"]
+    try {
+      body = bodyText.trim() ? setupDocumentSchema.shape.body.parse(JSON.parse(bodyText)) : undefined
+    }
+    catch {
+      setBodyInvalid(true)
+      bodyRef.current?.focus()
+      return
+    }
+    setBodyInvalid(false)
     setBusy(true)
     onBusyChange(true)
-    setError(null)
     try {
       const document = setupDocumentSchema.parse({
         ...draft,
+        body,
         name: draft.name?.trim() || undefined,
         baseURL: draft.baseURL?.trim() || undefined,
         apiKey: draft.noApiKey ? undefined : key.trim() || (matching ? draft.apiKey : undefined),
@@ -129,6 +156,8 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
                 setDraft({ type: value as typeof draft.type, model: "", api: DEFAULT_REQUEST_API[value as typeof draft.type] })
                 setKey("")
                 setShowKey(false)
+                setBodyText("")
+                setBodyInvalid(false)
                 onProviderChange(value as ProviderType)
               }}
             />
@@ -185,6 +214,31 @@ export function ManualServiceForm({ current, makeCurrent, onMakeCurrentChange, o
               onValueChange={value => value && setDraft({ ...draft, model: value })}
             />
           )}
+        </div>
+        <div className="settings-service-field settings-service-field-full">
+          <label className={labelClass} htmlFor={bodyId}>{i18n.t("manualService.body")}</label>
+          <textarea
+            ref={bodyRef}
+            id={bodyId}
+            className={`${fieldClass} settings-service-body font-mono`}
+            rows={6}
+            spellCheck={false}
+            placeholder={bodyExample}
+            value={bodyText}
+            aria-invalid={bodyInvalid || undefined}
+            aria-describedby={`${bodyHintId} ${bodyExampleId}${bodyInvalid ? ` ${bodyErrorId}` : ""}`}
+            onChange={(event) => {
+              setBodyText(event.target.value)
+              setBodyInvalid(false)
+            }}
+          />
+          <p id={bodyHintId} className="settings-service-body-help">{i18n.t("manualService.bodyHint")}</p>
+          <p id={bodyExampleId} className="settings-service-body-help">
+            {i18n.t("manualService.bodyExample")}
+            <br />
+            <code>{bodyExample}</code>
+          </p>
+          {bodyInvalid && <p id={bodyErrorId} className="settings-service-body-error" role="alert">{i18n.t("manualService.bodyInvalid")}</p>}
         </div>
         {error && (
           <div role="alert" className="settings-service-form-error settings-service-field-full">
