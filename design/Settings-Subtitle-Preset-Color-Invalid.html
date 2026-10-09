@@ -26,6 +26,11 @@ body{width:1280px;max-width:100%;color-scheme:light}select{font:inherit;color:va
 @media(max-width:760px){.translation-font .line{flex-direction:column;align-items:flex-start;gap:12px}}
 
 body{width:auto!important;max-width:100%}.presets{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.preview-controls .aspects{margin:0}.video{aspect-ratio:16/9!important;min-height:0!important;container-type:normal!important}.video[data-aspect=portrait]{aspect-ratio:9/16!important;max-width:285px;margin-inline:auto}.video[data-aspect=square]{aspect-ratio:1!important;max-width:285px;margin-inline:auto}.preview-stage{position:absolute;inset:0 auto auto 0;transform-origin:0 0;z-index:1}.video .caption{font-size:inherit;line-height:1.4;white-space:normal;overflow-wrap:anywhere;max-width:80%;text-shadow:0 2px 4px #000,0 0 2px #000;letter-spacing:normal;-webkit-text-stroke:0}.video .original{color:white;font-size:var(--ratio);margin-bottom:4px;line-height:1.4;font-family:system-ui}.video .translated{line-height:1.4;letter-spacing:normal;font-weight:600}.preview-sizes{display:flex!important}.preview-overflow[hidden]{display:none}.proposal-note,.preview-link,.proposal-head>a{display:none}.preview-summary{font-size:11px}.color-option{cursor:pointer}.version{display:block!important}
+</style><style>/* Optional material preview, independent of color and light/dark mode. */
+html[data-material=glass] body{background:radial-gradient(ellipse at 80% 10%,color-mix(in srgb,var(--brand) 14%,transparent),transparent 55%),var(--bg)}
+html[data-material=glass] :is(.card,.menu-panel,.notice,input:not([type=checkbox],[type=range]),select,textarea,.button,.fetch){background:linear-gradient(145deg,color-mix(in srgb,var(--panel) 86%,transparent),color-mix(in srgb,var(--panel) 67%,transparent));backdrop-filter:blur(18px) saturate(135%);box-shadow:inset 0 1px 0 #ffffff55,0 6px 20px #302b2908;border-color:color-mix(in srgb,var(--line) 75%,#fff)}
+html[data-material=glass] :is(.primary,.toggle[aria-checked=true]){background:linear-gradient(155deg,color-mix(in srgb,var(--brand) 80%,#fff),var(--brand));box-shadow:inset 0 1px 0 #ffffff70,0 3px 9px color-mix(in srgb,var(--brand) 22%,transparent)}
+html[data-material=glass] :is(.service-row.current,nav a.active,.nav a[aria-current]){background:linear-gradient(120deg,color-mix(in srgb,var(--brand) 12%,transparent),transparent);border-radius:7px}
 </style><style>
 html[data-preview-mode=dark] :is(.seg,.segmented,.aspects,.sample-options,.number,.search,.select,.menu,.option-list){background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important}
 html[data-preview-mode=dark] :is(.seg,.segmented,.aspects) button{color:var(--muted)!important}
@@ -69,15 +74,15 @@ document.querySelectorAll('[aria-label="译文字体"] button').forEach((b,i)=>b
 document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{preset=b.dataset.preset;({font,color,depth}=presets[preset]);size=100;ratio=100;render();});document.querySelectorAll('[aria-label="字幕位置"] button').forEach(b=>b.onclick=()=>{position=b.textContent;render();});document.querySelectorAll('[aria-label="字幕显示方式"] button').forEach((b,i)=>b.onclick=()=>{only=!!i;render();});document.querySelectorAll('button.quiet').forEach(b=>{if(b.getAttribute('aria-label')==='减小字号')b.onclick=()=>{size=Math.max(35.714285714285715,size-5);render();};if(b.getAttribute('aria-label')==='增大字号')b.onclick=()=>{size=Math.min(714.2857142857143,size+5);render();};if(b.textContent==='复位')b.onclick=()=>{position='底部';render();};});document.querySelectorAll('button[role="switch"]').forEach(b=>b.onclick=()=>{b.setAttribute('aria-checked',String(b.getAttribute('aria-checked')!=='true'));});new ResizeObserver(render).observe(frame);render();
 })();
 </script><script>(()=>{const p=new URLSearchParams(location.search),root=document.documentElement;
-const mode=p.get('theme')||(document.title.includes('深色')||document.title.includes('暗色')?'dark':'light');
+const material=p.get('material')||document.body.dataset.material||'classic',mode=p.get('theme')||(document.title.includes('深色')||document.title.includes('暗色')?'dark':'light');
 const palettes={terra:['#b6533e','#e9ab91'],plum:['#79546d','#c7a5be'],amber:['#946214','#e2bd78'],teal:['#246f73','#8ac1c3']};
 const chosen=p.get('color')||'#b6533e',palette=Object.entries(palettes).find(([k,v])=>k===chosen||v.includes(chosen))||['terra',palettes.terra];
 const dark=mode==='dark'||mode==='system'&&matchMedia('(prefers-color-scheme: dark)').matches;
-root.dataset.previewMode=dark?'dark':'light';root.style.colorScheme=dark?'dark':'light';
+root.dataset.material=material;root.dataset.previewMode=dark?'dark':'light';root.style.colorScheme=dark?'dark':'light';
 const vars=dark?{bg:'#191715',panel:'#262320',surface:'#262320',ink:'#eae3dc',muted:'#afa69b',line:'#443d35'}:{bg:'#faf8f4',panel:'#fffefa',surface:'#fffefa',ink:'#302e2b',muted:'#827b72',line:'#e6e0d6'};
 vars.brand=palette[1][dark?1:0];vars.accent=vars.brand;vars.paper=vars.panel;vars.tint='color-mix(in srgb,'+vars.brand+' 13%,'+vars.bg+')';
 Object.entries(vars).forEach(([k,v])=>root.style.setProperty('--'+k,v));
-const logo=document.querySelector('.brand img');if(logo)logo.src='assets/icon-'+palette[0]+'.svg';
-document.querySelectorAll('a[href]').forEach(a=>{if(!/Settings-|Reading-Refinement-(Cache|Languages)/.test(a.getAttribute('href')))return;const u=new URL(a.href);for(const [k,v] of Object.entries({theme:mode,color:palette[1][0]}))u.searchParams.set(k,v);a.href=u.href;});
+const logo=document.querySelector('.brand img');if(logo)logo.src='assets/icon-'+(material==='glass'?'liquid-glass-':'')+palette[0]+'.svg';
+document.querySelectorAll('a[href]').forEach(a=>{if(!/Settings-|Reading-Refinement-(Cache|Languages)/.test(a.getAttribute('href')))return;const u=new URL(a.href);for(const [k,v] of Object.entries({material,theme:mode,color:palette[1][0]}))u.searchParams.set(k,v);a.href=u.href;});
 })();
 </script></body></html>

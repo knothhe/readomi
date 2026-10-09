@@ -7,6 +7,11 @@
 .design-navigation a[aria-current]{color:var(--brand,var(--accent,#b6533e))!important;background:var(--tint,#f6e8e1)!important;font-weight:600!important}.design-navigation a:after{display:none!important}.design-navigation svg{width:16px!important;height:16px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.6!important;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .design-settings-layout>.main{padding:0!important;background:transparent!important}.design-settings-layout .review-bar,.design-settings-layout .sidebar-title,.design-settings-layout .section-number{display:none!important}.design-settings-layout .page-heading{margin:0 0 30px!important}.design-settings-layout :is(.page-heading h1,main>h1){font-size:26px!important}.design-sidebar :is(.brand-name,strong){font-size:23px!important}.design-sidebar .brand{margin:0!important;padding:0 10px!important;gap:10px!important}.design-sidebar :is(.brand img,.brand-logo){width:29px!important;height:29px!important}.design-sidebar .version{display:block!important;font-size:11px!important;margin:24px 12px 0!important}.design-sidebar .sidebar-bottom{margin:0!important;padding:0!important}
 @media(max-width:600px){.design-settings-layout{grid-template-columns:minmax(0,1fr)!important;width:calc(100% - 36px)!important;padding:24px 0 40px!important;gap:28px!important}.design-sidebar{position:static!important;max-width:none!important}.design-navigation{flex-direction:row!important;gap:2px!important;flex-wrap:nowrap!important;margin-top:20px!important;padding-bottom:8px!important}.design-navigation a{padding:8px!important;font-size:12px!important;flex-shrink:0}.design-navigation svg,.design-sidebar .version{display:none!important}}
+</style><style>/* Optional material preview, independent of color and light/dark mode. */
+html[data-material=glass] body{background:radial-gradient(ellipse at 80% 10%,color-mix(in srgb,var(--brand) 14%,transparent),transparent 55%),var(--bg)}
+html[data-material=glass] :is(.card,.menu-panel,.notice,input:not([type=checkbox],[type=range]),select,textarea,.button,.fetch){background:linear-gradient(145deg,color-mix(in srgb,var(--panel) 86%,transparent),color-mix(in srgb,var(--panel) 67%,transparent));backdrop-filter:blur(18px) saturate(135%);box-shadow:inset 0 1px 0 #ffffff55,0 6px 20px #302b2908;border-color:color-mix(in srgb,var(--line) 75%,#fff)}
+html[data-material=glass] :is(.primary,.toggle[aria-checked=true]){background:linear-gradient(155deg,color-mix(in srgb,var(--brand) 80%,#fff),var(--brand));box-shadow:inset 0 1px 0 #ffffff70,0 3px 9px color-mix(in srgb,var(--brand) 22%,transparent)}
+html[data-material=glass] :is(.service-row.current,nav a.active,.nav a[aria-current]){background:linear-gradient(120deg,color-mix(in srgb,var(--brand) 12%,transparent),transparent);border-radius:7px}
 </style><style>
 html[data-preview-mode=dark] :is(.seg,.segmented,.aspects,.sample-options,.number,.search,.select,.menu,.option-list){background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line)!important}
 html[data-preview-mode=dark] :is(.seg,.segmented,.aspects) button{color:var(--muted)!important}
@@ -37,15 +42,15 @@ html[data-preview-mode=dark] :is(.seg,.segmented,.aspects) button[aria-pressed=t
     ]
   }
 ]</pre></details><p class="muted topgap">自定义规则在内置规则之后应用；enabled: false 可暂停一条规则。</p></div></div></main></div><script>document.querySelectorAll('.design-navigation').forEach(nav=>{const sidebar=nav.closest('aside');if(!sidebar)return;sidebar.classList.add('design-sidebar');sidebar.parentElement.classList.add('design-settings-layout');});</script><script>(()=>{const p=new URLSearchParams(location.search),root=document.documentElement;
-const mode=p.get('theme')||(document.title.includes('深色')||document.title.includes('暗色')?'dark':'light');
+const material=p.get('material')||document.body.dataset.material||'classic',mode=p.get('theme')||(document.title.includes('深色')||document.title.includes('暗色')?'dark':'light');
 const palettes={terra:['#b6533e','#e9ab91'],plum:['#79546d','#c7a5be'],amber:['#946214','#e2bd78'],teal:['#246f73','#8ac1c3']};
 const chosen=p.get('color')||'#b6533e',palette=Object.entries(palettes).find(([k,v])=>k===chosen||v.includes(chosen))||['terra',palettes.terra];
 const dark=mode==='dark'||mode==='system'&&matchMedia('(prefers-color-scheme: dark)').matches;
-root.dataset.previewMode=dark?'dark':'light';root.style.colorScheme=dark?'dark':'light';
+root.dataset.material=material;root.dataset.previewMode=dark?'dark':'light';root.style.colorScheme=dark?'dark':'light';
 const vars=dark?{bg:'#191715',panel:'#262320',surface:'#262320',ink:'#eae3dc',muted:'#afa69b',line:'#443d35'}:{bg:'#faf8f4',panel:'#fffefa',surface:'#fffefa',ink:'#302e2b',muted:'#827b72',line:'#e6e0d6'};
 vars.brand=palette[1][dark?1:0];vars.accent=vars.brand;vars.paper=vars.panel;vars.tint='color-mix(in srgb,'+vars.brand+' 13%,'+vars.bg+')';
 Object.entries(vars).forEach(([k,v])=>root.style.setProperty('--'+k,v));
-const logo=document.querySelector('.brand img');if(logo)logo.src='assets/icon-'+palette[0]+'.svg';
-document.querySelectorAll('a[href]').forEach(a=>{if(!/Settings-|Reading-Refinement-(Cache|Languages)/.test(a.getAttribute('href')))return;const u=new URL(a.href);for(const [k,v] of Object.entries({theme:mode,color:palette[1][0]}))u.searchParams.set(k,v);a.href=u.href;});
+const logo=document.querySelector('.brand img');if(logo)logo.src='assets/icon-'+(material==='glass'?'liquid-glass-':'')+palette[0]+'.svg';
+document.querySelectorAll('a[href]').forEach(a=>{if(!/Settings-|Reading-Refinement-(Cache|Languages)/.test(a.getAttribute('href')))return;const u=new URL(a.href);for(const [k,v] of Object.entries({material,theme:mode,color:palette[1][0]}))u.searchParams.set(k,v);a.href=u.href;});
 })();
 </script></body></html>
