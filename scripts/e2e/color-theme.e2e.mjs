@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, openPopupForPage, pressTranslateShortcut, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, openPopupForPage, pressTranslateShortcut, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -131,6 +131,8 @@ it("switches all four themes across settings, popup, translated pages and toolba
   assert.deepEqual((await storedConfig(context)).appearance, { colorTheme: "plum", mode: "system" })
   await settingModes.getByRole("button", { name: "Dark", exact: true }).click()
   await settingModes.getByRole("button", { name: "Dark", pressed: true }).waitFor()
+  // The selected button updates optimistically; wait for the save before closing its page.
+  await waitForStoredConfig(context, config => config.appearance.colorTheme === "plum" && config.appearance.mode === "dark")
   assert.equal(service.completions().length, requests, "appearance changes do not translate the article again")
   await context.close()
   context = undefined

@@ -1,7 +1,7 @@
 /* global chrome -- callbacks run inside the extension worker. */
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -160,7 +160,7 @@ it("restores page defaults in a surviving cross-origin iframe after SPA navigati
   context = launched.context
   const settings = launched.page
   await settings.goto(`chrome-extension://${launched.extensionId}/options.html`)
-  await settings.waitForFunction(async () => Boolean((await chrome.storage.local.get("config")).config))
+  await waitForStoredConfig(context, config => Boolean(config))
   await settings.evaluate(async () => {
     const { config } = await chrome.storage.local.get("config")
     Object.assign(config.features, { videoSubtitles: false, disabledSites: [], videoExcludedSites: [] })

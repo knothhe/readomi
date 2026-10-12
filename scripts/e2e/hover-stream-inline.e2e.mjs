@@ -1,7 +1,7 @@
 /* global chrome -- callbacks run in the extension service worker. */
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure } from "./browser.mjs"
+import { configureService, launchBrowser, reportFailure, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -375,7 +375,7 @@ async function setStreaming(enabled) {
   assert.equal(await toggle.isEnabled(), true)
   if (await toggle.isChecked() !== enabled)
     await toggle.click()
-  await options.waitForFunction(async enabled => (await chrome.storage.local.get("config")).config.features.hoverStream === enabled, enabled)
+  await waitForStoredConfig(context, config => config.features.hoverStream === enabled)
   return { options, toggle }
 }
 async function waitForStreamRequest(fromIndex) {

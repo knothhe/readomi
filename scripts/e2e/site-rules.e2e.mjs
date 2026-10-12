@@ -1,7 +1,7 @@
 /* global chrome -- settings callbacks run in the extension page. */
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, pressTranslateShortcut, readClipboardWrites, reportFailure, storedConfig, trackClipboard } from "./browser.mjs"
+import { configureService, launchBrowser, pressTranslateShortcut, readClipboardWrites, reportFailure, storedConfig, trackClipboard, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -109,14 +109,14 @@ it("site rules persist through settings and control scope, display and styleshee
   assert.equal(await section.getByRole("switch").count(), 1)
   const twitterToggle = section.getByRole("switch", { name: "Enable twitter", exact: true })
   await twitterToggle.click()
-  await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.siteRules.disabledBuiltInRules.includes("twitter"))
+  await waitForStoredConfig(context, config => config.siteRules.disabledBuiltInRules.includes("twitter"))
   // Finish the queued write before reloading the settings document.
   await twitterToggle.and(section.locator(":enabled")).waitFor()
   await settings.reload()
   await section.getByRole("searchbox").fill("twitter.com")
   await settings.getByRole("switch", { name: "Enable twitter", exact: true, checked: false }).waitFor()
   await twitterToggle.click()
-  await settings.waitForFunction(async () => !(await chrome.storage.local.get("config")).config.siteRules.disabledBuiltInRules.includes("twitter"))
+  await waitForStoredConfig(context, config => !config.siteRules.disabledBuiltInRules.includes("twitter"))
 
   await section.getByRole("tab", { name: /Custom rules/ }).click()
   assert.equal(await section.getByRole("textbox", { name: "Custom site rules", exact: true }).isVisible(), false)
@@ -142,7 +142,7 @@ it("site rules persist through settings and control scope, display and styleshee
   await editor.fill(JSON.stringify(rules, null, 2))
   const saveRules = section.getByRole("button", { name: "Save rules", exact: true })
   await saveRules.click()
-  await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.siteRules.userRules[0]?.id === "fixture")
+  await waitForStoredConfig(context, config => config.siteRules.userRules[0]?.id === "fixture")
   await section.locator(".site-rules-more > summary").waitFor({ state: "visible" })
   assert.equal(await editor.isVisible(), false)
   await settings.getByRole("link", { name: "Translation service", exact: true }).click()

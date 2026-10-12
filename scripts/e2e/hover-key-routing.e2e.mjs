@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure, storedConfig } from "./browser.mjs"
+import { configureService, launchBrowser, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -56,7 +56,7 @@ async function selectTrigger(options, name, value) {
   await options.locator("nav a[href=\"#shortcut\"]").click()
   await options.getByRole("combobox", { name: "Hover translation trigger", exact: true }).click()
   await options.getByRole("option", { name, exact: true }).click()
-  await options.waitForFunction(async value => (await globalThis.chrome.storage.local.get("config")).config.features.hoverHotkey === value, value)
+  await waitForStoredConfig(context, config => config.features.hoverHotkey === value)
 }
 
 async function setup(kind) {
@@ -201,7 +201,7 @@ for (const kind of ["textarea", "contenteditable"]) {
       // the user selects another trigger through the actual settings UI.
       await options.locator("nav a[href=\"#reading\"]").click()
       await options.getByRole("switch", { name: "Hover translation", exact: true }).click()
-      await options.waitForFunction(async () => !(await globalThis.chrome.storage.local.get("config")).config.features.hoverTranslation)
+      await waitForStoredConfig(context, config => !config.features.hoverTranslation)
       await page.bringToFront()
       await resetHost(page)
       await waitForBacktickPassThrough(page)

@@ -35,7 +35,7 @@ it("X HTML5 subtitles support live relative sizing and adjustable backgrounds wi
   const customOptions = settings.locator(".subtitle-custom > summary")
   assert.equal(await customOptions.evaluate(summary => summary.closest("details").open), false, "custom subtitle controls start collapsed")
   assert.equal(await settings.getByRole("group", { name: "Size mode", exact: true }).count(), 0)
-  await settings.waitForFunction(async () => (await chrome.storage.local.get("config")).config.features.videoSubtitles)
+  await waitForStoredConfig(context, config => config.features.videoSubtitles)
   const previewSize = () => settings.locator(".subtitle-preview-scene").evaluate(scene => ({
     width: scene.getBoundingClientRect().width,
     fontSize: Number.parseFloat(getComputedStyle(scene.lastElementChild).fontSize) * new DOMMatrixReadOnly(getComputedStyle(scene).transform).a,

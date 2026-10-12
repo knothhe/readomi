@@ -4,7 +4,7 @@ import { mkdir } from "node:fs/promises"
 import { resolve } from "node:path"
 import process from "node:process"
 import { afterEach, it } from "node:test"
-import { launchBrowser, reportFailure } from "./browser.mjs"
+import { launchBrowser, reportFailure, waitForStoredConfig } from "./browser.mjs"
 
 let context
 afterEach(async (test) => {
@@ -67,7 +67,7 @@ it("X controls stay in the native bottom row through advertisements, auto-hide a
   // Toolbar placement needs neither subtitle tracks nor a translation service.
   // Keep the global translation default off and exercise the real content script.
   await launched.page.goto(`chrome-extension://${launched.extensionId}/options.html#features`)
-  await launched.page.waitForFunction(async () => Boolean((await chrome.storage.local.get("config")).config))
+  await waitForStoredConfig(context, config => Boolean(config))
   await launched.page.evaluate(async () => {
     const { config } = await chrome.storage.local.get("config")
     config.features.videoSubtitles = false

@@ -1,4 +1,3 @@
-/* global chrome -- page.evaluate() reads extension storage in its isolated test profile. */
 import assert from "node:assert/strict"
 import { mkdir } from "node:fs/promises"
 import { join } from "node:path"
@@ -211,7 +210,7 @@ it("centers the settings workspace on wide screens and restores shortcut default
   }
   await page.locator("nav a[href='#appearance']").click()
   await page.getByRole("group", { name: "Appearance", exact: true }).getByRole("button", { name: { system: "System", light: "Light", dark: "Dark" }[originalAppearance], exact: true }).click()
-  await page.waitForFunction(async mode => (await chrome.storage.local.get("config")).config.appearance.mode === mode, originalAppearance)
+  await waitForStoredConfig(context, config => config.appearance.mode === originalAppearance)
   await page.locator("nav a[href='#shortcut']").click()
 })
 

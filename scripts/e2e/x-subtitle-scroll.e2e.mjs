@@ -1,7 +1,7 @@
 /* global chrome -- config callbacks run in the extension page. */
 import assert from "node:assert/strict"
 import { afterEach, it } from "node:test"
-import { launchBrowser, reportFailure } from "./browser.mjs"
+import { launchBrowser, reportFailure, waitForStoredConfig } from "./browser.mjs"
 
 let context
 afterEach(async (test) => {
@@ -85,7 +85,7 @@ it("X subtitles follow each window and nested scroll frame, resize and clean up 
   context = launched.context
   const settings = launched.page
   await settings.goto(`chrome-extension://${launched.extensionId}/options.html#features`)
-  await settings.waitForFunction(async () => Boolean((await chrome.storage.local.get("config")).config))
+  await waitForStoredConfig(context, config => Boolean(config))
   // Storage only prepares the feature state; this test targets rendered geometry.
   // Empty keys make the translation failure local, with no provider API request.
   await settings.evaluate(async () => {

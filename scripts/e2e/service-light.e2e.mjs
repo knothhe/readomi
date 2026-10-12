@@ -101,10 +101,7 @@ it("manages independent services and switches future translations from the popup
   finally {
     release()
   }
-  await page.waitForFunction(async ({ id, checkedAt }) => {
-    const config = (await chrome.storage.local.get("config")).config
-    return config.providersConfig.find(provider => provider.id === id)?.connectionCheck?.checkedAt > checkedAt
-  }, { id: active.id, checkedAt: active.connectionCheck.checkedAt })
+  await waitForStoredConfig(context, config => config.providersConfig.find(provider => provider.id === active.id)?.connectionCheck?.checkedAt > active.connectionCheck.checkedAt)
   await section.getByRole("status").filter({ hasText: "Test passed" }).waitFor()
   const tested = await storedConfig(context)
   assert.deepEqual(tested, {
