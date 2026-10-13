@@ -1,3 +1,5 @@
+import { isXMediaViewerVideo } from "./x-player"
+
 const YOUTUBE_HOSTS = ["youtube.com", "youtube-nocookie.com"]
 const X_HOSTS = ["x.com", "twitter.com"]
 
@@ -18,7 +20,7 @@ export function shouldShowVideoControls(video: HTMLVideoElement, href = location
     return false
   const hostname = url.hostname.toLowerCase().replace(/\.$/, "")
   if (matchesHost(hostname, X_HOSTS))
-    return !!video.closest("article")
+    return !!video.closest("article") || isXMediaViewerVideo(video)
   if (!matchesHost(hostname, YOUTUBE_HOSTS))
     return false
 

@@ -133,6 +133,56 @@ describe("x subtitle player", () => {
     expect(currentXVideo()).toBeNull()
   })
 
+  it("follows the media viewer outside articles and never falls back to its reply videos", () => {
+    const main = post("100", false)
+    const reply = post("200", false)
+    const dialog = document.createElement("div")
+    dialog.setAttribute("role", "dialog")
+    dialog.innerHTML = "<div data-testid='videoComponent'><video></video></div>"
+    document.body.append(dialog)
+    dialog.append(reply.article)
+    const large = dialog.querySelector("video")!
+    const bounds = vi.spyOn(large, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 0, 600, 700))
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100/video/1"))
+    reply.controls.querySelector("button")!.focus()
+    expect(currentXVideo()).toBe(large)
+    expect(xVideoIdentity(large)).toBe("100")
+    // X retains the preceding slide's video, translated beyond the viewport.
+    bounds.mockReturnValue(new DOMRect(-700, 0, 600, 700))
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100/photo/2"))
+    expect(currentXVideo()).toBeNull()
+    bounds.mockReturnValue(new DOMRect(100, 0, 600, 700))
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100/video/1"))
+    expect(currentXVideo()).toBe(large)
+    large.closest("[data-testid]")!.remove()
+    expect(currentXVideo()).toBeNull()
+    dialog.remove()
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100"))
+    expect(currentXVideo()).toBe(main.video)
+  })
+
+  it.each(["hidden", "clip", "auto", "scroll"])("ignores a retained next video behind the carousel's %s clipping edge", (overflow) => {
+    vi.stubGlobal("innerWidth", 1280)
+    vi.stubGlobal("innerHeight", 800)
+    const dialog = document.createElement("div")
+    dialog.setAttribute("role", "dialog")
+    dialog.innerHTML = `<div class="stage" style="overflow-x:${overflow};overflow-y:${overflow}"><ul role="list"><li role="listitem"><img alt="Current photo"></li><li role="listitem"><div data-testid="videoComponent"><video></video></div></li></ul></div><aside>Conversation</aside>`
+    document.body.append(dialog)
+    vi.spyOn(dialog.querySelector<HTMLElement>(".stage")!, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 930, 780))
+    const video = dialog.querySelector("video")!
+    // The next portrait video overlaps the viewport's 350px sidebar, but
+    // the media stage clips it completely. X retains both carousel items.
+    const bounds = vi.spyOn(video, "getBoundingClientRect").mockReturnValue(new DOMRect(1092, 0, 606, 780))
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100/photo/1"))
+    expect(currentXVideo()).toBeNull()
+    bounds.mockReturnValue(new DOMRect(162, 0, 606, 780))
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100/video/2"))
+    expect(currentXVideo()).toBe(video)
+    bounds.mockReturnValue(new DOMRect(1092, 0, 606, 780))
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100/photo/1"))
+    expect(currentXVideo()).toBeNull()
+  })
+
   it("clears visible controls using measured height, respects explicit hiding and caps narrow videos", () => {
     const { video, controls } = post("100")
     vi.spyOn(controls, "getBoundingClientRect").mockReturnValue({ height: 60 } as DOMRect)

@@ -18,27 +18,76 @@ export function xVideoContainer(video: HTMLVideoElement): HTMLElement | null {
   return video.closest<HTMLElement>(X_VIDEO_CONTAINER_SELECTOR) ?? video.parentElement
 }
 
+/** X mounts the expanded carousel beside its conversation articles. */
+export function isXMediaViewerVideo(video: HTMLVideoElement): boolean {
+  return !video.closest("article") && !!video.closest("[role='dialog']") && !!video.closest(X_VIDEO_CONTAINER_SELECTOR)
+}
+
+function isVisibleMediaViewerVideo(video: HTMLVideoElement): boolean {
+  const view = video.ownerDocument.defaultView
+  if (!view || !isXMediaViewerVideo(video))
+    return false
+  const rect = video.getBoundingClientRect()
+  let left = Math.max(0, rect.left)
+  let right = Math.min(view.innerWidth, rect.right)
+  let top = Math.max(0, rect.top)
+  let bottom = Math.min(view.innerHeight, rect.bottom)
+  // The carousel clips adjacent slides before the conversation sidebar.
+  // Those videos can still intersect the window, so include each clipping
+  // ancestor rather than treating the whole dialog as the media viewport.
+  for (let element = video.parentElement; element; element = element.parentElement) {
+    const style = view.getComputedStyle(element)
+    const clipsX = /^(?:hidden|clip|auto|scroll)$/.test(style.overflowX || style.overflow)
+    const clipsY = /^(?:hidden|clip|auto|scroll)$/.test(style.overflowY || style.overflow)
+    if (clipsX || clipsY) {
+      const bounds = element.getBoundingClientRect()
+      if (clipsX) {
+        left = Math.max(left, bounds.left)
+        right = Math.min(right, bounds.right)
+      }
+      if (clipsY) {
+        top = Math.max(top, bounds.top)
+        bottom = Math.min(bottom, bounds.bottom)
+      }
+    }
+    if (right <= left || bottom <= top)
+      return false
+    if (element.getAttribute("role") === "dialog")
+      break
+  }
+  return right > left && bottom > top
+}
+
 /** Match Read Frog's X target priority without mounting subtitles on every reply. */
 export function currentXVideo(): HTMLVideoElement | null {
-  const candidates = Array.from(document.querySelectorAll<HTMLVideoElement>("article video")).filter((video) => {
+  const candidates = Array.from(document.querySelectorAll<HTMLVideoElement>("article video,[role='dialog'] video")).filter((video) => {
     const rect = video.getBoundingClientRect()
     return video.isConnected && !video.closest("[aria-hidden='true']") && rect.width > 0 && rect.height > 0
+      && (!!video.closest("article") || isXMediaViewerVideo(video))
   })
   const fullscreen = document.fullscreenElement
+  const fullscreenVideo = candidates.find(video => fullscreen === video || fullscreen?.contains(video))
+  if (fullscreenVideo)
+    return fullscreenVideo
+  if (xStatusId(location.href) && /\/(?:video|photo)\/\d+\/?$/.test(location.pathname) && document.querySelector("[role='dialog']:not([aria-hidden='true'])")) {
+    // Adjacent slides stay mounted offscreen; replies and the obscured feed
+    // must not take over when the reader moves from the video to an image.
+    return candidates.find(isVisibleMediaViewerVideo) ?? null
+  }
+  const articles = candidates.filter(video => !!video.closest("article"))
   const focused = document.activeElement
-  const interacting = candidates.find((video) => {
+  const interacting = articles.find((video) => {
     const container = video.closest<HTMLElement>("[data-testid='videoComponent']") ?? xVideoContainer(video)
     return container?.matches(":hover") || (focused && focused !== document.body && container?.contains(focused))
   })
   const statusId = xStatusId(location.href)
-  const marked = candidates.find(video => video.dataset.readomiXSubtitlePage === location.pathname)
-  const preferred = statusId ? candidates.filter(video => Array.from(video.closest("article")!.querySelectorAll<HTMLAnchorElement>("a[href]")).some(anchor => xStatusId(anchor.href) === statusId)) : []
-  return candidates.find(video => fullscreen === video || fullscreen?.contains(video))
-    ?? interacting
-    ?? (marked && (statusId || !marked.paused || !candidates.some(video => !video.paused)) ? marked : null)
+  const marked = articles.find(video => video.dataset.readomiXSubtitlePage === location.pathname)
+  const preferred = statusId ? articles.filter(video => Array.from(video.closest("article")!.querySelectorAll<HTMLAnchorElement>("a[href]")).some(anchor => xStatusId(anchor.href) === statusId)) : []
+  return interacting
+    ?? (marked && (statusId || !marked.paused || !articles.some(video => !video.paused)) ? marked : null)
     ?? (preferred.length === 1 ? preferred[0] : null)
-    ?? candidates.find(video => !video.paused)
-    ?? (candidates.length === 1 ? candidates[0] : null)
+    ?? articles.find(video => !video.paused)
+    ?? (articles.length === 1 ? articles[0] : null)
     ?? null
 }
 

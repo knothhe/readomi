@@ -2035,6 +2035,22 @@ window.READOMI_CANVAS = {
       "h": 490
     },
     {
+      "file": "Video-X-Media-Viewer.html",
+      "title": "X · 大视频弹层 · 双语字幕跟随当前视频",
+      "x": 2400,
+      "y": 74452,
+      "w": 1280,
+      "h": 780
+    },
+    {
+      "file": "Video-X-Media-Viewer-Photo.html",
+      "title": "X · 媒体弹层切到图片 · 隐藏视频字幕",
+      "x": 3760,
+      "y": 74452,
+      "w": 1280,
+      "h": 780
+    },
+    {
       "file": "Video-Drag-Fullscreen-Letterbox.html",
       "title": "视频 · 宽银幕字幕拖动中",
       "x": 0,

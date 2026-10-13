@@ -392,6 +392,55 @@ describe("local subtitle runtime", () => {
     expect(track.mode).toBe("hidden")
     expect(replyTrack.mode).toBe("showing")
   })
+  it.each([
+    { side: "preceding", hiddenX: -700, videoIndex: 1, photoIndex: 2 },
+    { side: "following", hiddenX: 1092, videoIndex: 2, photoIndex: 1 },
+  ])("removes X captions on images with a retained $side video and restores them when returning", async ({ hiddenX, videoIndex, photoIndex }) => {
+    vi.stubGlobal("innerWidth", 1280)
+    vi.stubGlobal("innerHeight", 800)
+    attachXPlayer()
+    update({ ...config, features: { ...config.features, videoSubtitles: false } })
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "v", code: "KeyV", altKey: true, cancelable: true }))
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(shadow.querySelector(".original")).toHaveTextContent("Hello")
+    const inlineHost = document.querySelector("[data-readomi-subtitles]")!
+    const dialog = document.createElement("div")
+    dialog.setAttribute("role", "dialog")
+    dialog.innerHTML = "<div class='stage' style='overflow-x:hidden;overflow-y:hidden'><ul role='list'><li role='listitem'><div data-testid='videoComponent'><video></video><div data-testid='videoControls'><button>Pause</button><button>Fullscreen</button></div></div></li></ul></div><aside>Conversation</aside>"
+    document.body.append(dialog)
+    vi.spyOn(dialog.querySelector<HTMLElement>(".stage")!, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 930, 780))
+    const large = dialog.querySelector("video")!
+    const largeTrack = { kind: "subtitles", mode: "disabled", activeCues: [{ text: "Expanded video" }] }
+    Object.defineProperty(large, "textTracks", { value: [largeTrack] })
+    const bounds = vi.spyOn(large, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 0, 600, 700))
+    vi.stubGlobal("location", new URL(`https://x.com/example/status/100/video/${videoIndex}`))
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(inlineHost.isConnected).toBe(false)
+    expect(track.mode).toBe("showing")
+    expect(largeTrack.mode).toBe("hidden")
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
+    expect(document.querySelectorAll("[data-readomi-video-controls]")).toHaveLength(1)
+    expect(shadow.querySelector(".original")).toHaveTextContent("Expanded video")
+    expect(shadow.querySelector(".translated")).toHaveTextContent("你好")
+    const largeHost = document.querySelector("[data-readomi-subtitles]")!
+    bounds.mockReturnValue(new DOMRect(hiddenX, 0, 600, 700))
+    vi.stubGlobal("location", new URL(`https://x.com/example/status/100/photo/${photoIndex}`))
+    await vi.advanceTimersByTimeAsync(250)
+    expect(largeHost.isConnected).toBe(false)
+    expect(document.querySelector("[data-readomi-subtitles],[data-readomi-video-controls]")).toBeNull()
+    expect(largeTrack.mode).toBe("disabled")
+    bounds.mockReturnValue(new DOMRect(100, 0, 600, 700))
+    vi.stubGlobal("location", new URL(`https://x.com/example/status/100/video/${videoIndex}`))
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(shadow.querySelector(".original")).toHaveTextContent("Expanded video")
+    dialog.remove()
+    vi.stubGlobal("location", new URL("https://x.com/example/status/100"))
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(largeTrack.mode).toBe("disabled")
+    expect(track.mode).toBe("hidden")
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
+    expect(shadow.querySelector(".original")).toHaveTextContent("Hello")
+  })
   it("removes an excluded site's open menu and anchor, restores tracks and follows SPA rules", async () => {
     const player = attachYouTubePlayer()
     const nativeControls = document.createElement("div")

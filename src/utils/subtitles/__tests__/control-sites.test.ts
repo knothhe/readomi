@@ -69,4 +69,20 @@ describe("subtitle toolbar supported sites", () => {
     article.append(video)
     expect(shouldShowVideoControls(video, url)).toBe(true)
   })
+
+  it("supports X media-viewer players outside articles without accepting arbitrary dialog videos", () => {
+    const dialog = document.createElement("div")
+    dialog.setAttribute("role", "dialog")
+    dialog.append(video)
+    document.body.append(dialog)
+    const url = "https://x.com/example/status/100/video/1"
+    expect(shouldShowVideoControls(video, url)).toBe(false)
+    const player = document.createElement("div")
+    player.dataset.testid = "videoComponent"
+    dialog.append(player)
+    player.append(video)
+    expect(shouldShowVideoControls(video, url)).toBe(true)
+    expect(shouldShowVideoControls(video, "https://twitter.com/example/status/100/video/1")).toBe(true)
+    expect(shouldShowVideoControls(video, "https://example.com/status/100/video/1")).toBe(false)
+  })
 })

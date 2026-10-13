@@ -72,6 +72,20 @@ describe("shared page subtitle state", () => {
     await vi.mocked(browser.tabs.onRemoved.addListener).mock.calls.at(-1)![0](1, { windowId: 1, isWindowClosing: false })
     expect(await storage.getItem("session:pageSubtitles:1")).toBeNull()
   })
+  it.each(["x.com", "twitter.com"])("keeps the subtitle switch through %s media-viewer navigation", async (host) => {
+    const post = `https://${host}/example/status/100`
+    url = post
+    await set(true)
+    const navigate = vi.mocked(browser.webNavigation.onHistoryStateUpdated.addListener).mock.calls.at(-1)![0]
+    for (const next of [`${post}/video/1`, `${post}/photo/2`, `${post}/video/1`, post]) {
+      url = next
+      await navigate({ tabId: 1, frameId: 0, url } as Parameters<typeof navigate>[0])
+      expect(await read()).toMatchObject({ url, enabled: true, overridden: true })
+    }
+    url = `https://${host}/example/status/200/video/1`
+    await navigate({ tabId: 1, frameId: 0, url } as Parameters<typeof navigate>[0])
+    expect(await read()).toMatchObject({ enabled: false, overridden: false })
+  })
   it.each([false, true])("restores the %s default in existing frames and the popup after top-level SPA navigation", async (defaultEnabled) => {
     config = { ...config, features: { ...config.features, videoSubtitles: defaultEnabled } }
     await set(!defaultEnabled)
