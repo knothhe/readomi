@@ -93,7 +93,9 @@ All executable extension JavaScript is packaged with the extension, including th
 
 ## 隐私政策与待核对项
 
-建议后台 URL：https://github.com/knothhe/readomi/blob/main/PRIVACY.md。
+建议后台 URL：https://raw.githubusercontent.com/knothhe/readomi/main/PRIVACY.md。
+
+该地址直接返回正式英文政策的纯文本，不依赖 GitHub 文件预览页面。2026 年 10 月 13 日已验证匿名 GET 返回 HTTP 200，内容与仓库的 `PRIVACY.md` 一致；这只能证明本次外部访问成功，不能替代商店自身的可达性检查。商店实际使用的地址以后台 **Privacy practices → Privacy policy URL** 为准，修改仓库文案不会自动更新该字段。若商店仍报告链接不可达，需检查后台保存的完整地址，并改用可公开访问的静态政策页面。
 
 中文译文位于 `privacy-policy.zh-CN.md`。本次已同步正式英文政策、中文译文及中英文商店长描述，移除独立页面语言识别请求的旧描述，并补充输入框翻译、站点适配会话、单页字幕、站点停用、缓存范围、User-Agent 权限和配置导出的实际脱敏范围。工作区更新不代表公开链接已更新，提交前仍需推送并验证匿名访问。
 
