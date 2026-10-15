@@ -49,7 +49,7 @@ Readomi 修改自 Xuanwo/jiandao 和 mengxi-ream/read-frog，主要移除了 Rea
 Readomi 独立维护，与上游团队没有隶属或官方合作关系。源码与反馈地址见下方链接。
 
 源码与支持: https://github.com/knothhe/readomi
-隐私政策: https://github.com/knothhe/readomi/blob/main/PRIVACY.md
+隐私政策: https://raw.githubusercontent.com/knothhe/readomi/main/PRIVACY.md
 
 ## 链接与分发建议
 
@@ -57,7 +57,7 @@ Readomi 独立维护，与上游团队没有隶属或官方合作关系。源码
 | --- | --- |
 | 产品主页 | https://github.com/knothhe/readomi |
 | 支持 | https://github.com/knothhe/readomi/issues |
-| 隐私政策 | https://github.com/knothhe/readomi/blob/main/PRIVACY.md |
+| 隐私政策 | https://raw.githubusercontent.com/knothhe/readomi/main/PRIVACY.md |
 | 配置指南 | https://github.com/knothhe/readomi/blob/main/docs/agent-setup.md |
 | 价格 | 扩展本身免费；用户自行承担所选模型服务的费用 |
 | 官方网站验证 | 若后台要求域名所有权验证，GitHub 仓库链接不代表已验证域名；暂不声明 verified publisher |

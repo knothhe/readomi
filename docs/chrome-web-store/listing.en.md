@@ -49,7 +49,7 @@ Thank you to Read Frog and jiandao for their open-source contributions. Without 
 Readomi is independently maintained. It is not affiliated with or officially partnered with either upstream team.
 
 Source and support: https://github.com/knothhe/readomi
-Privacy policy: https://github.com/knothhe/readomi/blob/main/PRIVACY.md
+Privacy policy: https://raw.githubusercontent.com/knothhe/readomi/main/PRIVACY.md
 
 ## Links and distribution notes
 
@@ -57,7 +57,7 @@ Privacy policy: https://github.com/knothhe/readomi/blob/main/PRIVACY.md
 | --- | --- |
 | Homepage | https://github.com/knothhe/readomi |
 | Support | https://github.com/knothhe/readomi/issues |
-| Privacy policy | https://github.com/knothhe/readomi/blob/main/PRIVACY.md |
+| Privacy policy | https://raw.githubusercontent.com/knothhe/readomi/main/PRIVACY.md |
 | Setup guide | https://github.com/knothhe/readomi/blob/main/docs/agent-setup.md |
 | Price | Extension is free; users pay any charges from their chosen model provider |
 

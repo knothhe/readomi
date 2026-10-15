@@ -51,6 +51,17 @@ CHROME_REFRESH_TOKEN
 
 `pnpm release:chrome` 只重建 Chrome ZIP 并上传至既有 GitHub Release，不负责商店上架。`Submit to Stores` 的 `dryRun` 可用于演练命令，但不能证明首次上架字段已填全或审核能通过。
 
+## 隐私政策链接不可达时
+
+如果提交返回 `Publish condition not met: Privacy policy link is not reachable.`，表示商店在发布条件检查时无法访问后台保存的隐私政策地址。先核对上传步骤的结果；当 ZIP 已上传成功时，不需要为修复这个链接增加版本号。
+
+1. 打开 [Chrome Web Store 开发者后台](https://chrome.google.com/webstore/devconsole)，选择 Readomi，在 **Privacy practices → Privacy policy URL** 核对实际地址。该字段不由 `wxt submit` 或仓库中的文案自动填写。
+2. 可使用正式英文政策直链：<https://raw.githubusercontent.com/knothhe/readomi/main/PRIVACY.md>。它不依赖 GitHub 文件预览页面。保存字段后重新打开确认，并在未登录的浏览器中检查完整政策正文；匿名返回 200 不保证商店检查一定通过。
+3. 若直链仍被商店判定不可达，将同一份 `PRIVACY.md` 发布为可公开访问的静态页面，核验正文后再更新后台地址与本目录的商店文案。
+4. 修正后台地址后，可对原 Actions run 执行 **Re-run failed jobs**，或手动运行 **Submit to Stores**，`tag` 使用原失败版本，`dryRun` 设为 `false`。只重跑 **Release Extension** 的附件重建不会再次提交商店。重新提交会实际上传 ZIP 并提交审核，应在确认后台字段已保存后执行。
+
+提交成功以商店响应为准，CI 中构建成功、上传成功或本地链接可访问均不能代替该结果。
+
 ## 官方参考
 
 - [首次发布流程](https://developer.chrome.com/docs/webstore/publish)
