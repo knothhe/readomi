@@ -1619,6 +1619,30 @@ window.READOMI_CANVAS = {
       "h": 380
     },
     {
+      "file": "Hover-X-Timeline-Waiting.html",
+      "title": "X 时间线 · 悬停等待 · 上方引用保持折叠",
+      "x": 0,
+      "y": 93300,
+      "w": 720,
+      "h": 820
+    },
+    {
+      "file": "Hover-X-Timeline-Streaming.html",
+      "title": "X 时间线 · 悬停流式 · 上方引用保持折叠",
+      "x": 800,
+      "y": 93300,
+      "w": 720,
+      "h": 820
+    },
+    {
+      "file": "Hover-X-Timeline-Ready.html",
+      "title": "X 时间线 · 悬停完成 · 上方引用保持折叠",
+      "x": 1600,
+      "y": 93300,
+      "w": 720,
+      "h": 820
+    },
+    {
       "file": "Page-YouTube-Comment-Streaming.html",
       "title": "页面 · YouTube 评论 · 流式译文",
       "x": 2400,
@@ -2533,6 +2557,11 @@ window.READOMI_CANVAS = {
       "id": "store",
       "title": "商店与项目资料",
       "y": 82462
+    },
+    {
+      "id": "hover-x-timeline",
+      "title": "X 时间线 · 悬停翻译保持引用折叠",
+      "y": 93180
     }
   ]
 }
