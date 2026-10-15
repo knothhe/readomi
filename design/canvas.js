@@ -3,6 +3,21 @@ window.READOMI_CANVAS = {
   "title": "Readomi Design",
   "boards": [
     {
+      "file": "Hover-Site-Layout-Waiting.html",
+      "title": "悬停 · 站点布局隔离 · 等待",
+      "x": 0, "y": 94500, "w": 1200, "h": 900
+    },
+    {
+      "file": "Hover-Site-Layout-Ready.html",
+      "title": "悬停 · 站点布局隔离 · 完成",
+      "x": 1280, "y": 94500, "w": 1200, "h": 900
+    },
+    {
+      "file": "Hover-Site-Layout-Restored.html",
+      "title": "悬停 · 站点布局隔离 · 恢复原文",
+      "x": 2560, "y": 94500, "w": 1200, "h": 900
+    },
+    {
       "file": "Settings-Light-Appearance.html",
       "title": "外观",
       "x": 0,
@@ -2560,7 +2575,7 @@ window.READOMI_CANVAS = {
     },
     {
       "id": "hover-x-timeline",
-      "title": "X 时间线 · 悬停翻译保持引用折叠",
+      "title": "悬停翻译 · 保留宿主布局",
       "y": 93180
     }
   ]

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>悬停翻译 · 站点布局隔离 · 完成</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7f8;color:#182126;font:16px/24px Arial,'PingFang SC',sans-serif}main{width:1200px;height:900px;padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-content:start}.site{background:white;border:1px solid #dce1e4;border-radius:12px;padding:20px;height:394px}h2{font-size:18px;margin:0 0 16px}.card{border:1px solid #e5e8ea;padding:12px;margin-bottom:12px;border-radius:8px}.text{white-space:pre-line;margin:0}.folded{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.translation{white-space:pre-line;margin:12px 0 0;border-left:2px solid #b6533e;padding-left:10px}.spinner{display:inline-block;width:10px;height:10px;margin-left:6px;border:2px solid #d5dadd;border-top-color:#b6533e;border-radius:50%}
+</style><main>
+<section class="site"><h2>Threads</h2><div class="card"><p class="text folded" lang="en">A small reading experiment.
+The rest of this post stays folded.</p></div><div class="card target"><p class="text" lang="en">Good tools should preserve the shape of the page.
+The original line break stays here.</p><p class="translation">好的工具应保留页面的排版。
+原有换行仍在这里。</p></div><div class="card"><p class="text folded" lang="en">Another untouched card keeps its width.
+Its text remains folded.
+This third line stays hidden.</p></div></section>
+<section class="site"><h2>Reddit</h2><div class="card"><p class="text folded" lang="en">A discussion about reading.
+The rest of this post stays folded.</p></div><div class="card target"><p class="text" lang="en">A preview should appear inside this post.
+Nearby cards keep their original size.</p><p class="translation">预览应显示在当前帖子内。
+相邻卡片保持原来的尺寸。</p></div><div class="card"><p class="text folded" lang="en">Another untouched card keeps its width.
+Its text remains folded.
+This third line stays hidden.</p></div></section>
+<section class="site"><h2>Stack Overflow</h2><div class="card"><p class="text folded" lang="en">How can I keep this excerpt short?
+The rest stays folded.</p></div><div class="card target"><p class="text" lang="en">Only the selected answer needs translation.
+The question summary stays folded.</p><p class="translation">只翻译选中的回答。
+问题摘要保持折叠。</p></div><div class="card"><p class="text folded" lang="en">Another untouched card keeps its width.
+Its text remains folded.
+This third line stays hidden.</p></div></section>
+<section class="site"><h2>GitHub</h2><div class="card"><p class="text folded" lang="en">Preserve the issue title layout.
+The rest stays folded.</p></div><div class="card target"><p class="text" lang="en">Keep the project card in the same column.
+Translate this description locally.</p><p class="translation">项目卡片保持在原来的列中。
+只在当前描述内显示译文。</p></div><div class="card"><p class="text folded" lang="en">Another untouched card keeps its width.
+Its text remains folded.
+This third line stays hidden.</p></div></section>
+</main></html>
