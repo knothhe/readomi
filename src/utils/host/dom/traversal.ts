@@ -174,9 +174,12 @@ export function walkAndLabelElement(
 
   let hasInlineNodeChild = false
   let forceBlock = false
+  const computedStyle = element.ownerDocument.defaultView!.getComputedStyle(element)
 
   for (const child of [...element.childNodes]) {
     if (child.nodeType === Node.TEXT_NODE) {
+      if (computedStyle.visibility === "hidden")
+        continue
       if (child.textContent?.trim()) {
         hasInlineNodeChild = true
       }
@@ -209,7 +212,6 @@ export function walkAndLabelElement(
     }
   }
 
-  const computedStyle = element.ownerDocument.defaultView!.getComputedStyle(element)
   const naturalBlockNode = forceBlock || isShallowBlockHTMLElement(element, computedStyle, config)
   const naturalInlineNode = !naturalBlockNode && isShallowInlineHTMLElement(element, computedStyle, config)
   setNaturalTransNodeKind(element, naturalBlockNode ? "block" : naturalInlineNode ? "inline" : "none")

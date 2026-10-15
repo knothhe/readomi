@@ -1,17 +1,19 @@
 import type { SiteRule } from "@/types/config/site-rules"
 import { toReadomiSiteRule } from "../branding"
+import layoutCSS from "./layout-css.json"
 import { READOMI_REDDIT_RULE } from "./readomi-reddit"
 import { READOMI_THREADS_RULE } from "./readomi-threads"
-import { scopeTwitterLayout } from "./readomi-twitter-layout"
 import rules from "./rules.json"
 
 /**
  * Readomi's public rule library, adapted from the complete upstream snapshot.
  * IDs, descriptions and DOM names agree across execution, details and copying.
  * The source JSON stays unchanged for provenance and future updates.
+ * Regenerate layout-css.json with: node scripts/site-rule-layout-css.mjs.
  * Array order matters: scalar values from later matching rules take precedence.
  */
-export const BUILT_IN_SITE_RULES: SiteRule[] = rules.map(rule => scopeTwitterLayout(toReadomiSiteRule(rule)))
+const scopedCSS: Record<string, Pick<SiteRule, "injectedCss" | "injectedCss.add">> = layoutCSS
+export const BUILT_IN_SITE_RULES: SiteRule[] = rules.map(rule => toReadomiSiteRule({ ...rule, ...scopedCSS[rule.id] }))
 
 const twitter = BUILT_IN_SITE_RULES.find(rule => rule.id === "twitter")!
 

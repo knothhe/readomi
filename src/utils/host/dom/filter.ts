@@ -332,10 +332,16 @@ export function isDontWalkIntoAndDontTranslateAsChildElement(
     return true
 
   const computedStyle = window.getComputedStyle(element)
+  // Ubiquiti's virtual list hides its layout shell and explicitly shows the
+  // absolutely positioned item inside it. Traverse that known visible item
+  // without the old rule making the entire shell visible.
+  const visibleVirtualListItem = computedStyle.visibility === "hidden"
+    && getEffectiveSiteRule(config, window.location.href).matchedRuleIds.includes("ui-community-releases")
+    && element.matches("div[style*='flex: 0 0 auto'][style*='position: relative'][style*='visibility: hidden']:has(> div[style*='position: absolute'][style*='visibility: visible'])")
   return (
     usesIconFont(computedStyle.fontFamily)
     || computedStyle.display === "none"
-    || computedStyle.visibility === "hidden"
+    || (computedStyle.visibility === "hidden" && !visibleVirtualListItem)
   )
 }
 

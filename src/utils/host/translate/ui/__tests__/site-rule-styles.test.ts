@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { beginSiteRuleStyleOperation, clearSiteRuleStyles, ensureSiteRuleStyles, refreshSiteRuleStyles, retainPageSiteRuleStyles } from "../site-rule-styles"
+import { retainTranslationLayout } from "../translation-layout-ownership"
 
 const originalLocation = window.location
 const config: Config = {
@@ -37,6 +38,7 @@ describe("site rule CSS ownership", () => {
     wrapper.className = CONTENT_WRAPPER_CLASS
     const target = document.getElementById("target")!
     target.append(wrapper)
+    retainTranslationLayout(wrapper, [target])
     expect(affected()).toContain(target)
     expect(affected()).not.toContain(document.getElementById("quote"))
     expect(affected()).not.toContain(document.querySelector("#card > div:nth-child(2)"))
@@ -55,13 +57,13 @@ describe("site rule CSS ownership", () => {
     expect(document.head.querySelector("#readomi-site-rule-styles")?.textContent).toContain("max-height: unset")
     expect(shadow.querySelector("#readomi-site-rule-styles")?.textContent).toContain("max-height: unset")
     refreshSiteRuleStyles(config, "https://styles.example/settings")
-    expect(document.head.querySelector("#readomi-site-rule-styles")).toBeNull()
-    expect(shadow.querySelector("#readomi-site-rule-styles")).toBeNull()
+    expect(document.head.querySelector("#readomi-site-rule-styles")?.textContent).not.toContain(".article")
+    expect(shadow.querySelector("#readomi-site-rule-styles")?.textContent).not.toContain(".article")
     refreshSiteRuleStyles(config, "https://styles.example/article/2")
     expect(shadow.querySelector("#readomi-site-rule-styles")).not.toBeNull()
     refreshSiteRuleStyles({ ...config, siteRules: { userRules: [], disabledBuiltInRules: [] } })
-    expect(document.head.querySelector("#readomi-site-rule-styles")).toBeNull()
-    expect(shadow.querySelector("#readomi-site-rule-styles")).toBeNull()
+    expect(document.head.querySelector("#readomi-site-rule-styles")?.textContent).not.toContain(".article")
+    expect(shadow.querySelector("#readomi-site-rule-styles")?.textContent).not.toContain(".article")
   })
 
   it("removes only its own stylesheet and leaves site and custom styles intact", () => {

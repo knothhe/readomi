@@ -1,0 +1,789 @@
+{
+  "1688": {
+    "injectedCss.add": [
+      ":is([class^='defaultSubNav']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([class^='loginButton']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}"
+    ]
+  },
+  "pdf": {
+    "injectedCss": ".read-frog-translated-content-wrapper {display: contents!important;position:absolute;}\n.read-frog-translated-content-wrapper br {display: none!important;}\n.read-frog-translated-content-wrapper span {position: relative!important;}\n.read-frog-translated-content-wrapper[dir='rtl'] {text-align: right;display: inline-block!important;position:unset;}"
+  },
+  "infread": {
+    "injectedCss": ""
+  },
+  "shopee": {
+    "injectedCss.add": [
+      ":is(.WBVL_7):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.ellipsis-content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "wikipedia": {
+    "injectedCss": ".read-frog-translated-content-wrapper {content-visibility:auto;}\n:is(.no-article-text-sister-projects li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }",
+    "injectedCss.add": [
+      ":is(.mwe-popups-extract):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;height:unset!important;}"
+    ]
+  },
+  "twitter": {
+    "injectedCss.add": [
+      ":is([data-testid='card.layoutLarge.detail'] > div:nth-child(2)):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is([data-testid='card.layoutSmall.detail'] > div:nth-child(2)):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is([data-testid='tweetText']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([style*='-webkit-line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is([role=dialog] [style*='webkit-line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is([aria-label=Grok] [data-testid=ScrollSnap-SwipeableList] [role=presentation] > div > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset !important; }"
+    ]
+  },
+  "openrouter": {
+    "injectedCss": ""
+  },
+  "polymarket": {
+    "injectedCss.add": [
+      ":is(div[data-index] p.decoration-2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;}",
+      ":is(div[data-index] .items-start.relative.gap-2.px-3.flex.w-full):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset; max-height:unset;}",
+      ":is(div[data-index] .absolute.w-full):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll;}"
+    ]
+  },
+  "threads": {
+    "injectedCss": ":is(span):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.x569fbc):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset;-webkit-line-clamp:unset;height:unset; }"
+  },
+  "stackoverflow": {
+    "injectedCss": ":is(.s-post-summary--content-excerpt):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }"
+  },
+  "hackerNews": {
+    "injectedCss": ".read-frog-translated-content-wrapper {content-visibility:auto;}"
+  },
+  "quora": {
+    "injectedCss": ":is(.qu-truncateLines--3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }"
+  },
+  "redditList": {
+    "injectedCss": ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }"
+  },
+  "reddit": {
+    "injectedCss": ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }"
+  },
+  "github": {
+    "injectedCss": ":is(.TimelineItem-body .Link--primary):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }",
+    "injectedCss.add": [
+      ":is(.bpDald):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.discussion-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}",
+      ":is(li>div[class*='Box-sc']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(div[class*='Box-sc']>button[class*='prc-Token-TokenBase']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(li[class*='card-label-module']>button[class*='prc-Token-TokenBase']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}",
+      ":is(#memex-project-view-root [class*=table-row__StyledTableRow-sc]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(#memex-project-view-root [class*=base-cell-module__Box]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}",
+      ":is([class*='GridCard-module__description']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset;}"
+    ]
+  },
+  "github-blog": {
+    "injectedCss": ""
+  },
+  "rmit": {
+    "injectedCss": ":is(.colfeature-content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){height:unset!important;}"
+  },
+  "mfacebook": {
+    "injectedCss": ""
+  },
+  "facebook": {
+    "injectedCss.add": [
+      ":is(._4ik4._4ik5):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;}"
+    ]
+  },
+  "youtubeMobile": {
+    "injectedCss": ".read-frog-translated-content-wrapper img { width: 16px; height: 16px }\n:is(.shortsLockupViewModelHostMetadataTitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(h4.compact-media-item-headline):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset !important;line-clamp:unset !important;overflow:unset !important;-webkit-line-clamp:unset !important;}\n:is(.comment-text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset;}\n:is(.details):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.subhead):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.video-card-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.media-item-headline):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;-webkit-line-clamp:unset!important;}\n:is(truncated-text-content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset !important;}"
+  },
+  "youtube": {
+    "injectedCss": ".read-frog-translated-content-wrapper img { width: 16px; height: 16px }\n:is(.metadata-snippet-container):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset !important;}\n.read-frog-translated-content-wrapper {text-align: left;}\n.read-frog-translated-content-wrapper[dir=rtl] {text-align: right;}\n:is(#video-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(h1.ytd-watch-metadata):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.ytd-video-renderer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.yt-lockup-metadata-view-model-wiz__title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;max-height: unset !important;}\n:is(yt-formatted-string#video-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.ShortsLockupViewModelHostOutsideMetadataTitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;max-height: unset !important;}\n:is(ytd-expander.ytd-comment-renderer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {--ytd-expander-max-lines: 1000;}\n:is(.page-header-view-model-wiz__page-header-title--page-header-title-large):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;max-height: unset !important;}\n:is(#title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(#video-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.yt-lockup-metadata-view-model__title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.ytLockupMetadataViewModelTitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.shortsLockupViewModelHostOutsideMetadataTitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(h1.ytd-watch-metadata):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.ytwFeedAdMetadataViewModelHostTextsStyleStandardHeadline):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;max-height: unset !important;}",
+    "injectedCss.add": [
+      ":is(yt-formatted-string.ytd-watch-metadata):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;max-height: unset !important;}"
+    ]
+  },
+  "youtubekids": {
+    "injectedCss": ":is(#video-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height: unset; }\n:is(h1.ytd-watch-metadata):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height: unset; }\n:is(yt-formatted-string#video-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height: unset; }\n:is(ytd-expander.ytd-comment-renderer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { --ytd-expander-max-lines: 1000; }\n:is(.details.ytk-compact-video-renderer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; }\n:is(.primary-text.ytk-compact-video-renderer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height: unset; }"
+  },
+  "instagramPost": {
+    "injectedCss.add": []
+  },
+  "substack": {
+    "injectedCss": ":is(.reader2-clamp-lines):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset; -webkit-line-clamp: unset; }\n:is([class*='clamp-']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset; -webkit-line-clamp:unset; }\n:is(.blurb-text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset; }\n:is(.comment-body):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset; }\n:is([class*='_hideSelectio']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: scroll; }"
+  },
+  "inoreader": {
+    "injectedCss.add": [
+      ":is(.article_title_link):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.library_article_text h4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.gadget_overview_article_title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.article_magazine_title_link):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.reader_pane_view_style_2 .column_view_title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;max-height: unset!important;}",
+      ":is(.article_tile_content_wraper):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(div.article_tile):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:auto}",
+      ":is(.article_header_title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset!important;}",
+      ":is(.ar.article_no_thumbnail):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([data-type=article]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}"
+    ]
+  },
+  "googleMail": {
+    "injectedCss": ":is([role='listitem'] > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:auto!important; }"
+  },
+  "googleNews": {
+    "injectedCss.add": [
+      ":is(.oovtQ):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.MCAGUe):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.To2ZZb.DbQnIe):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset;}",
+      ":is(h4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.IBr9hb):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.gPFEn):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){-webkit-line-clamp: unset!important;}"
+    ]
+  },
+  "producthunt": {
+    "injectedCss": ":is(h5 + p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.noOfLines-1):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.noOfLines-2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.noOfLines-3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.styles_noOfLines-2__k_Ta_):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([data-test=\"post-name-481116\"]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }"
+  },
+  "discord": {
+    "injectedCss.add": [
+      ":is(main div[class^=headerText]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(main div[class^=message]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(main div[class^=text]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset;}",
+      ":is(h3[data-text-variant='heading-lg/semibold']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset;}",
+      ":is([class*='guildDetails'] > [class*='description']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset;}"
+    ]
+  },
+  "figmaCommunity": {
+    "injectedCss": ""
+  },
+  "googleSearch": {
+    "injectedCss.add": [
+      ":is(.V82bz):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.uAKcGb):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.F0FGWb):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.Hdw6tb):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.M1Sizc):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.XVPTd):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.Yt787.JGD2rd):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.ITZIwc):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;max-height: unset!important;}",
+      ":is(.pe7FNb):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is(div[data-content-feature='1'] > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;max-height: unset!important;}",
+      ":is(div[style='-webkit-line-clamp:*']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;max-height: unset!important;}",
+      ":is(.Pw4Ldf.RsCEN):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}",
+      ":is(.related-question-pair):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:auto!important;}",
+      ":is([role=dialog][data-skip-highlighting] :has(.read-frog-translated-content-wrapper)):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;max-height: unset!important;}"
+    ]
+  },
+  "linkedin": {
+    "injectedCss": ":is(.feed-shared-inline-show-more-text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.comments-comment-item__inline-show-more-text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: none !important; }\n:is(.update-components-actor__description):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.comments-comment-meta__description-subtitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow: visible !important;height: auto !important; }"
+  },
+  "indiehackers": {
+    "injectedCss.add": [
+      ":is(.meetups__meetup-name):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.partnerships__title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important;max-height: unset!important; }"
+    ]
+  },
+  "notionSite": {
+    "injectedCss": ""
+  },
+  "scmp": {
+    "injectedCss": ":is(.topic__article-list):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; }\n:is(.adverisers__adveriser):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; }\n:is(.advertiser__content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; }\n:is(.content-title__link):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:unset;-webkit-line-clamp:unset; }\n:is(.title__text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; -webkit-line-clamp:unset; }\n:is(.news-list-item__news-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; -webkit-line-clamp:unset; }\n:is(a[class*='link'] > .link__headline):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; -webkit-line-clamp:unset; }"
+  },
+  "cnbc": {
+    "injectedCss": ":is(div.Card-titleContainer > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset !important;max-height: unset !important; }"
+  },
+  "dailyDev": {
+    "injectedCss": ":is(.line-clamp-3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }"
+  },
+  "pornhub": {
+    "injectedCss": ":is(span.title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; max-height:unset; }\n:is(.detailedInfo):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; }\n:is(.pcVideoListItem):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; }\n:is(.wrap):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.entry-header):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.entry-title > a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset;-webkit-line-clamp:unset; }"
+  },
+  "missav": {
+    "injectedCss": ":is(.overflow-y-hidden):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset;overflow-y:unset; }"
+  },
+  "javbus": {
+    "injectedCss": ":is(.photo-info):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }"
+  },
+  "spankbang": {
+    "injectedCss": ""
+  },
+  "javdb": {
+    "injectedCss": ":is(.video-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible !important; }"
+  },
+  "jable": {
+    "injectedCss": ":is(.title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset; }"
+  },
+  "netflav": {
+    "injectedCss": ":is(.grid_title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; }"
+  },
+  "czechvideo": {
+    "injectedCss": ":is(.short-story):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.short-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }"
+  },
+  "medium": {
+    "injectedCss": ":is(.u-lineClamp4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.u-lineClamp3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.u-lineClamp2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;max-height:unset!important;}\n:is(h2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(h3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }\n:is(article p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }"
+  },
+  "economist": {
+    "injectedCss": ""
+  },
+  "ebay": {
+    "injectedCss.add": [
+      ":is(.iS4T .zgfQ .uHzw .Ep66):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset;max-height: unset;}",
+      ":is([itemprop=name]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.merch-item-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset;max-height: unset;}"
+    ]
+  },
+  "amazon": {
+    "injectedCss.add": [
+      ":is(.a-carousel-viewport):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset;}",
+      ":is([class*='clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset!important;-webkit-line-clamp: unset!important;}",
+      ":is([data-rows]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset!important;-webkit-line-clamp: unset!important;}",
+      ":is([data-a-expander-name='review_text_read_more']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset;}",
+      ":is(.compact.primaryText.primaryTextOnly):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset;-webkit-line-clamp: unset;}",
+      ":is(.format):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset;}",
+      ":is(.dcl-truncate):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([class*='textButton']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(span[data-a-max-rows]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;-webkit-line-clamp: unset!important;}",
+      ":is(.a-reactive-container-transition):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.a-cardui-uninitialized):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;max-height:unset!important;}"
+    ]
+  },
+  "visualstudioMarketplace": {
+    "injectedCss": ":is(.item-details-control-root.ux-item-shortdesc):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; overflow: visible; max-height:unset; }"
+  },
+  "baiduXueshu": {
+    "injectedCss": ":is(.abstract_wr):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; overflow: visible; max-height:unset; }"
+  },
+  "sciencedirect": {
+    "injectedCss": ".read-frog-translated-content-wrapper {content-visibility:auto;}",
+    "injectedCss.add": [
+      ":is(.u-clamp-2-lines):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "annasArchive": {
+    "injectedCss": ":is(div[id^='link-index-']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; max-height: unset; }\n:is(main div[class*='h-[125]']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:auto; }"
+  },
+  "googlePlay": {
+    "injectedCss": ":is(.Epkrse):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }\n:is(div[data-g-id='description']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset;max-height:unset; }"
+  },
+  "tinytask": {
+    "injectedCss": ""
+  },
+  "construct": {
+    "injectedCss": ""
+  },
+  "fandom": {
+    "injectedCss": ""
+  },
+  "huggingface": {
+    "injectedCss": ":is(.line-clamp-2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset;max-height:unset; }"
+  },
+  "statista": {
+    "injectedCss": ":is(.itemContent__text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset;max-height:unset; }\n:is(.itemContent__subline):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset;max-height:unset; }"
+  },
+  "epubReader": {
+    "injectedCss": ":is(span.slide-contents-item-label):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow:visible;max-height:unset; }"
+  },
+  "chatOpenai": {
+    "injectedCss": ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset;-webkit-line-clamp:unset;height:unset; }"
+  },
+  "poe": {
+    "injectedCss": ":is([class^='BotListItem_botDescription']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }"
+  },
+  "microsoft": {
+    "injectedCss": ":is(.line-clamp):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset;max-height:unset; }"
+  },
+  "steamcommunity": {
+    "injectedCss.add": [
+      ":is(.forum_topic):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.rightbox_list_option):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.appHubShortcut):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset;}"
+    ]
+  },
+  "steampoweredApp": {
+    "injectedCss": ":is(.game_description_snippet):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; overflow: scroll; }\n:is(.game_purchase_area_friends_want):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: auto; }"
+  },
+  "nature": {
+    "injectedCss": ".read-frog-translated-content-wrapper {content-visibility:auto;}"
+  },
+  "webofscience": {
+    "injectedCss": ":is(.abstract):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:auto !important; }\n:is(.show-more-lines):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset !important; }"
+  },
+  "jetbrains": {
+    "injectedCss": ":is(.card p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.card h4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }"
+  },
+  "tass": {
+    "injectedCss": ""
+  },
+  "thehill": {
+    "injectedCss": ":is(.most-popular-item):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset !important; }\n:is(.most-popular-item__link):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset !important; }"
+  },
+  "ground": {
+    "injectedCss": ":is(.line-clamp-3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset !important; }"
+  },
+  "yandexSearch": {
+    "injectedCss": ""
+  },
+  "yandex": {
+    "injectedCss": ":is(.serp-item__title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }\n:is(.serp-item__text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }\n:is(.OrganicTitle-LinkText):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }\n:is(h1.VideoTitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }\n:is(.OrganicTitle):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; }"
+  },
+  "react": {
+    "injectedCss.add": [
+      ":is([class*='h-\\[40px\\]']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset !important;}"
+    ]
+  },
+  "perplexity": {
+    "injectedCss": ":is([class*=line-clamp]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset !important; }"
+  },
+  "chinadaily": {
+    "injectedCss": ":is(a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }\n:is(li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }\n:is(div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }"
+  },
+  "braynzarsoft": {
+    "injectedCss.add": [
+      ":is(.tutorial-desc):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow: scroll !important;}"
+    ]
+  },
+  "feedly": {
+    "injectedCss": ":is(.TitleOnlyLayout):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.SelectedEntryScroller > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset !important; }\n:is(.EntrySummary--u4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.EntrySummary--u5):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset;max-height:unset; }\n:is(.EntryTitleLink):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }\n:is(.SelectedEntryScroller > div :nth-child(2) :last-child):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset !important; }"
+  },
+  "bing": {
+    "injectedCss": ":is([class*='lineclamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.b_title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }\n:is(.b_gwaDl):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.b_snipwithnsl):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset !important; }"
+  },
+  "bingNews": {
+    "injectedCss": ":is(.newsitem .title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: none; -webkit-line-clamp: unset; }\n:is(.newsitem .snippet):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: none; -webkit-line-clamp: unset; }"
+  },
+  "yahoo": {
+    "injectedCss.add": [
+      ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(h3.clamp):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}",
+      ":is([class*='LineClamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;max-height:unset;}",
+      ":is(a[class*='js-content-viewer']> div[class*='Td\\(n\\)']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow: scroll;}",
+      ":is([class*='_ys_24482e']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;}",
+      ":is(#Aside > :first-child):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll;}"
+    ]
+  },
+  "wsj": {
+    "injectedCss": ".read-frog-translated-content-wrapper br {display:none;}"
+  },
+  "nytimes": {
+    "injectedCss": ""
+  },
+  "plati": {
+    "injectedCss.add": [
+      ":is(.card .custom-link):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){-webkit-line-clamp: unset !important;}"
+    ]
+  },
+  "bmvrMarseille": {
+    "injectedCss": ":is([style*='358px;']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: auto; }"
+  },
+  "piAi": {
+    "injectedCss": ""
+  },
+  "claudeAi": {
+    "injectedCss": ":is([data-test-render-count]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow: scroll;}"
+  },
+  "mitre": {
+    "injectedCss": ":is(span.list_entry):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset; }"
+  },
+  "kaggle": {
+    "injectedCss.add": [
+      ":is(.km-listitem--large):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset !important;}",
+      ":is(.km-listitem--large .jWyUHl):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset !important;}",
+      ":is([role=listitem]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll;}",
+      ":is([role=listitem] div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;}",
+      ":is([class*='km-listitem--medium']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset !important;}",
+      ":is(.MuiListItem-root a > div :nth-child(2)):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset !important;}"
+    ]
+  },
+  "githubBlog": {
+    "injectedCss": ""
+  },
+  "pubmed": {
+    "injectedCss": ".read-frog-translated-content-wrapper {content-visibility:auto;}"
+  },
+  "chosun": {
+    "injectedCss": ""
+  },
+  "yna": {
+    "injectedCss": ":is(a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(strong):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset;-webkit-line-clamp:unset;height:unset; }\n:is(div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.item-box01):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.news-con):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset;max-height:unset;-webkit-line-clamp:unset; }"
+  },
+  "digitimes": {
+    "injectedCss": ":is(a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.abstract):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.display-5):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.top):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset;-webkit-line-clamp:unset;height:unset; }"
+  },
+  "qqMail": {
+    "injectedCss": ":is(.mail-list-page-wide-item):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }"
+  },
+  "indeed": {
+    "injectedCss": ":is(span):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.css-19rjr9w.e1wnkr790):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset;-webkit-line-clamp:unset;height:unset; }"
+  },
+  "maxroll": {
+    "injectedCss": ""
+  },
+  "arca": {
+    "injectedCss": ":is(.vrow.column):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset !important; }"
+  },
+  "hub.logseq": {
+    "injectedCss": ":is([class*=':h-[']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }"
+  },
+  "epam": {
+    "injectedCss": ""
+  },
+  "wattpad": {
+    "injectedCss": ":is(.story-info .item-description):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: scroll; }"
+  },
+  "scholar.cnki.net": {
+    "injectedCss.add": [
+      ":is(.result .searchItem):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: auto!important;}"
+    ]
+  },
+  "datalab.naver": {
+    "injectedCss.add": [
+      ":is(.tab_list_area .list_itm):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset !important;}",
+      ":is(.section.main_tab_opt .select):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset !important;}"
+    ]
+  },
+  "championcross.jp": {
+    "injectedCss.add": []
+  },
+  "shonenjumpplus": {
+    "injectedCss.add": []
+  },
+  "pixiv": {
+    "injectedCss": ":is([id*='expandable-paragraph']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;}"
+  },
+  "barrons": {
+    "injectedCss": "font.read-frog-translated-content-wrapper > br {display:none;}"
+  },
+  "scrimba": {
+    "injectedCss": ":is([class*='trunc']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;}\n:is(.tile):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow: scroll;}"
+  },
+  "linkin": {
+    "injectedCss.add": [
+      ":is(.linked-area *):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height: unset !important;}"
+    ]
+  },
+  "app.rapidlaunch.wtf": {
+    "injectedCss": ":is(.max-h-24):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height: unset !important; }\n:is(.line-clamp-2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;}"
+  },
+  "imdb": {
+    "injectedCss.add": [
+      ":is([class*=overflow]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;}"
+    ]
+  },
+  "orchestraltools": {
+    "injectedCss": ".read-frog-translated-content-wrapper *, .read-frog-translated-content-wrapper {font-size: inherit !important;}"
+  },
+  "rtve": {
+    "injectedCss.add": []
+  },
+  "orvehogar": {
+    "injectedCss": ":is(h3.vtex-product-summary-2-x-productNameContainer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){height: unset!important;}"
+  },
+  "gemini.google": {
+    "injectedCss.add": [
+      ":is([data-test-id=conversation]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset!important;}"
+    ]
+  },
+  "otherGoogle": {
+    "injectedCss.add": [
+      ":is(.scSearchSearch_results_listSearchresultslistsnippet):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset;}"
+    ]
+  },
+  "arxiv": {
+    "injectedCss.add": [
+      ".ltx_title .read-frog-translated-inline-content, .ltx_title .read-frog-translated-block-content { line-height: 1.5; }"
+    ]
+  },
+  "jstor": {
+    "injectedCss": ":is(.card__heading):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }"
+  },
+  "bsky.app": {
+    "injectedCss.add": [
+      ":is([style*='-webkit-line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "peacocktv": {
+    "injectedCss": ""
+  },
+  "smzdm": {
+    "injectedCss": ":is(.feed-block-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }"
+  },
+  "xiaohongshu.com": {
+    "injectedCss": ":is(a.title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset; }"
+  },
+  "learnopengl": {
+    "injectedCss": ""
+  },
+  "eightfold": {
+    "injectedCss": ""
+  },
+  "soundcloud": {
+    "injectedCss": ":is(.compactTrackListItem):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset !important;}"
+  },
+  "section.blog.naver.com": {
+    "injectedCss": ":is(.text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.title_post):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.text_post):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(strong):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp:unset;max-height:unset;height:unset; }"
+  },
+  "archiveofourown": {
+    "injectedCss.add": []
+  },
+  "www.ey.com": {
+    "injectedCss.add": [
+      ":is(.up-rich-text__container):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset!important;}"
+    ]
+  },
+  "ipinfo": {
+    "injectedCss.add": []
+  },
+  "character.ai": {
+    "injectedCss": ".read-frog-translated-content-wrapper br {display:none;}\n:is(.swiper):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.rah-static):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([class*=max-h]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.line-clamp-1):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow:scroll;-webkit-line-clamp:unset; }"
+  },
+  "queenslibrary.org": {
+    "injectedCss": ""
+  },
+  "chromium": {
+    "injectedCss.add": []
+  },
+  "podcasts": {
+    "injectedCss.add": [
+      ":is(.headings__title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.powerswoosh__title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([data-testid=truncate-text]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}",
+      ":is(.show-artwork):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:fit-content!important;}",
+      ":is(.powerswoosh__lockup-details-container):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.powerswoosh__chin):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([data-testid=amp-review__text]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;height:unset!important;}",
+      ":is(.episode-hero__overlay):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:auto!important;}"
+    ]
+  },
+  "sp-codeSites": {
+    "injectedCss.add": []
+  },
+  "wayfair": {
+    "injectedCss.add": [
+      ":is([data-enzyme-id=\"Collapse-Collapsible\"]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}"
+    ]
+  },
+  "followis": {
+    "injectedCss.add": [
+      ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;}"
+    ]
+  },
+  "wisdom": {
+    "injectedCss.add": []
+  },
+  "www.acrobiosystems.com": {
+    "injectedCss.add": []
+  },
+  "www.metacritic.com": {
+    "injectedCss.add": []
+  },
+  "xgo": {
+    "injectedCss.add": [
+      ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){-webkit-line-clamp:unset !important;}"
+    ]
+  },
+  "nebula.starbreeze": {
+    "injectedCss.add": [
+      ":is(main section>div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow-y:scroll !important;}"
+    ]
+  },
+  "balthild": {
+    "injectedCss": ".read-frog-translated-content-wrapper [aria-hidden=true] {display:none;}"
+  },
+  "csust": {
+    "injectedCss.add": []
+  },
+  "curseforge": {
+    "injectedCss": ":is(.project-card):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.project-card .description):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset;-webkit-line-clamp:unset; }\n:is(ul.details-list):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.project-card .categories):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }"
+  },
+  "ml4vis": {
+    "injectedCss": ":is(.jss42):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height:unset; }\n:is(.jss44):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { max-height:unset; }"
+  },
+  "jddonline.com": {
+    "injectedCss.add": []
+  },
+  "novel-site": {
+    "injectedCss.add": [
+      ":is(.centent ul li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }",
+      ":is(article.excerpt):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible !important; }",
+      ":is(#dir dd):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible !important; }"
+    ]
+  },
+  "xianqihaotianmi": {
+    "injectedCss.add": [
+      ":is(.list-charts li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible !important; }"
+    ]
+  },
+  "sobqg": {
+    "injectedCss.add": [
+      ":is(a.ell):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible !important; }",
+      ":is(#hot .g_book > a > h3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible; max-height: none; -webkit-line-clamp: unset; }"
+    ]
+  },
+  "luminousfox": {
+    "injectedCss.add": [
+      ":is(#detail_chapter .box_content ul li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; overflow: visible !important; }"
+    ]
+  },
+  "doupocangqiong": {
+    "injectedCss.add": [
+      ":is(#play_0 ul li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }"
+    ]
+  },
+  "proko": {
+    "injectedCss.add": [
+      ":is(.lesson-video-banner-skip):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.lesson-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.lesson-content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.course-card__details):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;overflow:scroll;}",
+      ":is([class*='clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.course-card__description):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){-webkit-line-clamp:unset!important;overflow:unset;}"
+    ]
+  },
+  "vodtw": {
+    "injectedCss.add": [
+      ":is(dl dd):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: visible !important; }",
+      ":is(#info p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }"
+    ]
+  },
+  "jwxs": {
+    "injectedCss.add": []
+  },
+  "ceros": {
+    "injectedCss.add": [
+      ":is(.page-object.group > .page-object.text > p):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { overflow: auto !important; }"
+    ]
+  },
+  "aliexpress": {
+    "injectedCss.add": [
+      ":is([class*='multi--title']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.G7dOC):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;}"
+    ]
+  },
+  "batchUnlimitHeight": {
+    "injectedCss.add": [
+      ":is(li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}",
+      ":is(.big_box):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(article .text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(article .title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}"
+    ]
+  },
+  "digitaltrends": {
+    "injectedCss.add": [
+      ":is(.b-mem__inner .b-mem-post:first-child h3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){-webkit-line-clamp: unset;}"
+    ]
+  },
+  "alphaxiv": {
+    "injectedCss.add": [
+      ":is([class*=line-clamp]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset;}"
+    ]
+  },
+  "nexusmods": {
+    "injectedCss.add": [
+      ":is([class*='line-clamp-']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important; max-height: unset!important;}"
+    ]
+  },
+  "swaycloud": {
+    "injectedCss.add": [
+      ":is(.text_wrapper ul li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;}",
+      ":is(.container):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll;}"
+    ]
+  },
+  "teacherspayteachers": {
+    "injectedCss.add": []
+  },
+  "claudeartifacts": {
+    "injectedCss": ":is(.line-clamp-3):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; }"
+  },
+  "descript": {
+    "injectedCss": ".read-frog-translated-content-wrapper, .read-frog-translated-content-wrapper *{color:unset!important;}"
+  },
+  "law.mit.edu": {
+    "injectedCss.add": []
+  },
+  "noon": {
+    "injectedCss.add": [
+      ":is([class*='ProductDetailsSection']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}",
+      ":is([class*='title']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "klibs": {
+    "injectedCss.add": [
+      ":is([class*='styles_card']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important; -webkit-line-clamp:unset!important; max-height:unset!important;}"
+    ]
+  },
+  "androidpolice": {
+    "injectedCss.add": [
+      ":is(.display-card-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.display-card-title *):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "seller-tiktok": {
+    "injectedCss.add": [
+      ":is([data-tid=m4b_overflow_text_multiply]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;-webkit-line-clamp:unset!important;}",
+      ":is([class^=replyText]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([class^=productItemInfo]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([class^=reviewText]):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "pinboard": {
+    "injectedCss.add": [
+      ":is(div.blurb_box):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(div.homepage_quad):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(div.signup_button):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset !important;}"
+    ]
+  },
+  "dtmstation": {
+    "injectedCss.add": [
+      ":is(.entry-card-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.entry-card-snippet):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important; max-height: unset!important;}"
+    ]
+  },
+  "ru-sites": {
+    "injectedCss.add": [
+      ":is(.product-page):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.comment-card):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.comment-card__message):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {block-size:unset!important;}",
+      ":is(.bq03_5_3-a6):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.bq03_5_3-a5):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.a2p5_6_9-a0):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;height:unset!important;}"
+    ]
+  },
+  "barotem": {
+    "injectedCss.add": [
+      ":is(.product_name):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is(.lists_goods_content > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height: unset!important}"
+    ]
+  },
+  "msn": {
+    "injectedCss.add": [
+      ":is(.root):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow-y: scroll!important;}",
+      ":is(.heading):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important;}",
+      ":is(.content .text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow-y: scroll !important;}"
+    ]
+  },
+  "skool": {
+    "injectedCss.add": [
+      ":is(.erGJuk):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset!important;}"
+    ]
+  },
+  "futuretools": {
+    "injectedCss": ":is(.collection-item-6):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; }"
+  },
+  "cooperativa": {
+    "injectedCss.add": []
+  },
+  "read.amazon": {
+    "injectedCss.add": []
+  },
+  "dcinside": {
+    "injectedCss.add": []
+  },
+  "toneking": {
+    "injectedCss.add": []
+  },
+  "fontFmaily": {
+    "injectedCss.add": []
+  },
+  "murlok": {
+    "injectedCss.add": []
+  },
+  "vercel": {
+    "injectedCss": "[data-docs-heading] .read-frog-translated-content-wrapper,[data-docs-heading] .read-frog-translated-content-wrapper * {visibility:visible!important;opacity:1!important;display:inline!important;margin-left:0!important;}"
+  },
+  "ai-sdk": {
+    "injectedCss": "[data-docs-heading] .read-frog-translated-content-wrapper,[data-docs-heading] .read-frog-translated-content-wrapper * {visibility:visible!important;opacity:1!important;display:inline!important;margin-left:0!important;}"
+  },
+  "moltbook": {
+    "injectedCss.add": [
+      ":is([class*='line-clamp']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){-webkit-line-clamp:unset !important;}"
+    ]
+  },
+  "autoHeight": {
+    "injectedCss.add": [
+      ":is(.side_list a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.title a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.tit):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.item-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp:unset!important;height:unset!important;}",
+      ":is(details):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}",
+      ":is(.product-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;-webkit-line-clamp:unset!important;}",
+      ":is(.plugin-product-comment-content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;-webkit-line-clamp:unset!important;}",
+      ":is(div.jdd-product-info-box):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}",
+      ":is(span.hotData-text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset !important; line-clamp: unset !important;}",
+      ":is(div.line-clamp-4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; max-height: unset;}",
+      ":is([class*='titleTypography']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset !important;}",
+      ":is(.div-text-line-three):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset; max-height: unset;}",
+      ":is(.data-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is(.paper-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.search-result-abstract.folded):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.list-group-item-mod h5):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is(.kb-advanced-heading-link):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.limited-text):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is(.entry-card-title):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is(.entry-card-snippet):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is(span.line-clamp-2):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { -webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is(.css-1yo0yr8):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is([class*='line-clamp-']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper),:is([class*='line-clamp-'] font):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important; max-height: unset!important;}",
+      ":is(.card-recommend-oneImg article h4):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset;-webkit-line-clamp:unset;}",
+      ":is(.description__4cb8a):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {max-height:unset;-webkit-line-clamp:unset;}",
+      ":is(.link-container):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;-webkit-line-clamp:unset!important;}"
+    ]
+  },
+  "other-chatapps": {
+    "injectedCss.add": [
+      ":is(._ss_2FLBr4_u):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {height:unset!important;}"
+    ]
+  },
+  "overflow-sites": {
+    "injectedCss.add": [
+      ":is(#main-content):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:unset;}",
+      ":is(.TextImage--inner):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:auto !important;}",
+      ":is(body):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){overflow-y:scroll!important;}",
+      ":is(li.expanded > div):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper){ overflow:scroll; }",
+      ":is(.book_list ul li):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) { height: unset !important; overflow: visible !important; }",
+      ":is(#tabs-content-wrap):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll;}",
+      ":is(.ReactVirtualized__Grid__innerScrollContainer):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll!important;}",
+      ":is(.b--wrap):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {overflow:scroll!important;}"
+    ]
+  },
+  "mailSites": {
+    "injectedCss.add": []
+  },
+  "fix-header": {
+    "injectedCss.add": [
+      ":is([class*='line-clamp-']):where([data-readomi-layout-owner], [data-readomi-layout-owner] *):has(.read-frog-translated-content-wrapper) {-webkit-line-clamp: unset!important; max-height: unset!important;}"
+    ]
+  },
+  "ui-community-releases": {
+    "injectedCss": ""
+  }
+}

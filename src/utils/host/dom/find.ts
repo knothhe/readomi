@@ -1,7 +1,6 @@
 import type { Config } from "@/types/config/config"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getEffectiveTagSet, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isShallowInlineHTMLElement, isSiteRuleForceBlockNodeElement, isSiteRuleForceInlineNodeElement, isTranslatedContentNode, isTranslatedWrapperNode, isWalkBlockedElement } from "./filter"
-import { smashTruncationStyle } from "./style"
 import { findTranslationGroup, getTranslationGroupOwner } from "./translation-group"
 
 function isInlineTraversalElement(element: HTMLElement, config?: Config): boolean {
@@ -83,8 +82,6 @@ export function deepQueryTopLevelSelector(element: HTMLElement | ShadowRoot | Do
 export function unwrapDeepestOnlyHTMLChild(element: HTMLElement, config?: Config) {
   let currentElement = element
   while (currentElement) {
-    smashTruncationStyle(currentElement)
-
     const shouldKeepNode = (child: ChildNode) => {
       if (!child.textContent?.trim())
         return false

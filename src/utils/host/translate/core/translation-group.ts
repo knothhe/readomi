@@ -21,6 +21,7 @@ import { setTranslationDirAndLang } from "../translation-attributes"
 import { createSpinnerInside, getTranslatedTextAndRemoveSpinner } from "../ui/spinner"
 import { ensurePresetStyles } from "../ui/style-injector"
 import { setPendingTranslationLayout } from "../ui/translation-layout"
+import { retainTranslationLayout } from "../ui/translation-layout-ownership"
 import { isNumericContent } from "../ui/translation-utils"
 import { isTranslatingInWalk, MARK_ATTRIBUTES_REGEX, markTranslatingInWalk, unmarkTranslatingInWalk } from "./translation-state"
 
@@ -190,6 +191,7 @@ export async function translateTranslationGroup(
       else
         container.append(wrapper)
       ownedState.mounted = wrapper.isConnected
+      retainTranslationLayout(wrapper, [container])
     })
     const spinner = createSpinnerInside(wrapper)
     if (translateRequest && !translateRequest.showSpinner)

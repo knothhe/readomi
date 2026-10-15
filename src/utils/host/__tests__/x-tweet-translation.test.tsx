@@ -8,6 +8,8 @@ import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { walkAndLabelElement } from "@/utils/host/dom/traversal"
 import { translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { translateTextForPage } from "@/utils/host/translate/translate-variants"
+import { clearSiteRuleStyles } from "@/utils/host/translate/ui/site-rule-styles"
+import { LAYOUT_OWNER_ATTRIBUTE } from "@/utils/host/translate/ui/translation-layout-ownership"
 
 const translatedText = "他拿着那台 FX3 的样子"
 
@@ -49,6 +51,7 @@ describe("x tweet translation", () => {
   afterEach(() => {
     vi.clearAllMocks()
     vi.unstubAllGlobals()
+    clearSiteRuleStyles()
     document.body.innerHTML = ""
     Object.defineProperty(window, "location", { value: originalLocation, writable: true, configurable: true })
   })
@@ -125,7 +128,7 @@ describe("x tweet translation", () => {
   it.each([
     { host: "x.com", markup: "<div id='target' data-testid='tweetText' style='display:block;max-height:48px;text-overflow:ellipsis'><span id='inner' style='display:inline;max-height:24px;text-overflow:ellipsis'>how bro was holding that fx3</span></div>" },
     { host: "www.youtube.com", markup: "<yt-attributed-string style='display:block'><span id='target' style='display:inline;max-height:48px;text-overflow:ellipsis'><span id='inner' style='display:inline;max-height:24px;text-overflow:ellipsis'>A comment about the video.</span></span></yt-attributed-string>" },
-  ])("still releases truncation while keeping the explicit paragraph on $host", async ({ host, markup }) => {
+  ])("owns truncation repairs without overwriting source inline styles on $host", async ({ host, markup }) => {
     setHost(host)
     const idleTasks: (() => void)[] = []
     vi.stubGlobal("requestIdleCallback", (callback: () => void) => {
@@ -141,12 +144,18 @@ describe("x tweet translation", () => {
     expect(target.style.maxHeight).toBe("48px")
     expect(inner.style.maxHeight).toBe("24px")
     idleTasks.forEach(task => task())
-    expect(target.style.maxHeight).toBe("unset")
-    expect(inner.style.maxHeight).toBe("unset")
-    expect(target.style.textOverflow).toBe("unset")
-    expect(inner.style.textOverflow).toBe("unset")
+    expect(target.style.maxHeight).toBe("48px")
+    expect(inner.style.maxHeight).toBe("24px")
+    expect(target.style.textOverflow).toBe("ellipsis")
+    expect(inner.style.textOverflow).toBe("ellipsis")
+    expect(target).toHaveAttribute(LAYOUT_OWNER_ATTRIBUTE)
     expect(target.querySelector(`.${CONTENT_WRAPPER_CLASS}`)?.parentElement).toBe(target)
     expect(target.querySelector(`.${BLOCK_CONTENT_CLASS}`)).toHaveTextContent(translatedText)
+
+    await translate(configFor(), true)
+    expect(target).not.toHaveAttribute(LAYOUT_OWNER_ATTRIBUTE)
+    expect(target.style.maxHeight).toBe("48px")
+    expect(inner.style.maxHeight).toBe("24px")
   })
 
   it("keeps translation-only replacement and restoration working", async () => {

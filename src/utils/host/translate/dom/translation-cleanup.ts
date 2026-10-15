@@ -4,6 +4,7 @@ import { batchDOMOperation } from "../../dom/batch-dom"
 import { isHTMLElement, isTranslatedWrapperNode } from "../../dom/filter"
 import { deepQueryTopLevelSelector } from "../../dom/find"
 import { originalContentMap } from "../core/translation-state"
+import { releaseTranslationLayout } from "../ui/translation-layout-ownership"
 import { hasGroupOriginalNodes, restoreGroupOriginalNodes } from "./group-original-nodes"
 import { hasOriginalNodes, restoreOriginalNodes } from "./original-nodes"
 
@@ -26,6 +27,7 @@ export function removeShadowHostInTranslatedWrapper(wrapper: HTMLElement): void 
  * @param wrapper - The translated wrapper element to remove
  */
 export function removeTranslatedWrapperWithRestore(wrapper: HTMLElement): void {
+  releaseTranslationLayout(wrapper)
   removeShadowHostInTranslatedWrapper(wrapper)
 
   if (hasGroupOriginalNodes(wrapper)) {

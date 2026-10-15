@@ -26,6 +26,7 @@ import { setTranslationDirAndLang } from "../translation-attributes"
 import { createSpinnerInside, getTranslatedTextAndRemoveSpinner } from "../ui/spinner"
 import { ensurePresetStyles } from "../ui/style-injector"
 import { resolveTranslationLayout, setPendingTranslationLayout } from "../ui/translation-layout"
+import { retainTranslationLayout } from "../ui/translation-layout-ownership"
 import { isNumericContent } from "../ui/translation-utils"
 import { translateTranslationGroup } from "./translation-group"
 import { isTranslatingInWalk, MARK_ATTRIBUTES_REGEX, markTranslatingInWalk, originalContentMap, unmarkTranslatingInWalk } from "./translation-state"
@@ -92,9 +93,8 @@ export async function translateNodesBilingualMode(
     const lastNode = transNodes.at(-1)!
     let targetNode = lastNode
     if (transNodes.length === 1 && isBlockTransNode(lastNode) && isHTMLElement(lastNode) && (isNaturalBlockTransNode(lastNode) || isCustomForceBlockTranslation(lastNode, config))) {
-      // Unwrapping also releases truncation along the single-child chain.
-      // Preserve that behavior even when a site's explicit paragraph boundary
-      // keeps the finished translation outside its innermost inline span.
+      // Identify the insertion point without changing host truncation. Layout
+      // repairs begin only once this unit has a live translation wrapper.
       const unwrappedNode = unwrapDeepestOnlyHTMLChild(lastNode, config)
       targetNode = isCustomForceBlockTranslation(lastNode, config) ? lastNode : unwrappedNode
     }
@@ -148,6 +148,7 @@ export async function translateNodesBilingualMode(
       else {
         targetNode.appendChild(translatedWrapperNode)
       }
+      retainTranslationLayout(translatedWrapperNode, transNodes)
     }
     batchDOMOperation(insertOperation)
 
@@ -348,6 +349,7 @@ export async function translateNodeTranslationOnlyMode(
       else {
         targetNode.appendChild(translatedWrapperNode)
       }
+      retainTranslationLayout(translatedWrapperNode, outerTransNodes)
     }
     batchDOMOperation(insertOperation)
 

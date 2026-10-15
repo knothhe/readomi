@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import { siteRuleSchema } from "@/types/config/site-rules"
 import { toReadomiSiteRule } from "../branding"
 import { BUILT_IN_SITE_RULES, READOMI_SITE_RULES } from "../built-in"
+import layoutCSS from "../built-in/layout-css.json"
 import rawRules from "../built-in/rules.json"
 import rawRulesText from "../built-in/rules.json?raw"
 import { resolveSiteRule } from "../resolve"
@@ -29,10 +30,9 @@ describe("imported Read Frog site rules", () => {
   it("exports all rules in source order with Readomi IDs, descriptions and DOM names", () => {
     for (const [index, rule] of BUILT_IN_SITE_RULES.entries()) {
       const original = toReadomiSiteRule(rawRules[index])
-      if (rule.id === "twitter") {
-        // X's document-wide layout fixes are intentionally scoped in Readomi.
-        const { "injectedCss.add": _adaptedCSS, ...adaptedFields } = rule
-        const { "injectedCss.add": _originalCSS, ...originalFields } = original
+      if (original.injectedCss || original["injectedCss.add"]?.length) {
+        const { "injectedCss": _adaptedBaseCSS, "injectedCss.add": _adaptedCSS, ...adaptedFields } = rule
+        const { "injectedCss": _originalBaseCSS, "injectedCss.add": _originalCSS, ...originalFields } = original
         expect(adaptedFields).toEqual(originalFields)
       }
       else {
@@ -43,6 +43,14 @@ describe("imported Read Frog site rules", () => {
     expect(JSON.stringify(BUILT_IN_SITE_RULES)).not.toMatch(/readfrog-|read-frog-|Read Frog/)
     expect(BUILT_IN_SITE_RULES.find(rule => rule.id === "readomi-youtube")?.description).toBe("Skip YouTube chrome, metadata, and Readomi subtitle UI")
     for (const rule of BUILT_IN_SITE_RULES) expect(siteRuleSchema.parse(rule)).toEqual(rule)
+  })
+
+  it("exports the scoped CSS in copied public rules as well as runtime rules", () => {
+    for (const rule of BUILT_IN_SITE_RULES) {
+      const raw = rawRules.find(source => toReadomiSiteRule(source).id === rule.id)!
+      const adapted = toReadomiSiteRule({ ...raw, ...(layoutCSS as Record<string, object>)[raw.id] })
+      expect(rule).toEqual(adapted)
+    }
   })
 
   it("copied public JSON executes as a custom rule after disabling the built-in", () => {

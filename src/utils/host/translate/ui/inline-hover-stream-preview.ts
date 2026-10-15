@@ -14,6 +14,7 @@ import { hideGroupOriginalNodes, rememberGroupOriginalNodes, restoreGroupOrigina
 import { setTranslationDirAndLang } from "../translation-attributes"
 import { SmoothPreviewText } from "./smooth-preview-text"
 import { getPendingTranslationLayout } from "./translation-layout"
+import { releaseTranslationLayout, retainTranslationLayout } from "./translation-layout-ownership"
 
 /** Reveal in the paragraph, reserving space in line groups. */
 export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Config, cancel: () => void) {
@@ -160,6 +161,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       anchor.parentNode?.insertBefore(host, anchor.nextSibling)
     else
       anchor.append(host)
+    retainTranslationLayout(host, [anchor])
     scheduleHeight()
   }
   const escape = (event: KeyboardEvent) => {
@@ -279,6 +281,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       // renderer writes. Keeping the styles until afterward avoids a flash of
       // the original during replacement.
       host.remove()
+      releaseTranslationLayout(host)
       await commit()
       if (group && only)
         restoreGroupOriginalNodes(host)
@@ -308,6 +311,7 @@ export function createInlineHoverStreamPreview(anchor: HTMLElement, config: Conf
       view.cancelAnimationFrame(frame)
       view.cancelAnimationFrame(resizeFrame)
       host.remove()
+      releaseTranslationLayout(host)
       if (group && only)
         restoreGroupOriginalNodes(host)
       restoreAnchorStyles()

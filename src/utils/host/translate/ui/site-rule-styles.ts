@@ -1,6 +1,7 @@
 import type { Config } from "@/types/config/config"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
 import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
+import { clearTranslationLayouts, releaseDetachedTranslationLayouts, TRANSLATION_LAYOUT_CSS } from "./translation-layout-ownership"
 
 type StyleRoot = Document | ShadowRoot
 interface StyleState {
@@ -63,6 +64,7 @@ function applyCSS(root: StyleRoot, state: StyleState, css: string | null): void 
 }
 
 function cleanupUnusedStyles(): void {
+  releaseDetachedTranslationLayouts()
   for (const [root, state] of roots) {
     const detached = root instanceof ShadowRoot && !root.host.isConnected
     if (!detached && (pageOwners > 0 || pendingOperations > 0 || root.querySelector(`.${CONTENT_WRAPPER_CLASS}`)))
@@ -78,9 +80,7 @@ function cleanupUnusedStyles(): void {
 /** Inject only after a page or paragraph translation has requested this root. */
 export function ensureSiteRuleStyles(root: StyleRoot, config: Config): void {
   let state = roots.get(root)
-  const css = getEffectiveSiteRule(config, window.location.href).injectedCss
-  if (!state && !css)
-    return
+  const css = TRANSLATION_LAYOUT_CSS + (getEffectiveSiteRule(config, window.location.href).injectedCss ?? "")
   if (!state) {
     const observer = new MutationObserver((records) => {
       if (records.some(record => record.removedNodes.length > 0))
@@ -123,13 +123,14 @@ export function beginSiteRuleStyleOperation(root: StyleRoot, config: Config): ()
 
 /** Reconcile only roots that already hold a translation session. */
 export function refreshSiteRuleStyles(config: Config, url = window.location.href): void {
-  const css = getEffectiveSiteRule(config, url).injectedCss
+  const css = TRANSLATION_LAYOUT_CSS + (getEffectiveSiteRule(config, url).injectedCss ?? "")
   for (const [root, state] of roots)
     applyCSS(root, state, css)
 }
 
 /** Remove owned styles without touching host nodes with a coinciding ID. */
 export function clearSiteRuleStyles(): void {
+  clearTranslationLayouts()
   for (const state of roots.values()) {
     state.observer.disconnect()
     state.style?.remove()
