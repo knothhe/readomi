@@ -27,7 +27,18 @@ describe("imported Read Frog site rules", () => {
   })
 
   it("exports all rules in source order with Readomi IDs, descriptions and DOM names", () => {
-    expect(BUILT_IN_SITE_RULES).toEqual(rawRules.map(toReadomiSiteRule))
+    for (const [index, rule] of BUILT_IN_SITE_RULES.entries()) {
+      const original = toReadomiSiteRule(rawRules[index])
+      if (rule.id === "twitter") {
+        // X's document-wide layout fixes are intentionally scoped in Readomi.
+        const { "injectedCss.add": _adaptedCSS, ...adaptedFields } = rule
+        const { "injectedCss.add": _originalCSS, ...originalFields } = original
+        expect(adaptedFields).toEqual(originalFields)
+      }
+      else {
+        expect(rule).toEqual(original)
+      }
+    }
     expect(BUILT_IN_SITE_RULES.map(rule => rule.matches)).toEqual(rawRules.map(rule => rule.matches))
     expect(JSON.stringify(BUILT_IN_SITE_RULES)).not.toMatch(/readfrog-|read-frog-|Read Frog/)
     expect(BUILT_IN_SITE_RULES.find(rule => rule.id === "readomi-youtube")?.description).toBe("Skip YouTube chrome, metadata, and Readomi subtitle UI")

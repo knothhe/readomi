@@ -3,7 +3,7 @@ import type { Config } from "@/types/config/config"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
-import { clearSiteRuleStyles, ensureSiteRuleStyles, refreshSiteRuleStyles, retainPageSiteRuleStyles } from "../site-rule-styles"
+import { beginSiteRuleStyleOperation, clearSiteRuleStyles, ensureSiteRuleStyles, refreshSiteRuleStyles, retainPageSiteRuleStyles } from "../site-rule-styles"
 
 const originalLocation = window.location
 const config: Config = {
@@ -21,6 +21,30 @@ afterEach(() => {
 })
 
 describe("site rule CSS ownership", () => {
+  it.each(["x.com", "twitter.com"])("keeps X layout overrides off unrelated collapsed quotes on %s", (host) => {
+    Object.defineProperty(window, "location", { value: new URL(`https://${host}/home`), configurable: true, writable: true })
+    document.body.innerHTML = `
+      <div id="quote" data-testid="tweetText" style="-webkit-line-clamp:5">An upper quote</div>
+      <div id="target" data-testid="tweetText" style="-webkit-line-clamp:3">The hovered paragraph</div>
+      <div id="card" data-testid="card.layoutSmall.detail"><div></div><div style="-webkit-line-clamp:2">Another card</div></div>
+    `
+    const release = beginSiteRuleStyleOperation(document, DEFAULT_CONFIG)
+    const style = document.head.querySelector<HTMLStyleElement>("#readomi-site-rule-styles")!
+    const rules = [...style.sheet!.cssRules] as CSSStyleRule[]
+    const affected = () => rules.flatMap(rule => [...document.querySelectorAll(rule.selectorText)])
+    expect(affected()).toEqual([])
+    const wrapper = document.createElement("span")
+    wrapper.className = CONTENT_WRAPPER_CLASS
+    const target = document.getElementById("target")!
+    target.append(wrapper)
+    expect(affected()).toContain(target)
+    expect(affected()).not.toContain(document.getElementById("quote"))
+    expect(affected()).not.toContain(document.querySelector("#card > div:nth-child(2)"))
+    wrapper.remove()
+    expect(affected()).toEqual([])
+    release()
+  })
+
   it("updates already-translated document and shadow roots when the route or rules change", () => {
     Object.defineProperty(window, "location", { value: new URL("https://styles.example/article/1"), configurable: true, writable: true })
     const host = document.createElement("div")

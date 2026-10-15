@@ -2,6 +2,7 @@ import type { SiteRule } from "@/types/config/site-rules"
 import { toReadomiSiteRule } from "../branding"
 import { READOMI_REDDIT_RULE } from "./readomi-reddit"
 import { READOMI_THREADS_RULE } from "./readomi-threads"
+import { scopeTwitterLayout } from "./readomi-twitter-layout"
 import rules from "./rules.json"
 
 /**
@@ -10,7 +11,7 @@ import rules from "./rules.json"
  * The source JSON stays unchanged for provenance and future updates.
  * Array order matters: scalar values from later matching rules take precedence.
  */
-export const BUILT_IN_SITE_RULES: SiteRule[] = rules.map(toReadomiSiteRule)
+export const BUILT_IN_SITE_RULES: SiteRule[] = rules.map(rule => scopeTwitterLayout(toReadomiSiteRule(rule)))
 
 const twitter = BUILT_IN_SITE_RULES.find(rule => rule.id === "twitter")!
 
