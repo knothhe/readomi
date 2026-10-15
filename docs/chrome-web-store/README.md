@@ -10,6 +10,7 @@
 | [listing.en.md](listing.en.md) | 英文商店文案 |
 | [privacy-permissions.md](privacy-permissions.md) | 单一用途、逐项权限理由、数据类型和远程代码说明 |
 | [reviewer-instructions.md](reviewer-instructions.md) | 给审核人员的英文测试步骤，及待补的私有测试配置 |
+| [credentials.md](credentials.md) | 四项 Chrome 自动提交凭据的获取步骤与 GitHub Actions 配置 |
 | [privacy-policy.zh-CN.md](privacy-policy.zh-CN.md) | 隐私政策中文译文 |
 | [../../PRIVACY.md](../../PRIVACY.md) | 正式英文隐私政策 |
 | [assets.md](assets.md) | 图片尺寸、顺序、来源和重新生成方法 |
@@ -43,6 +44,8 @@ CHROME_REFRESH_TOKEN
 ```
 
 它们是发布凭证，不是用于翻译的模型 API Key。准备好商店条目后再配置；首次资料不会由现有 CI 自动填写。Edge 凭证是可选项，Chrome 上架不需要。
+
+获取方法见 [Chrome 商店自动提交凭据](credentials.md)，包含商店条目 ID、OAuth 客户端、Refresh token、Testing 状态下的令牌有效期，以及 GitHub Actions secrets 的配置步骤。
 
 按 [RELEASING.md](../../RELEASING.md) 发布版本：先用 `pnpm release patch|minor|major` 预览，实际发布时才加 `--apply`。推送新 tag 后，现有 CI 构建发布包，并在四项 Chrome 凭证齐全时提交商店审核。手动重建 Release 附件不会再次提交商店。
 
