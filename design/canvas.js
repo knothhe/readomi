@@ -1003,7 +1003,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Popup-Site-Translated.html",
-      "title": "弹窗 · 已翻译 · 当前页字幕关闭",
+      "title": "弹窗 · 已翻译 · 当前域名字幕关闭",
       "x": 0,
       "y": 48732,
       "w": 320,
@@ -1067,7 +1067,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Popup-Subtitle-Page-On.html",
-      "title": "弹窗 · 当前页字幕已开启",
+      "title": "弹窗 · 当前域名字幕已开启",
       "x": 4000,
       "y": 48732,
       "w": 320,
@@ -1075,7 +1075,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Popup-Subtitle-Page-Off.html",
-      "title": "弹窗 · 当前页字幕已关闭",
+      "title": "弹窗 · 当前域名字幕已关闭",
       "x": 4400,
       "y": 48732,
       "w": 320,
@@ -1083,7 +1083,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Popup-Subtitle-Page-Pending.html",
-      "title": "弹窗 · 当前页字幕状态读取中",
+      "title": "弹窗 · 当前域名字幕状态读取中",
       "x": 4800,
       "y": 48732,
       "w": 320,
@@ -1091,7 +1091,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Popup-Subtitle-Page-Failed.html",
-      "title": "弹窗 · 当前页字幕切换失败",
+      "title": "弹窗 · 当前域名字幕切换失败",
       "x": 0,
       "y": 49492,
       "w": 320,
@@ -1099,7 +1099,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Popup-Subtitle-Page-Unavailable.html",
-      "title": "弹窗 · 当前页字幕不可用",
+      "title": "弹窗 · 当前域名字幕不可用",
       "x": 400,
       "y": 49492,
       "w": 320,
@@ -2450,7 +2450,7 @@ window.READOMI_CANVAS = {
       "maxW": 4400
     },
     {
-      "text": "工具栏弹窗：已采用的紧凑列表；网站禁用、当前页字幕、服务选择与帮助。",
+      "text": "工具栏弹窗：已采用的紧凑列表；网站禁用、当前域名字幕、服务选择与帮助。",
       "x": 0,
       "y": 48512,
       "maxW": 4400
