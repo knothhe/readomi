@@ -572,7 +572,7 @@ features:
   hoverStreamDescription: Muestra la traducción progresivamente para reducir la espera.
   video: Video subtitle translation
   videoDefault: Activar la traducción de subtítulos por defecto
-  videoDescription: Valor predeterminado para dominios sin una elección guardada. Los interruptores del dominio y del reproductor no cambian este ajuste. Admite subtítulos activados de YouTube y pistas HTML5; los vídeos sin subtítulos aún no son compatibles.
+  videoDescription: Valor predeterminado para dominios sin una elección guardada. El panel, el atajo y los interruptores del reproductor guardan la elección por dominio sin cambiar este ajuste. Admite subtítulos activados de YouTube y pistas HTML5; los vídeos sin subtítulos aún no son compatibles.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -604,7 +604,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Solo este vídeo
+  scope: Se aplica a este dominio; se sincroniza con el panel
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -733,7 +733,7 @@ translationShortcuts:
   modeHint: Solo cambia cómo se muestran las traducciones de páginas web.
   subtitles: Toggle video subtitles
   subtitlesHint: Activa o desactiva la traducción de vídeo en este dominio.
-  hint: Haz clic para grabar un atajo; Delete o Backspace lo borra. El atajo de subtítulos y el panel afectan a este dominio; el interruptor del reproductor solo afecta a su vídeo.
+  hint: Haz clic para grabar un atajo; Delete o Backspace lo borra. El atajo de subtítulos, el panel y los interruptores del reproductor se mantienen sincronizados y controlan este dominio.
   platformHint: Usa Option (⌥) en macOS y Alt en Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cómo funcionan los activadores

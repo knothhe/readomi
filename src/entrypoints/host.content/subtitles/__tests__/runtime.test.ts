@@ -96,17 +96,19 @@ describe("local subtitle runtime", () => {
     expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { url: location.href, enabled: true })
     expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
   })
-  it("keeps player choices local while the shortcut and popup control the domain", () => {
-    attachYouTubePlayer()
+  it.each(["youtube", "x"])("uses the same %s domain state for the player, shortcut and popup", (site) => {
+    if (site === "youtube")
+      attachYouTubePlayer()
+    else
+      attachXPlayer()
     update(config)
     const toggle = () => controlsShadow.querySelector<HTMLButtonElement>(".toggle")!
     toggle().click()
     expect(toggle()).toHaveAttribute("aria-pressed", "false")
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "√", code: "KeyV", altKey: true, cancelable: true }))
-    expect(toggle()).toHaveAttribute("aria-pressed", "false")
     expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { url: location.href, enabled: false })
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "√", code: "KeyV", altKey: true, cancelable: true }))
     expect(toggle()).toHaveAttribute("aria-pressed", "true")
+    expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { url: location.href, enabled: true })
     statusHandlers.get("applyPageSubtitleState")!({ data: { url: location.href, enabled: false, available: true, overridden: true } })
     expect(toggle()).toHaveAttribute("aria-pressed", "false")
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
@@ -122,7 +124,7 @@ describe("local subtitle runtime", () => {
     await vi.advanceTimersByTimeAsync(0)
     expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
   })
-  it.each(["youtube", "x"])("keeps the %s domain choice on a different video without changing the saved default", async (site) => {
+  it.each(["youtube", "x"])("keeps the %s player's domain choice on a different video without changing the saved default", async (site) => {
     if (site === "youtube")
       attachYouTubePlayer()
     else
@@ -133,20 +135,94 @@ describe("local subtitle runtime", () => {
     expect(track.mode).toBe("showing")
     vi.stubGlobal("location", new URL(site === "youtube" ? "https://www.youtube.com/watch?v=other" : "https://x.com/example/status/200"))
     await vi.advanceTimersByTimeAsync(250)
-    expect(track.mode).toBe("hidden")
-    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "true")
+    expect(track.mode).toBe("showing")
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
     expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
-    expect(sendMessage).not.toHaveBeenCalledWith("setPageSubtitleState", expect.anything())
+    expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { url: site === "youtube" ? "https://www.youtube.com/watch?v=unit" : "https://x.com/example/status/100", enabled: false })
   })
-  it("does not let a domain refresh overwrite a local player choice", async () => {
+  it("applies a new domain broadcast to every player switch", () => {
     attachYouTubePlayer()
     const state = { url: location.href, enabled: true, available: true, overridden: true }
     update(config)
-    statusHandlers.get("applyPageSubtitleState")!({ data: state })
     controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
     statusHandlers.get("applyPageSubtitleState")!({ data: state })
+    expect(track.mode).toBe("hidden")
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "true")
+  })
+  it.each(["youtube", "x"])("rolls the %s player and captions back when saving the domain choice fails", async (site) => {
+    if (site === "youtube")
+      attachYouTubePlayer()
+    else
+      attachXPlayer()
+    update(config)
+    vi.mocked(sendMessage).mockRejectedValueOnce(new Error("Domain preference write failed"))
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
     expect(track.mode).toBe("showing")
     expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(track.mode).toBe("hidden")
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "true")
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+  })
+  it("reloads the persisted domain choice when a player save fails before the initial read settles", async () => {
+    attachYouTubePlayer()
+    let resolveInitial!: (state: PageSubtitleState) => void
+    vi.mocked(sendMessage).mockImplementationOnce(() => new Promise(resolve => resolveInitial = resolve))
+    update(DEFAULT_CONFIG)
+    const initialReads = vi.mocked(sendMessage).mock.calls.filter(([type]) => type === "getPageSubtitleState").length
+    const saved = { url: location.href, enabled: true, available: true, overridden: true }
+    vi.mocked(sendMessage).mockRejectedValueOnce(new Error("Domain preference write failed")).mockResolvedValueOnce(saved)
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    resolveInitial(saved)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(vi.mocked(sendMessage).mock.calls.filter(([type]) => type === "getPageSubtitleState")).toHaveLength(initialReads + 1)
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "true")
+    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+    expect(track.mode).toBe("hidden")
+    expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
+  })
+  it("ignores a late player save after a newer player choice", async () => {
+    attachYouTubePlayer()
+    update(DEFAULT_CONFIG)
+    let resolveFirst!: (state: PageSubtitleState) => void
+    vi.mocked(sendMessage).mockImplementationOnce(() => new Promise(resolve => resolveFirst = resolve))
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    resolveFirst({ url: location.href, enabled: true, available: true, overridden: true })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
+  })
+  it.each([true, false])("restores the confirmed domain default %s when two rapid player saves both fail", async (videoSubtitles) => {
+    attachYouTubePlayer()
+    update({ ...config, features: { ...config.features, videoSubtitles } })
+    const reject: ((error: Error) => void)[] = []
+    vi.mocked(sendMessage)
+      .mockImplementationOnce(() => new Promise((_, fail) => reject.push(fail)))
+      .mockImplementationOnce(() => new Promise((_, fail) => reject.push(fail)))
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    reject[0](new Error("First domain preference write failed"))
+    await vi.advanceTimersByTimeAsync(0)
+    reject[1](new Error("Second domain preference write failed"))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", String(videoSubtitles))
+    expect(!!document.querySelector("[data-readomi-subtitles]")).toBe(videoSubtitles)
+    expect(track.mode).toBe(videoSubtitles ? "hidden" : "showing")
+  })
+  it("does not roll back a newer domain broadcast when an older player save fails", async () => {
+    attachYouTubePlayer()
+    update(config)
+    let reject!: (error: Error) => void
+    vi.mocked(sendMessage).mockImplementationOnce(() => new Promise((_, fail) => reject = fail))
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    statusHandlers.get("applyPageSubtitleState")!({ data: { url: location.href, enabled: false, available: true, overridden: true } })
+    reject(new Error("Older domain preference write failed"))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
   })
   it("translates video captions without an API key when explicitly configured", async () => {
     const local: Config = { ...config, providersConfig: config.providersConfig.map(p => ({ ...p, apiKey: undefined, noApiKey: true })) }
@@ -240,7 +316,7 @@ describe("local subtitle runtime", () => {
     expect(translateTextCore).toHaveBeenCalledTimes(2)
   })
 
-  it("offers a session switch even when disabled globally and restores native captions on off", async () => {
+  it("offers a domain switch even when disabled globally and restores native captions on off", async () => {
     attachYouTubePlayer()
     update(DEFAULT_CONFIG)
     const controlsHost = document.querySelector("[data-readomi-video-controls]")
@@ -260,7 +336,7 @@ describe("local subtitle runtime", () => {
     expect(translateTextCore).not.toHaveBeenCalled()
     expect(DEFAULT_CONFIG.features.videoSubtitles).toBe(false)
   })
-  it("keeps a toolbar choice local to its video through style updates", async () => {
+  it("synchronizes the domain choice across YouTube players and style updates", async () => {
     attachYouTubePlayer()
     const second = document.createElement("video")
     const secondTrack = { kind: "subtitles", mode: "showing", activeCues: [{ text: "Another video" }] }
@@ -271,14 +347,18 @@ describe("local subtitle runtime", () => {
     update(config)
     controlsShadow.querySelector<HTMLButtonElement>("button[aria-label='videoTranslationControls.disable']")!.click()
     expect(secondTrack.mode).toBe("showing")
-    expect(track.mode).toBe("hidden")
+    expect(track.mode).toBe("showing")
     update({ ...config, features: { ...config.features, subtitleStyle: { ...config.features.subtitleStyle, preset: "compact" } } })
     await vi.advanceTimersByTimeAsync(1000)
-    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(1)
-    expect(translateTextCore).toHaveBeenCalledOnce()
-    expect(sendMessage).not.toHaveBeenCalledWith("setPageSubtitleState", expect.anything())
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(0)
+    expect(translateTextCore).not.toHaveBeenCalled()
+    expect(sendMessage).toHaveBeenCalledWith("setPageSubtitleState", { url: location.href, enabled: false })
+    statusHandlers.get("applyPageSubtitleState")!({ data: { url: location.href, enabled: true, available: true, overridden: true } })
+    expect(track.mode).toBe("hidden")
+    expect(secondTrack.mode).toBe("hidden")
+    expect(document.querySelectorAll("[data-readomi-subtitles]")).toHaveLength(2)
   })
-  it("resets the page switch for a new page and ignores late results after switching off", async () => {
+  it("keeps the X domain disabled on a new post and ignores late translations", async () => {
     attachXPlayer()
     let resolve!: (value: string) => void
     vi.mocked(translateTextCore).mockReturnValue(new Promise(r => resolve = r))
@@ -292,11 +372,11 @@ describe("local subtitle runtime", () => {
     video.src = "https://example.com/replacement.mp4"
     vi.stubGlobal("location", new URL("https://x.com/example/status/101"))
     await vi.advanceTimersByTimeAsync(250)
-    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
-    expect(track.mode).toBe("hidden")
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
+    expect(track.mode).toBe("showing")
     expect(shadow.querySelector(".translated")?.textContent).not.toBe("Late translation")
   })
-  it("keeps a YouTube session switch across chapter, time and playlist URL changes", async () => {
+  it("keeps the YouTube domain choice across videos, chapters, times and playlist URL changes", async () => {
     vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=one"))
     const player = document.createElement("div")
     player.className = "html5-video-player"
@@ -310,7 +390,7 @@ describe("local subtitle runtime", () => {
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
     vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=two"))
     await vi.advanceTimersByTimeAsync(250)
-    expect(document.querySelector("[data-readomi-subtitles]")).not.toBeNull()
+    expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
     vi.stubGlobal("location", new URL("https://www.youtube.com/watch?v=one"))
     await vi.advanceTimersByTimeAsync(250)
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
@@ -338,7 +418,7 @@ describe("local subtitle runtime", () => {
     expect(document.querySelectorAll("[data-readomi-video-controls]")).toHaveLength(1)
     expect(document.querySelector("[data-readomi-video-controls]")).toBe(controlsHost)
   })
-  it.each(["youtube", "x"])("hides and restores %s controls without restarting subtitles or resetting the local switch", async (site) => {
+  it.each(["youtube", "x"])("hides and restores %s controls without restarting subtitles or resetting the domain switch", async (site) => {
     if (site === "youtube")
       attachYouTubePlayer()
     else
@@ -368,7 +448,7 @@ describe("local subtitle runtime", () => {
     expect(document.querySelector("[data-readomi-subtitles]")).toBeNull()
     expect(track.mode).toBe("showing")
   })
-  it.each([true, false])("restores the global video default %s after excluding a locally overridden video", async (videoSubtitles) => {
+  it.each([true, false])("preserves the domain choice against global default %s after excluding the site", async (videoSubtitles) => {
     attachYouTubePlayer()
     const configured = { ...config, features: { ...config.features, videoSubtitles } }
     update(configured)
@@ -384,11 +464,11 @@ describe("local subtitle runtime", () => {
     update(configured)
     await vi.advanceTimersByTimeAsync(1000)
     expect(document.querySelectorAll("[data-readomi-video-controls]")).toHaveLength(1)
-    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", String(videoSubtitles))
-    expect(!!document.querySelector("[data-readomi-subtitles]")).toBe(videoSubtitles)
-    expect(track.mode).toBe(videoSubtitles ? "hidden" : "showing")
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", String(!videoSubtitles))
+    expect(!!document.querySelector("[data-readomi-subtitles]")).toBe(!videoSubtitles)
+    expect(track.mode).toBe(videoSubtitles ? "showing" : "hidden")
   })
-  it("keeps an X player choice separate from reply videos and clears it when excluded", async () => {
+  it("shares the X domain choice between main and reply videos and preserves it through exclusion", async () => {
     attachXPlayer()
     const mainButton = document.createElement("button")
     mainButton.textContent = "Pause main"
@@ -408,12 +488,15 @@ describe("local subtitle runtime", () => {
 
     replyButton.focus()
     await vi.advanceTimersByTimeAsync(250)
-    expect(replyTrack.mode).toBe("hidden")
-    expect(track.mode).toBe("showing")
-    mainButton.focus()
-    await vi.advanceTimersByTimeAsync(250)
+    expect(replyTrack.mode).toBe("showing")
     expect(track.mode).toBe("showing")
     expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    expect(replyTrack.mode).toBe("hidden")
+    mainButton.focus()
+    await vi.advanceTimersByTimeAsync(250)
+    expect(track.mode).toBe("hidden")
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "true")
     replyButton.focus()
     await vi.advanceTimersByTimeAsync(250)
     update({ ...config, features: { ...config.features, videoExcludedSites: [{ type: "domain", value: "x.com" }] } })
@@ -431,7 +514,7 @@ describe("local subtitle runtime", () => {
     expect(track.mode).toBe("hidden")
     expect(replyTrack.mode).toBe("showing")
   })
-  it("keeps X media choices separate within a post and shares a video's choice with its expanded view", async () => {
+  it("keeps one X domain choice across media and expanded views", async () => {
     attachXPlayer()
     update(config)
     controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
@@ -444,18 +527,21 @@ describe("local subtitle runtime", () => {
     const expandedTrack = { kind: "subtitles", mode: "showing", activeCues: [{ text: "Expanded video" }] }
     Object.defineProperty(expanded, "textTracks", { value: [expandedTrack] })
     vi.spyOn(expanded, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 640, 360))
-    for (const [media, mode] of [[2, "hidden"], [1, "showing"], [2, "hidden"]] as const) {
+    for (const media of [2, 1, 2]) {
       vi.stubGlobal("location", new URL(`https://x.com/example/status/100/video/${media}`))
       await vi.advanceTimersByTimeAsync(250)
-      expect(expandedTrack.mode).toBe(mode)
+      expect(expandedTrack.mode).toBe("showing")
+      expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
     }
+    controlsShadow.querySelector<HTMLButtonElement>(".toggle")!.click()
+    expect(expandedTrack.mode).toBe("hidden")
     dialog.remove()
     vi.stubGlobal("location", new URL("https://x.com/example/status/100"))
     await vi.advanceTimersByTimeAsync(250)
-    expect(track.mode).toBe("showing")
-    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "false")
+    expect(track.mode).toBe("hidden")
+    expect(controlsShadow.querySelector(".toggle")).toHaveAttribute("aria-pressed", "true")
   })
-  it.each([1, 2])("keeps an X video choice in a mixed-media post when expanding media %s", async (mediaIndex) => {
+  it.each([1, 2])("keeps the X domain choice in a mixed-media post when expanding media %s", async (mediaIndex) => {
     attachXPlayer()
     const photo = document.createElement("div")
     photo.dataset.testid = "tweetPhoto"

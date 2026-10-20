@@ -542,7 +542,7 @@ features:
   hoverStreamDescription: 逐步顯示譯文，減少等待。
   video: Video subtitle translation
   videoDefault: 預設開啟影片字幕翻譯
-  videoDescription: 作為未設定網域的預設狀態，網域和影片開關不會改寫此設定。支援 YouTube 已開啟的字幕和 HTML5 字幕軌道；尚不支援無字幕影片。
+  videoDescription: 作為未設定網域的預設狀態。彈窗、快捷鍵和播放器開關依網域儲存選擇，不會改寫此設定。支援 YouTube 已開啟的字幕和 HTML5 字幕軌道；尚不支援無字幕影片。
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -574,7 +574,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: 僅對目前影片生效
+  scope: 對目前網域生效，與彈窗同步
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -698,7 +698,7 @@ translationShortcuts:
   modeHint: 僅切換網頁的顯示方式。
   subtitles: Toggle video subtitles
   subtitlesHint: 開關目前網域的影片翻譯。
-  hint: 點擊錄製組合鍵；按 Delete 或 Backspace 清空。影片字幕快捷鍵與彈窗同步，影響目前網域；播放器開關僅影響目前影片。
+  hint: 點擊錄製組合鍵；按 Delete 或 Backspace 清空。影片字幕快捷鍵、彈窗和播放器開關保持同步，皆控制目前網域。
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: Hover translation trigger
   hoverHelp: 觸發方式說明

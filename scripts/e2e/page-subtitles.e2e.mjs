@@ -76,12 +76,12 @@ async function playerReader(page) {
   }
 }
 
-async function expectState(popup, reader, enabled, playerEnabled = enabled) {
+async function expectState(popup, reader, enabled) {
   const toggle = popup.getByRole("switch", { name: LABEL, exact: true })
-  await waitFor(async () => ({ popup: await toggle.getAttribute("aria-checked"), pending: !await toggle.isEnabled(), player: await reader.read() }), state => state.popup === String(enabled) && !state.pending && state.player.enabled === String(playerEnabled) && state.player.layers === Number(playerEnabled), "domain preference or video display did not settle")
+  await waitFor(async () => ({ popup: await toggle.getAttribute("aria-checked"), pending: !await toggle.isEnabled(), player: await reader.read() }), state => state.popup === String(enabled) && !state.pending && state.player.enabled === String(enabled) && state.player.layers === Number(enabled), "domain preference or video display did not settle")
 }
 
-it("persists the YouTube domain choice across tabs and navigation while player switches affect one video", async (test) => {
+it("synchronizes YouTube player and popup domain switches across tabs, reloads and videos", async (test) => {
   service = await startFakeService()
   const launched = await launchBrowser()
   context = launched.context
@@ -120,29 +120,34 @@ it("persists the YouTube domain choice across tabs and navigation while player s
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)
 
   await reader.click()
-  await expectState(popup, reader, true, false)
-  assert.equal((await otherReader.read()).enabled, "true", "player choice must leave the other video alone")
+  await expectState(popup, reader, false)
+  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "player disable did not reach the other tab")
   await popup.close()
   popup = await openPopup(host, launched.extensionId, test)
-  await expectState(popup, reader, true, false)
+  await expectState(popup, reader, false)
   await popup.close()
 
   await host.reload()
-  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "refresh did not preserve domain preference")
+  await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "refresh did not preserve the player's domain preference")
   await reader.click()
-  await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "player did not switch off")
+  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "player did not switch the domain on")
+  await waitFor(() => otherReader.read(), state => state.enabled === "true" && state.layers === 1, "player enable did not reach the other tab")
   await host.evaluate(() => history.pushState({}, "", "/watch?v=next-video"))
-  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "next video inherited the previous video override")
+  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "next video discarded the enabled domain choice")
   popup = await openPopup(host, launched.extensionId, test)
   await expectState(popup, reader, true)
   await popup.getByRole("switch", { name: LABEL, exact: true }).click()
   await expectState(popup, reader, false)
-  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "domain disable did not reach the other tab")
-  await host.bringToFront()
-  await reader.click()
-  await expectState(popup, reader, false, true)
-  assert.equal((await otherReader.read()).enabled, "false")
+  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "popup disable did not reach the other tab")
+  await other.bringToFront()
+  await otherReader.click()
+  await expectState(popup, reader, true)
+  await waitFor(() => otherReader.read(), state => state.enabled === "true" && state.layers === 1, "other tab's player did not enable the domain")
+  assert.equal((await unrelatedReader.read()).enabled, "false", "player switches must keep unrelated domains independent")
   await popup.getByRole("switch", { name: LABEL, exact: true }).press("Alt+V")
+  await expectState(popup, reader, false)
+  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "popup shortcut did not reach the other tab")
+  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
   await expectState(popup, reader, true)
 
   const siteSwitch = popup.getByRole("switch", { name: "Disable extension on this site", exact: true })
@@ -211,7 +216,7 @@ it("keeps the domain preference in surviving cross-origin frames after SPA navig
   await waitFor(layers, state => state.top === 0 && state.frame === 0, "refresh discarded the disabled domain choice")
 })
 
-it("keeps X player choices separate while the domain switch survives other posts", async (test) => {
+it("synchronizes X player and popup domain switches across replies, tabs and posts", async (test) => {
   const launched = await launchBrowser()
   context = launched.context
   await launched.page.goto(`chrome-extension://${launched.extensionId}/options.html`)
@@ -222,35 +227,52 @@ it("keeps X player choices separate while the domain switch survives other posts
     config.ui.language = "en"
     await chrome.storage.local.set({ config })
   })
-  await context.route("https://x.com/**", route => route.fulfill({
-    contentType: "text/html",
-    body: `<!doctype html><html lang="en"><meta charset="utf-8"><title>X domain and video switches</title><style>body{background:#111;color:white;font:16px system-ui}article{width:640px;margin:12px}article>div{position:relative;width:640px;height:250px;background:#302b29}video{width:100%;height:100%}.controls{position:absolute;bottom:0;width:100%;height:40px;display:flex;align-items:center;justify-content:space-between;background:#0009}button{color:white;background:#333;border:0;padding:8px}</style><h1>X scope test</h1>${[100, 200].map((id, index) => `<article><a href="https://x.com/readomi/status/${id}"><time>Today</time></a><div data-testid="videoComponent"><video></video><div class="controls" data-testid="videoControls"><button aria-label="Pause ${index ? "reply" : "main"}">Ⅱ</button><button aria-label="Fullscreen ${id}">⛶</button></div></div></article>`).join("")}<script>document.querySelectorAll('video').forEach((video,index)=>{const track=video.addTextTrack('subtitles','English','en');track.mode='showing';track.addCue(new VTTCue(0,60,'Video '+index));});</script></html>`,
-  }))
+  await context.route("https://x.com/**", (route) => {
+    const mainId = new globalThis.URL(route.request().url()).pathname.match(/\/status\/(\d+)/)?.[1] ?? "100"
+    return route.fulfill({
+      contentType: "text/html",
+      body: `<!doctype html><html lang="en"><meta charset="utf-8"><title>X domain and video switches</title><style>body{background:#111;color:white;font:16px system-ui}article{width:640px;margin:12px}article>div{position:relative;width:640px;height:250px;background:#302b29}video{width:100%;height:100%}.controls{position:absolute;bottom:0;width:100%;height:40px;display:flex;align-items:center;justify-content:space-between;background:#0009}button{color:white;background:#333;border:0;padding:8px}</style><h1>X scope test</h1>${[mainId, "900"].map((id, index) => `<article><a href="https://x.com/readomi/status/${id}"><time>Today</time></a><div data-testid="videoComponent"><video></video><div class="controls" data-testid="videoControls"><button aria-label="Pause ${index ? "reply" : "main"}">Ⅱ</button><button aria-label="Fullscreen ${id}">⛶</button></div></div></article>`).join("")}<script>document.querySelectorAll('video').forEach((video,index)=>{const track=video.addTextTrack('subtitles','English','en');track.mode='showing';track.addCue(new VTTCue(0,60,'Video '+index));});</script></html>`,
+    })
+  })
   const host = await context.newPage()
   await host.goto("https://x.com/readomi/status/100")
   const reader = await playerReader(host)
   await waitFor(() => reader.read(), state => state.enabled === "false", "X controls missing")
+  const other = await context.newPage()
+  await other.goto("https://x.com/readomi/status/300")
+  const otherReader = await playerReader(other)
+  await waitFor(() => otherReader.read(), state => state.enabled === "false", "other X tab did not use default")
   let popup = await openPopup(host, launched.extensionId, test)
-  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
-  await expectState(popup, reader, true)
   await host.bringToFront()
   await reader.click()
-  await expectState(popup, reader, true, false)
+  await expectState(popup, reader, true)
+  await waitFor(() => otherReader.read(), state => state.enabled === "true" && state.layers === 1, "X player enable did not reach the other tab")
   await host.getByRole("button", { name: "Pause reply", exact: true }).click()
   await expectState(popup, reader, true)
   const modes = () => host.evaluate(() => Array.from(document.querySelectorAll("video"), video => video.textTracks[0].mode))
-  await waitFor(modes, value => value[0] === "showing" && value[1] === "hidden", "reply inherited the main video's choice")
+  await waitFor(modes, value => value[0] === "showing" && value[1] === "hidden", "reply did not follow the enabled domain choice")
+  await reader.click()
+  await expectState(popup, reader, false)
+  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "reply player disable did not reach the other X tab")
   await host.getByRole("button", { name: "Pause main", exact: true }).click()
-  await expectState(popup, reader, true, false)
+  await expectState(popup, reader, false)
+  await waitFor(modes, value => value.every(mode => mode === "showing"), "main video did not follow the reply player's disabled domain choice")
+  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
+  await expectState(popup, reader, true)
+  await waitFor(() => otherReader.read(), state => state.enabled === "true" && state.layers === 1, "popup enable did not reach the other X tab")
   await popup.close()
   await host.goto("https://x.com/readomi/status/200")
-  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "another X post discarded the domain choice")
+  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "another X post discarded the enabled domain choice")
   popup = await openPopup(host, launched.extensionId, test)
   await expectState(popup, reader, true)
-  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
+  await host.bringToFront()
+  await reader.click()
   await expectState(popup, reader, false)
+  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "another post's player disable did not reach the other tab")
   await popup.close()
   await host.goto("https://x.com/readomi/status/100")
   await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "another post discarded the disabled domain choice")
+  await host.reload()
+  await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "refresh discarded the X player's domain choice")
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)
 })

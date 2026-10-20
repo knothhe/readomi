@@ -537,7 +537,7 @@ features:
   hoverStreamDescription: 逐步显示译文，减少等待。
   video: 视频字幕翻译
   videoDefault: 默认开启视频字幕翻译
-  videoDescription: 作为未设置域名的默认状态，域名和视频开关不会改写此设置。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
+  videoDescription: 作为未设置域名的默认状态。弹窗、快捷键和播放器开关按域名保存选择，不会改写此设置。支持 YouTube 已开启的字幕和 HTML5 字幕轨道；无字幕视频暂不支持。
   videoControls: 在视频上显示控件
   videoControlsDescription: 仅在 YouTube 和 X 的支持播放器中显示。关闭后不影响字幕翻译。
   mode: 字幕显示方式
@@ -566,7 +566,7 @@ videoTranslationControls:
   title: 视频翻译
   enable: 开启视频翻译
   disable: 关闭视频翻译
-  scope: 仅对当前视频生效
+  scope: 对当前域名生效，与弹窗同步
   excluded: 此网站已排除
   presetButton: 调整字幕预设
   saveFailed: 保存失败，请重试。
@@ -689,7 +689,7 @@ translationShortcuts:
   modeHint: 仅切换网页的显示方式。
   subtitles: 切换视频字幕
   subtitlesHint: 开关当前域名的视频翻译。
-  hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕快捷键与弹窗同步，影响当前域名；播放器开关仅影响当前视频。
+  hint: 点击录制组合键；按 Delete 或 Backspace 清空。视频字幕快捷键、弹窗和播放器开关保持同步，均控制当前域名。
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: 悬停翻译触发方式
   hoverHelp: 触发方式说明

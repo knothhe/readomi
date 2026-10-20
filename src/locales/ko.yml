@@ -543,7 +543,7 @@ features:
   hoverStreamDescription: 번역을 점진적으로 표시해 대기 시간을 줄입니다.
   video: Video subtitle translation
   videoDefault: 동영상 자막 번역을 기본으로 켜기
-  videoDescription: 저장된 선택이 없는 도메인의 기본 설정입니다. 도메인과 플레이어 스위치는 이 설정을 변경하지 않습니다. 활성화된 YouTube 자막과 HTML5 자막 트랙을 지원하며, 자막 없는 동영상은 아직 지원하지 않습니다.
+  videoDescription: 저장된 선택이 없는 도메인의 기본 설정입니다. 팝업, 단축키, 플레이어 스위치는 도메인별로 선택을 저장하며 이 설정을 변경하지 않습니다. 활성화된 YouTube 자막과 HTML5 자막 트랙을 지원하며, 자막 없는 동영상은 아직 지원하지 않습니다.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -575,7 +575,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: 현재 동영상에만 적용
+  scope: 이 도메인에 적용되며 팝업과 동기화됩니다
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -700,7 +700,7 @@ translationShortcuts:
   modeHint: 웹페이지 번역의 표시 방식만 바꿉니다.
   subtitles: Toggle video subtitles
   subtitlesHint: 이 도메인의 동영상 번역을 켜거나 끕니다.
-  hint: 클릭하여 단축키를 기록하고 Delete 또는 Backspace로 지웁니다. 자막 단축키와 팝업은 이 도메인에 적용되며 플레이어 스위치는 해당 동영상에만 적용됩니다.
+  hint: 클릭하여 단축키를 기록하고 Delete 또는 Backspace로 지웁니다. 자막 단축키, 팝업, 플레이어 스위치는 서로 동기화되며 이 도메인에 적용됩니다.
   platformHint: "macOS에서는 Option(⌥), Windows / Linux에서는 Alt를 사용하세요."
   hover: Hover translation trigger
   hoverHelp: 번역 실행 방법

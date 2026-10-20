@@ -542,7 +542,7 @@ features:
   hoverStreamDescription: 訳文を順次表示し、待ち時間を減らします。
   video: Video subtitle translation
   videoDefault: 動画字幕の翻訳を初期状態で有効にする
-  videoDescription: 設定を保存していないドメインの初期設定です。ドメインや動画のスイッチはこの設定を変更しません。YouTube の有効な字幕と HTML5 字幕トラックに対応します。字幕のない動画には未対応です。
+  videoDescription: 設定を保存していないドメインの初期設定です。ポップアップ、ショートカット、プレーヤーのスイッチはドメインごとに選択を保存し、この設定は変更しません。YouTube の有効な字幕と HTML5 字幕トラックに対応します。字幕のない動画には未対応です。
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -574,7 +574,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: この動画のみ
+  scope: このドメインに適用され、ポップアップと同期します
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -699,7 +699,7 @@ translationShortcuts:
   modeHint: ウェブページの翻訳表示のみを切り替えます。
   subtitles: Toggle video subtitles
   subtitlesHint: このドメインの動画翻訳をオン・オフします。
-  hint: クリックしてショートカットを記録し、Delete または Backspace で消去します。字幕のショートカットとポップアップはこのドメインに、プレーヤーのスイッチはその動画だけに適用されます。
+  hint: クリックしてショートカットを記録し、Delete または Backspace で消去します。字幕のショートカット、ポップアップ、プレーヤーのスイッチは同期し、このドメインに適用されます。
   platformHint: macOSではOption（⌥）、Windows / LinuxではAltを使います。
   hover: Hover translation trigger
   hoverHelp: 翻訳の操作方法

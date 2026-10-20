@@ -557,7 +557,7 @@ features:
   hoverStreamDescription: Hiển thị bản dịch dần để giảm thời gian chờ.
   video: Video subtitle translation
   videoDefault: Bật dịch phụ đề video theo mặc định
-  videoDescription: Mặc định cho tên miền chưa lưu lựa chọn. Công tắc tên miền và trình phát không thay đổi cài đặt này. Hỗ trợ phụ đề YouTube đã bật và phụ đề HTML5; chưa hỗ trợ video không có phụ đề.
+  videoDescription: Mặc định cho tên miền chưa lưu lựa chọn. Cửa sổ bật lên, phím tắt và công tắc trình phát lưu lựa chọn theo tên miền mà không thay đổi cài đặt này. Hỗ trợ phụ đề YouTube đã bật và phụ đề HTML5; chưa hỗ trợ video không có phụ đề.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -589,7 +589,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Chỉ video này
+  scope: Áp dụng cho tên miền này; đồng bộ với cửa sổ bật lên
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -715,7 +715,7 @@ translationShortcuts:
   modeHint: Chỉ thay đổi cách hiển thị bản dịch trang web.
   subtitles: Toggle video subtitles
   subtitlesHint: Bật hoặc tắt dịch video cho tên miền này.
-  hint: Nhấp để ghi phím tắt; Delete hoặc Backspace để xóa. Phím tắt phụ đề và cửa sổ bật lên áp dụng cho tên miền này; công tắc trình phát chỉ áp dụng cho video đó.
+  hint: Nhấp để ghi phím tắt; Delete hoặc Backspace để xóa. Phím tắt phụ đề, cửa sổ bật lên và công tắc trình phát luôn đồng bộ và điều khiển tên miền này.
   platformHint: Dùng Option (⌥) trên macOS và Alt trên Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cách kích hoạt dịch

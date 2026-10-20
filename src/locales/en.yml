@@ -560,7 +560,7 @@ features:
   hoverStreamDescription: Show translations gradually to reduce waiting.
   video: Video subtitle translation
   videoDefault: Enable video subtitle translation by default
-  videoDescription: The default for domains without a saved choice. Domain and player switches do not change this setting. Supports enabled YouTube captions and HTML5 subtitle tracks; videos without captions are not supported yet.
+  videoDescription: The default for domains without a saved choice. The popup, shortcut and player switches save a choice for each domain without changing this setting. Supports enabled YouTube captions and HTML5 subtitle tracks; videos without captions are not supported yet.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -592,7 +592,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: This video only
+  scope: Applies to this domain; synced with the popup
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -718,7 +718,7 @@ translationShortcuts:
   modeHint: Only changes how web translations are displayed.
   subtitles: Toggle video subtitles
   subtitlesHint: Turn video translation on or off for this domain.
-  hint: Click to record a shortcut; Delete or Backspace clears it. The subtitle shortcut and popup affect this domain; the player switch affects only its video.
+  hint: Click to record a shortcut; Delete or Backspace clears it. The subtitle shortcut, popup and player switches stay in sync and control this domain.
   platformHint: Use Option (⌥) on macOS and Alt on Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: How triggers work

@@ -19,7 +19,7 @@ import { isProviderReady } from "@/utils/service-management"
 import { resolveSubtitleFontSize, resolveSubtitlePosition, saveSubtitleStyle, subtitlePositionName, subtitleTextStyle, subtitleVideoSize } from "@/utils/subtitles/appearance"
 import { shouldShowVideoControls } from "@/utils/subtitles/control-sites"
 import { bindSubtitleDrag } from "@/utils/subtitles/drag"
-import { subtitlePageKey, subtitleSiteKey } from "@/utils/subtitles/page-state"
+import { subtitleSiteKey } from "@/utils/subtitles/page-state"
 import { createYouTubeCaptionPosition } from "@/utils/subtitles/player-controls"
 import { createTextTrackSession } from "@/utils/subtitles/text-track-session"
 import { cueAt, readTrackCues } from "@/utils/subtitles/timeline"
@@ -462,49 +462,17 @@ function subtitleRequestKey(config: Config, omitProvider = false): string {
   ])
 }
 
-/** Domain preferences supply the default; each player can override its own display. */
+/** The popup, shortcut and players all control the same domain preference. */
 export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => false) {
   const players = new Map<HTMLVideoElement, Player>()
   let pageOverride: boolean | null = null
+  let confirmedOverride: boolean | null = null
   let pageUnavailable = false
   let scope = subtitleSiteKey(location.href)
   let stateVersion = 0
   let timer: ReturnType<typeof setInterval> | undefined
   let disposed = false
   let current: Config | null = null
-  let videoOverrides = new WeakMap<HTMLVideoElement, Map<string, boolean>>()
-  const xOverrides = new Map<string, boolean>()
-  const clearVideoOverrides = () => {
-    videoOverrides = new WeakMap()
-    xOverrides.clear()
-  }
-  const videoChoice = (video: HTMLVideoElement) => {
-    if (isXHost()) {
-      const article = video.closest("article")
-      const mediaLink = video.closest("[data-testid='videoComponent']")?.querySelector<HTMLAnchorElement>("a[href*='/video/']")
-      // X media URLs count photos as well as videos in the post's media order.
-      const mediaItems = Array.from(article?.querySelectorAll("video,[data-testid='tweetPhoto']") ?? []).filter(item => !item.querySelector("video"))
-      const media = mediaLink?.pathname.match(/\/video\/(\d+)/)?.[1]
-        ?? (!article ? location.pathname.match(/\/video\/(\d+)/)?.[1] : undefined)
-        ?? String(article ? mediaItems.indexOf(video) + 1 : 1)
-      return { choices: xOverrides, key: `${xVideoIdentity(video)}/video/${media}` }
-    }
-    let choices = videoOverrides.get(video)
-    if (!choices) {
-      choices = new Map()
-      videoOverrides.set(video, choices)
-    }
-    const page = subtitlePageKey(location.href)
-    const youtube = video.closest(".html5-video-player")
-    return { choices, key: youtube ? page : `${page}|${video.currentSrc || video.src}` }
-  }
-  const chooseVideo = (video: HTMLVideoElement, nextEnabled: boolean) => {
-    if (disposed || isContextInvalid() || !current || pageUnavailable || isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
-      return
-    const { choices, key } = videoChoice(video)
-    choices.set(key, nextEnabled)
-    tick()
-  }
   const reset = () => {
     clearInterval(timer)
     timer = undefined
@@ -518,9 +486,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
       return
     stateVersion++
     scope = window === window.top ? subtitleSiteKey(state.url) : scope
-    if (enabled() !== state.enabled || pageUnavailable !== !state.available)
-      clearVideoOverrides()
-    pageOverride = state.overridden ? state.enabled : null
+    confirmedOverride = state.overridden ? state.enabled : null
+    pageOverride = confirmedOverride
     pageUnavailable = !state.available
     tick()
   }
@@ -537,10 +504,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
   const choose = (nextEnabled: boolean) => {
     if (disposed || isContextInvalid() || !current || pageUnavailable || isVideoTranslationExcluded(location.href, current.features.videoExcludedSites))
       return
-    const previous = pageOverride
-    const previousVideoOverrides = videoOverrides
-    const previousXOverrides = new Map(xOverrides)
-    clearVideoOverrides()
+    // A failed write must restore the saved choice, not an earlier pending click.
+    const previous = confirmedOverride
     const version = ++stateVersion
     pageOverride = nextEnabled
     tick()
@@ -552,10 +517,8 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
         return
       if (version === stateVersion) {
         pageOverride = previous
-        videoOverrides = previousVideoOverrides
-        for (const [key, value] of previousXOverrides)
-          xOverrides.set(key, value)
         tick()
+        refresh()
       }
       logger.warn("Could not switch page subtitles", error)
     })
@@ -568,14 +531,12 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     if (window === window.top && scope !== nextScope) {
       scope = nextScope
       pageOverride = null
-      clearVideoOverrides()
+      confirmedOverride = null
       pageUnavailable = false
       stateVersion++
       refresh()
     }
     const excluded = pageUnavailable || isVideoTranslationExcluded(location.href, config.features.videoExcludedSites)
-    if (excluded)
-      clearVideoOverrides()
     const xVideo = isXHost() ? currentXVideo() : null
     const videos = isXHost() ? (xVideo ? [xVideo] : []) : Array.from(document.querySelectorAll("video"))
     for (const [video, player] of players) {
@@ -585,10 +546,9 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
       }
     }
     for (const video of videos) {
-      const { choices, key } = videoChoice(video)
-      const active = !excluded && (choices.get(key) ?? enabled())
+      const active = !excluded && enabled()
       if (!players.has(video))
-        players.set(video, mountPlayer(video, config, active, excluded, nextEnabled => chooseVideo(video, nextEnabled)))
+        players.set(video, mountPlayer(video, config, active, excluded, choose))
       else
         players.get(video)!.updateConfig(config, active, excluded, storedChange)
     }
@@ -616,7 +576,7 @@ export function bootstrapVideoSubtitles(isContextInvalid: () => boolean = () => 
     if (!config) {
       stateVersion++
       pageOverride = null
-      clearVideoOverrides()
+      confirmedOverride = null
       reset()
       return
     }

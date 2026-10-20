@@ -225,7 +225,7 @@ it("player panel uses the shared scrollbar while leaving host page scrolling unc
   await waitFor(inspector.snapshot, state => state.controls[0]?.scrollbarWidth === "auto", "high contrast did not restore the system scrollbar")
 })
 
-it("player controls stop translation, share page scope and preserve cached captions through presets and resizing", async () => {
+it("player controls stop translation, share domain scope and preserve cached captions through presets and resizing", async () => {
   service = await startFakeService()
   const launched = await launchBrowser()
   context = launched.context
@@ -254,9 +254,9 @@ it("player controls stop translation, share page scope and preserve cached capti
   assert.deepEqual(await page.evaluate(() => window.e2eTracks.map(track => track.mode)), ["hidden", "hidden"])
 
   await inspector.click(0, "label", "Disable video translation")
-  await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "page switch did not stop both players")
+  await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "domain switch did not stop both players")
   assert.equal((await read()).controls[0].expanded, false, "the translation toggle does not open subtitle presets")
-  assert.equal((await storedConfig(context)).features.videoSubtitles, true, "session disable leaves the global setting enabled")
+  assert.equal((await storedConfig(context)).features.videoSubtitles, true, "domain disable leaves the global default enabled")
   assert.deepEqual(await page.evaluate(() => window.e2eTracks.map(track => track.mode)), ["showing", "showing"])
   assert.equal(await page.locator("#first .ytp-caption-window-container").evaluate(node => getComputedStyle(node).visibility), "visible", "disabled translation restores native captions")
 
@@ -285,7 +285,7 @@ it("player controls stop translation, share page scope and preserve cached capti
   await page.waitForTimeout(650)
   assert.equal(service.translationRequests().length, stoppedRequests, "a closed video does not send new caption requests")
   await inspector.click(0, "label", "Enable video translation")
-  await waitFor(read, state => state.controls[0]?.enabled && state.captions.some(text => text.includes("【译】Disabled cue sentence.")), "session re-enable did not translate the new cue")
+  await waitFor(read, state => state.controls[0]?.enabled && state.captions.some(text => text.includes("【译】Disabled cue sentence.")), "domain re-enable did not translate the new cue")
 
   const presetVideo = await page.locator("#first video").boundingBox()
   await inspector.click(0, "label", "Adjust subtitle preset")
@@ -351,19 +351,21 @@ it("player controls stop translation, share page scope and preserve cached capti
 
   await patchFeatures({ videoSubtitles: false })
   await page.waitForTimeout(350)
-  assert.ok((await read()).controls.every(control => control.enabled), "changing the default preserves a manually enabled page")
+  assert.ok((await read()).controls.every(control => control.enabled), "changing the default preserves a manually enabled domain")
   await page.evaluate(() => history.replaceState({}, "", "/watch?v=default-off-video"))
-  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => !control.enabled) && state.captions.length === 0, "the new page did not use the disabled default")
-  await inspector.click(0, "label", "Enable video translation")
-  await waitFor(read, state => state.controls.every(control => control.enabled) && state.captions.length === 2, "a default-off page could not enable both players")
+  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => control.enabled) && state.captions.length === 2, "another video discarded the enabled domain choice")
+  await inspector.click(0, "label", "Disable video translation")
+  await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "a player could not disable both players on a default-off domain")
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)
   await page.evaluate(() => {
     history.replaceState({}, "", "/watch?v=another-video")
   })
-  await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "navigation to another video retained the old session switch")
+  await waitFor(read, state => state.controls.every(control => !control.enabled) && state.captions.length === 0, "navigation to another video discarded the disabled domain choice")
 
   await patchFeatures({ videoSubtitles: true })
-  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => control.enabled) && state.captions.length === 2, "global enable did not restore video defaults")
+  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => !control.enabled) && state.captions.length === 0, "changing the global default discarded the disabled domain choice")
+  await inspector.click(0, "label", "Enable video translation")
+  await waitFor(read, state => state.controls.every(control => control.enabled) && state.captions.length === 2, "a player could not enable both players on the domain")
   await inspector.click(0, "label", "Adjust subtitle preset")
   await settings.goto(`chrome-extension://${launched.extensionId}/options.html#features`)
   await settings.setViewportSize({ width: 1280, height: 900 })
@@ -402,7 +404,7 @@ it("player controls stop translation, share page scope and preserve cached capti
   await page.waitForTimeout(650)
   assert.equal(service.translationRequests().length, excludedRequests, "an excluded site cannot issue new caption requests")
   await patchFeatures({ videoExcludedSites: [] })
-  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => control.enabled && !control.expanded) && state.captions.some(text => text.includes("【译】Excluded cue sentence.")), "removing the exclusion did not restore each video entry and its global default")
+  await waitFor(read, state => state.controls.length === 2 && state.controls.every(control => control.enabled && !control.expanded) && state.captions.some(text => text.includes("【译】Excluded cue sentence.")), "removing the exclusion did not restore each video entry and the domain choice")
   assert.equal(await page.locator(".ytp-right-controls [data-readomi-video-controls]").count(), 2, "removing exclusion restores one closed entry in each native tools group")
   assert.equal(await page.locator("[data-readomi-controls-anchor]").count(), 0, "restoring an excluded site's entry does not resurrect its old menu")
 })

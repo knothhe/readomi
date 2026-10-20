@@ -561,7 +561,7 @@ features:
   hoverStreamDescription: Beklemeyi azaltmak için çeviriyi aşamalı gösterir.
   video: Video subtitle translation
   videoDefault: Video altyazı çevirisini varsayılan olarak aç
-  videoDescription: Kaydedilmiş seçimi olmayan alan adları için varsayılan ayardır. Alan adı ve oynatıcı anahtarları bu ayarı değiştirmez. Etkin YouTube altyazılarını ve HTML5 altyazı parçalarını destekler; altyazısız videolar henüz desteklenmez.
+  videoDescription: Kaydedilmiş seçimi olmayan alan adları için varsayılan ayardır. Açılır pencere, kısayol ve oynatıcı anahtarları bu ayarı değiştirmeden seçimi alan adına göre kaydeder. Etkin YouTube altyazılarını ve HTML5 altyazı parçalarını destekler; altyazısız videolar henüz desteklenmez.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -593,7 +593,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Yalnızca bu video
+  scope: Bu alan adına uygulanır; açılır pencereyle eşitlenir
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -720,7 +720,7 @@ translationShortcuts:
   modeHint: Yalnızca web çevirilerinin görüntülenme biçimini değiştirir.
   subtitles: Toggle video subtitles
   subtitlesHint: Bu alan adı için video çevirisini açar veya kapatır.
-  hint: Kısayol kaydetmek için tıklayın; Delete veya Backspace ile temizleyin. Altyazı kısayolu ve açılır pencere bu alan adını, oynatıcı anahtarı ise yalnızca kendi videosunu etkiler.
+  hint: Kısayol kaydetmek için tıklayın; Delete veya Backspace ile temizleyin. Altyazı kısayolu, açılır pencere ve oynatıcı anahtarları eşitlenir ve bu alan adını kontrol eder.
   platformHint: "macOS üzerinde Option (⌥), Windows / Linux üzerinde Alt kullanın."
   hover: Hover translation trigger
   hoverHelp: Çeviri nasıl başlatılır

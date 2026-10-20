@@ -560,7 +560,7 @@ features:
   hoverStreamDescription: "Показывает перевод постепенно, сокращая ожидание."
   video: Video subtitle translation
   videoDefault: Включать перевод субтитров по умолчанию
-  videoDescription: Настройка по умолчанию для доменов без сохранённого выбора. Переключатели домена и плеера её не меняют. Поддерживаются включённые субтитры YouTube и дорожки HTML5; видео без субтитров пока не поддерживаются.
+  videoDescription: Настройка по умолчанию для доменов без сохранённого выбора. Панель, сочетание клавиш и переключатели плеера сохраняют выбор для каждого домена, не меняя эту настройку. Поддерживаются включённые субтитры YouTube и дорожки HTML5; видео без субтитров пока не поддерживаются.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -592,7 +592,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Только это видео
+  scope: Для этого домена; синхронизируется с панелью
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -719,7 +719,7 @@ translationShortcuts:
   modeHint: Меняет только способ отображения перевода веб-страниц.
   subtitles: Toggle video subtitles
   subtitlesHint: Включает и выключает перевод видео для этого домена.
-  hint: Нажмите для записи сочетания; Delete или Backspace очищает его. Сочетание субтитров и панель действуют на этот домен, а переключатель плеера — только на его видео.
+  hint: Нажмите для записи сочетания; Delete или Backspace очищает его. Сочетание для субтитров, панель и переключатели плеера синхронизируются и управляют субтитрами на этом домене.
   platformHint: "В macOS используйте Option (⌥), в Windows / Linux — Alt."
   hover: Hover translation trigger
   hoverHelp: Как запускать перевод
