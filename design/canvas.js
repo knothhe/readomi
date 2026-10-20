@@ -1971,7 +1971,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Video-Player-Enabled.html",
-      "title": "YouTube · 视频翻译已开启",
+      "title": "YouTube · 当前域名字幕已开启",
       "x": 2032,
       "y": 72852,
       "w": 720,
@@ -1979,7 +1979,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Video-Player-Disabled.html",
-      "title": "YouTube · 视频翻译已关闭",
+      "title": "YouTube · 当前域名字幕已关闭",
       "x": 2832,
       "y": 72852,
       "w": 720,
@@ -2474,7 +2474,7 @@ window.READOMI_CANVAS = {
       "maxW": 4400
     },
     {
-      "text": "播放器字幕：控件仅位于支持播放器的原生工具栏；菜单与工具栏同步显隐，字幕状态独立。",
+      "text": "播放器字幕：控件仅位于支持播放器的原生工具栏；开关与弹窗、快捷键共享当前域名的字幕状态；菜单与工具栏同步显隐。",
       "x": 0,
       "y": 69082,
       "maxW": 4400
