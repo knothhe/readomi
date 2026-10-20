@@ -13,7 +13,6 @@
     "dev": "wxt",
     "dev:edge": "wxt -b edge",
     "dev:firefox": "wxt -b firefox --mv3",
-    "install:local": "node scripts/install-local.mjs",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "postinstall": "wxt prepare",
@@ -28,8 +27,6 @@
     "zip:edge": "wxt zip -b edge",
     "zip:firefox": "wxt zip -b firefox --mv3",
     "zip:all": "pnpm zip && pnpm zip:edge && pnpm zip:firefox",
-    "release": "node scripts/release.mjs",
-    "release:chrome": "bash scripts/release-chrome.sh",
     "schema:setup": "UPDATE_SETUP_SCHEMA=1 vitest run src/utils/__tests__/setup-schema.test.ts"
   },
   "dependencies": {

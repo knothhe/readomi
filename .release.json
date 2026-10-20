@@ -9,5 +9,6 @@
     ["pnpm", "test"],
     ["pnpm", "test:release"]
   ],
+  "check_phase": "before-bump",
   "github_release": false
 }

@@ -47,9 +47,9 @@ CHROME_REFRESH_TOKEN
 
 获取方法见 [Chrome 商店自动提交凭据](credentials.md)，包含商店条目 ID、OAuth 客户端、Refresh token、Testing 状态下的令牌有效期，以及 GitHub Actions secrets 的配置步骤。
 
-按 [RELEASING.md](../../RELEASING.md) 发布版本：先用 `pnpm release patch|minor|major` 预览，实际发布时才加 `--apply`。推送新 tag 后，现有 CI 构建发布包，并在四项 Chrome 凭证齐全时提交商店审核。手动重建 Release 附件不会再次提交商店。
+按 [RELEASING.md](../../RELEASING.md) 发布版本：先用 `make release VERSION_BUMP=patch|minor|major` 预览，实际发布时才加 `RELEASE_FLAGS=--apply`。首次发布当前版本用 `make release-initial`。推送新 tag 后，现有 CI 构建发布包，并在四项 Chrome 凭证齐全时提交商店审核。手动重建 Release 附件不会再次提交商店。
 
-`pnpm release:chrome` 只重建 Chrome ZIP 并上传至既有 GitHub Release，不负责商店上架。`Submit to Stores` 的 `dryRun` 可用于演练命令，但不能证明首次上架字段已填全或审核能通过。
+`make release-chrome` 只重建 Chrome ZIP 并上传至既有 GitHub Release，不负责商店上架。`Submit to Stores` 的 `dryRun` 可用于演练命令，但不能证明首次上架字段已填全或审核能通过。
 
 ## 隐私政策链接不可达时
 

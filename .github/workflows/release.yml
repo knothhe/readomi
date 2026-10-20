@@ -1,7 +1,8 @@
 name: Release Extension
 
-# Run `pnpm release patch` to preview, then add `--apply` to update the version,
-# check, commit, tag and atomically push main and its matching tag. See RELEASING.md.
+# Run `make release` to preview, then add `RELEASE_FLAGS=--apply` to check,
+# update the version, commit, tag and atomically push main and its matching tag.
+# Use `make release-initial` for the current version's first release. See RELEASING.md.
 # A pushed tag also submits the release to the stores through
 # submit.yml when Chrome credentials are configured; rebuilding assets for an
 # existing tag does not.
@@ -70,7 +71,7 @@ jobs:
       - name: Create GitHub Release
         run: |
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            node scripts/release-notes.mjs "$GITHUB_REPOSITORY" "$TAG" > "$RUNNER_TEMP/release-notes.md"
+            make --silent release-notes RELEASE_REPO="$GITHUB_REPOSITORY" RELEASE_TAG="$TAG" > "$RUNNER_TEMP/release-notes.md"
             gh release create "$TAG" --verify-tag --notes-file "$RUNNER_TEMP/release-notes.md" --title "$TAG"
           fi
         env:

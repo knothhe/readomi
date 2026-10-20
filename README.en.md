@@ -41,7 +41,7 @@ pnpm build:firefox   # Firefox
 
 Load the corresponding directory under `.output/` in Chrome or Edge. In Firefox, temporarily load its `manifest.json` at `about:debugging#/runtime/this-firefox`.
 
-[Local installation (install:local, in Chinese)](./docs/install-local.md)
+[Local installation (make install, in Chinese)](./docs/install-local.md)
 
 In Settings → Translation service, enter and test your service manually, or copy the instructions for an agent and paste its verified configuration. See the [setup guide](./docs/agent-setup.md) and optional [readomi-setup skill](./skills/readomi-setup/SKILL.md). Click "Translate this page" or press `Alt+E` (`Option+E` on Mac); repeat to restore the original.
 
@@ -64,7 +64,9 @@ Send questions and suggestions to [Readomi Issues](https://github.com/knothhe/re
 
 ## Version management
 
-Use `pnpm release patch` (or `minor` / `major`) to preview a version update. Add
-`--apply` to run checks, commit the version, create a tag and push. Existing CI
-publishes the GitHub Release and extension archives. See [RELEASING.md](./RELEASING.md)
-for version selection, initial setup and recovery instructions (in Chinese).
+Use `make release` to preview a patch update, or set `VERSION_BUMP` to `minor`,
+`major` or an exact version. Add `RELEASE_FLAGS=--apply` to run checks, commit the
+version, create a tag and push. Use `make release-initial` to first publish the
+current version from the version file. Existing CI publishes the GitHub Release
+and extension archives. See [RELEASING.md](./RELEASING.md) for version selection,
+first releases and recovery instructions (in Chinese).

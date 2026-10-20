@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import process from "node:process"
@@ -13,7 +13,7 @@ const releaseNotesScript = fileURLToPath(new URL("../release-notes.mjs", import.
 const chromeScript = fileURLToPath(new URL("../release-chrome.sh", import.meta.url))
 const projectConfig = JSON.parse(readFileSync(new URL("../../.release.json", import.meta.url), "utf8"))
 
-function fixture(t, checks = []) {
+function fixture(t, checks = [], config = {}) {
   const folder = mkdtempSync(join(tmpdir(), "readomi-release-"))
   t.after(() => rmSync(folder, { recursive: true, force: true }))
   const work = join(folder, "work")
@@ -38,6 +38,7 @@ function fixture(t, checks = []) {
   }
   const git = (...args) => run("git", args).stdout.trim()
   const release = (...args) => run(process.execPath, [releaseScript, ...args], false)
+  const make = (target, ...variables) => run("make", ["--silent", target, ...variables], false)
   const version = () => JSON.parse(readFileSync(join(work, "package.json"), "utf8")).version
   const remoteRef = ref => git("--git-dir", remote, "rev-parse", ref)
 
@@ -47,17 +48,50 @@ function fixture(t, checks = []) {
   git("config", "tag.gpgSign", "false")
   git("config", "core.hooksPath", "/dev/null")
   writeFileSync(join(work, "package.json"), `${JSON.stringify({ name: "release-fixture", version: "1.2.0", private: true }, null, 2)}\n`)
-  writeFileSync(join(work, ".release.json"), `${JSON.stringify({ ...projectConfig, checks }, null, 2)}\n`)
+  writeFileSync(join(work, ".release.json"), `${JSON.stringify({ ...projectConfig, ...config, checks }, null, 2)}\n`)
   writeFileSync(join(work, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n")
-  writeFileSync(join(work, ".gitignore"), ".output/\n")
+  writeFileSync(join(work, ".gitignore"), ".output/\nnode_modules\n")
   mkdirSync(join(work, "scripts"))
+  copyFileSync(new URL("../../Makefile", import.meta.url), join(work, "Makefile"))
+  copyFileSync(releaseScript, join(work, "scripts/release.mjs"))
+  copyFileSync(releaseNotesScript, join(work, "scripts/release-notes.mjs"))
   copyFileSync(chromeScript, join(work, "scripts/release-chrome.sh"))
-  git("add", "--", "package.json", ".release.json", "pnpm-lock.yaml", ".gitignore", "scripts/release-chrome.sh")
+  symlinkSync(new URL("../../node_modules", import.meta.url), join(work, "node_modules"), "dir")
+  git("add", "--", "package.json", ".release.json", "pnpm-lock.yaml", ".gitignore", "Makefile", "scripts")
   git("commit", "-m", "fixture")
   git("remote", "add", projectConfig.remote, remote)
   git("push", "-u", projectConfig.remote, projectConfig.branch)
   const initial = git("rev-parse", "HEAD")
-  return { folder, work, remote, env, run, git, release, version, remoteRef, initial }
+  return { folder, work, remote, env, run, git, release, make, version, remoteRef, initial }
+}
+
+function mockGitHub(f, output = "", status = 0) {
+  const bin = join(f.folder, "bin")
+  const log = join(f.folder, "gh-args.json")
+  const realGit = f.run("which", ["git"]).stdout.trim()
+  const url = "https://github.com/example/fixture.git"
+  mkdirSync(bin)
+  writeFileSync(join(bin, "git"), `#!${process.execPath}
+const { spawnSync } = require('node:child_process');
+const args = process.argv.slice(2);
+if (args[0] === 'remote' && args[1] === 'get-url') {
+  console.log(${JSON.stringify(url)});
+} else {
+  if (args[0] === 'ls-remote' && args[1] === ${JSON.stringify(url)}) args[1] = ${JSON.stringify(f.remote)};
+  const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
+  process.exit(result.status ?? 1);
+}
+`, { mode: 0o755 })
+  writeFileSync(join(bin, "gh"), `#!${process.execPath}
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+fs.writeFileSync(${JSON.stringify(log)}, JSON.stringify(args));
+if (args[0] !== 'api') process.exit(99);
+process.stdout.write(${JSON.stringify(output)});
+process.exit(${status});
+`, { mode: 0o755 })
+  f.env.PATH = `${bin}:${f.env.PATH}`
+  return log
 }
 
 it("release notes list commits between reachable version tags and exclude release and merge commits", (t) => {
@@ -74,7 +108,8 @@ it("release notes list commits between reachable version tags and exclude releas
   f.git("tag", "v1.2.1")
   f.git("commit", "--allow-empty", "-m", "future change")
   f.git("tag", "v2.0.0")
-  const result = f.run(process.execPath, [releaseNotesScript, "example/fixture", "v1.2.1"])
+  const result = f.make("release-notes", "RELEASE_REPO=example/fixture", "RELEASE_TAG=v1.2.1")
+  assert.equal(result.status, 0, result.stderr)
   assert.match(result.stdout, /compare\/v1\.2\.0\.\.\.v1\.2\.1/)
   assert.ok(result.stdout.includes(`- feat: translate \\[subtitles\\] (\`${featureHash}\`)`))
   assert.ok(result.stdout.includes(`- fix: preserve layout (\`${fixHash}\`)`))
@@ -108,6 +143,123 @@ it("previews without changing files, running checks or creating refs", (t) => {
   assert.equal(f.git("status", "--porcelain"), "")
   assert.equal(f.git("tag"), "")
   assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("Make defaults to help and forwards release versions and flags without running checks", (t) => {
+  const f = fixture(t, [[process.execPath, "-e", "process.exit(3)"]])
+  const help = f.run("make", ["--silent"])
+  assert.match(help.stdout, /release-initial/)
+  assert.match(help.stdout, /install/)
+  const result = f.make("release", "VERSION_BUMP=minor", "RELEASE_FLAGS=--no-push --no-github-release")
+  assert.equal(result.status, 0, result.stderr)
+  const plan = JSON.parse(result.stdout)
+  assert.equal(plan.mode, "preview")
+  assert.equal(plan.release_type, "upgrade")
+  assert.equal(plan.check_phase, "before-bump")
+  assert.equal(plan.target, "1.3.0")
+  assert.equal(plan.push, false)
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("status", "--porcelain"), "")
+  assert.equal(f.git("tag"), "")
+})
+
+it("Make first release previews the current version and tags it without writing files or commits", (t) => {
+  const f = fixture(t)
+  const originalPackage = readFileSync(join(f.work, "package.json"), "utf8")
+  const originalLock = readFileSync(join(f.work, "pnpm-lock.yaml"), "utf8")
+  const preview = f.make("release-initial", "RELEASE_FLAGS=--no-push --no-github-release")
+  assert.equal(preview.status, 0, preview.stderr)
+  const plan = JSON.parse(preview.stdout)
+  assert.equal(plan.mode, "preview")
+  assert.equal(plan.release_type, "initial")
+  assert.equal(plan.check_phase, "current-version")
+  assert.deepEqual(plan.files, [])
+  assert.equal(plan.create_version_commit, false)
+  assert.equal(plan.current, "1.2.0")
+  assert.equal(plan.target, "1.2.0")
+  assert.equal(f.git("tag"), "")
+
+  const applied = f.make("release-initial", "RELEASE_FLAGS=--apply --no-push --no-github-release")
+  assert.equal(applied.status, 0, applied.stderr)
+  assert.equal(readFileSync(join(f.work, "package.json"), "utf8"), originalPackage)
+  assert.equal(readFileSync(join(f.work, "pnpm-lock.yaml"), "utf8"), originalLock)
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("rev-list", "--count", "HEAD"), "1")
+  assert.equal(f.git("cat-file", "-t", "v1.2.0"), "tag")
+  assert.equal(f.git("rev-parse", "v1.2.0^{commit}"), f.initial)
+  assert.match(f.git("for-each-ref", "--format=%(contents)", "refs/tags/v1.2.0"), /Release-Type: initial/)
+  assert.equal(f.git("status", "--porcelain"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+
+  const duplicate = f.make("release-initial", "RELEASE_FLAGS=--apply --no-push --no-github-release")
+  assert.notEqual(duplicate.status, 0)
+  assert.match(duplicate.stderr, /Tag already exists/)
+
+  const resumed = f.make("release", "VERSION_BUMP=1.2.0", "RELEASE_FLAGS=--resume --apply")
+  assert.equal(resumed.status, 0, resumed.stderr)
+  assert.equal(f.remoteRef("v1.2.0^{commit}"), f.initial)
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+
+  const upgrade = f.make("release", "VERSION_BUMP=patch", "RELEASE_FLAGS=--apply")
+  assert.equal(upgrade.status, 0, upgrade.stderr)
+  assert.equal(f.version(), "1.2.1")
+  assert.equal(f.git("log", "-1", "--format=%s"), "chore(release): v1.2.1")
+  assert.equal(f.remoteRef("v1.2.1^{commit}"), f.git("rev-parse", "HEAD"))
+})
+
+it("first release rejects a remote tag and an unmarked resume without moving refs", (t) => {
+  const f = fixture(t)
+  f.git("tag", "-a", "v1.2.0", "-m", "existing release")
+  f.git("push", projectConfig.remote, "refs/tags/v1.2.0")
+  const originalTag = f.remoteRef("refs/tags/v1.2.0")
+  const unmarked = f.release("1.2.0", "--resume", "--apply")
+  assert.notEqual(unmarked.status, 0)
+  f.git("tag", "-d", "v1.2.0")
+  const duplicate = f.make("release-initial", "RELEASE_FLAGS=--apply")
+  assert.notEqual(duplicate.status, 0)
+  assert.match(duplicate.stderr, /Remote tag already exists/)
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef("refs/tags/v1.2.0"), originalTag)
+})
+
+for (const { name, output, status, error } of [
+  { name: "existing visible Release or draft", output: "v0.1.0\nv1.2.0\n", status: 0, error: /GitHub Release already exists/ },
+  { name: "failed Release lookup", output: "", status: 1, error: /Command failed: gh api/ },
+  { name: "confirmed absent Release", output: "v0.1.0\n", status: 0 },
+]) {
+  it(`first release checks GitHub with Release creation disabled: ${name}`, (t) => {
+    const f = fixture(t)
+    const log = mockGitHub(f, output, status)
+    const result = f.make("release-initial", "RELEASE_FLAGS=--no-github-release")
+    if (error) {
+      assert.notEqual(result.status, 0)
+      assert.match(result.stderr, error)
+    }
+    else {
+      assert.equal(result.status, 0, result.stderr)
+      const plan = JSON.parse(result.stdout)
+      assert.equal(plan.release_type, "initial")
+      assert.equal(plan.github_release, false)
+    }
+    assert.deepEqual(JSON.parse(readFileSync(log, "utf8")), ["api", "--hostname", "github.com", "--paginate", "repos/example/fixture/releases", "--jq", ".[].tag_name"])
+    assert.equal(f.version(), "1.2.0")
+    assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+    assert.equal(f.git("status", "--porcelain"), "")
+    assert.equal(f.git("tag"), "")
+  })
+}
+
+it("a local-only initial release skips remote and GitHub lookups", (t) => {
+  const f = fixture(t)
+  const log = mockGitHub(f, "", 99)
+  f.git("remote", "remove", projectConfig.remote)
+  const result = f.make("release-initial", "RELEASE_FLAGS=--no-push --no-github-release")
+  assert.equal(result.status, 0, result.stderr)
+  assert.equal(existsSync(log), false)
+  assert.equal(f.git("tag"), "")
 })
 
 it("allows pnpm configuration without workspace packages", (t) => {
@@ -181,6 +333,32 @@ it("stops a failed check before changing the version, commit, tag or remote", (t
   assert.equal(f.remoteRef(projectConfig.branch), f.initial)
 })
 
+it("after-bump checks see the target version and preserve it on failure", (t) => {
+  const f = fixture(t, [[process.execPath, "-e", "if (require('./package.json').version !== '1.2.1') process.exit(99); console.log('Checked target version'); process.exit(3)"]], { check_phase: "after-bump" })
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stdout, /Checked target version/)
+  assert.match(result.stderr, /Check failed/)
+  assert.equal(f.version(), "1.2.1")
+  assert.equal(f.git("diff", "--name-only"), "package.json")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+  assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("initial checks always use the current version and preserve it on failure", (t) => {
+  const f = fixture(t, [[process.execPath, "-e", "if (require('./package.json').version !== '1.2.0') process.exit(99); console.log('Checked current version'); process.exit(3)"]], { check_phase: "after-bump" })
+  const originalPackage = readFileSync(join(f.work, "package.json"), "utf8")
+  const result = f.make("release-initial", "RELEASE_FLAGS=--apply --no-push --no-github-release")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stdout, /Checked current version/)
+  assert.match(result.stderr, /Check failed/)
+  assert.equal(readFileSync(join(f.work, "package.json"), "utf8"), originalPackage)
+  assert.equal(f.git("status", "--porcelain"), "")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
+})
+
 it("preserves unexpected files from a successful check and stops before bumping", (t) => {
   const f = fixture(t, [[process.execPath, "-e", "require('node:fs').writeFileSync('check-output.txt', 'keep this output')"]])
   const result = f.release("patch", "--apply")
@@ -191,6 +369,21 @@ it("preserves unexpected files from a successful check and stops before bumping"
   assert.equal(f.git("rev-parse", "HEAD"), f.initial)
   assert.equal(f.git("tag"), "")
   assert.equal(f.remoteRef(projectConfig.branch), f.initial)
+})
+
+it("stops after the first check side effect without running the next check", (t) => {
+  const f = fixture(t, [
+    [process.execPath, "-e", "require('node:fs').writeFileSync('check-output.txt', 'keep this output')"],
+    [process.execPath, "-e", "require('node:fs').mkdirSync('.output'); require('node:fs').writeFileSync('.output/second-check', 'must not run')"],
+  ])
+  const result = f.release("patch", "--apply")
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /Checks changed the working tree/)
+  assert.equal(readFileSync(join(f.work, "check-output.txt"), "utf8"), "keep this output")
+  assert.equal(existsSync(join(f.work, ".output/second-check")), false)
+  assert.equal(f.version(), "1.2.0")
+  assert.equal(f.git("rev-parse", "HEAD"), f.initial)
+  assert.equal(f.git("tag"), "")
 })
 
 it("preserves version-file edits made by a check without overwriting them with a bump", (t) => {
@@ -207,12 +400,11 @@ it("preserves version-file edits made by a check without overwriting them with a
 
 it("preserves changes staged by a check and stops before bumping", (t) => {
   const f = fixture(t, [
-    [process.execPath, "-e", "require('node:fs').appendFileSync('.gitignore', 'check-output/\\n')"],
-    ["git", "add", ".gitignore"],
+    [process.execPath, "-e", "require('node:fs').appendFileSync('.gitignore', 'check-output/\\n'); require('node:child_process').execFileSync('git', ['add', '.gitignore'])"],
   ])
   const result = f.release("patch", "--apply")
   assert.notEqual(result.status, 0)
-  assert.match(result.stderr, /A check staged changes/)
+  assert.match(result.stderr, /A check changed the index/)
   assert.equal(f.git("diff", "--cached", "--name-only"), ".gitignore")
   assert.match(readFileSync(join(f.work, ".gitignore"), "utf8"), /check-output\//)
   assert.equal(f.version(), "1.2.0")
@@ -322,7 +514,8 @@ mkdir -p .output
 touch .output/readomi-1.2.0-chrome.zip .output/readomiextension-1.2.0-chrome.zip
 `, { mode: 0o755 })
   f.env.PATH = `${bin}:${f.env.PATH}`
-  f.run("bash", [join(f.work, "scripts/release-chrome.sh")])
+  const result = f.make("release-chrome")
+  assert.equal(result.status, 0, result.stderr)
   assert.equal(readFileSync(join(f.work, ".output/upload-args.txt"), "utf8"), "release\nupload\nv1.2.0\n.output/readomi-1.2.0-chrome.zip\n--repo\nexample/fixture\n--clobber\n")
   assert.equal(f.git("status", "--porcelain"), "")
 })

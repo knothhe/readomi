@@ -41,7 +41,7 @@ pnpm build:firefox   # Firefox
 
 Chrome / Edge 加载 `.output/` 下对应构建目录；Firefox 在 `about:debugging#/runtime/this-firefox` 临时载入对应目录中的 `manifest.json`。
 
-[本地安装（install:local）](./docs/install-local.md)
+[本地安装（make install）](./docs/install-local.md)
 
 打开设置 → 翻译服务 → 添加服务，手动填写，或复制说明给 agent，再粘贴它验证过的配置，点“检查并添加”。可以保存同一地址下的不同模型或账号；首次配置自动使用，之后添加默认保留当前服务，也可勾选“添加后使用此服务”。修改已有配置时，从目标服务的操作菜单进入“修改”，点“保存修改”；切换服务可在弹窗或设置页进行，已有译文保留。配置指南见 [docs/agent-setup.md](./docs/agent-setup.md)，可选 skill 见 [skills/readomi-setup](./skills/readomi-setup/SKILL.md)。之后点击“翻译此页”，或按默认快捷键 `Alt+E`（Mac 为 `Option+E`）；再次触发恢复原文。
 
@@ -64,6 +64,7 @@ pnpm build
 
 ## 版本管理
 
-用 `pnpm release patch`（或 `minor` / `major`）预览版本更新；加 `--apply`
-才会执行检查、版本提交、tag 和推送。GitHub Release 与扩展包由现有 CI 发布。
-版本选择、首次接入和失败恢复见 [RELEASING.md](./RELEASING.md)。
+用 `make release` 预览 patch 更新，或用 `VERSION_BUMP=minor|major|精确版本`
+选择目标版本；加 `RELEASE_FLAGS=--apply` 才会执行检查、版本提交、tag 和推送。
+首次发布版本文件中的当前版本用 `make release-initial`。GitHub Release 与扩展包
+由现有 CI 发布。版本选择、首次发布和失败恢复见 [RELEASING.md](./RELEASING.md)。

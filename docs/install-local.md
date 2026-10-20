@@ -1,10 +1,10 @@
-# 本地安装（install:local）
+# 本地安装（make install）
 
-`pnpm install:local` 构建所选浏览器的 MV3 扩展，再同步到固定的 `<安装父目录>/<插件名称>`，供浏览器加载。后续构建仍安装到同一位置，避免浏览器依赖仓库里的 `.output/`。
+`make install` 构建所选浏览器的 MV3 扩展，再同步到固定的 `<安装父目录>/<插件名称>`，供浏览器加载。后续构建仍安装到同一位置，避免浏览器依赖仓库里的 `.output/`。这个入口不更新版本、不创建提交或 tag，也不推送或发布。
 
 ## 运行前提与配置
 
-在仓库根目录使用 Node.js 22+ 和 [package.json](../package.json) 指定的 pnpm 版本，先执行 `pnpm install` 安装依赖。安装命令会自行构建，无需提前运行 `pnpm build`。
+在仓库根目录使用 Make、Node.js 22+ 和 [package.json](../package.json) 指定的 pnpm 版本，先执行 `pnpm install` 安装依赖。`make install` 会自行构建，无需提前运行 `pnpm build`。
 
 复制并编辑个人配置：
 
@@ -43,19 +43,19 @@ cp .install-local.example.json .install-local.json
 ## 常用命令
 
 ```bash
-pnpm install:local           # 使用配置中的 browser，省略时为 Chrome
-pnpm install:local chrome
-pnpm install:local firefox
-pnpm install:local edge
+make install           # 使用配置中的 browser，省略时为 Chrome
+make install INSTALL_FLAGS=chrome
+make install INSTALL_FLAGS=firefox
+make install INSTALL_FLAGS=edge
 
 # 覆盖配置中的浏览器、父目录和名称
-pnpm install:local --browser chrome --dir "~/Extensions/chrome" --name Readomi
+make install INSTALL_FLAGS='--browser chrome --dir "~/Extensions/chrome" --name Readomi'
 
 # 使用另一份个人配置
-pnpm install:local edge --config .install-local.custom.json
+make install INSTALL_FLAGS='edge --config .install-local.custom.json'
 
 # 仅查看帮助，不构建或安装
-pnpm install:local --help
+make install INSTALL_FLAGS=--help
 ```
 
 | 浏览器 | 实际构建命令 | 构建产物 |
@@ -90,9 +90,9 @@ Overwrite this plugin? [Y/n]
 
 ## 自动安装条件
 
-使用 `h2-browser-extension` 技能执行扩展改动任务时，若当前项目根目录存在真实的 `.install-local.json`，完成改动和必要验证后会按配置自动运行 `pnpm install:local`，并报告结果。只有示例文件、纯讨论或评估、用户明确要求跳过时不会安装；最终改动已成功安装时不重复执行。覆盖确认和执行权限要求仍然适用。
+使用 `h2-browser-extension` 技能执行扩展改动任务时，若当前项目根目录存在真实的 `.install-local.json`，完成改动和必要验证后会按配置自动运行 `make install`，并报告结果。本项目通过 [AGENTS.md](../AGENTS.md) 约定使用 Make 安装入口。只有示例文件、纯讨论或评估、用户明确要求跳过时不会安装；最终改动已成功安装时不重复执行。覆盖确认和执行权限要求仍然适用。
 
-当前项目未配置 `install:local` 的 Codex 收尾 hook。可选择接入项目级 hook，在每轮回复结束前提醒 agent 检查安装条件；需明确同意后才配置。普通终端构建和测试不会因此自动安装。
+当前项目未配置本地安装的 Codex 收尾 hook。可选择接入项目级 hook，在每轮回复结束前提醒 agent 检查安装条件；需明确同意后才配置。普通终端构建和测试不会因此自动安装。
 
 ## 浏览器首次加载与更新
 

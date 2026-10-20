@@ -35,6 +35,7 @@ function cliFixture(t) {
   const scripts = path.join(f.root, "scripts")
   fs.mkdirSync(scripts)
   fs.copyFileSync(new URL("../install-local.mjs", import.meta.url), path.join(scripts, "install-local.mjs"))
+  fs.copyFileSync(new URL("../../Makefile", import.meta.url), path.join(f.root, "Makefile"))
   fs.writeFileSync(path.join(f.root, "build.mjs"), `
       import fs from "node:fs";
       const browser = process.argv[2];
@@ -49,8 +50,24 @@ function cliFixture(t) {
     "build:edge": "node build.mjs edge",
   } }))
   const cli = (browser = "chrome", input = "") => spawnSync(process.execPath, [path.join(scripts, "install-local.mjs"), browser, "--dir", f.directory], { cwd: f.folder, encoding: "utf8", input, timeout: 10000 })
-  return { ...f, cli }
+  const make = (...argv) => spawnSync("make", ["--silent", "install", ...argv], { cwd: f.root, encoding: "utf8", timeout: 10000 })
+  return { ...f, cli, make }
 }
+
+it("Make install forwards browser and quoted paths to the build and sync workflow", (t) => {
+  const f = cliFixture(t)
+  const result = f.make(`INSTALL_FLAGS=--browser edge --dir "${f.directory}" --name "Readomi Edge"`)
+  assert.equal(result.status, 0, result.stderr)
+  const destination = path.join(f.directory, "Readomi Edge")
+  assert.equal(fs.readFileSync(path.join(f.root, "built-browser"), "utf8"), "edge")
+  assert.match(result.stdout, /Installed Readomi 1\.2\.1/)
+  assert.match(result.stdout, /edge:\/\/extensions/)
+  assert.equal(JSON.parse(fs.readFileSync(path.join(destination, ".readomi-install.json"))).browser, "edge")
+  fs.writeFileSync(path.join(destination, "obsolete.js"), "old asset")
+  const updated = f.make(`INSTALL_FLAGS=--browser edge --dir "${f.directory}" --name "Readomi Edge"`)
+  assert.equal(updated.status, 0, updated.stderr)
+  assert.equal(fs.existsSync(path.join(destination, "obsolete.js")), false)
+})
 
 for (const browser of ["chrome", "firefox", "edge"]) {
   it(`builds and installs ${browser} to its configured directory`, async (t) => {

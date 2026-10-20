@@ -11,10 +11,10 @@ usage() {
 Build the Chrome extension ZIP and upload it to a GitHub Release.
 
 Usage:
-  pnpm release:chrome
+  make release-chrome
 
 The working tree must be clean and HEAD must match the v<version> tag read from
-package.json. The GitHub Release must already exist; use pnpm release to manage
+package.json. The GitHub Release must already exist; use make release to manage
 versions and tags. This command only builds and uploads the Chrome ZIP. The
 target repository is resolved by GitHub CLI from the current git remote.
 EOF
@@ -47,7 +47,7 @@ fi
 
 git check-ref-format "refs/tags/$TAG"
 if ! TAG_COMMIT="$(git rev-parse --verify "refs/tags/$TAG^{commit}" 2>/dev/null)" || [[ "$TAG_COMMIT" != "$(git rev-parse HEAD)" ]]; then
-  echo "Error: HEAD must match the existing $TAG tag. Use 'pnpm release' to release a new version." >&2
+  echo "Error: HEAD must match the existing $TAG tag. Use 'make release' to release a new version." >&2
   exit 1
 fi
 

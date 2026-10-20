@@ -48,10 +48,17 @@ in `design/assets/`.
 ## Version Management
 
 - `package.json` is the version source of truth. Follow `RELEASING.md` and
-  `.release.json`; use `pnpm release patch|minor|major` or an exact version to
-  preview. Add `--apply` only when an actual release is requested.
-- The release command runs checks, commits the version, creates an annotated
-  `v<version>` tag, and atomically pushes `main` and that tag. Existing CI creates
-  the GitHub Release and uploads extension archives.
+  `.release.json`; use `make release VERSION_BUMP=patch|minor|major` or an exact
+  version to preview (the default is patch). Use `make release-initial` to first
+  publish the current version without a version change or version commit. Add
+  `RELEASE_FLAGS=--apply` only when an actual release is requested.
+- Release upgrades run checks, commit the version, create an annotated
+  `v<version>` tag, and atomically push `main` and that tag. Initial releases run
+  checks and tag the current HEAD directly. Existing CI creates the GitHub
+  Release and uploads extension archives.
 - Version-management tests run with `pnpm test:release` using temporary local
-  repositories. `pnpm release:chrome` only uploads to an existing Release.
+  repositories. `make release-chrome` only uploads to an existing Release.
+- Use `make install` for local extension builds and installation, with optional
+  `INSTALL_FLAGS` for the existing browser and directory arguments. Follow
+  `docs/install-local.md`; this replaces the package-manager `install:local`
+  entry point, including automatic installation after extension changes.

@@ -144,7 +144,7 @@ export async function installLocal(argv, { root = projectRoot, runBuild = build,
   const source = path.join(root, ".output", `${browser}-mv3`)
   const manifest = JSON.parse(fs.readFileSync(path.join(source, "manifest.json"), "utf8"))
   requireThat(manifest.manifest_version === 3 && typeof manifest.version === "string", "Build output must contain a valid MV3 manifest.")
-  const revalidate = () => requireThat(!validateDestination(destination, root, browser) || overwriteConfirmed, "Plugin directory changed during the build and now needs overwrite confirmation. Run install:local again.")
+  const revalidate = () => requireThat(!validateDestination(destination, root, browser) || overwriteConfirmed, "Plugin directory changed during the build and now needs overwrite confirmation. Run make install again.")
   revalidate()
   fs.mkdirSync(path.dirname(destination), { recursive: true })
   const staging = fs.mkdtempSync(path.join(path.dirname(destination), ".readomi-install-"))
@@ -179,7 +179,7 @@ export async function installLocal(argv, { root = projectRoot, runBuild = build,
 async function main() {
   const argv = process.argv.slice(2)
   if (argv.includes("--help") || argv.includes("-h")) {
-    console.log("Usage: pnpm install:local [chrome|firefox|edge] [--browser <browser>] [--dir <parent-directory>] [--name <plugin-name>] [--config <file>]\nBuilds MV3 and installs into <parent-directory>/<plugin-name>. Default name: readomi.\nDefaults: .install-local.json, then Chrome. CLI options override config.\nRelative parent directories resolve from the repository; ~/ expands to your home.\nOnly the named plugin directory is replaced; other files in the parent directory are preserved.\nExisting plugin directories from other installations require overwrite confirmation [Y/n].\nLoad the plugin directory in Chrome/Edge, or its manifest.json temporarily in Firefox. Reload after updates.")
+    console.log("Usage: make install [INSTALL_FLAGS='<options>']\nOptions: [chrome|firefox|edge] [--browser <browser>] [--dir <parent-directory>] [--name <plugin-name>] [--config <file>]\nBuilds MV3 and installs into <parent-directory>/<plugin-name>. Default name: readomi.\nDefaults: .install-local.json, then Chrome. CLI options override config.\nRelative parent directories resolve from the repository; ~/ expands to your home.\nOnly the named plugin directory is replaced; other files in the parent directory are preserved.\nExisting plugin directories from other installations require overwrite confirmation [Y/n].\nLoad the plugin directory in Chrome/Edge, or its manifest.json temporarily in Firefox. Reload after updates.")
     return
   }
   const result = await installLocal(argv)
