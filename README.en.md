@@ -28,6 +28,8 @@ Video translation uses enabled YouTube captions or HTML5 subtitle tracks; it doe
 
 ## Install and use
 
+Install Readomi from the [Chrome Web Store](https://chromewebstore.google.com/detail/readomi/fheoneigdhingaghlknjnjdflffaecac).
+
 Download an available Chrome build from this repository's [Releases](https://github.com/knothhe/readomi/releases), unzip it, enable Developer mode in `chrome://extensions`, and select "Load unpacked". Edge uses `edge://extensions`. Or build from source:
 
 ```bash

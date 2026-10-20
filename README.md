@@ -28,7 +28,9 @@ Readomi 此后由本仓库独立维护和迭代，产品方向、发布和问题
 
 ## 安装与使用
 
-从本仓库 [Releases](https://github.com/knothhe/readomi/releases) 下载可用的 Chrome 构建并解压，在 `chrome://extensions` 开启开发者模式，选择“加载已解压的扩展程序”。Edge 使用 `edge://extensions`。也可以从源码构建：
+从 [Chrome 应用商店](https://chromewebstore.google.com/detail/readomi/fheoneigdhingaghlknjnjdflffaecac) 安装 Readomi。
+
+也可以从本仓库 [Releases](https://github.com/knothhe/readomi/releases) 下载可用的 Chrome 构建并解压，在 `chrome://extensions` 开启开发者模式，选择“加载已解压的扩展程序”。Edge 使用 `edge://extensions`。或从源码构建：
 
 ```bash
 git clone https://github.com/knothhe/readomi.git
