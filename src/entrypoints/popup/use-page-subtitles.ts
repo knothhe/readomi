@@ -4,7 +4,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { onMessage, sendMessage } from "@/utils/message"
-import { subtitlePageKey } from "@/utils/subtitles/page-state"
+import { subtitleSiteKey } from "@/utils/subtitles/page-state"
 import { activeTabAtom } from "./atoms"
 
 interface SwitchView {
@@ -21,7 +21,7 @@ function updateSwitchView(previous: SwitchView, patch: Partial<SwitchView> | ((p
   return next
 }
 
-/** Read the live page switch, including changes made while the popup was closed. */
+/** Read the saved domain switch, including changes made while the popup was closed. */
 export function usePageSubtitles(disabled = false) {
   const tab = useAtomValue(activeTabAtom)
   const features = useAtomValue(configFieldsAtomMap.features)
@@ -35,12 +35,12 @@ export function usePageSubtitles(disabled = false) {
     let heard = false
     const revision = revisionRef
     const operation = operationRef
-    updateView(previous => ({ failed: false, pending: false, state: tab.translatable && previous.state && subtitlePageKey(previous.state.url) === subtitlePageKey(tab.url) ? previous.state : null }))
+    updateView(previous => ({ failed: false, pending: false, state: tab.translatable && previous.state && subtitleSiteKey(previous.state.url) === subtitleSiteKey(tab.url) ? previous.state : null }))
     if (tab.id === null || !tab.translatable) {
       return
     }
     const unsubscribe = onMessage("pageSubtitleStateChanged", ({ data }) => {
-      if (data.tabId !== tab.id || subtitlePageKey(data.state.url) !== subtitlePageKey(tab.url))
+      if (data.tabId !== tab.id || subtitleSiteKey(data.state.url) !== subtitleSiteKey(tab.url))
         return
       heard = true
       notificationRef.current++
@@ -94,6 +94,6 @@ export function usePageSubtitles(disabled = false) {
     document.addEventListener("keydown", keydown, true)
     return () => document.removeEventListener("keydown", keydown, true)
   }, [choose, disabled, features.subtitlesShortcut, pending, state])
-  const selectedEnabled = selection && tab.translatable && subtitlePageKey(selection.url) === subtitlePageKey(tab.url) ? selection.enabled : features.videoSubtitles
+  const selectedEnabled = selection && tab.translatable && subtitleSiteKey(selection.url) === subtitleSiteKey(tab.url) ? selection.enabled : features.videoSubtitles
   return { state, selectedEnabled, pending, failed, choose, translatable: tab.translatable }
 }

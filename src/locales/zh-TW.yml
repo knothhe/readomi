@@ -6,7 +6,7 @@ languageCombobox:
   noLanguagesFound: 找不到語言
 popup:
   subtitlePage:
-    scope: 僅控制目前頁面的影片字幕。
+    scope: 控制目前網域的影片字幕，重新整理和切換影片後保留。
     failed: 切換失敗，請重試。
     unavailable: 目前頁面無法切換影片字幕。
   clearTranslationCache:
@@ -542,7 +542,7 @@ features:
   hoverStreamDescription: 逐步顯示譯文，減少等待。
   video: Video subtitle translation
   videoDefault: 預設開啟影片字幕翻譯
-  videoDescription: 作為新頁面的預設狀態，目前頁面的開關不會改寫此設定。支援 YouTube 已開啟的字幕和 HTML5 字幕軌道；尚不支援無字幕影片。
+  videoDescription: 作為未設定網域的預設狀態，網域和影片開關不會改寫此設定。支援 YouTube 已開啟的字幕和 HTML5 字幕軌道；尚不支援無字幕影片。
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -574,7 +574,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: 僅對目前頁面生效
+  scope: 僅對目前影片生效
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -697,8 +697,8 @@ translationShortcuts:
   mode: Switch bilingual / translation only
   modeHint: 僅切換網頁的顯示方式。
   subtitles: Toggle video subtitles
-  subtitlesHint: 開關目前頁面的影片翻譯。
-  hint: 點擊錄製組合鍵；按 Delete 或 Backspace 清空。影片字幕快捷鍵與彈窗、播放器開關同步，僅影響目前頁面。
+  subtitlesHint: 開關目前網域的影片翻譯。
+  hint: 點擊錄製組合鍵；按 Delete 或 Backspace 清空。影片字幕快捷鍵與彈窗同步，影響目前網域；播放器開關僅影響目前影片。
   platformHint: macOS 使用 Option（⌥）；Windows / Linux 使用 Alt。
   hover: Hover translation trigger
   hoverHelp: 觸發方式說明

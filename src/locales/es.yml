@@ -6,7 +6,7 @@ languageCombobox:
   noLanguagesFound: No se encontraron idiomas
 popup:
   subtitlePage:
-    scope: Controla los subtítulos de vídeo solo en esta página.
+    scope: Controla los subtítulos de vídeo de este dominio. Se conserva al recargar o cambiar de vídeo.
     failed: No se pudieron cambiar los subtítulos. Inténtalo de nuevo.
     unavailable: No se pueden cambiar los subtítulos de vídeo en esta página.
   clearTranslationCache:
@@ -572,7 +572,7 @@ features:
   hoverStreamDescription: Muestra la traducción progresivamente para reducir la espera.
   video: Video subtitle translation
   videoDefault: Activar la traducción de subtítulos por defecto
-  videoDescription: Valor predeterminado para páginas nuevas. Los interruptores de cada página no cambian este ajuste. Admite subtítulos activados de YouTube y pistas HTML5; los vídeos sin subtítulos aún no son compatibles.
+  videoDescription: Valor predeterminado para dominios sin una elección guardada. Los interruptores del dominio y del reproductor no cambian este ajuste. Admite subtítulos activados de YouTube y pistas HTML5; los vídeos sin subtítulos aún no son compatibles.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -604,7 +604,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Solo esta página
+  scope: Solo este vídeo
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -732,8 +732,8 @@ translationShortcuts:
   mode: Switch bilingual / translation only
   modeHint: Solo cambia cómo se muestran las traducciones de páginas web.
   subtitles: Toggle video subtitles
-  subtitlesHint: Activa o desactiva la traducción de vídeo en esta página.
-  hint: Haz clic para grabar un atajo; Delete o Backspace lo borra. El atajo de subtítulos se sincroniza con los interruptores del panel y del reproductor y solo afecta a esta página.
+  subtitlesHint: Activa o desactiva la traducción de vídeo en este dominio.
+  hint: Haz clic para grabar un atajo; Delete o Backspace lo borra. El atajo de subtítulos y el panel afectan a este dominio; el interruptor del reproductor solo afecta a su vídeo.
   platformHint: Usa Option (⌥) en macOS y Alt en Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: Cómo funcionan los activadores

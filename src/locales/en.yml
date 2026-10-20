@@ -6,7 +6,7 @@ languageCombobox:
   noLanguagesFound: No languages found
 popup:
   subtitlePage:
-    scope: Controls video subtitles on this page only.
+    scope: Controls video subtitles for this domain. Kept after refresh and video changes.
     failed: Could not switch subtitles. Try again.
     unavailable: Video subtitles cannot be switched on this page.
   clearTranslationCache:
@@ -560,7 +560,7 @@ features:
   hoverStreamDescription: Show translations gradually to reduce waiting.
   video: Video subtitle translation
   videoDefault: Enable video subtitle translation by default
-  videoDescription: The default for new pages. Page switches do not change this setting. Supports enabled YouTube captions and HTML5 subtitle tracks; videos without captions are not supported yet.
+  videoDescription: The default for domains without a saved choice. Domain and player switches do not change this setting. Supports enabled YouTube captions and HTML5 subtitle tracks; videos without captions are not supported yet.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -592,7 +592,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: This page only
+  scope: This video only
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -717,8 +717,8 @@ translationShortcuts:
   mode: Switch bilingual / translation only
   modeHint: Only changes how web translations are displayed.
   subtitles: Toggle video subtitles
-  subtitlesHint: Turn video translation on or off for this page.
-  hint: Click to record a shortcut; Delete or Backspace clears it. The subtitle shortcut stays in sync with the popup and player switches and affects this page only.
+  subtitlesHint: Turn video translation on or off for this domain.
+  hint: Click to record a shortcut; Delete or Backspace clears it. The subtitle shortcut and popup affect this domain; the player switch affects only its video.
   platformHint: Use Option (⌥) on macOS and Alt on Windows / Linux.
   hover: Hover translation trigger
   hoverHelp: How triggers work

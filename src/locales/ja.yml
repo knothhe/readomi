@@ -6,7 +6,7 @@ languageCombobox:
   noLanguagesFound: 言語が見つかりません
 popup:
   subtitlePage:
-    scope: このページの動画字幕だけを切り替えます。
+    scope: このドメインの動画字幕を切り替えます。再読み込みや動画の切り替え後も保持されます。
     failed: 字幕を切り替えられませんでした。再試行してください。
     unavailable: このページでは動画字幕を切り替えられません。
   clearTranslationCache:
@@ -542,7 +542,7 @@ features:
   hoverStreamDescription: 訳文を順次表示し、待ち時間を減らします。
   video: Video subtitle translation
   videoDefault: 動画字幕の翻訳を初期状態で有効にする
-  videoDescription: 新しいページの初期設定です。ページ内の切り替えはこの設定を変更しません。YouTube の有効な字幕と HTML5 字幕トラックに対応します。字幕のない動画には未対応です。
+  videoDescription: 設定を保存していないドメインの初期設定です。ドメインや動画のスイッチはこの設定を変更しません。YouTube の有効な字幕と HTML5 字幕トラックに対応します。字幕のない動画には未対応です。
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -574,7 +574,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: このページのみ
+  scope: この動画のみ
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -698,8 +698,8 @@ translationShortcuts:
   mode: Switch bilingual / translation only
   modeHint: ウェブページの翻訳表示のみを切り替えます。
   subtitles: Toggle video subtitles
-  subtitlesHint: このページの動画翻訳をオン・オフします。
-  hint: クリックしてショートカットを記録し、Delete または Backspace で消去します。字幕のショートカットはポップアップとプレーヤーのスイッチと同期し、このページだけに適用されます。
+  subtitlesHint: このドメインの動画翻訳をオン・オフします。
+  hint: クリックしてショートカットを記録し、Delete または Backspace で消去します。字幕のショートカットとポップアップはこのドメインに、プレーヤーのスイッチはその動画だけに適用されます。
   platformHint: macOSではOption（⌥）、Windows / LinuxではAltを使います。
   hover: Hover translation trigger
   hoverHelp: 翻訳の操作方法

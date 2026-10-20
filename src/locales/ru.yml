@@ -6,7 +6,7 @@ languageCombobox:
   noLanguagesFound: Языки не найдены
 popup:
   subtitlePage:
-    scope: Управляет субтитрами видео только на этой странице.
+    scope: Управляет субтитрами видео на этом домене. Выбор сохраняется после обновления и смены видео.
     failed: Не удалось переключить субтитры. Попробуйте ещё раз.
     unavailable: На этой странице нельзя переключить субтитры видео.
   clearTranslationCache:
@@ -560,7 +560,7 @@ features:
   hoverStreamDescription: "Показывает перевод постепенно, сокращая ожидание."
   video: Video subtitle translation
   videoDefault: Включать перевод субтитров по умолчанию
-  videoDescription: Настройка по умолчанию для новых страниц. Переключатели страниц её не меняют. Поддерживаются включённые субтитры YouTube и дорожки HTML5; видео без субтитров пока не поддерживаются.
+  videoDescription: Настройка по умолчанию для доменов без сохранённого выбора. Переключатели домена и плеера её не меняют. Поддерживаются включённые субтитры YouTube и дорожки HTML5; видео без субтитров пока не поддерживаются.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -592,7 +592,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Только эта страница
+  scope: Только это видео
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -718,8 +718,8 @@ translationShortcuts:
   mode: Switch bilingual / translation only
   modeHint: Меняет только способ отображения перевода веб-страниц.
   subtitles: Toggle video subtitles
-  subtitlesHint: Включает или выключает перевод видео на текущей странице.
-  hint: Нажмите для записи сочетания; Delete или Backspace очищает его. Сочетание для субтитров синхронизируется с переключателями панели и плеера и действует только на этой странице.
+  subtitlesHint: Включает и выключает перевод видео для этого домена.
+  hint: Нажмите для записи сочетания; Delete или Backspace очищает его. Сочетание субтитров и панель действуют на этот домен, а переключатель плеера — только на его видео.
   platformHint: "В macOS используйте Option (⌥), в Windows / Linux — Alt."
   hover: Hover translation trigger
   hoverHelp: Как запускать перевод

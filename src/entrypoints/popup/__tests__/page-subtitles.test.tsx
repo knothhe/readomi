@@ -55,6 +55,14 @@ describe("popup page subtitle switch", () => {
     await waitFor(() => expect(toggle()).toBeEnabled())
     expect(toggle()).not.toBeChecked()
   })
+  it("accepts same-domain updates across video navigation and ignores other domains", async () => {
+    mount()
+    await waitFor(() => expect(toggle()).toBeChecked())
+    await broadcast({ ...actual, url: "https://x.com/home", enabled: false })
+    expect(toggle()).toBeChecked()
+    await broadcast({ ...actual, url: "https://www.youtube.com/watch?v=next", enabled: false })
+    expect(toggle()).not.toBeChecked()
+  })
   it("shares clicks and macOS Option+V without changing the global configuration", async () => {
     const { store } = mount()
     await waitFor(() => expect(toggle()).toBeEnabled())

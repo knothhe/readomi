@@ -6,7 +6,7 @@ languageCombobox:
   noLanguagesFound: Dil bulunamadı
 popup:
   subtitlePage:
-    scope: Yalnızca bu sayfanın video altyazılarını kontrol eder.
+    scope: Bu alan adının video altyazılarını kontrol eder. Yenileme ve video değişikliklerinden sonra korunur.
     failed: Altyazılar değiştirilemedi. Tekrar deneyin.
     unavailable: Bu sayfada video altyazıları değiştirilemez.
   clearTranslationCache:
@@ -561,7 +561,7 @@ features:
   hoverStreamDescription: Beklemeyi azaltmak için çeviriyi aşamalı gösterir.
   video: Video subtitle translation
   videoDefault: Video altyazı çevirisini varsayılan olarak aç
-  videoDescription: Yeni sayfalar için varsayılan ayardır. Sayfa anahtarları bu ayarı değiştirmez. Etkin YouTube altyazılarını ve HTML5 altyazı parçalarını destekler; altyazısız videolar henüz desteklenmez.
+  videoDescription: Kaydedilmiş seçimi olmayan alan adları için varsayılan ayardır. Alan adı ve oynatıcı anahtarları bu ayarı değiştirmez. Etkin YouTube altyazılarını ve HTML5 altyazı parçalarını destekler; altyazısız videolar henüz desteklenmez.
   videoControls: Show controls on videos
   videoControlsDescription: Shown only in supported YouTube and X players. Hiding
     controls does not affect subtitle translation.
@@ -593,7 +593,7 @@ videoTranslationControls:
   title: Video translation
   enable: Enable video translation
   disable: Disable video translation
-  scope: Yalnızca bu sayfa
+  scope: Yalnızca bu video
   excluded: This site is excluded
   presetButton: Adjust subtitle preset
   saveFailed: Could not save. Please try again.
@@ -719,8 +719,8 @@ translationShortcuts:
   mode: Switch bilingual / translation only
   modeHint: Yalnızca web çevirilerinin görüntülenme biçimini değiştirir.
   subtitles: Toggle video subtitles
-  subtitlesHint: Bu sayfada video çevirisini açar veya kapatır.
-  hint: Kısayol kaydetmek için tıklayın; Delete veya Backspace ile temizleyin. Altyazı kısayolu açılır pencere ve oynatıcı anahtarlarıyla eşitlenir ve yalnızca bu sayfayı etkiler.
+  subtitlesHint: Bu alan adı için video çevirisini açar veya kapatır.
+  hint: Kısayol kaydetmek için tıklayın; Delete veya Backspace ile temizleyin. Altyazı kısayolu ve açılır pencere bu alan adını, oynatıcı anahtarı ise yalnızca kendi videosunu etkiler.
   platformHint: "macOS üzerinde Option (⌥), Windows / Linux üzerinde Alt kullanın."
   hover: Hover translation trigger
   hoverHelp: Çeviri nasıl başlatılır

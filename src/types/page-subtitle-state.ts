@@ -1,4 +1,4 @@
-/** Effective subtitle switch for one page, shared by its popup and players. */
+/** Effective domain subtitle preference, delivered with the current page URL. */
 export interface PageSubtitleState {
   url: string
   enabled: boolean

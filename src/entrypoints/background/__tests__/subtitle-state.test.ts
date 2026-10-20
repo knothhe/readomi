@@ -16,146 +16,145 @@ vi.mock("@/utils/message", () => ({
   sendMessage: vi.fn(() => Promise.resolve()),
   onMessage: (name: string, handler: typeof handlers extends Map<string, infer H> ? H : never) => handlers.set(name, handler),
 }))
-let url: string
+let urls: Map<number, string>
 let config: Config
 const read = (tabId = 1) => handlers.get("getPageSubtitleState")!({ data: { tabId } })
 const set = (enabled?: boolean, tabId = 1) => handlers.get("setPageSubtitleState")!({ data: { tabId, enabled } })
+const siteKey = "local:siteSubtitles:www.youtube.com"
+const navigate = () => vi.mocked(browser.webNavigation.onHistoryStateUpdated.addListener).mock.calls.at(-1)![0]
 
 beforeEach(() => {
   fakeBrowser.reset()
   vi.clearAllMocks()
   handlers.clear()
-  url = "https://www.youtube.com/watch?v=one"
+  urls = new Map([[1, "https://www.youtube.com/watch?v=one"], [2, "https://www.youtube.com/watch?v=two"], [3, "https://x.com/home"]])
   config = DEFAULT_CONFIG
   getConfig.mockImplementation(async () => config)
-  vi.spyOn(browser.tabs, "get").mockImplementation(async id => ({ id, url }) as Browser.tabs.Tab)
-  vi.spyOn(browser.webNavigation.onCommitted, "addListener")
+  vi.spyOn(browser.tabs, "get").mockImplementation(async id => ({ id, url: urls.get(id) }) as Browser.tabs.Tab)
+  vi.spyOn(browser.tabs, "query").mockImplementation(async () => Array.from(urls, ([id, url]) => ({ id, url })) as Browser.tabs.Tab[])
   vi.spyOn(browser.webNavigation.onHistoryStateUpdated, "addListener")
-  vi.spyOn(browser.tabs.onRemoved, "addListener")
   setupSubtitleState()
 })
 
-describe("shared page subtitle state", () => {
-  it("enables a page from a disabled default, shares it with embedded frames and leaves another tab's default alone", async () => {
+describe("domain subtitle state", () => {
+  it("shares a saved choice with the same domain and its embedded frames, leaving other domains alone", async () => {
     expect((await read()).enabled).toBe(false)
     const state = await set(true)
     expect(state).toMatchObject({ enabled: true, available: true, overridden: true })
     expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", state, 1)
     expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state })
+    expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", { ...state, url: urls.get(2) }, 2)
+    expect(sendMessage).not.toHaveBeenCalledWith("applyPageSubtitleState", expect.anything(), 3)
     expect(await handlers.get("getPageSubtitleState")!({ sender: { tab: { id: 1 }, frameId: 3 } })).toEqual(state)
-    expect((await read(2)).enabled).toBe(false)
+    expect((await read(2)).enabled).toBe(true)
+    expect((await read(3)).enabled).toBe(false)
+    expect(await storage.getItem(siteKey)).toBe(true)
     expect(config).toBe(DEFAULT_CONFIG)
   })
-  it("serializes consecutive toggles against the actual value", async () => {
-    const states = await Promise.all([set(), set(), set()])
+  it("serializes toggles from different tabs on the same domain", async () => {
+    const states = await Promise.all([set(undefined, 1), set(undefined, 2), set(undefined, 1)])
     expect(states.map(state => state.enabled)).toEqual([true, false, true])
-    expect((await read()).enabled).toBe(true)
+    expect((await read(2)).enabled).toBe(true)
   })
   it("targets the website when the extension popup is opened in its own tab", async () => {
     const state = await handlers.get("setPageSubtitleState")!({ data: { tabId: 1, enabled: true }, sender: { tab: { id: 99 }, url: browser.runtime.getURL("/popup.html") } })
     expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", state, 1)
-    expect((await read(99)).enabled).toBe(false)
+    expect((await read(99)).available).toBe(false)
   })
-  it("preserves the page choice across default and chapter changes and resets for another video", async () => {
+  it("preserves explicit false through default changes, new videos, refresh and background restart", async () => {
     await set(false)
     config = { ...config, features: { ...config.features, videoSubtitles: true } }
-    url += "&t=50&list=playlist#chapter"
-    expect((await read()).enabled).toBe(false)
-    url = "https://www.youtube.com/watch?v=two"
-    expect(await read()).toMatchObject({ enabled: true, overridden: false })
+    urls.set(1, "https://www.youtube.com/watch?v=three&t=50&list=playlist#chapter")
+    expect(await read()).toMatchObject({ enabled: false, overridden: true })
+    handlers.clear()
+    setupSubtitleState()
+    expect(await read()).toMatchObject({ enabled: false, overridden: true })
+    urls.delete(1)
+    urls.set(4, "https://www.youtube.com/shorts/four")
+    expect(await read(4)).toMatchObject({ enabled: false, overridden: true })
   })
-  it("clears choices on refresh and tab close", async () => {
+  it("uses exact hostnames, independently of scheme and port", async () => {
     await set(true)
-    await vi.mocked(browser.webNavigation.onCommitted.addListener).mock.calls.at(-1)![0]({ tabId: 1, frameId: 0, url } as Parameters<Parameters<typeof browser.webNavigation.onCommitted.addListener>[0]>[0])
-    expect((await read()).enabled).toBe(false)
-    await set(true)
-    await vi.mocked(browser.tabs.onRemoved.addListener).mock.calls.at(-1)![0](1, { windowId: 1, isWindowClosing: false })
-    expect(await storage.getItem("session:pageSubtitles:1")).toBeNull()
+    urls.set(2, "http://www.youtube.com:8080/embed/other")
+    expect((await read(2)).enabled).toBe(true)
+    urls.set(2, "https://youtube.com/watch?v=other")
+    expect(await read(2)).toMatchObject({ enabled: false, overridden: false })
   })
-  it.each(["x.com", "twitter.com"])("keeps the subtitle switch through %s media-viewer navigation", async (host) => {
+  it("accepts a popup URL from another video on the same domain and checks the current page policy", async () => {
+    urls.set(1, "https://www.youtube.com/watch?v=next")
+    const state = await handlers.get("setPageSubtitleState")!({ data: { tabId: 1, url: "https://www.youtube.com/watch?v=one", enabled: true } })
+    expect(state).toMatchObject({ url: urls.get(1), enabled: true, overridden: true })
+  })
+  it("keeps a successful domain save if querying other tabs fails", async () => {
+    vi.mocked(browser.tabs.query).mockRejectedValueOnce(new Error("Tabs unavailable"))
+    expect(await set(true)).toMatchObject({ enabled: true, overridden: true })
+    expect(await storage.getItem(siteKey)).toBe(true)
+    expect((await read(2)).enabled).toBe(true)
+  })
+  it("does not promote a legacy per-tab choice into a domain preference", async () => {
+    await storage.setItem("session:pageSubtitles:1", { page: urls.get(1), enabled: true })
+    expect(await read()).toMatchObject({ enabled: false, overridden: false })
+  })
+  it.each(["x.com", "twitter.com"])("preserves the %s choice through media views and other posts", async (host) => {
     const post = `https://${host}/example/status/100`
-    url = post
+    urls.set(1, post)
     await set(true)
-    const navigate = vi.mocked(browser.webNavigation.onHistoryStateUpdated.addListener).mock.calls.at(-1)![0]
-    for (const next of [`${post}/video/1`, `${post}/photo/2`, `${post}/video/1`, post]) {
-      url = next
-      await navigate({ tabId: 1, frameId: 0, url } as Parameters<typeof navigate>[0])
+    for (const url of [`${post}/video/1`, `${post}/photo/2`, post, `https://${host}/other/status/200/video/1`, `https://${host}/home`]) {
+      urls.set(1, url)
+      await navigate()({ tabId: 1, frameId: 0, url } as Parameters<ReturnType<typeof navigate>>[0])
       expect(await read()).toMatchObject({ url, enabled: true, overridden: true })
     }
-    url = `https://${host}/example/status/200/video/1`
-    await navigate({ tabId: 1, frameId: 0, url } as Parameters<typeof navigate>[0])
-    expect(await read()).toMatchObject({ enabled: false, overridden: false })
   })
-  it.each([false, true])("restores the %s default in existing frames and the popup after top-level SPA navigation", async (defaultEnabled) => {
-    config = { ...config, features: { ...config.features, videoSubtitles: defaultEnabled } }
-    await set(!defaultEnabled)
-    vi.mocked(sendMessage).mockClear()
-    url = "https://www.youtube.com/watch?v=two"
-    const navigate = vi.mocked(browser.webNavigation.onHistoryStateUpdated.addListener).mock.calls.at(-1)![0]
-    await navigate({ tabId: 1, frameId: 0, url } as Parameters<typeof navigate>[0])
-    const state = { url, enabled: defaultEnabled, available: true, overridden: false }
-    expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", state, 1)
-    expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state })
-    expect(await storage.getItem("session:pageSubtitles:1")).toBeNull()
-  })
-  it("preserves the page choice on chapter changes and ignores iframe history navigation", async () => {
+  it("publishes the saved domain choice to surviving frames after SPA navigation and ignores frame navigation", async () => {
     await set(true)
     vi.mocked(sendMessage).mockClear()
-    const navigate = vi.mocked(browser.webNavigation.onHistoryStateUpdated.addListener).mock.calls.at(-1)![0]
-    await navigate({ tabId: 1, frameId: 3, url: "https://embedded.example/two" } as Parameters<typeof navigate>[0])
+    await navigate()({ tabId: 1, frameId: 3, url: "https://embedded.example/two" } as Parameters<ReturnType<typeof navigate>>[0])
     expect(sendMessage).not.toHaveBeenCalled()
-    url += "&t=50&list=playlist#chapter"
-    await navigate({ tabId: 1, frameId: 0, url } as Parameters<typeof navigate>[0])
+    const url = "https://www.youtube.com/watch?v=three"
+    urls.set(1, url)
+    await navigate()({ tabId: 1, frameId: 0, url } as Parameters<ReturnType<typeof navigate>>[0])
     const state = { url, enabled: true, available: true, overridden: true }
     expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", state, 1)
-    expect(await read()).toEqual(state)
+    expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state })
   })
-  it.each([false, true])("preserves a page override across site pauses with default %s", async (videoSubtitles) => {
-    config = { ...config, features: { ...config.features, videoSubtitles } }
-    await set(!videoSubtitles)
-    const savedChoice = await storage.getItem("session:pageSubtitles:1")
-    vi.spyOn(browser.tabs, "query").mockImplementation(async () => [{ id: 1, url }] as Browser.tabs.Tab[])
-    const previous = config
-    config = { ...config, features: { ...config.features, disabledSites: ["www.youtube.com"] } }
-    watchConfig.mock.calls.at(-1)![0](config, previous)
-    const paused = { url, enabled: false, available: false, overridden: false, selectedEnabled: !videoSubtitles }
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: paused }))
-    // A reopened popup reads the saved selection even while the runtime is stopped.
-    expect(await read()).toEqual(paused)
-    expect(await storage.getItem("session:pageSubtitles:1")).toEqual(savedChoice)
-    await expect(set(videoSubtitles)).rejects.toThrow("unavailable")
-    config = previous
-    watchConfig.mock.calls.at(-1)![0](config, null)
-    const resumed = { url, enabled: !videoSubtitles, available: true, overridden: true }
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: resumed }))
-    expect(await read()).toEqual(resumed)
-  })
-  it("clears excluded page choices even while the content runtime is stopped", async () => {
+  it.each(["disabled", "excluded"])("preserves the saved domain choice through %s sites", async (reason) => {
     await set(true)
-    vi.spyOn(browser.tabs, "query").mockImplementation(async () => [{ id: 1, url }] as Browser.tabs.Tab[])
     const previous = config
-    config = { ...config, features: { ...config.features, videoExcludedSites: [{ type: "domain", value: "youtube.com" }] } }
+    config = { ...config, features: { ...config.features, disabledSites: reason === "disabled" ? ["www.youtube.com"] : [], videoExcludedSites: reason === "excluded" ? [{ type: "domain", value: "youtube.com" }] : [] } }
     watchConfig.mock.calls.at(-1)![0](config, previous)
-    await vi.waitFor(async () => expect(await storage.getItem("session:pageSubtitles:1")).toBeNull())
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: expect.objectContaining({ enabled: false, available: false }) }))
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: expect.objectContaining({ enabled: false, available: false, selectedEnabled: true }) }))
+    expect(await storage.getItem(siteKey)).toBe(true)
+    await expect(set(false)).rejects.toThrow("unavailable")
     config = previous
     watchConfig.mock.calls.at(-1)![0](config, null)
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: expect.objectContaining({ enabled: false, available: true }) }))
-    expect(await read()).toMatchObject({ enabled: false, overridden: false })
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("pageSubtitleStateChanged", { tabId: 1, state: expect.objectContaining({ enabled: true, available: true }) }))
+    expect(await read()).toMatchObject({ enabled: true, overridden: true })
   })
-  it.each(["disabled", "excluded", "restricted"])("does not allow a page choice to bypass %s pages", async (reason) => {
+  it("publishes a changed global fallback without replacing a saved domain choice", async () => {
+    await set(false)
+    const previous = config
+    config = { ...config, features: { ...config.features, videoSubtitles: true } }
+    watchConfig.mock.calls.at(-1)![0](config, previous)
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith("applyPageSubtitleState", expect.objectContaining({ enabled: true, overridden: false }), 3))
+    expect((await read()).enabled).toBe(false)
+  })
+  it.each(["disabled", "excluded", "restricted"])("does not allow a domain choice to bypass %s pages", async (reason) => {
     await set(true)
     if (reason === "restricted")
-      url = "chrome://extensions/"
+      urls.set(1, "chrome://extensions/")
     else
       config = { ...config, features: { ...config.features, disabledSites: reason === "disabled" ? ["www.youtube.com"] : [], videoExcludedSites: reason === "excluded" ? [{ type: "domain", value: "youtube.com" }] : [] } }
     expect(await read()).toMatchObject({ enabled: false, available: false })
     await expect(set(true)).rejects.toThrow("unavailable")
   })
-  it("rejects a stale popup and rolls back when the host script cannot apply the switch", async () => {
+  it("rejects stale popups and rolls back failed delivery without notifying other tabs", async () => {
     await expect(handlers.get("setPageSubtitleState")!({ data: { tabId: 1, url: "https://example.com/", enabled: true } })).rejects.toThrow("page changed")
     vi.mocked(sendMessage).mockRejectedValueOnce(new Error("No content script"))
     await expect(set(true)).rejects.toThrow("No content script")
-    expect((await read()).enabled).toBe(false)
+    expect((await read(2)).enabled).toBe(false)
+    expect(await storage.getItem(siteKey)).toBeNull()
+    expect(sendMessage).not.toHaveBeenCalledWith("applyPageSubtitleState", expect.anything(), 2)
+    await set(true)
+    expect((await read(2)).enabled).toBe(true)
   })
 })

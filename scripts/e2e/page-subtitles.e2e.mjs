@@ -76,12 +76,12 @@ async function playerReader(page) {
   }
 }
 
-async function expectState(popup, reader, enabled) {
+async function expectState(popup, reader, enabled, playerEnabled = enabled) {
   const toggle = popup.getByRole("switch", { name: LABEL, exact: true })
-  await waitFor(async () => ({ popup: await toggle.getAttribute("aria-checked"), pending: !await toggle.isEnabled(), player: await reader.read() }), state => state.popup === String(enabled) && !state.pending && state.player.enabled === String(enabled) && state.player.layers === Number(enabled), "popup, player and subtitle renderer disagree")
+  await waitFor(async () => ({ popup: await toggle.getAttribute("aria-checked"), pending: !await toggle.isEnabled(), player: await reader.read() }), state => state.popup === String(enabled) && !state.pending && state.player.enabled === String(playerEnabled) && state.player.layers === Number(playerEnabled), "domain preference or video display did not settle")
 }
 
-it("synchronizes shortcut, popup and player without changing the default or another tab", async (test) => {
+it("persists the YouTube domain choice across tabs and navigation while player switches affect one video", async (test) => {
   service = await startFakeService()
   const launched = await launchBrowser()
   context = launched.context
@@ -92,9 +92,9 @@ it("synchronizes shortcut, popup and player without changing the default or anot
     config.ui.language = "en"
     await chrome.storage.local.set({ config })
   })
-  await context.route("https://www.youtube.com/**", route => route.fulfill({
+  await context.route(/^https:\/\/(?:www\.youtube\.com|www\.youtube-nocookie\.com)\//, route => route.fulfill({
     contentType: "text/html",
-    body: `<!doctype html><html lang="en"><meta charset="utf-8"><title>Page subtitle state</title><style>body{margin:24px;font:16px system-ui}.html5-video-player{position:relative;width:800px;height:450px;background:#302b29}video{width:800px;height:450px}.ytp-chrome-bottom{position:absolute;bottom:0;left:0;width:800px;height:48px;display:flex;justify-content:space-between;background:#0007}.ytp-left-controls,.ytp-right-controls{display:flex;height:48px;align-items:center}.ytp-right-controls button{height:48px;width:48px}</style><h1>Subtitle switch test</h1><div id="movie_player" class="html5-video-player"><video></video><div class="ytp-chrome-bottom"><div class="ytp-left-controls"><button>Play</button></div><div class="ytp-right-controls"><button class="ytp-settings-button">Settings</button><button class="ytp-fullscreen-button">Full screen</button></div></div></div><script>const video=document.querySelector('video');const track=video.addTextTrack('subtitles','English','en');track.mode='showing';track.addCue(new VTTCue(0,60,'Shared page subtitle sentence.'));</script></html>`,
+    body: `<!doctype html><html lang="en"><meta charset="utf-8"><title>Domain subtitle state</title><style>body{margin:24px;font:16px system-ui}.html5-video-player{position:relative;width:800px;height:450px;background:#302b29}video{width:800px;height:450px}.ytp-chrome-bottom{position:absolute;bottom:0;left:0;width:800px;height:48px;display:flex;justify-content:space-between;background:#0007}.ytp-left-controls,.ytp-right-controls{display:flex;height:48px;align-items:center}.ytp-right-controls button{height:48px;width:48px}</style><h1>Subtitle switch test</h1><div id="movie_player" class="html5-video-player"><video></video><div class="ytp-chrome-bottom"><div class="ytp-left-controls"><button>Play</button></div><div class="ytp-right-controls"><button class="ytp-settings-button">Settings</button><button class="ytp-fullscreen-button">Full screen</button></div></div></div><script>const video=document.querySelector('video');const track=video.addTextTrack('subtitles','English','en');track.mode='showing';track.addCue(new VTTCue(0,60,'Shared domain subtitle sentence.'));</script></html>`,
   }))
   const host = await context.newPage()
   await host.goto(URL)
@@ -104,6 +104,10 @@ it("synchronizes shortcut, popup and player without changing the default or anot
   await other.goto(URL.replace("one", "two"))
   const otherReader = await playerReader(other)
   await waitFor(() => otherReader.read(), state => state.enabled === "false", "other tab did not use default")
+  const unrelated = await context.newPage()
+  await unrelated.goto("https://www.youtube-nocookie.com/embed/other-domain")
+  const unrelatedReader = await playerReader(unrelated)
+  await waitFor(() => unrelatedReader.read(), state => state.enabled === "false", "unrelated domain did not use default")
   let popup = await openPopup(host, launched.extensionId, test)
   await expectState(popup, reader, false)
 
@@ -111,33 +115,39 @@ it("synchronizes shortcut, popup and player without changing the default or anot
   await host.locator("h1").click()
   await host.keyboard.press("Alt+V")
   await expectState(popup, reader, true)
+  await waitFor(() => otherReader.read(), state => state.enabled === "true" && state.layers === 1, "domain choice did not reach the other tab")
+  assert.equal((await unrelatedReader.read()).enabled, "false")
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)
-  assert.equal((await otherReader.read()).enabled, "false")
 
-  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
-  await expectState(popup, reader, false)
-  await host.bringToFront()
   await reader.click()
-  await expectState(popup, reader, true)
+  await expectState(popup, reader, true, false)
+  assert.equal((await otherReader.read()).enabled, "true", "player choice must leave the other video alone")
   await popup.close()
   popup = await openPopup(host, launched.extensionId, test)
-  await expectState(popup, reader, true)
-  await popup.getByRole("switch", { name: LABEL, exact: true }).press("Alt+V")
-  await expectState(popup, reader, false)
-  await popup.getByRole("switch", { name: LABEL, exact: true }).press("Alt+V")
-  await expectState(popup, reader, true)
-  await popup.locator("#root").screenshot({ path: "/tmp/readomi-popup-page-subtitles-on.png" })
+  await expectState(popup, reader, true, false)
   await popup.close()
 
   await host.reload()
-  await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "refresh did not restore saved default")
+  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "refresh did not preserve domain preference")
+  await reader.click()
+  await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "player did not switch off")
+  await host.evaluate(() => history.pushState({}, "", "/watch?v=next-video"))
+  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "next video inherited the previous video override")
   popup = await openPopup(host, launched.extensionId, test)
-  await expectState(popup, reader, false)
-  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
   await expectState(popup, reader, true)
+  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
+  await expectState(popup, reader, false)
+  await waitFor(() => otherReader.read(), state => state.enabled === "false" && state.layers === 0, "domain disable did not reach the other tab")
+  await host.bringToFront()
+  await reader.click()
+  await expectState(popup, reader, false, true)
+  assert.equal((await otherReader.read()).enabled, "false")
+  await popup.getByRole("switch", { name: LABEL, exact: true }).press("Alt+V")
+  await expectState(popup, reader, true)
+
   const siteSwitch = popup.getByRole("switch", { name: "Disable extension on this site", exact: true })
   await siteSwitch.click()
-  await waitFor(() => reader.read(), state => !state.toggle && state.layers === 0, "website disabling did not stop the subtitle runtime")
+  await waitFor(() => reader.read(), state => !state.toggle && state.layers === 0, "website disabling did not stop subtitles")
   await waitFor(() => siteSwitch.isEnabled(), Boolean, "website disable did not settle")
   await siteSwitch.click()
   await expectState(popup, reader, true)
@@ -147,15 +157,15 @@ it("synchronizes shortcut, popup and player without changing the default or anot
     await chrome.storage.local.set({ config })
   }, excluded)
   await exclude(true)
-  await waitFor(() => reader.read(), state => !state.toggle && state.layers === 0, "video exclusion did not remove player controls")
-  await waitFor(async () => ({ enabled: await popup.getByRole("switch", { name: LABEL, exact: true }).isEnabled(), checked: await popup.getByRole("switch", { name: LABEL, exact: true }).getAttribute("aria-checked") }), state => !state.enabled && state.checked === "false", "excluded page remained switchable")
+  await waitFor(() => reader.read(), state => !state.toggle && state.layers === 0, "video exclusion did not remove controls")
+  await waitFor(() => popup.getByRole("switch", { name: LABEL, exact: true }).isEnabled(), enabled => !enabled, "excluded site remained switchable")
   await exclude(false)
-  await expectState(popup, reader, false)
+  await expectState(popup, reader, true)
   assert.equal((await storedConfig(context)).features.videoSubtitles, false)
-  assert.equal((await otherReader.read()).enabled, "false")
+  assert.equal((await unrelatedReader.read()).enabled, "false")
 })
 
-it("restores page defaults in a surviving cross-origin iframe after SPA navigation", async (test) => {
+it("keeps the domain preference in surviving cross-origin frames after SPA navigation", async (test) => {
   const launched = await launchBrowser()
   context = launched.context
   const settings = launched.page
@@ -170,11 +180,7 @@ it("restores page defaults in a surviving cross-origin iframe after SPA navigati
   const origin = "https://browse.library.kiwix.org"
   const embed = "https://embedded.example/player"
   const video = "<video style='width:320px;height:180px'></video>"
-  // Kiwix injects the full runtime into cross-origin frames without page translation.
-  await context.route(`${origin}/**`, route => route.fulfill({
-    contentType: "text/html",
-    body: `<!doctype html><html><body><h1>SPA subtitle state</h1>${video}<iframe src="${embed}"></iframe></body></html>`,
-  }))
+  await context.route(`${origin}/**`, route => route.fulfill({ contentType: "text/html", body: `<!doctype html><html><body><h1>SPA subtitle state</h1>${video}<iframe src="${embed}"></iframe></body></html>` }))
   await context.route(embed, route => route.fulfill({ contentType: "text/html", body: `<!doctype html><html><body>${video}</body></html>` }))
   const host = await context.newPage()
   await host.goto(`${origin}/a`)
@@ -183,36 +189,68 @@ it("restores page defaults in a surviving cross-origin iframe after SPA navigati
   await frame.evaluate(() => {
     window.e2eFrameIdentity = "surviving-frame"
   })
-  const layers = async () => ({ top: await host.locator("[data-readomi-subtitles]").count(), frame: await frame.locator("[data-readomi-subtitles]").count() })
+  const layers = async () => {
+    const embedded = host.frames().find(frame => frame.url() === embed)
+    return { top: await host.locator("[data-readomi-subtitles]").count(), frame: embedded ? await embedded.locator("[data-readomi-subtitles]").count() : -1 }
+  }
   let popup = await openPopup(host, launched.extensionId, test)
   await popup.getByRole("switch", { name: LABEL, exact: true }).click()
-  await waitFor(layers, state => state.top === 1 && state.frame === 1, "page choice did not reach the iframe")
-
+  await waitFor(layers, state => state.top === 1 && state.frame === 1, "domain choice did not reach the iframe")
+  await popup.close()
   await host.evaluate(() => history.pushState({}, "", "/b"))
-  await waitFor(layers, state => state.top === 0 && state.frame === 0, "SPA navigation left the iframe using the previous page choice")
-  assert.equal(await frame.evaluate(() => window.e2eFrameIdentity), "surviving-frame", "iframe must survive navigation")
-  await popup.close()
+  await waitFor(layers, state => state.top === 1 && state.frame === 1, "SPA navigation discarded domain preference")
+  assert.equal(await frame.evaluate(() => window.e2eFrameIdentity), "surviving-frame")
   popup = await openPopup(host, launched.extensionId, test)
-  assert.equal(await popup.getByRole("switch", { name: LABEL, exact: true }).getAttribute("aria-checked"), "false")
-
-  await settings.evaluate(async () => {
-    const { config } = await chrome.storage.local.get("config")
-    config.features.videoSubtitles = true
-    await chrome.storage.local.set({ config })
-  })
-  await waitFor(layers, state => state.top === 1 && state.frame === 1, "new default did not enable both runtimes")
-  await waitFor(() => popup.getByRole("switch", { name: LABEL, exact: true }).getAttribute("aria-checked"), value => value === "true", "popup did not follow the new default")
+  await waitFor(() => popup.getByRole("switch", { name: LABEL, exact: true }).getAttribute("aria-checked"), value => value === "true", "popup did not keep the domain choice")
   await popup.getByRole("switch", { name: LABEL, exact: true }).click()
-  await waitFor(layers, state => state.top === 0 && state.frame === 0, "manual disable did not reach both runtimes")
-  await popup.close()
-  await host.evaluate(() => history.replaceState({}, "", "/c"))
-  await waitFor(layers, state => state.top === 1 && state.frame === 1, "SPA navigation did not restore the enabled default in both runtimes")
-  popup = await openPopup(host, launched.extensionId, test)
-  assert.equal(await popup.getByRole("switch", { name: LABEL, exact: true }).getAttribute("aria-checked"), "true")
-  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
-  await waitFor(layers, state => state.top === 0 && state.frame === 0, "manual disable before Back did not reach both runtimes")
+  await waitFor(layers, state => state.top === 0 && state.frame === 0, "domain disable did not reach both frames")
   await popup.close()
   await host.goBack()
-  await waitFor(layers, state => state.top === 1 && state.frame === 1, "Back navigation did not restore the enabled default in both runtimes")
-  assert.equal(await frame.evaluate(() => window.e2eFrameIdentity), "surviving-frame", "iframe must survive Back navigation")
+  await waitFor(layers, state => state.top === 0 && state.frame === 0, "Back navigation discarded the disabled domain choice")
+  await host.reload()
+  await waitFor(layers, state => state.top === 0 && state.frame === 0, "refresh discarded the disabled domain choice")
+})
+
+it("keeps X player choices separate while the domain switch survives other posts", async (test) => {
+  const launched = await launchBrowser()
+  context = launched.context
+  await launched.page.goto(`chrome-extension://${launched.extensionId}/options.html`)
+  await waitForStoredConfig(context, config => Boolean(config))
+  await launched.page.evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    Object.assign(config.features, { videoSubtitles: false, videoControls: true, disabledSites: [], videoExcludedSites: [] })
+    config.ui.language = "en"
+    await chrome.storage.local.set({ config })
+  })
+  await context.route("https://x.com/**", route => route.fulfill({
+    contentType: "text/html",
+    body: `<!doctype html><html lang="en"><meta charset="utf-8"><title>X domain and video switches</title><style>body{background:#111;color:white;font:16px system-ui}article{width:640px;margin:12px}article>div{position:relative;width:640px;height:250px;background:#302b29}video{width:100%;height:100%}.controls{position:absolute;bottom:0;width:100%;height:40px;display:flex;align-items:center;justify-content:space-between;background:#0009}button{color:white;background:#333;border:0;padding:8px}</style><h1>X scope test</h1>${[100, 200].map((id, index) => `<article><a href="https://x.com/readomi/status/${id}"><time>Today</time></a><div data-testid="videoComponent"><video></video><div class="controls" data-testid="videoControls"><button aria-label="Pause ${index ? "reply" : "main"}">Ⅱ</button><button aria-label="Fullscreen ${id}">⛶</button></div></div></article>`).join("")}<script>document.querySelectorAll('video').forEach((video,index)=>{const track=video.addTextTrack('subtitles','English','en');track.mode='showing';track.addCue(new VTTCue(0,60,'Video '+index));});</script></html>`,
+  }))
+  const host = await context.newPage()
+  await host.goto("https://x.com/readomi/status/100")
+  const reader = await playerReader(host)
+  await waitFor(() => reader.read(), state => state.enabled === "false", "X controls missing")
+  let popup = await openPopup(host, launched.extensionId, test)
+  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
+  await expectState(popup, reader, true)
+  await host.bringToFront()
+  await reader.click()
+  await expectState(popup, reader, true, false)
+  await host.getByRole("button", { name: "Pause reply", exact: true }).click()
+  await expectState(popup, reader, true)
+  const modes = () => host.evaluate(() => Array.from(document.querySelectorAll("video"), video => video.textTracks[0].mode))
+  await waitFor(modes, value => value[0] === "showing" && value[1] === "hidden", "reply inherited the main video's choice")
+  await host.getByRole("button", { name: "Pause main", exact: true }).click()
+  await expectState(popup, reader, true, false)
+  await popup.close()
+  await host.goto("https://x.com/readomi/status/200")
+  await waitFor(() => reader.read(), state => state.enabled === "true" && state.layers === 1, "another X post discarded the domain choice")
+  popup = await openPopup(host, launched.extensionId, test)
+  await expectState(popup, reader, true)
+  await popup.getByRole("switch", { name: LABEL, exact: true }).click()
+  await expectState(popup, reader, false)
+  await popup.close()
+  await host.goto("https://x.com/readomi/status/100")
+  await waitFor(() => reader.read(), state => state.enabled === "false" && state.layers === 0, "another post discarded the disabled domain choice")
+  assert.equal((await storedConfig(context)).features.videoSubtitles, false)
 })

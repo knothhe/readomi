@@ -9,7 +9,7 @@ import { activeTabAtom } from "../atoms"
 import { usePageSubtitles } from "../use-page-subtitles"
 import { TranslationControlRow } from "./translation-control-row"
 
-/** All three subtitle controls use the active page's effective switch. */
+/** The popup and shortcut control the active domain's subtitle preference. */
 export function VideoTranslationControl({ disabled = false }: { disabled?: boolean }) {
   const features = useAtomValue(configFieldsAtomMap.features)
   const tab = useAtomValue(activeTabAtom)
