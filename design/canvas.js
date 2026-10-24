@@ -2,7 +2,30 @@
 window.READOMI_CANVAS = {
   "title": "Readomi Design",
   "boards": [
-{"file": "Settings-Video-Models.html", "title": "视频字幕 · 模型入口", "x": 2720, "y": 97800, "w": 1280, "h": 1100},
+    {
+      "file": "Settings-Service-A-Refined-Empty.html",
+      "title": "首次配置 · 手动配置",
+      "x": 0,
+      "y": 100000,
+      "w": 1280,
+      "h": 1100
+    },
+    {
+      "file": "Settings-Service-Initial-Agent.html",
+      "title": "首次配置 · 分段选择 agent 配置",
+      "x": 1360,
+      "y": 100000,
+      "w": 1280,
+      "h": 1000
+    },
+    {
+      "file": "Settings-Service-Initial-Mobile.html",
+      "title": "首次配置 · 分段选择 · 窄屏",
+      "x": 2720,
+      "y": 100000,
+      "w": 390,
+      "h": 1280
+    },
 {"file": "Settings-Service-Model-Selection.html", "title": "翻译服务 · 模型选择", "x": 0, "y": 95800, "w": 1280, "h": 900},
 {"file": "Settings-Service-Model-Selection-Open.html", "title": "模型选择 · 展开", "x": 1360, "y": 95800, "w": 1280, "h": 900},
 {"file": "Settings-Service-Model-Selection-Empty.html", "title": "模型选择 · 未配置", "x": 2720, "y": 95800, "w": 1280, "h": 900},
@@ -10,7 +33,6 @@ window.READOMI_CANVAS = {
 {"file": "Settings-Service-Model-Selection-Mobile.html", "title": "模型选择 · 窄屏", "x": 1360, "y": 96800, "w": 390, "h": 900},
 {"file": "Settings-Service-Model-Selection-Dark.html", "title": "模型选择 · 深色", "x": 2720, "y": 96800, "w": 1280, "h": 900},
 {"file": "Popup-Model-Selection.html", "title": "弹窗 · 三类模型入口", "x": 0, "y": 97800, "w": 320, "h": 900},
-{"file": "Settings-Reading-Models.html", "title": "网页阅读 · 模型入口", "x": 1360, "y": 97800, "w": 1280, "h": 900},
     {
       "file": "Hover-Site-Layout-Waiting.html",
       "title": "悬停 · 站点布局隔离 · 等待",
@@ -164,7 +186,7 @@ window.READOMI_CANVAS = {
     },
     {
       "file": "Settings-Service-A-Refined-Empty.html",
-      "title": "翻译服务 · 当前布局",
+      "title": "首次配置 · 单层导航与配置方式",
       "x": 2720,
       "y": 6070,
       "w": 1280,
@@ -2405,7 +2427,7 @@ window.READOMI_CANVAS = {
   ],
   "notes": [
     {
-      "text": "翻译模型选择：服务管理与模型选择用 tab 切换；网页全文、悬停段落、视频字幕独立选择服务模型。默认跟随当前服务，自动保存，下一次请求生效。各功能的模型名与右上箭头直达对应选择项。",
+      "text": "翻译模型选择：服务管理与模型选择用 tab 切换；网页全文、悬停段落、视频字幕独立选择服务模型。默认跟随当前服务，自动保存，下一次请求生效。具体设置页不展示模型名或模型跳转入口，统一在翻译服务的模型选择中配置。弹窗保留模型名与对应选择项的入口。",
       "x": 0, "y": 95600, "maxW": 4000
     },
     {
@@ -2506,6 +2528,11 @@ window.READOMI_CANVAS = {
     }
   ],
   "sections": [
+    {
+      "id": "service-method",
+      "title": "翻译服务 · 分段配置方式",
+      "y": 100000
+    },
     {
       "id": "translation-models",
       "title": "翻译模型选择",
