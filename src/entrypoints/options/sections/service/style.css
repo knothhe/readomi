@@ -61,10 +61,9 @@
 .settings-service-menu-panel button:disabled:hover { background: none; }
 .settings-service-sort-content:has(.settings-service-menu[open]) { z-index: 25; }
 .settings-service-editor { display: flex; flex-direction: column; }
-.settings-service-editor-top { display: flex; margin-bottom: 26px; border-bottom: 1px solid var(--rf-border); }
-.settings-service .settings-service-method { gap: 25px; padding: 0; border-radius: 0; background: transparent; }
-.settings-service-method button { flex: none; gap: 7px; height: auto; padding: 0 0 12px; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; box-shadow: none; color: var(--rf-muted-foreground); font-size: 12px; font-weight: 400; }
-.settings-service-method button[aria-pressed="true"] { border-bottom-color: var(--rf-primary); color: var(--rf-primary); font-weight: 600; }
+.settings-service-editor-top { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 26px; }
+.settings-service-method-label { color: var(--rf-muted-foreground); font-size: 12px; }
+.settings-service-method button > span { display: inline-flex; align-items: center; gap: 7px; }
 .settings-service-method button svg { width: 14px; height: 14px; stroke-width: 1.65; }
 .settings-service-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 18px; min-width: 0; }
 .settings-service-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -192,5 +191,3 @@
   .settings-service-key-choice { font-size: 10px; }
   .settings-service-notice { right: 12px; bottom: 12px; max-width: calc(100vw - 24px); }
 }
-
-.settings-service-method button > span { display: inline-flex; align-items: center; gap: 7px; }

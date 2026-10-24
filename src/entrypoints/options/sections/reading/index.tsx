@@ -3,7 +3,6 @@ import { useAtom } from "jotai"
 import { useId, useState } from "react"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
-import { TranslationModelLink } from "@/components/translation-model-link"
 import { Switch } from "@/components/ui/switch"
 import { TRANSLATION_MODES } from "@/types/config/translate"
 import { TRANSLATION_FONTS } from "@/types/config/translation-font"
@@ -32,7 +31,6 @@ export function ReadingSection({ onOpenSiteRules }: { onOpenSiteRules?: (event: 
       <div className="options-two-column">
         <div className="options-controls">
           <SettingsGroup caption={i18n.t("options.reading.whileTranslating")}>
-            <SettingsRow label={i18n.t("translationModels.page")} control={<TranslationModelLink task="page" />} />
             <SettingsRow
               className="settings-reading-mode"
               label={i18n.t("options.reading.mode.title")}
@@ -63,13 +61,7 @@ export function ReadingSection({ onOpenSiteRules }: { onOpenSiteRules?: (event: 
             {translateConfig.mode === "bilingual" && <StyleSetting />}
             <SettingsRow
               label={i18n.t("features.hover")}
-              description={(
-                <>
-                  {i18n.t("features.hoverDescription")}
-                  <br />
-                  <TranslationModelLink task="hover" />
-                </>
-              )}
+              description={i18n.t("features.hoverDescription")}
               control={<Switch aria-label={i18n.t("features.hover")} checked={features.hoverTranslation} onCheckedChange={hoverTranslation => void setFeatures({ hoverTranslation })} />}
             />
             {features.hoverTranslation && (

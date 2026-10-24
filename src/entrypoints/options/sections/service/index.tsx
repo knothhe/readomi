@@ -105,7 +105,7 @@ export function ServiceSection({ models = false, task }: { models?: boolean, tas
           ))}
         </div>
       )}
-      <div id="service-tab-panel" role={!showingEditor ? "tabpanel" : undefined} aria-labelledby={!showingEditor ? models ? "service-models-tab" : "service-management-tab" : undefined}>
+      <div id="service-tab-panel" role={showingTabs ? "tabpanel" : undefined} aria-labelledby={showingTabs ? models ? "service-models-tab" : "service-management-tab" : undefined}>
         {models && (
           <ModelSelection
             task={task}
@@ -128,6 +128,7 @@ export function ServiceSection({ models = false, task }: { models?: boolean, tas
             : (
                 <div className="settings-service-editor">
                   <div className="settings-service-editor-top">
+                    <span className="settings-service-method-label">{i18n.t("options.service.configMethod")}</span>
                     <SegmentedControl
                       aria-label={i18n.t("options.service.configMethod")}
                       size="sm"

@@ -24,7 +24,6 @@ it("selects independent page, hover and video models, persists them, and sends r
   context = launched.context
   const settings = launched.page
   const { extensionId } = launched
-  const optionsURL = `chrome-extension://${extensionId}/options.html`
   await configureService(settings, extensionId, setupDocumentFor(service.origin, { name: "Page service", model: "page-model" }))
   const section = settings.locator("#service")
   for (const [name, model] of [["Hover service", "hover-model"], ["Video service", "video-model"]]) {
@@ -47,23 +46,18 @@ it("selects independent page, hover and video models, persists them, and sends r
   for (const [, name, option] of assignments)
     assert.equal((await section.getByRole("combobox", { name, exact: true }).textContent()).trim(), option)
 
-  // Model links must not discard service drafts left in another settings section.
+  // Visiting feature settings must not discard service drafts or duplicate model controls.
   await section.getByRole("tab", { name: "Service management", exact: true }).click()
   await section.getByRole("button", { name: "Edit Page service", exact: true }).click()
   await section.getByLabel("Model", { exact: true }).fill("unsaved-service-draft")
   await settings.locator(".options-navigation").getByRole("link", { name: "Web reading", exact: true }).click()
-  await settings.getByRole("link", { name: "Hover paragraph translation: hover-model, choose translation model", exact: true }).click()
-  await settings.waitForURL("**#service/models/hover")
-  await section.getByRole("tab", { name: "Service management", exact: true }).click()
+  assert.equal(await settings.locator("#reading a[href^='#service/models']").count(), 0)
+  await settings.locator(".options-navigation").getByRole("link", { name: "Video subtitles", exact: true }).click()
+  assert.equal(await settings.locator("#features a[href^='#service/models']").count(), 0)
+  await settings.locator(".options-navigation").getByRole("link", { name: "Translation service", exact: true }).click()
   assert.equal(await section.getByLabel("Model", { exact: true }).inputValue(), "unsaved-service-draft")
   await section.getByRole("button", { name: "Cancel", exact: true }).click()
 
-  // The feature's settings link opens the model tab and focuses its specific selector.
-  await settings.goto(`${optionsURL}#reading`)
-  await settings.getByRole("link", { name: "Hover paragraph translation: hover-model, choose translation model", exact: true }).click()
-  await settings.waitForURL("**#service/models/hover")
-  await settings.waitForFunction(() => document.activeElement.id === "translation-model-hover")
-  await section.getByRole("tab", { name: "Service management", exact: true }).click()
   const hoverRow = section.locator("article").filter({ hasText: "Hover service" })
   await hoverRow.locator("summary").click()
   assert.equal(await hoverRow.getByRole("button", { name: "Remove service", exact: true }).isEnabled(), false)

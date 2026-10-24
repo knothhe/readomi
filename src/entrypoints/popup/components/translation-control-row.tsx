@@ -26,7 +26,7 @@ export function TranslationControlRow({ label, hint, control, controlId, disable
             : <span title={label} className={labelClass}>{label}</span>}
           {hint}
         </div>
-        {task && <TranslationModelLink task={task} popup />}
+        {task && <TranslationModelLink task={task} />}
       </div>
       {control}
     </PopupStateFade>
