@@ -50,11 +50,14 @@ async function translateArticle(suffix, expectations) {
   await pressTranslateShortcut(page)
   for (const [id, text] of Object.entries(expectations)) {
     // Translation-only mode uses a display:contents wrapper rather than the
-    // bilingual block-content class. Check the rendered paragraph in either mode.
-    await page.waitForFunction(({ id, text }) => {
+    // bilingual block-content class. Its source removal is batched into a later
+    // animation frame, so translated text and a removed spinner alone are not completion.
+    await page.waitForFunction(({ id, text, mode }) => {
       const paragraph = document.getElementById(id)
-      return paragraph?.textContent.includes(text) && paragraph.getBoundingClientRect().height > 0 && !paragraph.querySelector(".readomi-spinner")
-    }, { id, text }, { timeout: 20_000 })
+      const content = paragraph?.textContent.trim()
+      const complete = mode === "translationOnly" ? content === text : content?.includes(text)
+      return complete && paragraph.getBoundingClientRect().height > 0 && !paragraph.querySelector(".readomi-spinner")
+    }, { id, text, mode }, { timeout: 20_000 })
     if (mode === "translationOnly")
       assert.equal((await page.locator(`#${id}`).textContent()).trim(), text, "translation-only paragraphs contain only their routed translation")
   }

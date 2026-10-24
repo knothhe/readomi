@@ -256,8 +256,9 @@ it("disables every feature on the active hostname and its embedded frames, persi
   assert.equal(enabledLayout.siteFontSize, "13px")
   assert.equal(enabledLayout.siteOpacity, "1")
   assert.equal(enabledLayout.rows.length, 4)
-  assert.ok(enabledLayout.rows.every(row => row.height === 42))
-  assert.equal(enabledLayout.rows[3].top - enabledLayout.rows[2].top, 42)
+  // Feature rows include a second line for their model; the site switch stays compact.
+  assert.deepEqual(enabledLayout.rows.map(row => row.height), [60, 60, 60, 42])
+  assert.ok(enabledLayout.rows.slice(1).every((row, index) => row.top === enabledLayout.rows[index].top + enabledLayout.rows[index].height), JSON.stringify(enabledLayout.rows))
   await popup.mouse.move(0, 0)
   await popup.locator("#root").screenshot({ path: "/tmp/readomi-popup-site-enabled.png" })
   // Hold the actual storage write to check the transient layout, not just its final state.
