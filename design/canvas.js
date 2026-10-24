@@ -2,6 +2,15 @@
 window.READOMI_CANVAS = {
   "title": "Readomi Design",
   "boards": [
+{"file": "Settings-Video-Models.html", "title": "视频字幕 · 模型入口", "x": 2720, "y": 97800, "w": 1280, "h": 1100},
+{"file": "Settings-Service-Model-Selection.html", "title": "翻译服务 · 模型选择", "x": 0, "y": 95800, "w": 1280, "h": 900},
+{"file": "Settings-Service-Model-Selection-Open.html", "title": "模型选择 · 展开", "x": 1360, "y": 95800, "w": 1280, "h": 900},
+{"file": "Settings-Service-Model-Selection-Empty.html", "title": "模型选择 · 未配置", "x": 2720, "y": 95800, "w": 1280, "h": 900},
+{"file": "Settings-Service-Model-Selection-Failed.html", "title": "模型选择 · 保存失败", "x": 0, "y": 96800, "w": 1280, "h": 900},
+{"file": "Settings-Service-Model-Selection-Mobile.html", "title": "模型选择 · 窄屏", "x": 1360, "y": 96800, "w": 390, "h": 900},
+{"file": "Settings-Service-Model-Selection-Dark.html", "title": "模型选择 · 深色", "x": 2720, "y": 96800, "w": 1280, "h": 900},
+{"file": "Popup-Model-Selection.html", "title": "弹窗 · 三类模型入口", "x": 0, "y": 97800, "w": 320, "h": 900},
+{"file": "Settings-Reading-Models.html", "title": "网页阅读 · 模型入口", "x": 1360, "y": 97800, "w": 1280, "h": 900},
     {
       "file": "Hover-Site-Layout-Waiting.html",
       "title": "悬停 · 站点布局隔离 · 等待",
@@ -2396,6 +2405,10 @@ window.READOMI_CANVAS = {
   ],
   "notes": [
     {
+      "text": "翻译模型选择：服务管理与模型选择用 tab 切换；网页全文、悬停段落、视频字幕独立选择服务模型。默认跟随当前服务，自动保存，下一次请求生效。各功能的模型名与右上箭头直达对应选择项。",
+      "x": 0, "y": 95600, "maxW": 4000
+    },
+    {
       "text": "外观：界面语言、明暗主题与陶红 / 暖紫 / 琥珀 / 墨青四色；图标随主题色更新。",
       "x": 0,
       "y": 0,
@@ -2493,6 +2506,11 @@ window.READOMI_CANVAS = {
     }
   ],
   "sections": [
+    {
+      "id": "translation-models",
+      "title": "翻译模型选择",
+      "y": 95600
+    },
     {
       "id": "appearance",
       "title": "外观",
