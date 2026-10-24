@@ -928,3 +928,18 @@ configSync:
   importHint: "Sync is enabled on this device. Importing also updates synced settings and service information; API keys, custom headers and request parameters stay local."
   actionFailed: Could not read or apply the synced configuration. Try again.
   choiceChanged: The synced configuration changed. Close this dialog and choose again.
+
+translationModels:
+  title: Model selection
+  management: Service management
+  tabsLabel: Translation service settings
+  page: Full-page translation
+  hover: Hover paragraph translation
+  video: Video subtitle translation
+  description: Choose a model from your added services for each translation feature. Changes save automatically and apply to the next request; existing translations stay.
+  follow: Follow current service · $1
+  unconfigured: No translation model configured
+  empty: "Add a translation service in Service management, then choose a model."
+  saveFailed: Model selection was not saved. Previous settings restored. Please try again.
+  open: "$1: $2, choose translation model"
+  removeInUse: Choose another model for every feature using this service before removing it.

@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai"
 import { useState } from "react"
 import { i18n } from "#imports"
 import { configAtom } from "@/utils/atoms/config"
-import { featureProviderConfigAtom } from "@/utils/atoms/provider"
+import { translationProviderAtom } from "@/utils/atoms/provider"
 import { hasProviderCredentials } from "@/utils/service-management"
 import { isSiteDisabled } from "@/utils/site-disable"
 import { activeTabAtom } from "./atoms"
@@ -20,7 +20,7 @@ import { usePopupSync } from "./use-popup-sync"
 /** Shared languages, then separate web-text and subtitle controls. */
 export default function App() {
   usePopupSync()
-  const providerConfig = useAtomValue(featureProviderConfigAtom("translate"))
+  const providerConfig = useAtomValue(translationProviderAtom("page"))
   const config = useAtomValue(configAtom)
   const tab = useAtomValue(activeTabAtom)
   const [savingSite, setSavingSite] = useState<{ url: string, disabled: boolean } | null>(null)

@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { i18n } from "#imports"
+import { TRANSLATION_TASKS } from "@/types/config/translate"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
 import { AppearanceSection } from "./sections/appearance"
 import { BackupSection } from "./sections/backup"
@@ -27,7 +28,7 @@ const SECTIONS = [
 ] as const
 
 type SectionId = typeof SECTIONS[number]["id"]
-type SettingsPage = SectionId | "reading/site-rules"
+type SettingsPage = SectionId | "reading/site-rules" | "service/models" | `service/models/${typeof TRANSLATION_TASKS[number]}`
 const SITE_RULES_PAGE = "reading/site-rules"
 
 function isPlainLeftClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -77,6 +78,8 @@ function NavigationIcon({ section }: { section: typeof SECTIONS[number]["id"] })
 
 function pageFromHash(): SettingsPage {
   const hash = window.location.hash.slice(1)
+  if (hash === "service/models" || TRANSLATION_TASKS.some(task => hash === `service/models/${task}`))
+    return hash as SettingsPage
   if (hash === "site-rules" || hash === SITE_RULES_PAGE)
     return SITE_RULES_PAGE
   return SECTIONS.find(section => section.id === hash)?.id ?? "service"
@@ -85,7 +88,7 @@ function pageFromHash(): SettingsPage {
 export default function App() {
   const [active, setActive] = useState(pageFromHash)
   const pendingScrollRef = useRef<number | null>(null)
-  const activeSection = active === SITE_RULES_PAGE ? "reading" : active
+  const activeSection = active === SITE_RULES_PAGE ? "reading" : active.startsWith("service/models") ? "service" : active
   useEffect(() => {
     const update = () => {
       const page = pageFromHash()
@@ -189,8 +192,8 @@ export default function App() {
       <main className="options-main">
         {/* Keep drafts mounted while the reader switches sections. */}
         {SECTIONS.map(({ id, Component }) => (
-          <div key={id} hidden={active !== id}>
-            {id === "reading" ? <ReadingSection onOpenSiteRules={openSiteRules} /> : <Component />}
+          <div key={id} hidden={id === "service" ? activeSection !== "service" : active !== id}>
+            {id === "reading" ? <ReadingSection onOpenSiteRules={openSiteRules} /> : id === "service" ? <ServiceSection models={active.startsWith("service/models")} task={TRANSLATION_TASKS.find(task => active === `service/models/${task}`)} /> : <Component />}
           </div>
         ))}
         <div hidden={active !== SITE_RULES_PAGE}><SiteRulesSection onBackToReading={backToReading} /></div>

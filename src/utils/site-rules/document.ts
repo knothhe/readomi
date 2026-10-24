@@ -4,6 +4,7 @@ import { z } from "zod"
 import { MAX_SITE_RULES_JSON_LENGTH, MAX_USER_SITE_RULES, siteRuleSchema, translationGroupSchema } from "@/types/config/site-rules"
 import { EXTENSION_VERSION } from "@/utils/constants/app"
 import { sha256Hex } from "@/utils/hash"
+import { translationProvider } from "@/utils/translation-models"
 import { normalizeBuiltInSiteRuleId, normalizeDisabledBuiltInRuleIds } from "./branding"
 import { BUILT_IN_SITE_RULES, READOMI_SITE_RULES } from "./built-in"
 import { sanitizeSiteRuleCss } from "./css"
@@ -321,7 +322,6 @@ export function undoSiteRuleEntries(config: SiteRulesConfig, entries: SiteRuleUn
 export async function siteRuleBaseFingerprint(config: Config, document: SiteRuleDocument): Promise<string> {
   const touchedIds = new Set(document.changes.map(change => change.action === "upsert" ? change.rule.id : change.id))
   const relatedBuiltIns = new Set(BUILT_IN_SITE_RULES.filter(rule => siteRuleTouchesHosts(rule, document.site.hosts)).map(rule => rule.id))
-  const activeProvider = config.providersConfig.find(provider => provider.id === config.translate.providerId)
   return sha256Hex(canonicalSiteRuleValue({
     version: EXTENSION_VERSION,
     rules: config.siteRules.userRules.filter(rule => touchedIds.has(rule.id) || siteRuleTouchesHosts(rule, document.site.hosts)),
@@ -331,8 +331,8 @@ export async function siteRuleBaseFingerprint(config: Config, document: SiteRule
       mode: config.translate.mode,
       style: config.translate.translationNodeStyle,
       prompts: config.translate.customPromptsConfig,
-      provider: activeProvider,
-      hover: { enabled: config.features.hoverTranslation, stream: config.features.hoverStream, trigger: config.features.hoverHotkey },
+      provider: translationProvider(config, "page"),
+      hover: { enabled: config.features.hoverTranslation, stream: config.features.hoverStream, trigger: config.features.hoverHotkey, provider: translationProvider(config, "hover") },
     },
   }))
 }

@@ -903,3 +903,18 @@ configSync:
   importHint: 此裝置已開啟同步。匯入後，可同步的設定與服務資訊也會更新至 Chrome 同步區；API Key、自訂請求標頭與參數仍僅儲存於本機。
   actionFailed: 無法讀取或套用同步設定，請重試。
   choiceChanged: 同步設定已變更，請關閉視窗後重新選擇。
+
+translationModels:
+  title: 模型選擇
+  management: 服務管理
+  tabsLabel: 翻譯服務設定
+  page: 網頁全文翻譯
+  hover: 懸停段落翻譯
+  video: 影片字幕翻譯
+  description: 為不同翻譯功能選擇已新增服務中的模型。選擇後自動儲存，下次翻譯請求生效；已有譯文保留。
+  follow: 跟隨目前服務 · $1
+  unconfigured: 尚未設定翻譯模型
+  empty: 先在服務管理中新增翻譯服務，再選擇模型。
+  saveFailed: 模型選擇未儲存，已還原原設定。請重試。
+  open: $1：$2，選擇翻譯模型
+  removeInUse: 先為使用此服務的翻譯功能選擇其他模型，再移除服務。

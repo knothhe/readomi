@@ -1,5 +1,6 @@
 import type { NotifyService, ServiceFeedback } from "./service-notice"
 import type { ProviderConfig, ProviderType } from "@/types/config/provider"
+import type { TranslationTask } from "@/types/config/translate"
 import { useAtomValue, useSetAtom, useStore } from "jotai"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { i18n } from "#imports"
@@ -14,7 +15,9 @@ import { checkConnection } from "@/utils/providers/test-connection"
 import { hasProviderCredentials, initialProviderPlaceholder, isProviderReady } from "@/utils/service-management"
 import { buildAgentInstructions } from "@/utils/setup-agent-instructions"
 import { applySetupDocument, describeSetupDocument, exportSetupDocument, parseSetupDocument, stringifySetupDocument } from "@/utils/setup-document"
+import { isProviderInUse } from "@/utils/translation-models"
 import { ManualServiceForm } from "./manual-form"
+import { ModelSelection } from "./model-selection"
 import { ServiceMark } from "./service-mark"
 import { ServiceNotice } from "./service-notice"
 import { SortableServiceList } from "./sortable-service-list"
@@ -24,7 +27,7 @@ import "./style.css"
 const COPIED_FEEDBACK_MS = 2000
 
 /** design/Settings-Service-A-Refined*.html is the source for this section. */
-export function ServiceSection() {
+export function ServiceSection({ models = false, task }: { models?: boolean, task?: TranslationTask }) {
   const config = useAtomValue(configAtom)
   const placeholder = initialProviderPlaceholder(config)
   const providers = config.providersConfig.filter(provider => provider.id !== placeholder?.id)
@@ -38,7 +41,9 @@ export function ServiceSection() {
   const notify: NotifyService = useCallback(next => setFeedback({ ...next, id: ++nextFeedbackIdRef.current }), [])
   const dismissFeedback = useCallback(() => setFeedback(null), [])
   const current = editing && editing !== "add" ? config.providersConfig.find(provider => provider.id === editing) : undefined
-  const showingEditor = editing === "add" || !!current || !providers.length || busy
+  const editingService = editing === "add" || !!current || !providers.length || busy
+  const showingEditor = !models && editingService
+  const showingTabs = !showingEditor || (!providers.length && editing === null && !busy)
   const close = () => {
     setEditing(null)
     setFeedback(null)
@@ -57,7 +62,7 @@ export function ServiceSection() {
 
   return (
     <section id="service" className="settings-section settings-service" data-editor={showingEditor}>
-      {showingEditor && (
+      {showingEditor && !showingTabs && (
         <button type="button" className="settings-service-back" disabled={busy} onClick={close}>
           <IconArrowLeft aria-hidden="true" />
           {i18n.t("options.service.back")}
@@ -65,62 +70,101 @@ export function ServiceSection() {
       )}
       <div className="settings-service-page-heading">
         <div className="settings-service-title">
-          {showingEditor && <ServiceMark provider={editorProvider} />}
-          <h1 className="settings-page-title">{!showingEditor ? i18n.t("options.service.title") : current ? i18n.t("options.service.editTitle", [current.name]) : i18n.t("options.service.add")}</h1>
+          {showingEditor && !showingTabs && <ServiceMark provider={editorProvider} />}
+          <h1 className="settings-page-title">{showingTabs ? i18n.t("options.service.title") : current ? i18n.t("options.service.editTitle", [current.name]) : i18n.t("options.service.add")}</h1>
         </div>
-        {!showingEditor && (
+        {!showingEditor && !models && (
           <button type="button" className="settings-service-add" onClick={() => openEditor("add")}>
             <IconPlus aria-hidden="true" />
             {i18n.t("options.service.add")}
           </button>
         )}
       </div>
-      {!showingEditor
-        ? (
-            <div className="settings-service-content">
-              <SortableServiceList providers={providers}>
-                {provider => <ServiceRow provider={provider} active={provider.id === config.translate.providerId} onEdit={() => openEditor(provider.id)} onFeedback={notify} />}
-              </SortableServiceList>
-            </div>
-          )
-        : (
-            <div className="settings-service-editor">
-              <div className="settings-service-editor-top">
-                <SegmentedControl
-                  aria-label={i18n.t("options.service.configMethod")}
-                  size="sm"
-                  className="settings-service-method"
-                  value={editorMode}
-                  options={[
-                    { value: "manual", label: (
-                      <span>
-                        <IconPencil aria-hidden="true" />
-                        {i18n.t("manualService.manual")}
-                      </span>
-                    ) },
-                    { value: "agent", label: (
-                      <span>
-                        <IconCode aria-hidden="true" />
-                        {i18n.t("manualService.agent")}
-                      </span>
-                    ) },
-                  ]}
-                  onChange={value => !busy && setEditorMode(value)}
-                />
-              </div>
-              {editorMode === "manual"
-                ? <ManualServiceForm key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={saved} onCancel={close} onProviderChange={setEditorProvider} />
-                : (
-                    <>
-                      <div className="settings-service-agent-heading">
-                        <span>{i18n.t("options.service.editorLabel")}</span>
-                        <CopyInstructionsButton providerId={current?.id ?? null} />
-                      </div>
-                      <ServiceEditor key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={saved} onCancel={close} />
-                    </>
-                  )}
-            </div>
-          )}
+      {showingTabs && (
+        <div role="tablist" aria-label={i18n.t("translationModels.tabsLabel")} className="settings-service-tabs">
+          {([false, true] as const).map(isModels => (
+            <a
+              key={String(isModels)}
+              id={isModels ? "service-models-tab" : "service-management-tab"}
+              role="tab"
+              href={isModels ? "#service/models" : "#service"}
+              aria-selected={models === isModels}
+              aria-controls="service-tab-panel"
+              tabIndex={models === isModels ? 0 : -1}
+              onKeyDown={(event) => {
+                if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+                  event.preventDefault()
+                  const next = event.key === "Home" ? false : event.key === "End" ? true : !isModels
+                  window.location.hash = next ? "service/models" : "service"
+                  document.getElementById(next ? "service-models-tab" : "service-management-tab")?.focus()
+                }
+              }}
+            >
+              {i18n.t(isModels ? "translationModels.title" : "translationModels.management")}
+            </a>
+          ))}
+        </div>
+      )}
+      <div id="service-tab-panel" role={!showingEditor ? "tabpanel" : undefined} aria-labelledby={!showingEditor ? models ? "service-models-tab" : "service-management-tab" : undefined}>
+        {models && (
+          <ModelSelection
+            task={task}
+            onAdd={() => {
+              openEditor("add")
+              window.location.hash = "service"
+            }}
+          />
+        )}
+        {/* Keep both manual and agent drafts mounted when opening model selection. */}
+        <div hidden={models}>
+          {!editingService
+            ? (
+                <div className="settings-service-content">
+                  <SortableServiceList providers={providers}>
+                    {provider => <ServiceRow provider={provider} active={provider.id === config.translate.providerId} onEdit={() => openEditor(provider.id)} onFeedback={notify} />}
+                  </SortableServiceList>
+                </div>
+              )
+            : (
+                <div className="settings-service-editor">
+                  <div className="settings-service-editor-top">
+                    <SegmentedControl
+                      aria-label={i18n.t("options.service.configMethod")}
+                      size="sm"
+                      className="settings-service-method"
+                      value={editorMode}
+                      options={[
+                        { value: "manual", label: (
+                          <span>
+                            <IconPencil aria-hidden="true" />
+                            {i18n.t("manualService.manual")}
+                          </span>
+                        ) },
+                        { value: "agent", label: (
+                          <span>
+                            <IconCode aria-hidden="true" />
+                            {i18n.t("manualService.agent")}
+                          </span>
+                        ) },
+                      ]}
+                      onChange={value => !busy && setEditorMode(value)}
+                    />
+                  </div>
+                  {editorMode === "manual"
+                    ? <ManualServiceForm key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={saved} onCancel={close} onProviderChange={setEditorProvider} />
+                    : (
+                        <>
+                          <div className="settings-service-agent-heading">
+                            <span>{i18n.t("options.service.editorLabel")}</span>
+                            <CopyInstructionsButton providerId={current?.id ?? null} />
+                          </div>
+                          <ServiceEditor key={editing} current={current} makeCurrent={makeCurrent} onMakeCurrentChange={providers.length ? setMakeCurrent : undefined} onBusyChange={setBusy} onDone={saved} onCancel={close} />
+                        </>
+                      )}
+                </div>
+              )}
+        </div>
+      </div>
       <ServiceNotice feedback={feedback} onDismiss={dismissFeedback} />
     </section>
   )
@@ -145,6 +189,7 @@ function CopyInstructionsButton({ providerId }: { providerId: string | null }) {
 
 function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: ProviderConfig, active: boolean, onEdit: () => void, onFeedback: NotifyService }) {
   const store = useStore()
+  const inUse = isProviderInUse(useAtomValue(configAtom), provider.id)
   const select = useSetAtom(selectProviderAtom)
   const remove = useSetAtom(removeProviderAtom)
   const saveCheck = useSetAtom(saveProviderCheckAtom)
@@ -232,7 +277,7 @@ function ServiceRow({ provider, active, onEdit, onFeedback }: { provider: Provid
               <IconBolt aria-hidden="true" />
               {i18n.t("options.service.test")}
             </button>
-            <button type="button" className="text-destructive" disabled={busy || active} title={active ? i18n.t("options.service.removeCurrentHint") : undefined} onClick={() => void act("remove")}>
+            <button type="button" className="text-destructive" disabled={busy || inUse} title={inUse ? i18n.t(active ? "options.service.removeCurrentHint" : "translationModels.removeInUse") : undefined} onClick={() => void act("remove")}>
               <IconTrash aria-hidden="true" />
               {i18n.t("options.service.remove")}
             </button>

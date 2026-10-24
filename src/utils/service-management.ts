@@ -4,6 +4,7 @@ import { providerConfigItemSchema } from "@/types/config/provider"
 import { DEFAULT_PROVIDER_CONFIG } from "@/utils/constants/providers"
 import { getUniqueName } from "@/utils/name"
 import { deepEqual } from "@/utils/object"
+import { isProviderInUse } from "@/utils/translation-models"
 
 export function hasProviderCredentials(provider: Pick<ProviderConfig, "apiKey" | "noApiKey"> | null | undefined): boolean {
   return !!provider && (provider.noApiKey === true || !!provider.apiKey?.trim())
@@ -64,7 +65,7 @@ export function selectProvider(config: Config, providerId: string): Config {
 }
 
 export function removeProvider(config: Config, providerId: string): Config {
-  if (providerId === config.translate.providerId)
+  if (isProviderInUse(config, providerId))
     throw new Error("Switch to another service before removing the current service")
   return { ...config, providersConfig: config.providersConfig.filter(provider => provider.id !== providerId) }
 }

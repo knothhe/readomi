@@ -921,6 +921,22 @@ describe("local subtitle runtime", () => {
     expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
     expect(translateTextCore).toHaveBeenCalledTimes(2)
   })
+  it("uses a separate video model and ignores model changes for page and hover translation", async () => {
+    const provider = { ...config.providersConfig[0], id: "video-model", name: "Video model", model: "video-only" }
+    const stored = { ...config, providersConfig: [...config.providersConfig, provider] }
+    update(stored)
+    await vi.advanceTimersByTimeAsync(1000)
+    const host = document.querySelector("[data-readomi-subtitles]")
+    update({ ...stored, translate: { ...stored.translate, modelProviders: { page: provider.id, hover: provider.id, video: null } } })
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
+    expect(translateTextCore).toHaveBeenCalledTimes(1)
+    update({ ...stored, translate: { ...stored.translate, modelProviders: { page: null, hover: null, video: provider.id } } })
+    expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
+    expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
+    track.activeCues = [{ text: "A new video cue" }]
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(translateTextCore).toHaveBeenLastCalledWith(expect.objectContaining({ text: "A new video cue", providerConfig: provider }))
+  })
   it("lets an in-flight caption finish when the selected service changes", async () => {
     let resolve!: (text: string) => void
     vi.mocked(translateTextCore).mockReturnValue(new Promise(r => resolve = r))

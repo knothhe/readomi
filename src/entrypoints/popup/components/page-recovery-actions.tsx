@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai"
 import { useRef, useState } from "react"
 import { i18n } from "#imports"
-import { featureProviderConfigAtom } from "@/utils/atoms/provider"
+import { translationProviderAtom } from "@/utils/atoms/provider"
 import { sendMessage } from "@/utils/message"
 import { hasProviderCredentials } from "@/utils/service-management"
 import { activeTabAtom, translationProgressAtom } from "../atoms"
@@ -9,7 +9,7 @@ import { activeTabAtom, translationProgressAtom } from "../atoms"
 export function PageRecoveryActions() {
   const tab = useAtomValue(activeTabAtom)
   const progress = useAtomValue(translationProgressAtom)
-  const provider = useAtomValue(featureProviderConfigAtom("translate"))
+  const provider = useAtomValue(translationProviderAtom("page"))
   const pendingRef = useRef(false)
   const [pending, setPending] = useState(false)
   const [failed, setFailed] = useState(false)

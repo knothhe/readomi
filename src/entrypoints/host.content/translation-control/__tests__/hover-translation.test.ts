@@ -473,6 +473,31 @@ describe("independent hover translation tasks", () => {
     await vi.advanceTimersByTimeAsync(0)
   }
 
+  it("keeps a fixed hover model running when the default or another feature's service changes", async () => {
+    const provider = { ...DEFAULT_CONFIG.providersConfig[0], id: "hover-service", name: "Hover service", model: "hover-model" }
+    const config = { ...backtickConfig, providersConfig: [...backtickConfig.providersConfig, provider], translate: { ...backtickConfig.translate, modelProviders: { page: null, hover: provider.id, video: null } } }
+    setConfig(config)
+    const tasks = pendingTranslations()
+    await tap(document.querySelector("p")!, "`")
+    const next = { ...config, translate: { ...config.translate, providerId: provider.id }, providersConfig: config.providersConfig.map(item => item.id === provider.id ? item : { ...item, model: "different-page-model" }) }
+    vi.mocked(watchLocalConfig).mock.calls.at(-1)![0](next, config)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].signal.aborted).toBe(false)
+    tasks[0].finish()
+  })
+
+  it("cancels the old hover request when its assigned model changes", async () => {
+    const provider = { ...DEFAULT_CONFIG.providersConfig[0], id: "hover-service", name: "Hover service", model: "hover-model" }
+    const config = { ...backtickConfig, providersConfig: [...backtickConfig.providersConfig, provider] }
+    setConfig(config)
+    const tasks = pendingTranslations()
+    await tap(document.querySelector("p")!, "`")
+    const next = { ...config, translate: { ...config.translate, modelProviders: { ...config.translate.modelProviders, hover: provider.id } } }
+    vi.mocked(watchLocalConfig).mock.calls.at(-1)![0](next, config)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].signal.aborted).toBe(true)
+  })
+
   it.each(keyboardTriggers)("accepts a new paragraph while the first %s translation is pending", async (hotkey, key) => {
     setConfig({ ...backtickConfig, features: { ...backtickConfig.features, hoverHotkey: hotkey } })
     const tasks = pendingTranslations()

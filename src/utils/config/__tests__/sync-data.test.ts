@@ -94,6 +94,30 @@ describe("configuration sync payload", () => {
     expect(merged.translate.providerId).toBe(base.translate.providerId)
     expect(merged.providersConfig[0].name).toBe("Renamed locally")
   })
+  it("merges independent model selections made on two devices", () => {
+    const base = toSyncedConfig(DEFAULT_CONFIG)
+    base.providersConfig.push({ ...base.providersConfig[0], id: "alternate", name: "Alternate" })
+    const local = structuredClone(base)
+    const remote = structuredClone(base)
+    local.translate.modelProviders.page = "alternate"
+    remote.translate.modelProviders.hover = "alternate"
+    const merged = mergeSyncedConfig(base, local, remote)
+    expect(merged.translate.modelProviders).toEqual({ page: "alternate", hover: "alternate", video: null })
+  })
+  it("keeps model assignments with the service list when sync edits conflict", () => {
+    const base = toSyncedConfig(DEFAULT_CONFIG)
+    const local = structuredClone(base)
+    const remote = structuredClone(base)
+    local.providersConfig.push({ ...local.providersConfig[0], id: "local-model", name: "Local model" })
+    local.translate.modelProviders.hover = "local-model"
+    remote.providersConfig = [{ ...remote.providersConfig[0], id: "remote-model", name: "Remote model" }]
+    remote.translate.providerId = "remote-model"
+    remote.translate.modelProviders.video = "remote-model"
+    const merged = mergeSyncedConfig(base, local, remote)
+    expect(merged.providersConfig).toEqual(local.providersConfig)
+    expect(merged.translate.modelProviders).toEqual(local.translate.modelProviders)
+    expect(parseSyncedConfig(merged)).toEqual(merged)
+  })
   it("splits multibyte and escaped content below the per-item quota", async () => {
     const config = toSyncedConfig(DEFAULT_CONFIG)
     config.siteRules.userRules = [{ id: "long", matches: "example.com", description: "汉字😀\\\"\n".repeat(2000) }]

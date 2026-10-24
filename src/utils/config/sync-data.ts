@@ -3,6 +3,7 @@ import type { ProviderConfig } from "@/types/config/provider"
 import { z } from "zod"
 import { configSchema } from "@/types/config/config"
 import { DEFAULT_BASE_URLS } from "@/types/config/provider"
+import { TRANSLATION_TASKS } from "@/types/config/translate"
 
 export const SYNC_PREFIX = "readomi.sync.v1."
 export const SYNC_MANIFEST_KEY = `${SYNC_PREFIX}manifest`
@@ -116,10 +117,17 @@ function mergeValue(base: unknown, local: unknown, remote: unknown): unknown {
 /** Rebase pending edits while keeping provider selection and shortcuts consistent. */
 export function mergeSyncedConfig(base: SyncedConfig, local: SyncedConfig, remote: SyncedConfig): SyncedConfig {
   const next = structuredClone(mergeValue(base, local, remote)) as SyncedConfig
-  const services = (c: SyncedConfig) => ({ providersConfig: c.providersConfig, providerId: c.translate.providerId })
+  const services = (c: SyncedConfig) => ({ providersConfig: c.providersConfig, providerId: c.translate.providerId, modelProviders: c.translate.modelProviders })
   const chosenServices = sameSyncValue(services(local), services(base)) ? services(remote) : services(local)
   next.providersConfig = chosenServices.providersConfig
   next.translate.providerId = chosenServices.providerId
+  // Preserve edits to different tasks, but never retain a reference to a
+  // service discarded by the service-list conflict resolution above.
+  for (const task of TRANSLATION_TASKS) {
+    const id = next.translate.modelProviders[task]
+    if (id !== null && !next.providersConfig.some(provider => provider.id === id && provider.enabled))
+      next.translate.modelProviders[task] = chosenServices.modelProviders[task]
+  }
   const shortcuts = (c: SyncedConfig) => [c.translate.page.shortcut, c.features.modeShortcut, c.features.subtitlesShortcut]
   const chosenShortcuts = sameSyncValue(shortcuts(local), shortcuts(base)) ? shortcuts(remote) : shortcuts(local)
   ;[next.translate.page.shortcut, next.features.modeShortcut, next.features.subtitlesShortcut] = chosenShortcuts

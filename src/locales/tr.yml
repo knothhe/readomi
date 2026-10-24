@@ -935,3 +935,18 @@ configSync:
   importHint: "Bu cihazda eşitleme etkin. İçe aktarmak eşitlenen ayarları ve hizmet bilgilerini de günceller; API anahtarları, başlıklar ve istek parametreleri yerel kalır."
   actionFailed: Eşitlenen yapılandırma okunamadı veya uygulanamadı. Yeniden deneyin.
   choiceChanged: Eşitlenen yapılandırma değişti. Bu pencereyi kapatıp tekrar seçin.
+
+translationModels:
+  title: Model seçimi
+  management: Hizmet yönetimi
+  tabsLabel: Çeviri hizmeti ayarları
+  page: Tam sayfa çevirisi
+  hover: Üzerine gelinen paragrafı çevirme
+  video: Video altyazısı çevirisi
+  description: Her çeviri özelliği için eklediğiniz hizmetlerden bir model seçin. Değişiklikler otomatik kaydedilir ve sonraki istekte uygulanır; mevcut çeviriler korunur.
+  follow: Geçerli hizmeti kullan · $1
+  unconfigured: Çeviri modeli yapılandırılmadı
+  empty: Hizmet yönetiminden bir çeviri hizmeti ekleyip model seçin.
+  saveFailed: Model seçimi kaydedilemedi. Önceki ayarlar geri yüklendi. Tekrar deneyin.
+  open: "$1: $2, çeviri modeli seç"
+  removeInUse: Bu hizmeti kaldırmadan önce onu kullanan tüm özellikler için başka bir model seçin.

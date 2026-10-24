@@ -29,6 +29,7 @@ import { SubtitleTranslationWindow } from "@/utils/subtitles/translation-window"
 import { isVideoTranslationExcluded } from "@/utils/subtitles/video-site-rules"
 import { currentXVideo, isXHost, xCaptionBottom, xVideoIdentity } from "@/utils/subtitles/x-player"
 import { createYouTubeTimeline } from "@/utils/subtitles/youtube-client"
+import { translationProvider, translationProviderId } from "@/utils/translation-models"
 
 /** Text-track support follows Read Frog's local subtitle adapter. No hosted services. */
 export function readActiveCueText(track: TextTrack): string {
@@ -103,7 +104,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
   let translationGeneration = 0
   let requestController = new AbortController()
   const translations = new SubtitleTranslationWindow(async (input) => {
-    const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
+    const provider = translationProvider(config, "video")
     if (!isProviderReady(provider))
       throw new Error("Translation service is not configured")
     const generation = translationGeneration
@@ -124,7 +125,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
       },
     })
   }, async (items, signal, urgent, onProgress) => {
-    const provider = config.providersConfig.find(p => p.id === config.translate.providerId)
+    const provider = translationProvider(config, "video")
     if (!isProviderReady(provider))
       throw new Error("Translation service is not configured")
     const generation = translationGeneration
@@ -316,7 +317,7 @@ function mountSubtitleRenderer(video: HTMLVideoElement, initialConfig: Config, o
     },
     tick,
     updateConfig: (next) => {
-      if (config.translate.providerId !== next.translate.providerId)
+      if (translationProviderId(config, "video") !== translationProviderId(next, "video"))
         translations.clearFailures()
       config = next
       appearance = next.features.subtitleStyle
@@ -431,7 +432,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
       if (storedChange || lastStoredConfig !== next) {
         // A service switch applies to the next request. Keep captions already
         // translated or in flight so changing services does not interrupt playback.
-        const serviceSwitched = config.translate.providerId !== next.translate.providerId
+        const serviceSwitched = translationProviderId(config, "video") !== translationProviderId(next, "video")
         if (subtitleRequestKey(config, serviceSwitched) !== subtitleRequestKey(next, serviceSwitched)) {
           renderer?.dispose()
           renderer = null
@@ -457,7 +458,7 @@ function mountPlayer(video: HTMLVideoElement, initialConfig: Config, initialEnab
 function subtitleRequestKey(config: Config, omitProvider = false): string {
   return JSON.stringify([
     config.language,
-    omitProvider ? null : config.providersConfig.find(provider => provider.id === config.translate.providerId),
+    omitProvider ? null : translationProvider(config, "video"),
     config.translate.customPromptsConfig,
   ])
 }

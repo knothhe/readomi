@@ -25,6 +25,7 @@ export const DEFAULT_CONFIG: Config = {
   translate: {
     translationFont: "sans",
     providerId: "openai-default",
+    modelProviders: { page: null, hover: null, video: null },
     mode: "bilingual",
     page: {
       shortcut: DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY,

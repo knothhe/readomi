@@ -1,6 +1,7 @@
 import type { PageTranslationRequestOptions } from "./stream-request"
 import type { Config } from "@/types/config/config"
 import type { ProviderConfig } from "@/types/config/provider"
+import type { TranslationTask } from "@/types/config/translate"
 import type { WebPagePromptContext } from "@/types/content"
 import type { LanguagePolicyConfig } from "@/utils/language-policy"
 import { i18n } from "#imports"
@@ -12,6 +13,7 @@ import { getSecondaryLanguage } from "@/utils/language-policy"
 import { logger } from "@/utils/logger"
 import { getTranslatePrompt } from "@/utils/prompts/translate"
 import { hasProviderCredentials } from "@/utils/service-management"
+import { translationProvider } from "@/utils/translation-models"
 import { sha256Hex } from "../../hash"
 import { sendMessage } from "../../message"
 import { requestHoverStream } from "./stream-request"
@@ -150,9 +152,10 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
 
 export function validateTranslationConfigAndToast(
   config: Pick<Config, "providersConfig" | "translate" | "language">,
+  task: TranslationTask | "input" = "page",
 ): boolean {
   const { providersConfig, translate: translateConfig } = config
-  const providerConfig = getProviderConfigById(providersConfig, translateConfig.providerId)
+  const providerConfig = task === "input" ? getProviderConfigById(providersConfig, translateConfig.providerId) : translationProvider(config, task)
   if (!providerConfig) {
     return false
   }

@@ -582,7 +582,8 @@ describe("settings page", () => {
     expect(screen.getByLabelText("manualService.model")).toHaveValue("")
     expect(screen.getByLabelText("manualService.url")).toBeVisible()
     expect(applyButton()).toBeDisabled()
-    expect(screen.getByRole("heading", { name: "options.service.add" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "options.service.title" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "translationModels.title" })).toBeVisible()
     expect(screen.getByRole("button", { name: "options.service.cancel" })).toBeEnabled()
   })
 
@@ -590,7 +591,7 @@ describe("settings page", () => {
     await renderSettings(configured)
 
     expect(screen.getByText("OpenAI")).toBeInTheDocument()
-    expect(screen.getByText("gpt-6-luna")).toBeInTheDocument()
+    expect(within(document.querySelector("#service")!).getByText("gpt-6-luna")).toBeInTheDocument()
     expect(screen.queryByTestId("service-status")).toBeNull()
     expect(screen.queryByLabelText("options.service.editorLabel")).toBeNull()
   })

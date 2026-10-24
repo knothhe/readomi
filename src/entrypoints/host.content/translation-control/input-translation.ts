@@ -79,7 +79,7 @@ export async function bindInputTranslation(doc: Document = document, isContextIn
   const translate = async (element: Editable, snapshot: Config) => {
     const original = readEditableText(element)
     const text = original.trim()
-    if (!text || jobs.has(element) || !validateTranslationConfigAndToast(snapshot))
+    if (!text || jobs.has(element) || !validateTranslationConfigAndToast(snapshot, "input"))
       return
     const controller = new AbortController()
     jobs.set(element, controller)

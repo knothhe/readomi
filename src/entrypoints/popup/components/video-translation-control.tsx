@@ -24,6 +24,7 @@ export function VideoTranslationControl({ disabled = false }: { disabled?: boole
   return (
     <section aria-label={i18n.t("popup.videoSubtitles")}>
       <TranslationControlRow
+        task="video"
         label={i18n.t("popup.videoSubtitles")}
         controlId={id}
         disabled={disabled || unavailable || resuming}

@@ -1,11 +1,13 @@
 import type { FeatureKey } from "../constants/feature-providers"
 import type { DeepPartial } from "../object"
 import type { ProviderConfig } from "@/types/config/provider"
+import type { TranslationTask } from "@/types/config/translate"
 import { atom } from "jotai"
 import { providerConfigItemSchema } from "@/types/config/provider"
 import { getProviderConfigById } from "../config/helpers"
 import { FEATURE_PROVIDER_DEFS } from "../constants/feature-providers"
 import { deepMerge } from "../object"
+import { translationProvider } from "../translation-models"
 import { configAtom, configFieldsAtomMap } from "./config"
 
 /** One atom per key, created on first use, like jotai's atomFamily. */
@@ -28,6 +30,10 @@ export const featureProviderConfigAtom = memoizedAtoms((featureKey: FeatureKey) 
     const providerId = def.getProviderId(config)
     return getProviderConfigById(config.providersConfig, providerId) ?? null
   }),
+)
+
+export const translationProviderAtom = memoizedAtoms((task: TranslationTask) =>
+  atom(get => translationProvider(get(configAtom), task) ?? null),
 )
 
 // Generic provider config atom family that accepts a name parameter

@@ -926,3 +926,18 @@ configSync:
   importHint: "Thiết bị này đã bật đồng bộ. Nhập tệp cũng cập nhật cài đặt và thông tin dịch vụ được đồng bộ; khóa API, tiêu đề và tham số yêu cầu vẫn lưu cục bộ."
   actionFailed: Không thể đọc hoặc áp dụng cấu hình đồng bộ. Hãy thử lại.
   choiceChanged: Cấu hình đồng bộ đã thay đổi. Đóng hộp thoại rồi chọn lại.
+
+translationModels:
+  title: Chọn mô hình
+  management: Quản lý dịch vụ
+  tabsLabel: Cài đặt dịch vụ dịch
+  page: Dịch toàn bộ trang
+  hover: Dịch đoạn văn khi di chuột
+  video: Dịch phụ đề video
+  description: Chọn mô hình từ các dịch vụ đã thêm cho từng tính năng. Thay đổi tự động lưu và áp dụng cho yêu cầu tiếp theo; bản dịch hiện có được giữ lại.
+  follow: Theo dịch vụ hiện tại · $1
+  unconfigured: Chưa cấu hình mô hình dịch
+  empty: "Thêm dịch vụ trong Quản lý dịch vụ, rồi chọn mô hình."
+  saveFailed: Không lưu được lựa chọn. Đã khôi phục cài đặt trước. Vui lòng thử lại.
+  open: "$1: $2, chọn mô hình dịch"
+  removeInUse: Chọn mô hình khác cho mọi tính năng dùng dịch vụ này trước khi xóa.

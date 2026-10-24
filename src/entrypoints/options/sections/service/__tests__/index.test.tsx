@@ -55,6 +55,20 @@ describe("multiple translation services", () => {
     vi.restoreAllMocks()
   })
 
+  it.each(["manual", "agent"])("retains the %s service draft across a visit to model selection", async (method) => {
+    const { store, rerender } = await renderService()
+    edit("Service A")
+    const draft = method === "agent" ? editor() : screen.getByLabelText("manualService.model")
+    fireEvent.change(draft, { target: { value: "unsaved-model-draft" } })
+    rerender(<Provider store={store}><ServiceSection models /></Provider>)
+    expect(screen.getByRole("combobox", { name: "translationModels.hover" })).toBeVisible()
+    expect(draft).not.toBeVisible()
+    rerender(<Provider store={store}><ServiceSection /></Provider>)
+    const restored = method === "agent" ? editor() : screen.getByLabelText("manualService.model")
+    expect(restored).toHaveValue("unsaved-model-draft")
+    expect(store.get(configAtom)).toEqual(configured)
+  })
+
   it("previews keyboard sorting, cancels with Escape and preserves the current service", async () => {
     const { store } = await renderService()
     const handle = row("Service B").parentElement!.querySelector(".settings-service-drag-handle")!

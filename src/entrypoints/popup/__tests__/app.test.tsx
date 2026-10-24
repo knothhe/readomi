@@ -205,7 +205,7 @@ describe("popup app", () => {
     expect(openOptionsPage).toHaveBeenCalledWith({ section: "shortcut" })
   })
 
-  it("keeps long model details in the service tooltip", () => {
+  it("shows the current model on each feature and keeps full service details in its tooltip", () => {
     const provider = configWithKey.providersConfig.find(p => p.id === configWithKey.translate.providerId)!
     const model = "codex/a-very-long-model-name"
     renderPopup({ config: {
@@ -213,7 +213,7 @@ describe("popup app", () => {
       providersConfig: configWithKey.providersConfig.map(p => p.id === provider.id ? { ...p, model } : p),
     } })
 
-    expect(screen.queryByText(new RegExp(model))).toBeNull()
+    expect(screen.getAllByText(model)).toHaveLength(3)
     expect(screen.getByTitle(`${provider.name} · ${model}`)).toHaveTextContent(provider.name)
   })
 

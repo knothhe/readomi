@@ -1,6 +1,7 @@
 import { useAtom } from "jotai"
 import { i18n } from "#imports"
 import { SegmentedControl } from "@/components/segmented-control"
+import { TranslationModelLink } from "@/components/translation-model-link"
 import { Switch } from "@/components/ui/switch"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { SettingsRow, SettingsSection } from "../../components/settings-section"
@@ -13,7 +14,17 @@ export function FeaturesSection() {
     <SettingsSection id="features" title={i18n.t("features.title")}>
       <SubtitleStyleEditor footer={<VideoSiteRulesEditor />}>
         <>
-          <SettingsRow label={i18n.t("features.videoDefault")} description={i18n.t("features.videoDescription")} control={<Switch aria-label={i18n.t("features.videoDefault")} checked={features.videoSubtitles} onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })} />} />
+          <SettingsRow
+            label={i18n.t("features.videoDefault")}
+            description={(
+              <>
+                {i18n.t("features.videoDescription")}
+                <br />
+                <TranslationModelLink task="video" />
+              </>
+            )}
+            control={<Switch aria-label={i18n.t("features.videoDefault")} checked={features.videoSubtitles} onCheckedChange={videoSubtitles => void setFeatures({ videoSubtitles })} />}
+          />
           <SettingsRow label={i18n.t("features.videoControls")} description={i18n.t("features.videoControlsDescription")} control={<Switch aria-label={i18n.t("features.videoControls")} checked={features.videoControls} onCheckedChange={videoControls => void setFeatures({ videoControls })} />} />
           <SettingsRow
             className="subtitle-display-row"

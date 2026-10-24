@@ -949,3 +949,18 @@ configSync:
   importHint: "La sincronización está activada. La importación también actualiza los ajustes y servicios sincronizados; las claves API, cabeceras y parámetros permanecen en este dispositivo."
   actionFailed: No se pudo leer o aplicar la configuración sincronizada. Reintenta.
   choiceChanged: La configuración sincronizada cambió. Cierra este diálogo y elige de nuevo.
+
+translationModels:
+  title: Selección de modelos
+  management: Gestión de servicios
+  tabsLabel: Ajustes del servicio de traducción
+  page: Traducción de toda la página
+  hover: Traducción de párrafos al pasar el cursor
+  video: Traducción de subtítulos de vídeo
+  description: Elige un modelo de tus servicios para cada función. Los cambios se guardan automáticamente y se aplican a la siguiente solicitud; se conservan las traducciones existentes.
+  follow: Usar el servicio actual · $1
+  unconfigured: Sin modelo de traducción
+  empty: Añade un servicio en Gestión de servicios y después elige un modelo.
+  saveFailed: No se guardó la selección. Se restauraron los ajustes anteriores. Inténtalo de nuevo.
+  open: "$1: $2, elegir modelo de traducción"
+  removeInUse: Elige otro modelo para todas las funciones que usan este servicio antes de eliminarlo.

@@ -20,6 +20,7 @@ import { logger } from "@/utils/logger"
 import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
 import { getHostConfig, getHostPreviewContext, watchHostConfig } from "@/utils/site-rules/preview-config"
 import { describePreviewElement, recordSiteRulePreview } from "@/utils/site-rules/preview-observations"
+import { translationProvider } from "@/utils/translation-models"
 
 const KEYBOARD_TRIGGERS = { "Alt": "alt", "Control": "control", "Shift": "shift", "`": "backtick" } as const
 
@@ -100,7 +101,7 @@ export function bindHoverTranslation(target: Document = document) {
       })
       return
     }
-    if (overlapsTranslation(block) || !validateTranslationConfigAndToast(config))
+    if (overlapsTranslation(block) || !validateTranslationConfigAndToast(config, "hover"))
       return
     const request = new AbortController()
     activeTranslations.set(block, request)
@@ -144,7 +145,7 @@ export function bindHoverTranslation(target: Document = document) {
             reject(new DOMException("Translation cancelled", "AbortError"))
           }
           signal.addEventListener("abort", abort, { once: true })
-          void translateTextForPage(text, { onPartial, onTargetLanguage: onTarget, signal }).then((value) => {
+          void translateTextForPage(text, { task: "hover", onPartial, onTargetLanguage: onTarget, signal }).then((value) => {
             if (!signal.aborted)
               record({ event: "request-completed", target: requestTarget, reason: value ? "translated" : "preserved or empty" })
             resolve(value)
@@ -345,8 +346,7 @@ export function bindHoverTranslation(target: Document = document) {
     if (!next?.features.hoverTranslation || rulesChanged || languageChanged || promptChanged || (previous && (
       next.features.hoverStream !== previous.features.hoverStream
       || next.translate.mode !== previous.translate.mode
-      || next.translate.providerId !== previous.translate.providerId
-      || JSON.stringify(next.providersConfig) !== JSON.stringify(previous.providersConfig)
+      || JSON.stringify(translationProvider(next, "hover")) !== JSON.stringify(translationProvider(previous, "hover"))
     ))) {
       reset()
       abortTranslations()

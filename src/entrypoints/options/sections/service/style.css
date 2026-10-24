@@ -1,6 +1,19 @@
 #service.settings-section { max-width: 720px; gap: 0; }
 #service.settings-section[data-editor="true"] { max-width: 560px; }
 .settings-service-content, .settings-service-editor { min-width: 0; }
+.settings-service-tabs { display: flex; gap: 26px; margin-bottom: 24px; border-bottom: 1px solid var(--rf-border); }
+.settings-service-tabs a { padding-bottom: 12px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: var(--rf-muted-foreground); font-size: 12px; }
+.settings-service-tabs a[aria-selected="true"] { color: var(--rf-primary); border-color: var(--rf-primary); font-weight: 600; }
+.settings-service-tabs a:focus-visible { outline: 2px solid var(--rf-primary); outline-offset: 4px; }
+.settings-model-hint { font-size: 12px; line-height: 1.8; color: var(--rf-muted-foreground); }
+.settings-model-selection > .settings-model-hint { margin-bottom: 22px; }
+.settings-model-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--rf-border); }
+.settings-model-row label { font-size: 13px; font-weight: 500; white-space: nowrap; }
+.settings-model-row .settings-select { width: 310px; max-width: 100%; }
+@media (max-width: 600px) {
+  .settings-model-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .settings-model-row .settings-select { width: 100%; }
+}
 .settings-service-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
 .settings-service[data-editor="true"] .settings-service-page-heading { margin-bottom: 26px; }
 .settings-service-title { display: flex; align-items: center; gap: 11px; min-width: 0; }

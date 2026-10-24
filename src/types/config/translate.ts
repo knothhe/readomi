@@ -4,6 +4,14 @@ import { isPageTranslationShortcutEmpty, isValidConfiguredPageTranslationShortcu
 import { TRANSLATION_FONTS } from "./translation-font"
 
 export const TRANSLATION_MODES = ["bilingual", "translationOnly"] as const
+export const TRANSLATION_TASKS = ["page", "hover", "video"] as const
+export type TranslationTask = (typeof TRANSLATION_TASKS)[number]
+export const DEFAULT_MODEL_PROVIDERS = { page: null, hover: null, video: null }
+const modelProvidersSchema = z.object({
+  page: z.string().nonempty().nullable().default(null),
+  hover: z.string().nonempty().nullable().default(null),
+  video: z.string().nonempty().nullable().default(null),
+})
 export const translationModeSchema = z.enum(TRANSLATION_MODES)
 
 // Translation node style preset (excluding 'custom' - controlled by isCustom flag)
@@ -65,6 +73,7 @@ export const pageTranslationShortcutSchema = z.string().superRefine((shortcut, c
 
 export const translateConfigSchema = z.object({
   providerId: z.string().nonempty(),
+  modelProviders: modelProvidersSchema.default(DEFAULT_MODEL_PROVIDERS),
   mode: translationModeSchema,
   translationFont: z.enum(TRANSLATION_FONTS).default("sans"),
   page: z.object({

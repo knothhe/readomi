@@ -83,6 +83,7 @@ export function TranslateButton({ disabled = false, saving = false }: { disabled
   return (
     <div ref={layoutRef} className="popup-page-translation">
       <TranslationControlRow
+        task="page"
         label={i18n.t("popup.pageText")}
         disabled={disabled}
         hint={shortcutHint && <span className="shrink-0 whitespace-nowrap text-[11px] leading-4 text-muted-foreground">{shortcutHint}</span>}

@@ -13,6 +13,7 @@ export function HoverTranslationControl({ disabled = false }: { disabled?: boole
 
   return (
     <TranslationControlRow
+      task="hover"
       label={i18n.t("features.hover")}
       controlId={id}
       disabled={disabled}

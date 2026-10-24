@@ -10,7 +10,7 @@ import { UI_LANGUAGES } from "@/utils/ui-language-options"
 import { providersConfigSchema } from "./provider"
 import { siteRulesConfigSchema } from "./site-rules"
 import { DEFAULT_SUBTITLE_STYLE, subtitleStyleSchema } from "./subtitle-style"
-import { pageTranslationShortcutSchema, translateConfigSchema } from "./translate"
+import { pageTranslationShortcutSchema, translateConfigSchema, TRANSLATION_TASKS } from "./translate"
 import { videoSiteRuleSchema } from "./video-site-rules"
 
 // Language schema
@@ -83,6 +83,13 @@ export const configSchema = z.preprocess(fillMissingShortcutDefaults, z.object({
     }
   }
   const providerIdsSet = new Set(data.providersConfig.map(p => p.id))
+
+  for (const task of TRANSLATION_TASKS) {
+    const id = data.translate.modelProviders[task]
+    if (id !== null && !data.providersConfig.some(provider => provider.id === id && provider.enabled)) {
+      ctx.addIssue({ code: "custom", message: "The translation model must reference an enabled service.", path: ["translate", "modelProviders", task] })
+    }
+  }
 
   for (const def of Object.values(FEATURE_PROVIDER_DEFS)) {
     const providerId = def.getProviderId(data)

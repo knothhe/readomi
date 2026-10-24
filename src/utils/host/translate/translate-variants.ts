@@ -2,6 +2,7 @@ import type { PageTranslationRequestOptions } from "./stream-request"
 import type { Config } from "@/types/config/config"
 import { resolveProviderConfig } from "@/utils/constants/feature-providers"
 import { getHostConfig } from "@/utils/site-rules/preview-config"
+import { translationProvider } from "@/utils/translation-models"
 import { prepareTranslationText } from "./text-preparation"
 import { translateTextCore } from "./translate-text"
 import { getOrCreateWebPageContext } from "./webpage-context"
@@ -40,6 +41,7 @@ async function getWebPagePromptContext(
 async function translateTextUsingPageConfig(
   config: Config,
   text: string,
+  providerConfig: ReturnType<typeof resolveProviderConfig>,
   options: PageTranslationRequestOptions & {
     extraHashTags?: string[]
     webPageContext?: { webTitle?: string | null, webDescription?: string | null, webContent?: string | null, webSummary?: string | null }
@@ -49,8 +51,6 @@ async function translateTextUsingPageConfig(
   if (preparedText === "") {
     return ""
   }
-
-  const providerConfig = resolveProviderConfig(config, "translate")
 
   return translateTextCore({
     text: preparedText,
@@ -66,16 +66,18 @@ async function translateTextUsingPageConfig(
 }
 
 /**
- * Page translation — uses FEATURE_PROVIDER_DEFS['translate'].
+ * Page translation — uses the selected page or hover model.
  * Includes skip-language logic (page translation only).
  */
-export async function translateTextForPage(text: string, options: PageTranslationRequestOptions = {}): Promise<string> {
+export async function translateTextForPage(text: string, options: PageTranslationRequestOptions & { task?: "page" | "hover" } = {}): Promise<string> {
   options.signal?.throwIfAborted()
   const config = await getConfigOrThrow()
-  const providerConfig = resolveProviderConfig(config, "translate")
+  const providerConfig = translationProvider(config, options.task ?? "page")
+  if (!providerConfig)
+    throw new Error("Translation model is not configured")
   const webPageContext = await getWebPagePromptContext(providerConfig, config.translate.enableAIContentAware, true)
 
-  return translateTextUsingPageConfig(config, text, {
+  return translateTextUsingPageConfig(config, text, providerConfig, {
     ...options,
     webPageContext,
   })
@@ -87,12 +89,14 @@ export async function translateTextForPage(text: string, options: PageTranslatio
  */
 export async function translateTextForPageTitle(text: string): Promise<string> {
   const config = await getConfigOrThrow()
-  const providerConfig = resolveProviderConfig(config, "translate")
+  const providerConfig = translationProvider(config, "page")
+  if (!providerConfig)
+    throw new Error("Translation model is not configured")
   const webPageContext = config.translate.enableAIContentAware
     ? await getWebPagePromptContext(providerConfig, true, false)
     : undefined
 
-  return translateTextUsingPageConfig(config, text, {
+  return translateTextUsingPageConfig(config, text, providerConfig, {
     extraHashTags: ["pageTitleTranslation"],
     webPageContext: {
       webTitle: text,
