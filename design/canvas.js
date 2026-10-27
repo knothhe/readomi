@@ -1529,9 +1529,17 @@ window.READOMI_CANVAS = {
       "h": 900
     },
     {
+      "file": "Page-Input-Translation-Error-Details.html",
+      "title": "输入框翻译 · 错误详情",
+      "x": 800,
+      "y": 61742,
+      "w": 720,
+      "h": 900
+    },
+    {
       "file": "Reading-Refinement-Error-Key.html",
       "title": "段落翻译 · Key",
-      "x": 800,
+      "x": 1600,
       "y": 61742,
       "w": 960,
       "h": 620
@@ -1539,7 +1547,7 @@ window.READOMI_CANVAS = {
     {
       "file": "Reading-Refinement-Error-Rate.html",
       "title": "段落翻译 · Rate",
-      "x": 1840,
+      "x": 2640,
       "y": 61742,
       "w": 960,
       "h": 620
@@ -1547,7 +1555,7 @@ window.READOMI_CANVAS = {
     {
       "file": "Reading-Refinement-Error-Timeout.html",
       "title": "段落翻译 · Timeout",
-      "x": 2880,
+      "x": 3680,
       "y": 61742,
       "w": 960,
       "h": 620
@@ -1555,7 +1563,7 @@ window.READOMI_CANVAS = {
     {
       "file": "Reading-Refinement-Error-Network.html",
       "title": "段落翻译 · Network",
-      "x": 3920,
+      "x": 4720,
       "y": 61742,
       "w": 960,
       "h": 620
