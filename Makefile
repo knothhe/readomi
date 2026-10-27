@@ -8,7 +8,7 @@ INSTALL_FLAGS ?=
 RELEASE_REPO ?=
 RELEASE_TAG ?=
 
-.PHONY: help release release-initial release-chrome release-notes install
+.PHONY: help release release-initial release-chrome release-notes install zip
 
 help:
 	@printf '%s\n' \
@@ -18,6 +18,7 @@ help:
 	  'make release-initial               Preview publishing the current version' \
 	  'make install                       Build and sync the configured local extension' \
 	  'make install INSTALL_FLAGS=firefox  Build and install for Firefox' \
+	  'make zip                           Build a Chrome extension ZIP' \
 	  'make release-chrome                Rebuild and upload Chrome ZIP to an existing Release' \
 	  'make --silent release-notes RELEASE_REPO=owner/repo RELEASE_TAG=v1.2.3'
 
@@ -29,6 +30,9 @@ release-initial:
 
 install:
 	$(INSTALL_COMMAND) $(INSTALL_FLAGS)
+
+zip:
+	pnpm zip
 
 release-chrome:
 	bash scripts/release-chrome.sh

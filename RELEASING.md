@@ -135,7 +135,7 @@ make --silent release-notes RELEASE_REPO=knothhe/readomi RELEASE_TAG=v1.2.10
 stdout。该入口只读本地 Git 历史，不要求干净工作区或当前分支，不运行检查、
 更新版本、创建 tag、推送或调用 GitHub CLI。现有 CI 使用同一 Make 入口生成正文。
 
-手动上传 Chrome Web Store 时，运行 `pnpm zip`，使用生成的
+手动上传 Chrome Web Store 时，运行 `make zip`，使用生成的
 `.output/readomi-<version>-chrome.zip`。打包会自动移除 manifest 的
 `key` 字段；`pnpm build` 和本地开发仍保留用于固定扩展 ID 的公钥。
 
