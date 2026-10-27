@@ -33,6 +33,54 @@ async function value(page, selector, expected) {
   })
 }
 
+it("replaces rich input on non-secure HTTP pages without crypto.randomUUID", async () => {
+  service = await startFakeService({ languageRules: true })
+  const launched = await launchBrowser()
+  context = launched.context
+  await configureService(launched.page, launched.extensionId, setupDocumentFor(service.origin))
+  await context.route("http://readomi-input.test/editor", route => route.fulfill({
+    contentType: "text/html; charset=utf-8",
+    body: "<div id=\"rich\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Draft\" style=\"min-height:100px\"></div>",
+  }))
+  const page = await context.newPage()
+  await page.goto("http://readomi-input.test/editor")
+  assert.equal(await page.evaluate(() => window.isSecureContext), false)
+  assert.equal(await page.evaluate(() => typeof crypto.randomUUID), "undefined")
+  const before = service.translationRequests().length
+  await spaces(page, "#rich", LANGUAGE_RULES_FIXTURES.world.en)
+  await value(page, "#rich", LANGUAGE_RULES_FIXTURES.world.zh)
+  assert.ok(service.translationRequests().length > before)
+  assert.equal(await page.locator(".readomi-input-pending").count(), 0)
+  assert.equal(await page.getByRole("alert").count(), 0)
+})
+
+it("preserves the input and exposes the original service error in expandable details", async () => {
+  service = await startFakeService({ languageRules: true })
+  const launched = await launchBrowser()
+  context = launched.context
+  await configureService(launched.page, launched.extensionId, setupDocumentFor(service.origin))
+  // Prepare a failing service without making its configuration UI the subject of this test.
+  await context.serviceWorkers()[0].evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    config.providersConfig.find(provider => provider.id === config.translate.providerId).model = "rejected-model"
+    await chrome.storage.local.set({ config })
+  })
+  const page = await context.newPage()
+  await page.goto(`${service.origin}/article`)
+  await page.evaluate(() => {
+    document.body.innerHTML = "<textarea id=\"draft\" aria-label=\"Draft\"></textarea>"
+  })
+  await spaces(page, "#draft", LANGUAGE_RULES_FIXTURES.world.en)
+  const alert = page.getByRole("alert")
+  const details = alert.locator("details")
+  await details.waitFor()
+  assert.equal(await details.getAttribute("open"), null)
+  await details.locator("summary").click()
+  await alert.getByText("ProviderRequestError: The model rejected-model does not exist", { exact: true }).waitFor()
+  assert.equal(await page.locator("#draft").inputValue(), `${LANGUAGE_RULES_FIXTURES.world.en}  `)
+  assert.equal(await page.locator(".readomi-input-pending").count(), 0)
+})
+
 it("replaces inputs and rich text with shared language rules, supports undo, preserves drafts and honors the settings switch", async () => {
   service = await startFakeService({ languageRules: true })
   const launched = await launchBrowser()

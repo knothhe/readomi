@@ -1,4 +1,5 @@
 import type { Editable } from "./editable"
+import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { INPUT_REPLACE_REQUEST, INPUT_REPLACE_RESPONSE, INPUT_REQUEST_ATTRIBUTE } from "./editable"
 
 /** Native editing keeps replacement in the browser's undo history. */
@@ -30,7 +31,7 @@ export function replaceEditableText(element: Editable, text: string, expected: s
   if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)
     return Promise.resolve(replaceNativeInput(element, text))
   return new Promise((resolve) => {
-    const id = crypto.randomUUID()
+    const id = getRandomUUID()
     const win = element.ownerDocument.defaultView!
     let timeout: ReturnType<typeof setTimeout>
     function finish(ok: boolean) {

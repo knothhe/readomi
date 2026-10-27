@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { replaceNativeInput } from "../replace-text"
+import { INPUT_REPLACE_REQUEST, INPUT_REPLACE_RESPONSE, INPUT_REQUEST_ATTRIBUTE } from "../editable"
+import { replaceEditableText, replaceNativeInput } from "../replace-text"
 
 describe("native input replacement", () => {
   afterEach(() => {
@@ -40,5 +41,45 @@ describe("native input replacement", () => {
     expect(replaceNativeInput(element, text)).toBe(true)
     expect(element.value).toBe(text)
     expect(input).toHaveBeenCalledOnce()
+  })
+})
+
+describe("rich input replacement", () => {
+  afterEach(() => {
+    document.body.innerHTML = ""
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  it("completes and cleans up the editor bridge without crypto.randomUUID on HTTP pages", async () => {
+    const getRandomValues = vi.fn(crypto.getRandomValues.bind(crypto))
+    vi.stubGlobal("crypto", { getRandomValues })
+    const element = document.createElement("div")
+    element.contentEditable = "true"
+    element.textContent = "Original draft"
+    document.body.append(element)
+    const controller = new AbortController()
+    const addMessageListener = vi.spyOn(window, "addEventListener")
+    const removeMessageListener = vi.spyOn(window, "removeEventListener")
+    const removeAbortListener = vi.spyOn(controller.signal, "removeEventListener")
+    const postMessage = vi.spyOn(window, "postMessage").mockImplementation((message) => {
+      expect(element.getAttribute(INPUT_REQUEST_ATTRIBUTE)).toBe(message.id)
+      queueMicrotask(() => window.dispatchEvent(new MessageEvent("message", {
+        source: window,
+        origin: window.origin,
+        data: { type: INPUT_REPLACE_RESPONSE, id: message.id, ok: true },
+      })))
+    })
+
+    await expect(replaceEditableText(element, "Translated draft", "Original draft", controller.signal)).resolves.toBe(true)
+
+    expect(getRandomValues).toHaveBeenCalledOnce()
+    const id = postMessage.mock.calls[0][0].id
+    expect(id).toMatch(/^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/)
+    expect(postMessage).toHaveBeenCalledExactlyOnceWith({ type: INPUT_REPLACE_REQUEST, id, text: "Translated draft", expected: "Original draft" }, window.origin)
+    expect(element.hasAttribute(INPUT_REQUEST_ATTRIBUTE)).toBe(false)
+    const receive = addMessageListener.mock.calls.find(([type]) => type === "message")![1]
+    expect(removeMessageListener).toHaveBeenCalledWith("message", receive)
+    expect(removeAbortListener).toHaveBeenCalledWith("abort", expect.any(Function))
   })
 })

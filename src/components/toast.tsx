@@ -1,5 +1,5 @@
 import { AnimatePresence } from "motion/react"
-import { useCallback, useSyncExternalStore } from "react"
+import { useCallback, useState, useSyncExternalStore } from "react"
 import { i18n } from "#imports"
 import { BrandIcon } from "@/components/brand-icon"
 import { CornerFade } from "@/components/corner-fade"
@@ -18,7 +18,14 @@ export interface ToastItem {
   kind: "success" | "error"
   message: string
   description?: string
+  errorDetails?: string
   durationMs: number
+}
+
+interface ToastOptions {
+  description?: string
+  errorDetails?: string
+  durationMs?: number
 }
 
 const DEFAULT_DURATION_MS = 4000
@@ -32,8 +39,8 @@ function publish(next: ToastItem[]) {
     listener(items)
 }
 
-function show(kind: ToastItem["kind"], message: string, options?: { description?: string, durationMs?: number }) {
-  const item: ToastItem = { id: nextId++, kind, message, description: options?.description, durationMs: options?.durationMs ?? DEFAULT_DURATION_MS }
+function show(kind: ToastItem["kind"], message: string, options?: ToastOptions) {
+  const item: ToastItem = { id: nextId++, kind, message, description: options?.description, errorDetails: options?.errorDetails, durationMs: options?.durationMs ?? DEFAULT_DURATION_MS }
   publish([...items, item])
   return item.id
 }
@@ -44,8 +51,8 @@ export function dismiss(id: number) {
 }
 
 export const toast = {
-  success: (message: string, options?: { description?: string, durationMs?: number }) => show("success", message, options),
-  error: (message: string, options?: { description?: string, durationMs?: number }) => show("error", message, options),
+  success: (message: string, options?: ToastOptions) => show("success", message, options),
+  error: (message: string, options?: ToastOptions) => show("error", message, options),
 }
 
 function subscribe(listener: (items: ToastItem[]) => void) {
@@ -63,7 +70,8 @@ function useToasts() {
 
 function ToastCard({ item }: { item: ToastItem }) {
   const onDismiss = useCallback(() => dismiss(item.id), [item.id])
-  const interaction = useFeedbackDismiss(item.durationMs, onDismiss)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const interaction = useFeedbackDismiss(item.durationMs, onDismiss, detailsOpen)
   return (
     <CornerFade
       role={item.kind === "error" ? "alert" : "status"}
@@ -74,6 +82,12 @@ function ToastCard({ item }: { item: ToastItem }) {
       <div className="min-w-0 flex-1">
         <div className={item.kind === "error" ? "font-medium text-destructive" : "font-medium"}>{item.message}</div>
         {item.description && <div className="mt-0.5 text-xs text-muted-foreground">{item.description}</div>}
+        {item.errorDetails && (
+          <details className="mt-1 max-w-full text-xs text-muted-foreground" onToggle={event => setDetailsOpen(event.currentTarget.open)}>
+            <summary className="cursor-pointer">{i18n.t("errorRecovery.errorDetails")}</summary>
+            <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-all">{item.errorDetails}</pre>
+          </details>
+        )}
       </div>
       <button
         type="button"

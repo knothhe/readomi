@@ -194,7 +194,10 @@ describe("triple-space input translation", () => {
     reject(new Error("Offline"))
     await flush()
     expect(field.value).toBe(original)
-    expect(errorToast).toHaveBeenCalledWith("inputTranslation.failed", expect.any(Object))
+    expect(errorToast).toHaveBeenCalledWith("inputTranslation.failed", {
+      description: "translation.errorReasons.unknown",
+      errorDetails: "Error: Offline",
+    })
     expect(document.querySelector(".readomi-input-pending")).toBeNull()
     triple(field)
     expect(translate).toHaveBeenCalledTimes(2)

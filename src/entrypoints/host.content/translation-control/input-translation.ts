@@ -109,8 +109,10 @@ export async function bindInputTranslation(doc: Document = document, isContextIn
     }
     catch (error) {
       if (!stopped && !isContextInvalid() && !controller.signal.aborted && !isExtensionContextInvalidatedError(error)) {
+        const failure = error instanceof Error ? error : new Error(String(error))
         toast.error(i18n.t("inputTranslation.failed"), {
-          description: describeTranslationError(error instanceof Error ? error : new Error(String(error))),
+          description: describeTranslationError(failure),
+          errorDetails: `${failure.name}: ${failure.message}`,
         })
       }
     }
