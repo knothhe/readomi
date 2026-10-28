@@ -139,6 +139,19 @@ stdout。该入口只读本地 Git 历史，不要求干净工作区或当前分
 `.output/readomi-<version>-chrome.zip`。打包会自动移除 manifest 的
 `key` 字段；`pnpm build` 和本地开发仍保留用于固定扩展 ID 的公钥。
 
+商店比较 ZIP 内 `manifest.json` 的 `version`，新包版本必须高于已发布版本。
+更新 `package.json` 或执行 `make release` 不会更新本地已有的 ZIP；必须重新
+运行 `make zip`，并选择与当前版本一致的文件。若源码版本已高于商店版本，
+重新打包即可，无需再次升版。可先运行 `make clean` 移除旧包，避免误选。
+
+### 清理构建产物
+
+运行 `make clean` 删除 `.output/` 下所有浏览器的构建目录和 ZIP、`.wxt/`
+生成文件、`coverage/` 测试报告，以及根目录的 `stats.html`、`stats-*.html`
+和 `stats-*.json` 构建分析报告。源码、`assets/`、依赖和已同步的本地扩展安装
+目录均保留。需要重新打包时运行 `make zip`；仅重新生成 WXT 类型时运行
+`pnpm exec wxt prepare`。
+
 ## 本地发布与失败恢复
 
 只生成本地版本提交与 tag、暂不推送：

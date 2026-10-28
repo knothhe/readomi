@@ -8,7 +8,7 @@ INSTALL_FLAGS ?=
 RELEASE_REPO ?=
 RELEASE_TAG ?=
 
-.PHONY: help release release-initial release-chrome release-notes install zip
+.PHONY: help release release-initial release-chrome release-notes install zip clean
 
 help:
 	@printf '%s\n' \
@@ -19,6 +19,7 @@ help:
 	  'make install                       Build and sync the configured local extension' \
 	  'make install INSTALL_FLAGS=firefox  Build and install for Firefox' \
 	  'make zip                           Build a Chrome extension ZIP' \
+	  'make clean                         Remove build outputs and generated reports' \
 	  'make release-chrome                Rebuild and upload Chrome ZIP to an existing Release' \
 	  'make --silent release-notes RELEASE_REPO=owner/repo RELEASE_TAG=v1.2.3'
 
@@ -33,6 +34,9 @@ install:
 
 zip:
 	pnpm zip
+
+clean:
+	rm -rf -- .output .wxt coverage stats.html stats-*.html stats-*.json
 
 release-chrome:
 	bash scripts/release-chrome.sh
