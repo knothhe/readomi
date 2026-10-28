@@ -10,6 +10,10 @@ const chromeExtensionKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuecehF+R
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   srcDir: "src",
+  publicDir: "assets/extension",
+  alias: {
+    "@assets": resolve("assets"),
+  },
   imports: false,
   modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   manifestVersion: 3,

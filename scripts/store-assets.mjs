@@ -19,8 +19,8 @@ const examples = [
   ["Make room for a little reading each day. Over time, small moments can change the way you see the world.", "每天为阅读留一点时间。日积月累，这些小小的片刻，会改变你看世界的方式。"],
   ["Every new perspective begins with a moment of curiosity.", "每一种新的视角，都始于一个好奇的瞬间。"],
 ]
-const raw = resolve("design/assets/store")
-const output = resolve("docs/chrome-web-store/assets")
+const raw = resolve("assets/design/store")
+const output = resolve("assets/chrome-web-store")
 const kinds = ["bilingual", "translation-only", "hover", "subtitles", "service"]
 const slugs = ["01-bilingual", "02-translation-only", "03-hover", "04-subtitles", "05-service"]
 const { version } = JSON.parse(await readFile(resolve("package.json"), "utf8"))
@@ -269,7 +269,7 @@ async function exportBoards() {
       await page.screenshot({ path: `${output}/promo-${name.toLowerCase()}.png`, omitBackground: false })
       await page.close()
     }
-    await copyFile(resolve("public/icon/128.png"), `${output}/icon-128.png`)
+    await copyFile(resolve("assets/extension/icon/128.png"), `${output}/icon-128.png`)
   }
   finally {
     await browser.close()

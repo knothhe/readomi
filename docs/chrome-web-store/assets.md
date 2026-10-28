@@ -1,6 +1,6 @@
 # Readomi 商店图片
 
-图片使用实际构建的 Readomi 1.2.6 界面，按 `design/Store-*.html` 画板排版。画板已登记在 `design/canvas.js`，可通过设计画布审阅。原始界面截图保存在 `design/assets/store/`，最终 PNG 保存在本目录的 `assets/`。
+图片使用实际构建的 Readomi 1.2.6 界面，按 `design/Store-*.html` 画板排版。画板已登记在 `design/canvas.js`，可通过设计画布审阅。原始界面截图保存在 `assets/design/store/`，最终 PNG 保存在仓库根目录的 `assets/chrome-web-store/`。
 
 ## 上传顺序
 
@@ -16,9 +16,9 @@
 
 | 共用图片 | 用途 | 尺寸 |
 | --- | --- | --- |
-| `assets/icon-128.png` | 商店图标，复制自 `public/icon/128.png` | 128×128 |
-| `assets/promo-small.png` | 必需的小宣传图 | 440×280 |
-| `assets/promo-marquee.png` | 可选的大宣传图 | 1400×560 |
+| `assets/chrome-web-store/icon-128.png` | 商店图标，复制自 `assets/extension/icon/128.png` | 128×128 |
+| `assets/chrome-web-store/promo-small.png` | 必需的小宣传图 | 440×280 |
+| `assets/chrome-web-store/promo-marquee.png` | 可选的大宣传图 | 1400×560 |
 
 宣传图共用现有 Readomi 品牌图标和陶红色，无 Google 商标、排名、奖章或无法验证的效果承诺。它们只保留 Readomi 名称，便于不同语言共用。视频宣传片为可选项，本套资料没有生成。
 
@@ -41,7 +41,7 @@ node scripts/store-assets.mjs
 
 依赖项目已有的 `playwright-core` 和完整 Chromium；如果还没安装 Chromium，可用 `pnpm exec playwright-core install --no-shell chromium`。macOS 上由自动化工具运行本脚本时，按 `AGENTS.md` 首次即请求沙箱外执行；脚本需要启动带扩展的独立 Chromium，内置浏览器无法加载这个临时扩展。脚本不会修改你的常用浏览器配置、真实 API Key 或商店条目。它会覆盖本套原始截图和最终素材；改动布局应先编辑 `design/`。
 
-`assets/capture.json` 记录 package / manifest 一致的版本、源代码提交、构建权限、尺寸与生成时间。截图中的 Option 快捷键来自 macOS 实际构建界面；其他平台使用 Alt。弹窗按完整内容高度截图，画板不拉伸其比例。重新生成后请人工检查所有图片的文字、画面、切边与示例凭证，并重新核对实际构建版本。提交新版时不要继续沿用已经与实现不符的截图。
+`assets/chrome-web-store/capture.json` 记录 package / manifest 一致的版本、源代码提交、构建权限、尺寸与生成时间。截图中的 Option 快捷键来自 macOS 实际构建界面；其他平台使用 Alt。弹窗按完整内容高度截图，画板不拉伸其比例。重新生成后请人工检查所有图片的文字、画面、切边与示例凭证，并重新核对实际构建版本。提交新版时不要继续沿用已经与实现不符的截图。
 
 ## 官方规范
 

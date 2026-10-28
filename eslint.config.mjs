@@ -8,6 +8,7 @@ export default antfu({
     "**/skills/**",
     // Design boards are hand-written HTML at fixed sizes, not application code.
     "design/**",
+    "assets/design/**",
   ],
   rules: {
     "unused-imports/no-unused-imports": "error",

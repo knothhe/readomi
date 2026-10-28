@@ -4,7 +4,7 @@
     {
       "name": "design",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4780", "--bind", "127.0.0.1", "--directory", "design"],
+      "runtimeArgs": ["scripts/serve-design.py", "--port", "4780", "--bind", "127.0.0.1"],
       "port": 4780
     }
   ]

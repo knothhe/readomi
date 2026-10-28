@@ -15,8 +15,8 @@ import { renderPersistentReactRoot } from "@/utils/react-root"
 import { applyTheme, resolveTheme } from "@/utils/theme"
 import { setUILanguage } from "@/utils/ui-language"
 import App from "./app"
-import "@/assets/styles/theme.css"
-import "@/assets/styles/word-prefix-emphasis.css"
+import "@assets/styles/theme.css"
+import "@assets/styles/word-prefix-emphasis.css"
 import "./style.css"
 
 function HydrateAtoms({

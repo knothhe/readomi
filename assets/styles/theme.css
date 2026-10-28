@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "./scrollbar.css";
-@import "../../components/corner-feedback.css";
+@import "../../src/components/corner-feedback.css";
 
 @custom-variant dark (&:is(.dark *));
 

@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/assets/logo.png" alt="Readomi icon" width="128"></p>
+<p align="center"><img src="assets/logo.png" alt="Readomi icon" width="128"></p>
 <h1 align="center">Readomi</h1>
 <p align="center">Make text easier to read · <a href="./README.md">简体中文</a></p>
 

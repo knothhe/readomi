@@ -20,8 +20,8 @@ import { applyTheme, resolveTheme } from "@/utils/theme"
 import { setUILanguage } from "@/utils/ui-language"
 import App from "./app"
 import { activeTabAtom, isTranslatableUrl, pageTranslationEnabledAtom, translationProgressAtom } from "./atoms"
-import "@/assets/styles/text-small.css"
-import "@/assets/styles/theme.css"
+import "@assets/styles/text-small.css"
+import "@assets/styles/theme.css"
 import "./style.css"
 
 function HydrateAtoms({

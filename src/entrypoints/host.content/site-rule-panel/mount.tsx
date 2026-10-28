@@ -1,6 +1,6 @@
 import type { SiteRulePreviewController } from "@/utils/site-rules/preview-controller"
+import themeCSS from "@assets/styles/theme.css?inline"
 import { createRoot } from "react-dom/client"
-import themeCSS from "@/assets/styles/theme.css?inline"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { NOTRANSLATE_CLASS, REACT_SHADOW_HOST_CLASS } from "@/utils/constants/dom-labels"
 import { attachCornerHost } from "@/utils/corner-dock"

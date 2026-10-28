@@ -1,6 +1,6 @@
 import type { SubtitleStyle } from "@/types/config/subtitle-style"
+import scrollbarCSS from "@assets/styles/scrollbar.css?inline"
 import { browser, i18n } from "#imports"
-import scrollbarCSS from "@/assets/styles/scrollbar.css?inline"
 import { SUBTITLE_PRESETS, SUBTITLE_RELATIVE_FONT_SIZE_MAX, SUBTITLE_RELATIVE_FONT_SIZE_MIN, SUBTITLE_RELATIVE_FONT_SIZE_STEP, SUBTITLE_TRANSLATION_COLORS } from "@/types/config/subtitle-style"
 import { effectiveSubtitleBackgroundOpacity, formatSubtitleFontSize, isSubtitlePresetModified, SUBTITLE_POSITIONS, subtitleBackgroundPatch, subtitlePresetPatch } from "./appearance"
 import { xVideoContainer, xVideoControls, xVideoToolsStart } from "./x-player"

@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/assets/logo.png" alt="Readomi 图标" width="128"></p>
+<p align="center"><img src="assets/logo.png" alt="Readomi 图标" width="128"></p>
 <h1 align="center">Readomi</h1>
 <p align="center">让文字更容易读懂 · <a href="./README.en.md">English</a></p>
 

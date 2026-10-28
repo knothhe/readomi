@@ -1,5 +1,5 @@
+import themeCSS from "@assets/styles/theme.css?inline"
 import ReactDOM from "react-dom/client"
-import themeCSS from "@/assets/styles/theme.css?inline"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { Toasts } from "@/components/toast"
 import { REACT_SHADOW_HOST_CLASS } from "@/utils/constants/dom-labels"

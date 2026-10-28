@@ -1,4 +1,4 @@
-@import "@/assets/styles/host-theme.css";
+@import "@assets/styles/host-theme.css";
 
 .readomi-translated-block-content[data-readomi-custom-translation-style="line"] {
   border-left: 2px solid color-mix(in srgb, var(--readomi-brand) 75%, transparent);

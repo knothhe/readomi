@@ -5,13 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 async function loadStyleInjector() {
   vi.resetModules()
 
-  vi.doMock("@/assets/styles/custom-translation-node.css?raw", () => ({
-    default: "@import '@/assets/styles/host-theme.css';\n[data-readomi-custom-translation-style='blur'] { opacity: 0.75; }",
+  vi.doMock("@assets/styles/custom-translation-node.css?raw", () => ({
+    default: "@import '@assets/styles/host-theme.css';\n[data-readomi-custom-translation-style='blur'] { opacity: 0.75; }",
   }))
-  vi.doMock("@/assets/styles/host-theme.css?raw", () => ({
+  vi.doMock("@assets/styles/host-theme.css?raw", () => ({
     default: ":root { --readomi-primary: oklch(0.205 0 0); --readomi-brand: oklch(76.034% 0.12361 82.191); }",
   }))
-  vi.doMock("@/assets/styles/translation-node-preset.css?raw", () => ({
+  vi.doMock("@assets/styles/translation-node-preset.css?raw", () => ({
     default: ".readomi-translated-content-wrapper { display: inline; }",
   }))
 
