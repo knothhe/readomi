@@ -2,6 +2,10 @@
 window.READOMI_CANVAS = {
   "title": "Readomi Design",
   "boards": [
+{"file": "Settings-Input-Shortcut-Unset.html", "title": "输入框快捷键 · 未设置", "x": 0, "y": 99000, "w": 1280, "h": 900},
+{"file": "Settings-Input-Shortcut.html", "title": "输入框快捷键 · 已设置", "x": 1360, "y": 99000, "w": 1280, "h": 900},
+{"file": "Settings-Input-Shortcut-Mobile.html", "title": "输入框快捷键 · 窄屏", "x": 2720, "y": 99000, "w": 390, "h": 900},
+{"file": "Settings-Input-Shortcut-Conflict.html", "title": "输入框快捷键 · 冲突", "x": 4080, "y": 99000, "w": 1280, "h": 900},
     {
       "file": "Settings-Service-A-Refined-Empty.html",
       "title": "首次配置 · 手动配置",
