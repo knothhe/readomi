@@ -1,7 +1,9 @@
 /* global chrome -- callback runs in the extension service worker. */
 import assert from "node:assert/strict"
+import { mkdir } from "node:fs/promises"
+import { resolve } from "node:path"
 import { afterEach, it } from "node:test"
-import { configureService, launchBrowser, reportFailure, waitForStoredConfig } from "./browser.mjs"
+import { configureService, launchBrowser, reportFailure, storedConfig, waitForStoredConfig } from "./browser.mjs"
 import { LANGUAGE_RULES_FIXTURES, setupDocumentFor, startFakeService } from "./fake-service.mjs"
 
 let context
@@ -32,6 +34,94 @@ async function value(page, selector, expected) {
     throw new Error(`Expected ${JSON.stringify(expected)}, received ${JSON.stringify(await page.locator(selector).evaluate(el => el.value ?? el.textContent))}`, { cause: error })
   })
 }
+
+it("configures an independent input model and custom shortcut through settings", async () => {
+  service = await startFakeService({ languageRules: true, models: ["fake-model", "input-model"] })
+  const launched = await launchBrowser()
+  context = launched.context
+  const { page: settings, extensionId } = launched
+  await configureService(settings, extensionId, setupDocumentFor(service.origin))
+  const section = settings.locator("#service")
+  await section.getByRole("button", { name: "Add service", exact: true }).click()
+  await section.getByRole("button", { name: "Agent setup", exact: true }).click()
+  await section.getByLabel("Translation service configuration").fill(JSON.stringify(setupDocumentFor(service.origin, { name: "Input service", model: "input-model" })))
+  await section.getByRole("button", { name: "Test and save", exact: true }).click()
+  await section.locator(".settings-service-editor").waitFor({ state: "detached" })
+  await section.getByRole("tab", { name: "Model selection", exact: true }).click()
+  await section.getByRole("combobox", { name: "Input translation", exact: true }).click()
+  await settings.getByRole("option", { name: "Input service · input-model", exact: true }).click()
+  const assigned = await waitForStoredConfig(context, config => config.translate.modelProviders.input !== null)
+  assert.equal(assigned.providersConfig.find(provider => provider.id === assigned.translate.modelProviders.input).model, "input-model")
+  assert.equal(assigned.providersConfig.find(provider => provider.id === assigned.translate.providerId).model, "fake-model")
+
+  await settings.locator(".options-navigation").getByRole("link", { name: "Shortcut", exact: true }).click()
+  const trigger = settings.getByRole("combobox", { name: "Input translation trigger", exact: true })
+  assert.equal(await trigger.getAttribute("data-value"), "tripleSpace")
+  await trigger.click()
+  await settings.getByRole("option", { name: "Custom shortcut", exact: true }).click()
+  await settings.getByRole("button", { name: "Translate focused input", exact: true }).click()
+  await settings.keyboard.press("Alt+I")
+  await waitForStoredConfig(context, config => config.features.inputTranslationTrigger === "shortcut" && config.features.inputTranslationShortcut === "Alt+I")
+  await settings.reload()
+  await trigger.waitFor()
+  assert.equal(await trigger.getAttribute("data-value"), "shortcut")
+  assert.equal(await settings.getByRole("button", { name: "Translate focused input", exact: true }).getAttribute("data-shortcut"), "Alt+I")
+
+  const page = await context.newPage()
+  await page.goto(`${service.origin}/article`)
+  await page.evaluate(() => {
+    document.body.innerHTML = "<form><textarea id=\"draft\" aria-label=\"Draft\"></textarea><textarea id=\"other\">Untouched draft</textarea><button type=\"submit\">Send</button></form>"
+    window.inputTestSubmissions = 0
+    document.querySelector("form").addEventListener("submit", (event) => {
+      event.preventDefault()
+      window.inputTestSubmissions++
+    })
+  })
+  const before = service.completions().length
+  await spaces(page, "#draft", LANGUAGE_RULES_FIXTURES.world.en)
+  // A negative assertion needs an observation window after the full space cadence.
+  await page.waitForTimeout(400)
+  assert.equal(await page.locator("#draft").inputValue(), `${LANGUAGE_RULES_FIXTURES.world.en}   `)
+  assert.equal(service.completions().length, before, "three spaces do not send a request in custom shortcut mode")
+  await page.keyboard.press("Alt+I")
+  await value(page, "#draft", LANGUAGE_RULES_FIXTURES.world.zh)
+  const customRequests = service.completions().slice(before).map(request => JSON.parse(request.body))
+  assert.ok(customRequests.length > 0)
+  assert.ok(customRequests.every(request => request.model === "input-model"), "input requests use their independently selected model")
+  assert.equal(await page.locator("#other").inputValue(), "Untouched draft")
+  assert.equal(await page.evaluate(() => window.inputTestSubmissions), 0)
+
+  // Only the screenshot language is prepared through storage; model and shortcut choices use real settings controls.
+  await context.serviceWorkers()[0].evaluate(async () => {
+    const { config } = await chrome.storage.local.get("config")
+    config.ui.language = "zh-CN"
+    config.appearance.mode = "light"
+    await chrome.storage.local.set({ config })
+  })
+  await settings.getByRole("combobox", { name: "输入框翻译触发方式", exact: true }).waitFor()
+  const artifacts = resolve(".output/e2e-artifacts/input-shortcut")
+  await mkdir(artifacts, { recursive: true })
+  await settings.setViewportSize({ width: 1280, height: 900 })
+  await settings.screenshot({ path: resolve(artifacts, "settings.png"), fullPage: true })
+  await settings.setViewportSize({ width: 390, height: 844 })
+  assert.equal(await settings.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth), true, "input shortcut controls fit narrow settings pages")
+  await settings.screenshot({ path: resolve(artifacts, "mobile.png"), fullPage: true })
+
+  await settings.getByRole("combobox", { name: "输入框翻译触发方式", exact: true }).click()
+  await settings.getByRole("option", { name: "三次空格", exact: true }).click()
+  await waitForStoredConfig(context, config => config.features.inputTranslationTrigger === "tripleSpace")
+  await page.bringToFront()
+  const beforeRestored = service.completions().length
+  await spaces(page, "#draft", LANGUAGE_RULES_FIXTURES.curious.en)
+  await value(page, "#draft", LANGUAGE_RULES_FIXTURES.curious.zh)
+  const restoredRequests = service.completions().slice(beforeRestored).map(request => JSON.parse(request.body))
+  assert.ok(restoredRequests.length > 0)
+  assert.ok(restoredRequests.every(request => request.model === "input-model"))
+  const final = await storedConfig(context)
+  assert.equal(final.providersConfig.find(provider => provider.id === final.translate.providerId).model, "fake-model")
+  assert.equal(final.features.inputTranslationShortcut, "Alt+I", "changing the trigger preserves the recorded shortcut")
+  assert.equal(await page.evaluate(() => window.inputTestSubmissions), 0)
+})
 
 it("replaces rich input on non-secure HTTP pages without crypto.randomUUID", async () => {
   service = await startFakeService({ languageRules: true })

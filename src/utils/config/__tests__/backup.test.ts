@@ -19,6 +19,18 @@ describe("local configuration backups", () => {
     expect(parseConfigBackup(exportConfigBackup(config))).toEqual(config)
   })
 
+  it("round trips the input model and custom trigger without changing service credentials", () => {
+    const next = {
+      ...configured,
+      translate: { ...configured.translate, modelProviders: { ...configured.translate.modelProviders, input: configured.translate.providerId } },
+      features: { ...configured.features, inputTranslationTrigger: "shortcut" as const, inputTranslationShortcut: "Alt+I" },
+    }
+    const imported = parseConfigBackup(exportConfigBackup(next))
+    expect(imported.translate.modelProviders.input).toBe(configured.translate.providerId)
+    expect(imported.features).toEqual(next.features)
+    expect(imported.providersConfig[0].apiKey).toBe(configured.providersConfig[0].apiKey)
+  })
+
   it("round trips custom CSS without rewriting it", () => {
     const config = {
       ...configured,

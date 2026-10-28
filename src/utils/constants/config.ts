@@ -21,11 +21,11 @@ export const DEFAULT_CONFIG: Config = {
     wordPrefixEmphasis: false,
   },
   siteRules: { userRules: [], disabledBuiltInRules: [] },
-  features: { disabledSites: [], inputTranslation: true, hoverTranslation: false, hoverStream: true, hoverHotkey: "alt", modeShortcut: DEFAULT_MODE_SHORTCUT_KEY, subtitlesShortcut: DEFAULT_SUBTITLES_SHORTCUT_KEY, videoSubtitles: false, videoControls: true, videoExcludedSites: [], subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
+  features: { disabledSites: [], inputTranslation: true, inputTranslationTrigger: "tripleSpace", inputTranslationShortcut: "", hoverTranslation: false, hoverStream: true, hoverHotkey: "alt", modeShortcut: DEFAULT_MODE_SHORTCUT_KEY, subtitlesShortcut: DEFAULT_SUBTITLES_SHORTCUT_KEY, videoSubtitles: false, videoControls: true, videoExcludedSites: [], subtitleMode: "bilingual", subtitleStyle: DEFAULT_SUBTITLE_STYLE },
   translate: {
     translationFont: "sans",
     providerId: "openai-default",
-    modelProviders: { page: null, hover: null, video: null },
+    modelProviders: { page: null, hover: null, video: null, input: null },
     mode: "bilingual",
     page: {
       shortcut: DEFAULT_AUTO_TRANSLATE_SHORTCUT_KEY,

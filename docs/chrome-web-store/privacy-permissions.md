@@ -56,7 +56,7 @@ All executable extension JavaScript is packaged with the extension, including th
 
 - **网页与段落翻译**：待处理文本、提示词、语言规则、模型及请求参数直接发送到用户配置的服务。可用的网页标题自动加入翻译背景；开启“结合文章上下文”后，还会发送标题及提取正文的前 2,000 个字符生成摘要，并把摘要加入翻译请求。自定义提示词可引用页面描述和这段截断正文。正文提取失败时回退到页面 body 文本，再按相同上限截断。
 - **语言方向**：模型在每个翻译句段内判断源语言并按主要语言 / 第二语言规则输出，代码也使用有限的本地中英文判断来约束结果。当前没有打开页面时额外发送最多 500 字符样本的语言识别流程，也不再保存检测语言。翻译已开启的页面在同站点导航、加载新内容或恢复翻译时仍可能继续发送翻译请求；“保持原文”的设置也不表示文本绝不发送到服务。
-- **输入框翻译**：默认开启。在同一已聚焦编辑框连续按三次独立空格、相邻间隔不超过 300 毫秒时，将该框当前文本发送到所选服务；使用共用提示词与语言规则，不附加网页背景或生成摘要。支持普通文本框、textarea 与可编辑富文本；密码、禁用、只读字段及输入法组合不触发。它不逐键上传输入，成功后只替换框内文本，不自动提交网页表单。取消或失焦会阻止应用旧结果，但已发出的请求不能据此视为未传输。
+- **输入框翻译**：默认开启，默认跟随当前服务，也可在模型选择中单独配置。默认在同一已聚焦编辑框连续按三次独立空格、相邻间隔不超过 300 毫秒时触发，也可在快捷键设置中改为自定义组合键；触发后将该框当前文本发送到输入框翻译所选的服务；使用共用提示词与语言规则，不附加网页背景或生成摘要。支持普通文本框、textarea 与可编辑富文本；密码、禁用、只读字段及输入法组合不触发。它不逐键上传输入，成功后只替换框内文本，不自动提交网页表单。取消或失焦会阻止应用旧结果，但已发出的请求不能据此视为未传输。
 - **已有字幕**：YouTube 字幕或 HTML5 字幕轨道中的句段发送到所选模型服务，不发送视频音频，不包含无字幕视频语音识别，也不生成完整视频摘要。YouTube 桥接脚本可在页面上下文以 `credentials: "include"` 获取受限定的 YouTube 字幕地址；该请求由浏览器按网站规则携带凭证，模型 API Key 不传入此桥接流程。
 - **服务配置操作**：检查连接使用短文本 `Hi` 发起翻译请求；获取模型查询配置端点的 `/models`。两者带上适用的 API Key、自定义请求头与 `Readomi/<版本>` User-Agent，服务商也能接收 IP 等常规网络信息。自定义请求体可添加或覆盖模型请求字段，应按实际配置确认发送内容。
 - **本地持久数据**：配置包含服务地址、密钥、请求头与请求体、连接检查结果、提示词、外观、语言、开关、停用站点的主机名和用户站点规则。另存每个服务 / 模型学得的请求速率与批次限制；读取该存储时会过滤超过 90 天未更新的记录。API Key 保存在浏览器扩展存储中，不是单独加密的密钥保险库。
@@ -114,7 +114,7 @@ All executable extension JavaScript is packaged with the extension, including th
 - `src/utils/config/storage.ts` 与 `src/utils/request/service-limits.ts`：本地配置、请求速率 / 批次限制与 90 天记录过滤。
 - `src/utils/providers/request.ts`、`stream.ts`、`models.ts`、`test-connection.ts` 与 `fetch.ts`：请求文本、认证头、请求体、连接测试、模型列表及动态 User-Agent 规则。
 - `src/utils/host/translate/translate-variants.ts`、`webpage-context.ts`、`webpage-content.ts` 与 `src/utils/prompts/translate.ts`：页面背景、2,000 字符上限、输入框无背景及句段内语言规则。
-- `src/entrypoints/host.content/translation-control/input-translation.ts` 与 `src/utils/input-translation/editable.ts`：输入框空格触发、可编辑字段范围及取消行为。
+- `src/entrypoints/host.content/translation-control/input-translation.ts` 与 `src/utils/input-translation/editable.ts`：输入框空格 / 自定义快捷键触发、可编辑字段范围及取消行为。
 - `src/entrypoints/host.content/subtitles/runtime.ts`、`src/entrypoints/youtube-bootstrap.content.ts` 与 `src/utils/subtitles/youtube-bridge.ts`：字幕文本、打包桥接脚本与 YouTube 字幕请求。
 - `src/utils/config/backup.ts`、`setup-document.ts` 与 `setup-agent-instructions.ts`：完整配置备份及仅遮蔽 API Key 字段的服务导出。
 - `src/utils/site-rules/css.ts`：站点规则 CSS 资源加载与可执行声明过滤。

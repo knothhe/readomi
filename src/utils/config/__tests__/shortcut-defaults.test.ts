@@ -56,4 +56,30 @@ describe("shortcut defaults and older configurations", () => {
     expect(configSchema.safeParse({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, modeShortcut: "Alt+E" } }).success).toBe(false)
     expect(configSchema.safeParse({ ...olderConfig(), features: { ...olderConfig().features, modeShortcut: null } }).success).toBe(false)
   })
+
+  it("keeps older input translation on triple spaces without assigning a shortcut", () => {
+    const { inputTranslationTrigger: _trigger, inputTranslationShortcut: _shortcut, ...features } = DEFAULT_CONFIG.features
+    const parsed = configSchema.parse({ ...DEFAULT_CONFIG, features })
+    expect(parsed.features.inputTranslationTrigger).toBe("tripleSpace")
+    expect(parsed.features.inputTranslationShortcut).toBe("")
+    expect(parsed.features.inputTranslation).toBe(true)
+  })
+
+  it("preserves custom input triggers and reserves their shortcuts across all actions", () => {
+    const config: Config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, inputTranslationTrigger: "shortcut", inputTranslationShortcut: "Alt+I" } }
+    expect(configSchema.parse(config)).toEqual(config)
+    for (const inputTranslationShortcut of ["Alt+E", "Option+M", "Alt+V"]) {
+      expect(configSchema.safeParse({ ...config, features: { ...config.features, inputTranslationShortcut } }).success).toBe(false)
+    }
+    expect(configSchema.safeParse({ ...config, features: { ...config.features, inputTranslationShortcut: "I" } }).success).toBe(false)
+    expect(configSchema.safeParse({ ...config, features: { ...config.features, inputTranslationTrigger: "unknown" } }).success).toBe(false)
+  })
+
+  it("preserves an explicit input shortcut before filling missing action defaults", () => {
+    const older = olderConfig()
+    const parsed = configSchema.parse({ ...older, features: { ...older.features, inputTranslationShortcut: "Alt+M" } })
+    expect(parsed.features.inputTranslationShortcut).toBe("Alt+M")
+    expect(parsed.features.modeShortcut).toBe("")
+    expect(parsed.features.subtitlesShortcut).toBe("Alt+V")
+  })
 })

@@ -882,11 +882,18 @@ subtitleStatus:
 
 inputTranslation:
   title: Dịch ô nhập
-  description: Nhấn nhanh phím cách ba lần trong ô nhập để thay thế văn bản theo cài đặt ngôn ngữ dịch; khoảng cách giữa các lần nhấn không quá 300 ms.
+  description: Nhấn phím cách ba lần hoặc dùng phím tắt tùy chỉnh để thay văn bản tại chỗ theo cài đặt ngôn ngữ dịch. Thay đổi cách kích hoạt trong Phím tắt.
   languages: Ngôn ngữ khác được dịch sang ngôn ngữ chính; ngôn ngữ chính được dịch sang ngôn ngữ thứ hai. Giữ nguyên văn bản sẽ không thay đổi ô nhập.
   pending: Đang dịch ô nhập…
   failed: Dịch ô nhập thất bại. Văn bản gốc đã được giữ lại.
   replaceFailed: Không thể thay thế nội dung. Vui lòng dịch thủ công trong trình soạn thảo này.
+  trigger: Cách kích hoạt dịch ô nhập
+  tripleSpace: Ba lần phím cách
+  shortcut: Phím tắt tùy chỉnh
+  tripleSpaceHint: Nhấn nhanh phím cách ba lần trong cùng một ô nhập, mỗi lần cách nhau không quá 300 ms.
+  shortcutHint: Nhấp bên dưới để ghi tổ hợp phím. Chỉ hoạt động khi ô nhập có tiêu điểm và không gửi biểu mẫu.
+  translateFocused: Dịch ô nhập đang có tiêu điểm
+  focusedHint: Chỉ hoạt động khi ô nhập có tiêu điểm và không gửi biểu mẫu.
 
 configSync:
   title: Đồng bộ Chrome
@@ -934,6 +941,7 @@ translationModels:
   page: Dịch toàn bộ trang
   hover: Dịch đoạn văn khi di chuột
   video: Dịch phụ đề video
+  input: Dịch ô nhập
   description: Chọn mô hình từ các dịch vụ đã thêm cho từng tính năng. Thay đổi tự động lưu và áp dụng cho yêu cầu tiếp theo; bản dịch hiện có được giữ lại.
   follow: Theo dịch vụ hiện tại · $1
   unconfigured: Chưa cấu hình mô hình dịch

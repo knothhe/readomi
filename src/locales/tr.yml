@@ -891,11 +891,18 @@ subtitleStatus:
 
 inputTranslation:
   title: Giriş çevirisi
-  description: Çeviri dili ayarlarınıza göre metni değiştirmek için giriş alanında boşluk tuşuna hızla üç kez basın; basışlar arasında en fazla 300 ms bırakın.
-  languages: "Diğer diller ana dilinize, ana diliniz ikinci dilinize çevrilir. Özgün metni koru seçeneği girdiyi değiştirmez."
+  description: Çeviri dili ayarlarınıza göre metni yerinde değiştirmek için boşluk tuşuna üç kez basın veya özel bir kısayol kullanın. Tetikleyiciyi Kısayollar bölümünden değiştirebilirsiniz.
+  languages: Diğer diller ana dilinize, ana diliniz ikinci dilinize çevrilir. Özgün metni koru seçeneği girdiyi değiştirmez.
   pending: Girdi çevriliyor…
   failed: Giriş çevirisi başarısız oldu. Özgün metin korundu.
   replaceFailed: Girdi değiştirilemedi. Bu düzenleyicide lütfen elle çevirin.
+  trigger: Giriş çevirisi tetikleyicisi
+  tripleSpace: Üç kez boşluk
+  shortcut: Özel kısayol
+  tripleSpaceHint: Aynı giriş alanında boşluk tuşuna hızla üç kez basın; basışlar arasında en fazla 300 ms bırakın.
+  shortcutHint: Bir tuş birleşimi kaydetmek için aşağıya tıklayın. Yalnızca odaklanmış giriş alanında çalışır ve formu göndermez.
+  translateFocused: Odaklanmış girdiyi çevir
+  focusedHint: Yalnızca odaklanmış giriş alanında çalışır ve formu göndermez.
 
 configSync:
   title: Chrome eşitlemesi
@@ -943,6 +950,7 @@ translationModels:
   page: Tam sayfa çevirisi
   hover: Üzerine gelinen paragrafı çevirme
   video: Video altyazısı çevirisi
+  input: Giriş çevirisi
   description: Her çeviri özelliği için eklediğiniz hizmetlerden bir model seçin. Değişiklikler otomatik kaydedilir ve sonraki istekte uygulanır; mevcut çeviriler korunur.
   follow: Geçerli hizmeti kullan · $1
   unconfigured: Çeviri modeli yapılandırılmadı

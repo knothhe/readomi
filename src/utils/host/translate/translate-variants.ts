@@ -1,6 +1,6 @@
 import type { PageTranslationRequestOptions } from "./stream-request"
 import type { Config } from "@/types/config/config"
-import { resolveProviderConfig } from "@/utils/constants/feature-providers"
+import type { resolveProviderConfig } from "@/utils/constants/feature-providers"
 import { getHostConfig } from "@/utils/site-rules/preview-config"
 import { translationProvider } from "@/utils/translation-models"
 import { prepareTranslationText } from "./text-preparation"
@@ -109,10 +109,13 @@ export async function translateTextForPageTitle(text: string): Promise<string> {
 
 /** Typed text follows the shared language rules without borrowing page context. */
 export async function translateTextForInput(text: string, config: Config, signal?: AbortSignal): Promise<string> {
+  const providerConfig = translationProvider(config, "input")
+  if (!providerConfig)
+    throw new Error("Translation model is not configured")
   return translateTextCore({
     text,
     langConfig: config.language,
-    providerConfig: resolveProviderConfig(config, "translate"),
+    providerConfig,
     customPromptsConfig: config.translate.customPromptsConfig,
     extraHashTags: ["inputTranslation"],
     cacheScope: "page",

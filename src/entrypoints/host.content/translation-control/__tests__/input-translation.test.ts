@@ -47,7 +47,7 @@ async function flush() {
   await Promise.resolve()
 }
 
-describe("triple-space input translation", () => {
+describe("input translation triggers", () => {
   beforeEach(async () => {
     vi.useFakeTimers()
     vi.clearAllMocks()
@@ -212,5 +212,67 @@ describe("triple-space input translation", () => {
     validate.mockReturnValue(false)
     triple(field)
     expect(translate).not.toHaveBeenCalled()
+  })
+
+  it("uses only the custom shortcut in shortcut mode and leaves its key out of the editor", async () => {
+    const selected: Config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, inputTranslationTrigger: "shortcut", inputTranslationShortcut: "Alt+I" } }
+    changed(selected)
+    const field = input()
+    expect(triple(field).defaultPrevented).toBe(false)
+    expect(press(field, { key: "i", code: "KeyI", altKey: true, shiftKey: true }).defaultPrevented).toBe(false)
+    expect(translate).not.toHaveBeenCalled()
+    expect(press(field, { key: "i", code: "KeyI", altKey: true }).defaultPrevented).toBe(true)
+    await flush()
+    expect(translate).toHaveBeenCalledWith(field.value.trim(), selected, expect.any(AbortSignal))
+    expect(validate).toHaveBeenCalledWith(selected, "input")
+  })
+
+  it.each([{ repeat: true }, { isComposing: true }, { keyCode: 229 }])("ignores repeated or composing custom shortcuts: %j", (init) => {
+    changed({ ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, inputTranslationTrigger: "shortcut", inputTranslationShortcut: "Alt+I" } })
+    expect(press(input(), { key: "i", code: "KeyI", altKey: true, ...init }).defaultPrevented).toBe(false)
+    expect(translate).not.toHaveBeenCalled()
+  })
+
+  it("leaves non-editors, protected fields, an unset shortcut, and triple-space mode shortcuts alone", () => {
+    const shortcutConfig: Config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, inputTranslationTrigger: "shortcut", inputTranslationShortcut: "Alt+I" } }
+    changed(shortcutConfig)
+    const field = input()
+    field.blur()
+    expect(press(document.body, { key: "i", altKey: true }).defaultPrevented).toBe(false)
+    const password = input("input", "password")
+    expect(press(password, { key: "i", altKey: true }).defaultPrevented).toBe(false)
+    field.focus()
+    field.readOnly = true
+    expect(press(field, { key: "i", altKey: true }).defaultPrevented).toBe(false)
+    field.readOnly = false
+    changed({ ...shortcutConfig, features: { ...shortcutConfig.features, inputTranslationShortcut: "" } })
+    expect(press(field, { key: "i", altKey: true }).defaultPrevented).toBe(false)
+    changed({ ...shortcutConfig, features: { ...shortcutConfig.features, inputTranslationTrigger: "tripleSpace" } })
+    expect(press(field, { key: "i", altKey: true }).defaultPrevented).toBe(false)
+    expect(translate).not.toHaveBeenCalled()
+  })
+
+  it.each(["model", "trigger", "shortcut"])("cancels pending input results when the %s changes", async (setting) => {
+    let resolve!: (result: string) => void
+    translate.mockReturnValue(new Promise<string>((done) => {
+      resolve = done
+    }))
+    const field = input()
+    triple(field)
+    const next = structuredClone(DEFAULT_CONFIG)
+    if (setting === "model") {
+      const provider = { ...next.providersConfig[0], id: "input-model", model: "input-model" }
+      next.providersConfig.push(provider)
+      next.translate.modelProviders.input = provider.id
+    }
+    if (setting === "trigger")
+      next.features.inputTranslationTrigger = "shortcut"
+    if (setting === "shortcut")
+      next.features.inputTranslationShortcut = "Alt+I"
+    changed(next)
+    expect(document.querySelector(".readomi-input-pending")).toBeNull()
+    resolve("Late translation")
+    await flush()
+    expect(replace).not.toHaveBeenCalled()
   })
 })

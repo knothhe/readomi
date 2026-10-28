@@ -905,11 +905,18 @@ subtitleStatus:
 
 inputTranslation:
   title: Traducción de entrada
-  description: Pulsa Espacio tres veces rápidamente en un campo para sustituir el texto según tus idiomas de traducción; deja como máximo 300 ms entre pulsaciones.
+  description: Pulsa Espacio tres veces o usa un atajo personalizado para sustituir el texto según tus idiomas de traducción. Cambia la activación en Atajos.
   languages: Otros idiomas se traducen al principal y el principal al secundario. Conservar original mantiene el texto.
   pending: Traduciendo entrada…
   failed: La traducción falló. Se conservó el texto original.
   replaceFailed: No se pudo sustituir el texto. Traduce manualmente en este editor.
+  trigger: Activación de la traducción de entrada
+  tripleSpace: Espacio tres veces
+  shortcut: Atajo personalizado
+  tripleSpaceHint: Pulsa Espacio tres veces rápidamente en el mismo campo, con un máximo de 300 ms entre pulsaciones.
+  shortcutHint: Haz clic abajo para grabar una combinación. Solo funciona con el campo enfocado y no envía el formulario.
+  translateFocused: Traducir el campo enfocado
+  focusedHint: Solo funciona con el campo enfocado y no envía el formulario.
 
 configSync:
   title: Sincronización de Chrome
@@ -957,6 +964,7 @@ translationModels:
   page: Traducción de toda la página
   hover: Traducción de párrafos al pasar el cursor
   video: Traducción de subtítulos de vídeo
+  input: Traducción de entrada
   description: Elige un modelo de tus servicios para cada función. Los cambios se guardan automáticamente y se aplican a la siguiente solicitud; se conservan las traducciones existentes.
   follow: Usar el servicio actual · $1
   unconfigured: Sin modelo de traducción

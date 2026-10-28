@@ -101,8 +101,9 @@ describe("configuration sync payload", () => {
     const remote = structuredClone(base)
     local.translate.modelProviders.page = "alternate"
     remote.translate.modelProviders.hover = "alternate"
+    remote.translate.modelProviders.input = "alternate"
     const merged = mergeSyncedConfig(base, local, remote)
-    expect(merged.translate.modelProviders).toEqual({ page: "alternate", hover: "alternate", video: null })
+    expect(merged.translate.modelProviders).toEqual({ page: "alternate", hover: "alternate", video: null, input: "alternate" })
   })
   it("keeps model assignments with the service list when sync edits conflict", () => {
     const base = toSyncedConfig(DEFAULT_CONFIG)
@@ -116,6 +117,32 @@ describe("configuration sync payload", () => {
     const merged = mergeSyncedConfig(base, local, remote)
     expect(merged.providersConfig).toEqual(local.providersConfig)
     expect(merged.translate.modelProviders).toEqual(local.translate.modelProviders)
+    expect(parseSyncedConfig(merged)).toEqual(merged)
+  })
+  it("keeps input and page shortcuts consistent when devices choose the same combination", () => {
+    const base = toSyncedConfig(DEFAULT_CONFIG)
+    const local = structuredClone(base)
+    const remote = structuredClone(base)
+    local.features.inputTranslationShortcut = "Alt+I"
+    remote.translate.page.shortcut = "Alt+I"
+    const merged = mergeSyncedConfig(base, local, remote)
+    expect(merged.features.inputTranslationShortcut).toBe("Alt+I")
+    expect(merged.translate.page.shortcut).toBe(base.translate.page.shortcut)
+    expect(parseSyncedConfig(merged)).toEqual(merged)
+  })
+  it.each([true, false])("keeps the input trigger with its shortcut when the custom trigger is edited locally: %s", (inputEditedLocally) => {
+    const base = toSyncedConfig(DEFAULT_CONFIG)
+    const local = structuredClone(base)
+    const remote = structuredClone(base)
+    const inputSide = inputEditedLocally ? local : remote
+    const pageSide = inputEditedLocally ? remote : local
+    inputSide.features.inputTranslationTrigger = "shortcut"
+    inputSide.features.inputTranslationShortcut = "Alt+I"
+    pageSide.translate.page.shortcut = "Alt+P"
+    const merged = mergeSyncedConfig(base, local, remote)
+    expect(merged.features.inputTranslationTrigger).toBe(local.features.inputTranslationTrigger)
+    expect(merged.features.inputTranslationShortcut).toBe(local.features.inputTranslationShortcut)
+    expect(merged.translate.page.shortcut).toBe(local.translate.page.shortcut)
     expect(parseSyncedConfig(merged)).toEqual(merged)
   })
   it("splits multibyte and escaped content below the per-item quota", async () => {

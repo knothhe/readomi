@@ -6,7 +6,6 @@ import type { WebPagePromptContext } from "@/types/content"
 import type { LanguagePolicyConfig } from "@/utils/language-policy"
 import { i18n } from "#imports"
 import { toast } from "@/components/toast"
-import { getProviderConfigById } from "@/utils/config/helpers"
 import { getLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { getSecondaryLanguage } from "@/utils/language-policy"
@@ -152,10 +151,9 @@ export async function translateTextCore(options: TranslateTextOptions): Promise<
 
 export function validateTranslationConfigAndToast(
   config: Pick<Config, "providersConfig" | "translate" | "language">,
-  task: TranslationTask | "input" = "page",
+  task: TranslationTask = "page",
 ): boolean {
-  const { providersConfig, translate: translateConfig } = config
-  const providerConfig = task === "input" ? getProviderConfigById(providersConfig, translateConfig.providerId) : translationProvider(config, task)
+  const providerConfig = translationProvider(config, task)
   if (!providerConfig) {
     return false
   }

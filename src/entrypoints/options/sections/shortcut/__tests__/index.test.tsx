@@ -47,6 +47,42 @@ describe("shortcut defaults", () => {
     vi.restoreAllMocks()
   })
 
+  it("saves an input trigger and recorded shortcut, preserves the shortcut when switching back", async () => {
+    const store = await renderShortcuts()
+    const trigger = () => screen.getByRole("combobox", { name: "inputTranslation.trigger" })
+    expect(screen.queryByLabelText("inputTranslation.translateFocused")).not.toBeInTheDocument()
+    fireEvent.click(trigger())
+    fireEvent.click(screen.getByRole("option", { name: "inputTranslation.shortcut" }))
+    const recorder = await screen.findByLabelText("inputTranslation.translateFocused")
+    fireEvent.click(recorder)
+    fireEvent.keyDown(document, { key: "i", code: "KeyI", altKey: true })
+    await waitFor(async () => expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.inputTranslationShortcut).toBe("Alt+I"))
+    expect(store.get(configAtom).features.inputTranslationTrigger).toBe("shortcut")
+    fireEvent.click(trigger())
+    fireEvent.click(screen.getByRole("option", { name: "inputTranslation.tripleSpace" }))
+    await waitFor(() => expect(store.get(configAtom).features.inputTranslationTrigger).toBe("tripleSpace"))
+    expect(screen.queryByLabelText("inputTranslation.translateFocused")).not.toBeInTheDocument()
+    expect(store.get(configAtom).features.inputTranslationShortcut).toBe("Alt+I")
+  })
+
+  it("rejects conflicts with a saved input shortcut while three spaces is selected", async () => {
+    const config: Config = { ...customized, features: { ...customized.features, inputTranslationShortcut: "Alt+I" } }
+    const store = await renderShortcuts(config)
+    fireEvent.click(screen.getByLabelText("translationShortcuts.mode"))
+    fireEvent.keyDown(document, { key: "i", code: "KeyI", altKey: true })
+    expect(screen.getByRole("alert")).toHaveTextContent("translationShortcuts.conflict")
+    expect(store.get(configAtom).features.modeShortcut).toBe(config.features.modeShortcut)
+  })
+
+  it("restores the input trigger and clears its custom shortcut atomically with the other actions", async () => {
+    const config: Config = { ...customized, features: { ...customized.features, inputTranslationTrigger: "shortcut", inputTranslationShortcut: "Alt+I" } }
+    const store = await renderShortcuts(config)
+    fireEvent.click(screen.getByRole("button", { name: "translationShortcuts.restoreDefaults" }))
+    await waitFor(() => expect(store.get(configAtom).features.inputTranslationTrigger).toBe("tripleSpace"))
+    expect(store.get(configAtom).features.inputTranslationShortcut).toBe("")
+    expect((await storage.getItem<Config>(`local:${CONFIG_STORAGE_KEY}`))?.features.inputTranslationShortcut).toBe("")
+  })
+
   it("restores all three shortcuts atomically and preserves the other preferences", async () => {
     const store = await renderShortcuts()
     fireEvent.click(screen.getByRole("button", { name: "translationShortcuts.restoreDefaults" }))

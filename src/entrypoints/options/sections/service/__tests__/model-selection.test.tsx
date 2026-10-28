@@ -33,9 +33,21 @@ describe("model selection saves", () => {
     const store = await setup()
     chooseHover()
     await waitFor(() => expect(screen.getByRole("combobox", { name: "translationModels.hover" })).not.toBeDisabled())
-    const expected = { ...config, translate: { ...config.translate, modelProviders: { page: null, hover: second.id, video: null } } }
+    const expected = { ...config, translate: { ...config.translate, modelProviders: { ...config.translate.modelProviders, hover: second.id } } }
     expect(store.get(configAtom)).toEqual(expected)
     expect(await storage.getItem(`local:${CONFIG_STORAGE_KEY}`)).toEqual(expected)
+  })
+  it("assigns an input model independently and can follow the current service again", async () => {
+    const store = await setup()
+    const select = () => screen.getByRole("combobox", { name: "translationModels.input" })
+    fireEvent.click(select())
+    fireEvent.click(screen.getByRole("option", { name: "Service B · model-b" }))
+    await waitFor(() => expect(store.get(configAtom).translate.modelProviders.input).toBe(second.id))
+    expect(store.get(configAtom).translate.providerId).toBe(config.translate.providerId)
+    expect(store.get(configAtom).translate.modelProviders.page).toBeNull()
+    fireEvent.click(select())
+    fireEvent.click(screen.getAllByRole("option")[0])
+    await waitFor(async () => expect((await storage.getItem<typeof config>(`local:${CONFIG_STORAGE_KEY}`))?.translate.modelProviders.input).toBeNull())
   })
   it("restores the previous choice and exposes retryable controls after a storage failure", async () => {
     const store = await setup()

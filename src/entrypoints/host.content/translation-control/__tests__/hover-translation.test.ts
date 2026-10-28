@@ -475,7 +475,7 @@ describe("independent hover translation tasks", () => {
 
   it("keeps a fixed hover model running when the default or another feature's service changes", async () => {
     const provider = { ...DEFAULT_CONFIG.providersConfig[0], id: "hover-service", name: "Hover service", model: "hover-model" }
-    const config = { ...backtickConfig, providersConfig: [...backtickConfig.providersConfig, provider], translate: { ...backtickConfig.translate, modelProviders: { page: null, hover: provider.id, video: null } } }
+    const config = { ...backtickConfig, providersConfig: [...backtickConfig.providersConfig, provider], translate: { ...backtickConfig.translate, modelProviders: { page: null, hover: provider.id, video: null, input: null } } }
     setConfig(config)
     const tasks = pendingTranslations()
     await tap(document.querySelector("p")!, "`")

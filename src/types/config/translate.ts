@@ -4,13 +4,14 @@ import { isPageTranslationShortcutEmpty, isValidConfiguredPageTranslationShortcu
 import { TRANSLATION_FONTS } from "./translation-font"
 
 export const TRANSLATION_MODES = ["bilingual", "translationOnly"] as const
-export const TRANSLATION_TASKS = ["page", "hover", "video"] as const
+export const TRANSLATION_TASKS = ["page", "hover", "video", "input"] as const
 export type TranslationTask = (typeof TRANSLATION_TASKS)[number]
-export const DEFAULT_MODEL_PROVIDERS = { page: null, hover: null, video: null }
+export const DEFAULT_MODEL_PROVIDERS = { page: null, hover: null, video: null, input: null }
 const modelProvidersSchema = z.object({
   page: z.string().nonempty().nullable().default(null),
   hover: z.string().nonempty().nullable().default(null),
   video: z.string().nonempty().nullable().default(null),
+  input: z.string().nonempty().nullable().default(null),
 })
 export const translationModeSchema = z.enum(TRANSLATION_MODES)
 

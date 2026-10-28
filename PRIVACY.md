@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Last updated: October 8, 2026
+Last updated: October 28, 2026
 
 Readomi is a browser reading companion that translates web pages, paragraphs, text in editable fields and existing video subtitles. Readomi has no developer-operated translation server, account system, cloud sync, analytics or telemetry. The developer does not receive your page content, API keys or browsing history through the extension.
 
@@ -12,7 +12,7 @@ Translation requests contain the text being processed, prompts, language rules a
 
 Source language is determined within translation requests, with limited local checks to validate results. Readomi does not make a separate language-detection request when a page opens. Once page translation is enabled, navigation within the same site, new content or resuming translation can cause further requests. Choosing to preserve a language does not guarantee its text will never be sent to the service.
 
-Input-field translation is enabled by default. Pressing Space three times in the same focused editable field, with no more than 300 milliseconds between presses, sends that field’s text for translation. It supports text inputs, textareas and supported rich-text editors; password, disabled and read-only fields and input-method composition do not trigger translation. It does not upload each keystroke. A successful result replaces the field’s text without submitting the form. Canceling or leaving the field prevents an old result from being applied, but cannot undo a request already sent.
+Input-field translation is enabled by default and follows the currently selected service unless you choose a separate model in Settings → Translation service → Model selection. Its default trigger is pressing Space three times in the same focused editable field, with no more than 300 milliseconds between presses. You can instead record a custom shortcut in Settings → Shortcuts. Either trigger sends that field’s text to the service assigned to input-field translation. It supports text inputs, textareas and supported rich-text editors; password, disabled and read-only fields and input-method composition do not trigger translation. It does not upload each keystroke. A successful result replaces the field’s text without submitting the form. Canceling or leaving the field prevents an old result from being applied, but cannot undo a request already sent.
 
 Subtitle translation sends existing YouTube captions or HTML5 subtitle text, not video audio. It does not transcribe videos without captions. The packaged YouTube bridge may retrieve captions from restricted YouTube caption URLs using the page’s website credentials; model API keys are not passed to this bridge.
 

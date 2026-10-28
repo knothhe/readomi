@@ -7,6 +7,7 @@ export const TRANSLATION_TASK_LABELS = {
   page: "translationModels.page",
   hover: "translationModels.hover",
   video: "translationModels.video",
+  input: "translationModels.input",
 } as const
 
 /** A null assignment keeps the existing shared-service behavior. */

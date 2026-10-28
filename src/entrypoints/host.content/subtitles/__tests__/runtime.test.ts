@@ -927,10 +927,10 @@ describe("local subtitle runtime", () => {
     update(stored)
     await vi.advanceTimersByTimeAsync(1000)
     const host = document.querySelector("[data-readomi-subtitles]")
-    update({ ...stored, translate: { ...stored.translate, modelProviders: { page: provider.id, hover: provider.id, video: null } } })
+    update({ ...stored, translate: { ...stored.translate, modelProviders: { page: provider.id, hover: provider.id, video: null, input: null } } })
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(translateTextCore).toHaveBeenCalledTimes(1)
-    update({ ...stored, translate: { ...stored.translate, modelProviders: { page: null, hover: null, video: provider.id } } })
+    update({ ...stored, translate: { ...stored.translate, modelProviders: { page: null, hover: null, video: provider.id, input: null } } })
     expect(document.querySelector("[data-readomi-subtitles]")).toBe(host)
     expect(shadow.querySelector(".translated")?.textContent).toBe("你好")
     track.activeCues = [{ text: "A new video cue" }]

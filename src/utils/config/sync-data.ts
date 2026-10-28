@@ -128,9 +128,9 @@ export function mergeSyncedConfig(base: SyncedConfig, local: SyncedConfig, remot
     if (id !== null && !next.providersConfig.some(provider => provider.id === id && provider.enabled))
       next.translate.modelProviders[task] = chosenServices.modelProviders[task]
   }
-  const shortcuts = (c: SyncedConfig) => [c.translate.page.shortcut, c.features.modeShortcut, c.features.subtitlesShortcut]
+  const shortcuts = (c: SyncedConfig) => [c.translate.page.shortcut, c.features.modeShortcut, c.features.subtitlesShortcut, c.features.inputTranslationTrigger, c.features.inputTranslationShortcut] as const
   const chosenShortcuts = sameSyncValue(shortcuts(local), shortcuts(base)) ? shortcuts(remote) : shortcuts(local)
-  ;[next.translate.page.shortcut, next.features.modeShortcut, next.features.subtitlesShortcut] = chosenShortcuts
+  ;[next.translate.page.shortcut, next.features.modeShortcut, next.features.subtitlesShortcut, next.features.inputTranslationTrigger, next.features.inputTranslationShortcut] = chosenShortcuts
   return parseSyncedConfig(next)
 }
 

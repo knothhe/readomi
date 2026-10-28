@@ -23,12 +23,15 @@ export function ShortcutSection() {
   const togglePageId = useId()
   const modeId = useId()
   const subtitlesId = useId()
+  const inputTriggerId = useId()
+  const inputShortcutId = useId()
   const hoverId = useId()
-  const change = (action: "page" | "modeShortcut" | "subtitlesShortcut", shortcut: string) => {
+  const change = (action: "page" | "modeShortcut" | "subtitlesShortcut" | "inputTranslationShortcut", shortcut: string) => {
     const other = [
       action !== "page" ? translateConfig.page.shortcut : "",
       action !== "modeShortcut" ? features.modeShortcut : "",
       action !== "subtitlesShortcut" ? features.subtitlesShortcut : "",
+      action !== "inputTranslationShortcut" ? features.inputTranslationShortcut : "",
     ].filter(s => s.trim())
     const conflict = !!shortcut.trim() && ["mac", "windows"].some(platform => other.some(s => normalizePageTranslationShortcut(s, platform as "mac" | "windows") === normalizePageTranslationShortcut(shortcut, platform as "mac" | "windows")))
     setError(conflict)
@@ -53,6 +56,8 @@ export function ShortcutSection() {
         features: {
           modeShortcut: DEFAULT_CONFIG.features.modeShortcut,
           subtitlesShortcut: DEFAULT_CONFIG.features.subtitlesShortcut,
+          inputTranslationTrigger: DEFAULT_CONFIG.features.inputTranslationTrigger,
+          inputTranslationShortcut: DEFAULT_CONFIG.features.inputTranslationShortcut,
         },
       })
     }
@@ -83,6 +88,33 @@ export function ShortcutSection() {
           />
           <SettingsRow className="settings-shortcut-row" label={i18n.t("translationShortcuts.mode")} description={i18n.t("translationShortcuts.modeHint")} htmlFor={modeId} control={<ShortcutKeyRecorder key={resetVersion} id={modeId} shortcutKey={features.modeShortcut} onChange={shortcut => change("modeShortcut", shortcut)} />} />
           <SettingsRow className="settings-shortcut-row" label={i18n.t("translationShortcuts.subtitles")} description={i18n.t("translationShortcuts.subtitlesHint")} htmlFor={subtitlesId} control={<ShortcutKeyRecorder key={resetVersion} id={subtitlesId} shortcutKey={features.subtitlesShortcut} onChange={shortcut => change("subtitlesShortcut", shortcut)} />} />
+          <SettingsRow
+            className="settings-hover-trigger"
+            label={i18n.t("inputTranslation.trigger")}
+            description={i18n.t(features.inputTranslationTrigger === "shortcut" ? "inputTranslation.shortcutHint" : "inputTranslation.tripleSpaceHint")}
+            htmlFor={inputTriggerId}
+            control={(
+              <SettingsSelect
+                id={inputTriggerId}
+                className="w-[190px]"
+                value={features.inputTranslationTrigger}
+                options={(["tripleSpace", "shortcut"] as const).map(value => ({ value, label: i18n.t(`inputTranslation.${value}`) }))}
+                onValueChange={(value) => {
+                  setError(false)
+                  void setFeatures({ inputTranslationTrigger: value as typeof features.inputTranslationTrigger })
+                }}
+              />
+            )}
+          />
+          {features.inputTranslationTrigger === "shortcut" && (
+            <SettingsRow
+              className="settings-shortcut-row"
+              label={i18n.t("inputTranslation.translateFocused")}
+              description={i18n.t("inputTranslation.focusedHint")}
+              htmlFor={inputShortcutId}
+              control={<ShortcutKeyRecorder key={resetVersion} id={inputShortcutId} shortcutKey={features.inputTranslationShortcut} onChange={shortcut => change("inputTranslationShortcut", shortcut)} />}
+            />
+          )}
           <SettingsRow
             className="settings-hover-trigger"
             label={i18n.t("translationShortcuts.hover")}

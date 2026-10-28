@@ -847,11 +847,18 @@ subtitleStatus:
 
 inputTranslation:
   title: 输入框翻译
-  description: 在输入框中快速按三次空格，按翻译语言设置原地替换文字；每次间隔不超过 300 毫秒。
+  description: 使用三次空格或自定义快捷键，按翻译语言设置原地替换文字；触发方式可在快捷键中调整。
   languages: 其他语言译成主要语言，主要语言译成第二语言；选择保持原文时不替换。
   pending: 输入框翻译中…
   failed: 输入框翻译失败，原文已保留。
   replaceFailed: 无法替换输入，请在此编辑器中手动翻译。
+  trigger: 输入框翻译触发方式
+  tripleSpace: 三次空格
+  shortcut: 自定义快捷键
+  tripleSpaceHint: 在同一输入框快速按三次空格；每次间隔不超过 300 毫秒。
+  shortcutHint: 点击下方录制组合键；仅在输入框聚焦时触发，不自动提交。
+  translateFocused: 翻译当前输入框
+  focusedHint: 仅在输入框聚焦时触发，不自动提交。
 
 configSync:
   title: Chrome 同步
@@ -899,6 +906,7 @@ translationModels:
   page: 网页全文翻译
   hover: 悬停段落翻译
   video: 视频字幕翻译
+  input: 输入框翻译
   description: 为不同翻译功能选择已添加服务中的模型。选择后自动保存，下一次翻译请求生效；已有译文保留。
   follow: 跟随当前服务 · $1
   unconfigured: 未配置翻译模型

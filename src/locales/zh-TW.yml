@@ -859,11 +859,18 @@ subtitleStatus:
 
 inputTranslation:
   title: 輸入框翻譯
-  description: 在輸入框中快速按三次空白鍵，依翻譯語言設定原地替換文字；每次間隔不超過 300 毫秒。
+  description: 使用三次空白鍵或自訂快捷鍵，依翻譯語言設定原地替換文字；觸發方式可在快捷鍵中調整。
   languages: 其他語言譯成主要語言，主要語言譯成第二語言；選擇保留原文時不替換。
   pending: 輸入框翻譯中…
   failed: 輸入框翻譯失敗，原文已保留。
   replaceFailed: 無法替換輸入，請在此編輯器中手動翻譯。
+  trigger: 輸入框翻譯觸發方式
+  tripleSpace: 三次空白鍵
+  shortcut: 自訂快捷鍵
+  tripleSpaceHint: 在同一輸入框快速按三次空白鍵；每次間隔不超過 300 毫秒。
+  shortcutHint: 點擊下方錄製組合鍵；僅在輸入框聚焦時觸發，不自動提交。
+  translateFocused: 翻譯目前輸入框
+  focusedHint: 僅在輸入框聚焦時觸發，不自動提交。
 
 configSync:
   title: Chrome 同步
@@ -911,6 +918,7 @@ translationModels:
   page: 網頁全文翻譯
   hover: 懸停段落翻譯
   video: 影片字幕翻譯
+  input: 輸入框翻譯
   description: 為不同翻譯功能選擇已新增服務中的模型。選擇後自動儲存，下次翻譯請求生效；已有譯文保留。
   follow: 跟隨目前服務 · $1
   unconfigured: 尚未設定翻譯模型

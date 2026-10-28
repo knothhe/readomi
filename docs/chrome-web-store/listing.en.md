@@ -1,6 +1,6 @@
 # Readomi English store listing
 
-Copy the fields below into the English listing. Use the screenshots in `assets/en/`. Choose a reading or language category under Productivity if offered by the current dashboard.
+Copy the fields below into the English listing. Use the screenshots in `assets/chrome-web-store/en/`. Choose a reading or language category under Productivity if offered by the current dashboard.
 
 ## Name
 
@@ -21,11 +21,11 @@ TRANSLATION BUILT AROUND READING
 • Switch between bilingual and translation-only views, or restore the original text.
 • Optionally translate one paragraph by pointing to it and pressing your configured trigger key.
 • Translate enabled YouTube captions and HTML5 subtitle tracks. Adjust subtitle size, style and position.
-• Translate a draft in place by pressing Space three times in an editable field; the extension does not submit the form.
+• Translate a draft in place by pressing Space three times or using a custom shortcut in an editable field; the extension does not submit the form.
 • Optionally bold the beginnings of English words to suit your reading preference.
 
 CHOOSE YOUR OWN SERVICE
-Use OpenAI, Anthropic, Gemini, DeepSeek, a compatible API or a local model. Configure and test the service manually, or copy the setup instructions for your coding agent to verify a service and prepare its configuration. Add and reorder multiple services and switch from the popup. Existing translations remain visible; new requests use the selected service. Discover models and customize prompts and request parameters.
+Use OpenAI, Anthropic, Gemini, DeepSeek, a compatible API or a local model. Configure and test the service manually, or copy the setup instructions for your coding agent to verify a service and prepare its configuration. Add and reorder multiple services and switch from the popup. Existing translations remain visible; new requests use the selected service. Discover models and customize prompts and request parameters. Choose models separately for full-page, hover paragraph, video subtitle and input-field translation; each follows the current service by default.
 
 MAKE IT YOURS
 Choose a primary and second language: other languages translate into your primary language, while primary-language text can translate into your second language or stay unchanged. Toggle subtitles for the current page, disable the extension on a specific site, and use built-in site rules or preview and save rules prepared by your agent. Clear web translations for the current domain and subtitles and summaries for the current page from the popup, or clear all translation caches in Settings. Configure shortcuts and page translation styles. Choose light, dark or system appearance and one of four accent colors. The interface supports several languages, including English and Simplified Chinese. Import and export settings locally.

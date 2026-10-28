@@ -884,11 +884,18 @@ subtitleStatus:
 
 inputTranslation:
   title: Input translation
-  description: Quickly press Space three times in an input to replace its text using your translation language settings; allow at most 300 ms between presses.
+  description: Use three presses of Space or a custom shortcut to replace text in place using your translation language settings. Change the trigger in Shortcuts.
   languages: Other languages translate into your primary language; your primary language translates into your secondary language. Keep original leaves the input unchanged.
   pending: Translating input…
   failed: Input translation failed. Your original text was kept.
   replaceFailed: Could not replace the input. Please translate manually in this editor.
+  trigger: Input translation trigger
+  tripleSpace: Space three times
+  shortcut: Custom shortcut
+  tripleSpaceHint: Quickly press Space three times in the same input, with no more than 300 ms between presses.
+  shortcutHint: Click below to record a key combination. It only works in a focused input and does not submit the form.
+  translateFocused: Translate focused input
+  focusedHint: Only works in a focused input and does not submit the form.
 
 configSync:
   title: Chrome sync
@@ -936,6 +943,7 @@ translationModels:
   page: Full-page translation
   hover: Hover paragraph translation
   video: Video subtitle translation
+  input: Input translation
   description: Choose a model from your added services for each translation feature. Changes save automatically and apply to the next request; existing translations stay.
   follow: Follow current service · $1
   unconfigured: No translation model configured

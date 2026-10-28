@@ -32,7 +32,7 @@ function fillMissingShortcutDefaults(input: unknown) {
   if (features.modeShortcut !== undefined && features.subtitlesShortcut !== undefined)
     return input
   const translate = candidate.translate as { page?: { shortcut?: unknown } } | undefined
-  const occupied = [translate?.page?.shortcut, features.modeShortcut, features.subtitlesShortcut]
+  const occupied = [translate?.page?.shortcut, features.modeShortcut, features.subtitlesShortcut, features.inputTranslationShortcut]
     .filter((value): value is string => typeof value === "string" && !!value.trim())
   const next = { ...features }
   const defaults = { modeShortcut: DEFAULT_MODE_SHORTCUT_KEY, subtitlesShortcut: DEFAULT_SUBTITLES_SHORTCUT_KEY }
@@ -62,6 +62,8 @@ export const configSchema = z.preprocess(fillMissingShortcutDefaults, z.object({
   features: z.object({
     disabledSites: z.array(z.string()).default([]),
     inputTranslation: z.boolean().default(true),
+    inputTranslationTrigger: z.enum(["tripleSpace", "shortcut"]).default("tripleSpace"),
+    inputTranslationShortcut: pageTranslationShortcutSchema.default(""),
     hoverTranslation: z.boolean().default(false),
     hoverStream: z.boolean().default(true),
     hoverHotkey: z.enum(["alt", "control", "shift", "backtick", "clickAndHold"]).default("alt"),
@@ -74,7 +76,7 @@ export const configSchema = z.preprocess(fillMissingShortcutDefaults, z.object({
     subtitleMode: z.enum(["bilingual", "translationOnly"]).default("bilingual"),
   }),
 }).superRefine((data, ctx) => {
-  const shortcuts = [data.translate.page.shortcut, data.features.modeShortcut, data.features.subtitlesShortcut].filter(s => s.trim())
+  const shortcuts = [data.translate.page.shortcut, data.features.modeShortcut, data.features.subtitlesShortcut, data.features.inputTranslationShortcut].filter(s => s.trim())
   for (const platform of ["mac", "windows"] as const) {
     const normalized = shortcuts.map(s => normalizePageTranslationShortcut(s, platform))
     if (new Set(normalized).size !== normalized.length) {

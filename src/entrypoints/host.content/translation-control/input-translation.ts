@@ -6,9 +6,11 @@ import { describeTranslationError } from "@/utils/error/translation-error"
 import { isExtensionContextInvalidatedError } from "@/utils/extension-context"
 import { validateTranslationConfigAndToast } from "@/utils/host/translate/translate-text"
 import { translateTextForInput } from "@/utils/host/translate/translate-variants"
+import { eventMatchesHotkey } from "@/utils/hotkeys"
 import { getDeepActiveElement, getEditable, readEditableText } from "@/utils/input-translation/editable"
 import { replaceEditableText } from "@/utils/input-translation/replace-text"
 import { getHostConfig, watchHostConfig } from "@/utils/site-rules/preview-config"
+import { translationProvider } from "@/utils/translation-models"
 
 const SPACE_INTERVAL_MS = 300
 
@@ -48,10 +50,10 @@ function showPending(element: Editable): () => void {
 }
 
 function translationSettings(config: Config | null) {
-  return JSON.stringify(config && [config.language, config.translate.providerId, config.translate.customPromptsConfig, config.providersConfig, config.features.inputTranslation])
+  return JSON.stringify(config && [config.language, translationProvider(config, "input"), config.translate.customPromptsConfig, config.features.inputTranslation, config.features.inputTranslationTrigger, config.features.inputTranslationShortcut])
 }
 
-/** Three separate spaces in one focused editor, following Read Frog's 300 ms cadence. */
+/** Translate one focused editor through three separate spaces or a configured shortcut. */
 export async function bindInputTranslation(doc: Document = document, isContextInvalid: () => boolean = () => false): Promise<() => void> {
   let config = await getHostConfig()
   if (isContextInvalid())
@@ -128,8 +130,7 @@ export async function bindInputTranslation(doc: Document = document, isContextIn
 
   const keydown = (event: KeyboardEvent) => {
     if (stopped || isContextInvalid() || !config?.features.inputTranslation || event.defaultPrevented
-      || event.key !== " " || event.repeat || event.isComposing || event.keyCode === 229
-      || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      || event.repeat || event.isComposing || event.keyCode === 229) {
       reset()
       return
     }
@@ -138,12 +139,23 @@ export async function bindInputTranslation(doc: Document = document, isContextIn
       reset()
       return
     }
-    const now = Date.now()
-    count = element === lastEditor && now - lastPress <= SPACE_INTERVAL_MS ? count + 1 : 1
-    lastEditor = element
-    lastPress = now
-    if (count < 3)
-      return
+    if (config.features.inputTranslationTrigger === "shortcut") {
+      reset()
+      if (!eventMatchesHotkey(event, config.features.inputTranslationShortcut))
+        return
+    }
+    else {
+      if (event.key !== " " || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        reset()
+        return
+      }
+      const now = Date.now()
+      count = element === lastEditor && now - lastPress <= SPACE_INTERVAL_MS ? count + 1 : 1
+      lastEditor = element
+      lastPress = now
+      if (count < 3)
+        return
+    }
     reset()
     if (!readEditableText(element).trim())
       return
