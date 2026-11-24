@@ -29,7 +29,67 @@ function isIframe(frameId: number | undefined): boolean {
   return frameId !== undefined && frameId !== 0
 }
 
+async function boundedFrameResults<T>(task: Promise<T[]>): Promise<T[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([task, new Promise<T[]>((resolve) => {
+      timer = setTimeout(resolve, 250, [])
+    })])
+  }
+  catch {
+    return []
+  }
+  finally {
+    clearTimeout(timer)
+  }
+}
+
 export function translationMessage() {
+  onMessage("relayHoverGesture", async ({ sender, data }) => {
+    const tabId = sender?.tab?.id
+    if (tabId === undefined || typeof sender?.frameId !== "number")
+      return
+    if (data.hotkey === "Escape") {
+      await sendMessage("receiveHoverGesture", data, tabId)
+      return
+    }
+    const frames = await browser.webNavigation.getAllFrames({ tabId }) ?? []
+    const samples = (await Promise.all(frames.map(({ frameId }) => boundedFrameResults(browser.scripting.executeScript({
+      target: { tabId, frameIds: [frameId] },
+      injectImmediately: true,
+      func: () => {
+        const event = window.__READOMI_TOP_MOUSE_EVENT__
+        return event
+          ? { x: event.clientX, y: event.clientY, time: performance.timeOrigin + event.timeStamp, topCoordinates: true }
+          : window.__READOMI_POINTER__ ?? null
+      },
+    }))))).flat()
+    const latest = samples.sort((a, b) => (b.result?.time ?? 0) - (a.result?.time ?? 0))[0]
+    const point = latest?.result
+    if (!point)
+      return
+    let frameId = latest.frameId
+    if (point.topCoordinates) {
+      // A parked document can supply the last coordinates. Resolve the current
+      // embedding chain before delivering a gesture to exactly one recipient.
+      const hits = (await Promise.all(frames.map(({ frameId }) => boundedFrameResults(browser.scripting.executeScript({
+        target: { tabId, frameIds: [frameId] },
+        injectImmediately: true,
+        args: [point],
+        func: point => !!window.__READOMI_HIT_POINTER__?.(point),
+      }))))).flat()
+      const owner = hits.find(hit => hit.result)
+      if (!owner)
+        return
+      frameId = owner.frameId
+    }
+    await sendMessage("receiveHoverGesture", { ...data, point }, tabId, frameId)
+  })
+  onMessage("framePageShortcut", async ({ sender }) => {
+    const tabId = sender?.tab?.id
+    if (tabId !== undefined && sender?.frameId)
+      await sendMessage("topPageShortcut", undefined, tabId, 0)
+  })
   onMessage("getEnablePageTranslationByTabId", async (msg) => {
     const { tabId } = msg.data
     return await getTranslationState(tabId)

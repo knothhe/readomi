@@ -12,6 +12,11 @@ const getAllFramesMock = vi.fn()
 const executeScriptMock = vi.fn()
 const storageGetItemMock = vi.fn()
 
+const registerMessage = vi.fn()
+const isTabSiteDisabled = vi.fn()
+vi.mock("@/utils/message", () => ({ onMessage: registerMessage }))
+vi.mock("../site-disable", () => ({ isTabSiteDisabled }))
+
 const loggerErrorMock = vi.fn()
 const loggerWarnMock = vi.fn()
 
@@ -96,6 +101,26 @@ describe("setupIframeInjection", () => {
     executeScriptMock.mockResolvedValue(undefined)
   })
 
+  it("activates only the requesting hover document on an enabled site", async () => {
+    await setupSubject()
+    const activate = registerMessage.mock.calls.find(([name]) => name === "activateHoverFrame")![1]
+    const sender = { tab: { id: currentTabId }, frameId: 4, documentId: "hovered-document" }
+    isTabSiteDisabled.mockResolvedValue(true)
+    await activate({ sender })
+    isTabSiteDisabled.mockResolvedValue(false)
+    await activate({ sender: { frameId: 4 } })
+    await activate({ sender: { ...sender, frameId: 0 } })
+    expect(executeScriptMock).not.toHaveBeenCalled()
+
+    await activate({ sender })
+    expect(getAllFramesMock).not.toHaveBeenCalled()
+    expect(executeScriptMock).toHaveBeenCalledTimes(2)
+    expect(executeScriptMock).toHaveBeenLastCalledWith({
+      target: { tabId: currentTabId, documentIds: ["hovered-document"] },
+      files: [HOST_CONTENT_SCRIPT_FILE],
+    })
+  })
+
   it("skips iframe injection when page translation and node translation are not enabled", async () => {
     const { onCompleted } = await setupSubject()
     storageGetItemMock.mockResolvedValue({ enabled: false })
@@ -122,7 +147,7 @@ describe("setupIframeInjection", () => {
 
     await onCompleted(createDetails())
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
     expect(executeScriptMock).toHaveBeenNthCalledWith(1, {
       target: { tabId: currentTabId, documentIds: ["doc-1"] },
       files: [INPUT_INJECTOR_SCRIPT_FILE],
@@ -133,7 +158,7 @@ describe("setupIframeInjection", () => {
       files: [INPUT_TRANSLATION_SCRIPT_FILE],
       world: "ISOLATED",
     })
-    expect(executeScriptMock).toHaveBeenNthCalledWith(3, expect.objectContaining({
+    expect(executeScriptMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       target: { tabId: currentTabId, documentIds: ["doc-1"] },
       files: [HOST_CONTENT_SCRIPT_FILE],
     }))
@@ -147,8 +172,8 @@ describe("setupIframeInjection", () => {
       url: "https://browse.library.kiwix.org/content/wikipedia_en_all_maxi_2026-02/A/Computer_science",
     }))
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
-    expect(executeScriptMock).toHaveBeenNthCalledWith(3, expect.objectContaining({
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
+    expect(executeScriptMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       target: { tabId: currentTabId, documentIds: ["doc-1"] },
       files: [HOST_CONTENT_SCRIPT_FILE],
     }))
@@ -169,8 +194,8 @@ describe("setupIframeInjection", () => {
       url: "https://browse.library.kiwix.org/viewer",
     }))
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
-    expect(executeScriptMock).toHaveBeenNthCalledWith(3, expect.objectContaining({
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
+    expect(executeScriptMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       target: { tabId: currentTabId, frameIds: [2] },
       files: [HOST_CONTENT_SCRIPT_FILE],
     }))
@@ -186,8 +211,8 @@ describe("setupIframeInjection", () => {
       url: "https://reader.example/late-frame",
     }))
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
-    expect(executeScriptMock).toHaveBeenNthCalledWith(3, expect.objectContaining({
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
+    expect(executeScriptMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       target: { tabId: currentTabId, documentIds: ["doc-late"] },
       files: [HOST_CONTENT_SCRIPT_FILE],
     }))
@@ -203,8 +228,8 @@ describe("setupIframeInjection", () => {
 
     await injectHostContentIntoTabIframes(currentTabId, { requirePageTranslationEnabled: false })
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
-    expect(executeScriptMock).toHaveBeenNthCalledWith(3, expect.objectContaining({
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
+    expect(executeScriptMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       target: { tabId: currentTabId, frameIds: [2] },
       files: [HOST_CONTENT_SCRIPT_FILE],
     }))
@@ -223,8 +248,8 @@ describe("setupIframeInjection", () => {
     await onCompleted(details)
     await onCompleted(details)
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
-    expect(executeScriptMock).toHaveBeenNthCalledWith(3, expect.objectContaining({
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
+    expect(executeScriptMock).toHaveBeenNthCalledWith(4, expect.objectContaining({
       target: { tabId: currentTabId, documentIds: ["doc-1"] },
       files: [HOST_CONTENT_SCRIPT_FILE],
     }))
@@ -239,7 +264,7 @@ describe("setupIframeInjection", () => {
 
     await onCompleted(createDetails({ documentId: undefined }))
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
     for (const [call] of executeScriptMock.mock.calls) {
       expect(call.target).toEqual({ tabId: currentTabId, frameIds: [2] })
     }
@@ -251,12 +276,12 @@ describe("setupIframeInjection", () => {
 
     await onCompleted(details)
     await onCompleted(details)
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
 
     onBeforeNavigate({ tabId: currentTabId, frameId: 2 })
     await onCompleted(details)
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(6)
+    expect(executeScriptMock).toHaveBeenCalledTimes(8)
   })
 
   it("prunes injected records for frames that are no longer live", async () => {
@@ -292,7 +317,7 @@ describe("setupIframeInjection", () => {
       url: "https://example.com/old-frame",
     }))
 
-    expect(executeScriptMock).toHaveBeenCalledTimes(9)
+    expect(executeScriptMock).toHaveBeenCalledTimes(12)
     expect(executeScriptMock).toHaveBeenLastCalledWith(expect.objectContaining({
       target: { tabId: currentTabId, documentIds: ["doc-stale"] },
       files: [HOST_CONTENT_SCRIPT_FILE],
@@ -305,14 +330,14 @@ describe("setupIframeInjection", () => {
 
     await onCompleted(details)
     await onCompleted(details)
-    expect(executeScriptMock).toHaveBeenCalledTimes(3)
+    expect(executeScriptMock).toHaveBeenCalledTimes(4)
 
     onBeforeNavigate({ tabId: currentTabId, frameId: 0 })
     await onCompleted(details)
-    expect(executeScriptMock).toHaveBeenCalledTimes(6)
+    expect(executeScriptMock).toHaveBeenCalledTimes(8)
 
     onRemoved(currentTabId)
     await onCompleted(details)
-    expect(executeScriptMock).toHaveBeenCalledTimes(9)
+    expect(executeScriptMock).toHaveBeenCalledTimes(12)
   })
 })

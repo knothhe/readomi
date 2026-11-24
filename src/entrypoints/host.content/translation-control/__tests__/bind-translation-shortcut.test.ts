@@ -2,6 +2,7 @@
 import type { PageTranslationManager } from "../page-translation"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
+import { onMessage, sendMessage } from "@/utils/message"
 import { bindTranslationShortcutKey } from "../bind-translation-shortcut"
 
 const { mockGetLocalConfig } = vi.hoisted(() => ({
@@ -11,6 +12,11 @@ const { mockGetLocalConfig } = vi.hoisted(() => ({
 vi.mock("@/utils/config/storage", () => ({
   getLocalConfig: mockGetLocalConfig,
   watchLocalConfig: vi.fn(() => vi.fn()),
+}))
+
+vi.mock("@/utils/message", () => ({
+  onMessage: vi.fn(() => vi.fn()),
+  sendMessage: vi.fn(async () => {}),
 }))
 
 function createManager(isActive = false): PageTranslationManager {
@@ -40,6 +46,37 @@ describe("bindTranslationShortcutKey", () => {
     document.body.innerHTML = ""
   })
   afterEach(() => cleanups.splice(0).forEach(fn => fn()))
+
+  it("toggles the top manager when a frame shortcut arrives", async () => {
+    const manager = createManager()
+    await bind(manager)
+    const listener = vi.mocked(onMessage).mock.calls.find(([name]) => name === "topPageShortcut")![1]
+    await listener({} as never)
+    expect(manager.start).toHaveBeenCalledOnce()
+  })
+
+  it("only forwards trusted subframe shortcuts", async () => {
+    const manager = createManager()
+    const frame = document.createElement("iframe")
+    document.body.append(frame)
+    const target = frame.contentDocument!
+    const listen = vi.spyOn(target, "addEventListener")
+    vi.stubGlobal("window", frame.contentWindow)
+    try {
+      cleanups.push(await bindTranslationShortcutKey(manager, target))
+      const handler = listen.mock.calls.find(([name]) => name === "keydown")![1] as EventListener
+      const key = { key: "e", altKey: true, ctrlKey: false, shiftKey: false, metaKey: false, preventDefault: vi.fn(), stopPropagation: vi.fn() }
+      handler({ ...key, isTrusted: false } as unknown as Event)
+      expect(sendMessage).not.toHaveBeenCalled()
+      handler({ ...key, isTrusted: true } as unknown as Event)
+      expect(sendMessage).toHaveBeenCalledExactlyOnceWith("framePageShortcut")
+      expect(manager.start).not.toHaveBeenCalled()
+    }
+    finally {
+      vi.unstubAllGlobals()
+      listen.mockRestore()
+    }
+  })
 
   it("starts translation on the shortcut and swallows the key press", async () => {
     const manager = createManager(false)

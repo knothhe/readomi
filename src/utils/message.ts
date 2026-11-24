@@ -1,5 +1,6 @@
 import type { BrowserEnvironment } from "./browser-environment"
 import type { ConfigSyncStatus } from "./config/sync-state"
+import type { PointerSample } from "./frame-pointer"
 import type { RequestErrorMeta } from "./request/retry-policy"
 import type { SubtitleBatchOutcome, SubtitleBatchRequest } from "./subtitles/translation-batch"
 import type { LangCodeISO6393 } from "@/definitions"
@@ -29,6 +30,11 @@ interface ProtocolMap {
   setConfigSyncEnabled: (data: { enabled: false } | { enabled: true, source: "local" | "remote", revision: string | null }) => Promise<{ environment: BrowserEnvironment, status: ConfigSyncStatus }>
   retryConfigSync: () => Promise<{ environment: BrowserEnvironment, status: ConfigSyncStatus }>
   getTopFrameUrl: () => Promise<string>
+  activateHoverFrame: () => void
+  relayHoverGesture: (data: { hotkey: string }) => void
+  receiveHoverGesture: (data: { hotkey: string, point?: PointerSample }) => void
+  framePageShortcut: () => void
+  topPageShortcut: () => void
   // navigation
   openOptionsPage: (data?: { section?: string, siteRulesTab?: "builtin" | "custom" }) => void
   openSiteRulePanel: () => void

@@ -5,12 +5,15 @@ import { getLocalConfig, watchLocalConfig } from "@/utils/config/storage"
 import { DEFAULT_CONFIG } from "@/utils/constants/config"
 import { removeAllTranslatedWrapperNodes, translateWalkedElement } from "@/utils/host/translate/node-manipulation"
 import { createInlineHoverStreamPreview } from "@/utils/host/translate/ui/inline-hover-stream-preview"
+import { sendMessage } from "@/utils/message"
 import { bindHoverTranslation } from "../hover-translation"
 
 vi.mock("@/utils/config/storage", () => ({ getLocalConfig: vi.fn(), watchLocalConfig: vi.fn(() => vi.fn()) }))
 vi.mock("@/utils/host/translate/node-manipulation", () => ({ translateWalkedElement: vi.fn(), removeAllTranslatedWrapperNodes: vi.fn() }))
 vi.mock("@/utils/host/translate/ui/inline-hover-stream-preview", () => ({ createInlineHoverStreamPreview: vi.fn(() => undefined) }))
 vi.mock("@/utils/host/translate/translate-text", () => ({ validateTranslationConfigAndToast: () => true }))
+
+vi.mock("@/utils/message", () => ({ onMessage: vi.fn(() => vi.fn()), sendMessage: vi.fn(async () => {}) }))
 
 let cleanup: () => void
 let pageListeners: AbortController
@@ -45,6 +48,30 @@ function backtick(type: "keydown" | "keyup", init: KeyboardEventInit = {}, targe
   return event
 }
 
+it("handles a trusted local gesture without messaging when a child frame exists", async () => {
+  cleanup()
+  document.body.append(document.createElement("iframe"))
+  const paragraph = document.querySelector("p")!
+  const query = vi.spyOn(document, "querySelectorAll")
+  const original = Document.prototype.querySelectorAll
+  query.mockImplementation(selector => original.call(document, selector === ":hover" ? "p" : selector))
+  const listen = vi.spyOn(window, "addEventListener")
+  try {
+    cleanup = bindHoverTranslation()
+    await vi.advanceTimersByTimeAsync(0)
+    const handler = listen.mock.calls.find(([type]) => type === "keydown")![1] as EventListener
+    handler({ key: "Alt", isTrusted: true, composedPath: () => [paragraph] } as unknown as Event)
+    up()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(translateWalkedElement).toHaveBeenCalledOnce()
+    expect(sendMessage).not.toHaveBeenCalled()
+  }
+  finally {
+    query.mockRestore()
+    listen.mockRestore()
+  }
+})
+
 describe("backtick ownership before the page routes typing into its editor", () => {
   beforeEach(() => setConfig(backtickConfig))
 
@@ -72,6 +99,14 @@ describe("backtick ownership before the page routes typing into its editor", () 
     document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "a", code: "KeyA", bubbles: true, cancelable: true }))
     expect(routeToEditor).toHaveBeenCalled()
     expect(document.activeElement).toBe(input)
+  })
+
+  it("releases the previous paragraph when the pointer exits the document", async () => {
+    document.querySelector("p")!.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }))
+    expect(backtick("keydown").defaultPrevented).toBe(false)
+    backtick("keyup")
+    await vi.advanceTimersByTimeAsync(600)
+    expect(translateWalkedElement).not.toHaveBeenCalled()
   })
 
   it("consumes repeats and release while translating a held key only once", async () => {

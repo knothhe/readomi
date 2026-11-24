@@ -3,6 +3,7 @@ import { getDefaultStore } from "jotai"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
 import { eventMatchesHotkey, isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
+import { onMessage, sendMessage } from "@/utils/message"
 import { isPageTranslationShortcutEmpty, isValidConfiguredPageTranslationShortcut } from "@/utils/page-translation-shortcut"
 import { getHostConfig, watchHostConfig } from "@/utils/site-rules/preview-config"
 
@@ -10,12 +11,23 @@ import { getHostConfig, watchHostConfig } from "@/utils/site-rules/preview-confi
  * Toggles page translation on the configured shortcut. Typing into a field
  * never triggers it, and a matched press does not reach the page.
  */
-export async function bindTranslationShortcutKey(pageTranslationManager: PageTranslationManager, target: Document = document, isContextInvalid: () => boolean = () => false) {
+export async function bindTranslationShortcutKey(pageTranslationManager: PageTranslationManager | null, target: Document = document, isContextInvalid: () => boolean = () => false) {
   let config = await getHostConfig()
   if (isContextInvalid())
     return () => {}
   const unwatch = watchHostConfig(next => config = next)
 
+  const toggle = () => {
+    if (isContextInvalid() || !pageTranslationManager)
+      return
+    if (pageTranslationManager.isActive) {
+      pageTranslationManager.stop()
+    }
+    else {
+      void pageTranslationManager.start()
+    }
+  }
+  const off = window === window.top ? onMessage("topPageShortcut", toggle) : () => {}
   const onKeyDown = (event: KeyboardEvent) => {
     if (isContextInvalid())
       return
@@ -36,16 +48,15 @@ export async function bindTranslationShortcutKey(pageTranslationManager: PageTra
       return
     event.preventDefault()
     event.stopPropagation()
-    if (pageTranslationManager.isActive) {
-      pageTranslationManager.stop()
-    }
-    else {
-      void pageTranslationManager.start()
-    }
+    if (window === window.top)
+      toggle()
+    else if (event.isTrusted)
+      void sendMessage("framePageShortcut").catch(() => {})
   }
 
   target.addEventListener("keydown", onKeyDown, true)
   return () => {
+    off()
     unwatch()
     target.removeEventListener("keydown", onKeyDown, true)
   }

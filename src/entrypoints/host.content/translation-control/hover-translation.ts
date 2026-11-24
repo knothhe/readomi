@@ -1,8 +1,9 @@
 import type { LangCodeISO6393 } from "@/definitions"
 import type { Config } from "@/types/config/config"
-import { CONTENT_WRAPPER_CLASS } from "@/utils/constants/dom-labels"
+import type { PointerSample } from "@/utils/frame-pointer"
 import { getRandomUUID } from "@/utils/crypto-polyfill"
 import { isExtensionContextInvalidatedError, isExtensionContextValid } from "@/utils/extension-context"
+import { hitPointer, hoveredLeaf, samplePointer } from "@/utils/frame-pointer"
 import { flushBatchedOperations } from "@/utils/host/dom/batch-dom"
 import { hasNoWalkAncestor, isDontWalkIntoAndDontTranslateAsChildElement, isHTMLElement, isWalkBlockedElement, isWithinIncludeScope } from "@/utils/host/dom/filter"
 import { findNearestAncestorBlockNodeFor } from "@/utils/host/dom/find"
@@ -17,6 +18,7 @@ import { createInlineHoverStreamPreview } from "@/utils/host/translate/ui/inline
 import { beginSiteRuleStyleOperation } from "@/utils/host/translate/ui/site-rule-styles"
 import { isEditableTarget } from "@/utils/hotkeys"
 import { logger } from "@/utils/logger"
+import { onMessage, sendMessage } from "@/utils/message"
 import { getEffectiveSiteRule } from "@/utils/site-rules/effective"
 import { getHostConfig, getHostPreviewContext, watchHostConfig } from "@/utils/site-rules/preview-config"
 import { describePreviewElement, recordSiteRulePreview } from "@/utils/site-rules/preview-observations"
@@ -65,6 +67,8 @@ export function bindHoverTranslation(target: Document = document) {
   const move = (event: MouseEvent) => {
     if (mouseStart && Math.hypot(event.clientX - mouseStart.x, event.clientY - mouseStart.y) > 6)
       cancel()
+    if (window === window.top)
+      samplePointer(event)
     let candidate = event.composedPath()[0]
     // Preview text lives in a shadow root. Route it back to its owned wrapper
     // so repeat triggers resolve to the paragraph rather than preview internals.
@@ -201,8 +205,23 @@ export function bindHoverTranslation(target: Document = document) {
         activeTranslations.delete(block)
     }
   }
-  const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null) => {
-    if (!element || press || controller.signal.aborted || !isExtensionContextValid())
+  const pointerTarget = () => {
+    const event = window.__READOMI_TOP_MOUSE_EVENT__
+    const point = event && window.frames.length
+      ? { x: event.clientX, y: event.clientY, time: event.timeStamp, topCoordinates: true }
+      : window.__READOMI_POINTER__
+    if (point) {
+      const hit = hitPointer(point)
+      if (!hovered || !hit || !contains(hit, hovered))
+        return hit
+    }
+    if (hovered?.isConnected)
+      return hovered
+    const leaf = Array.from(target.querySelectorAll(":hover")).at(-1)
+    return leaf && !leaf.matches("iframe,html,body") ? leaf : null
+  }
+  const start = (hotkey: Config["features"]["hoverHotkey"], element: Element | null, relay = false) => {
+    if ((!element && !relay) || press || controller.signal.aborted || !isExtensionContextValid())
       return
     let triggered = false
     const trigger = () => {
@@ -210,7 +229,13 @@ export function bindHoverTranslation(target: Document = document) {
       if (triggered)
         return
       triggered = true
-      const candidate = hotkey === "clickAndHold" ? element : hovered ?? element
+      const candidate = relay ? hoveredLeaf() : pointerTarget()
+      if (relay && !candidate) {
+        void sendMessage("relayHoverGesture", { hotkey }).catch(() => {})
+        return
+      }
+      if (!candidate || (hotkey === "clickAndHold" && element !== candidate))
+        return
       const token = generation
       void getHostConfig().then(async (config) => {
         if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === generation && !controller.signal.aborted && candidate.isConnected)
@@ -228,6 +253,29 @@ export function bindHoverTranslation(target: Document = document) {
     pressedKeys.clear()
     cancel()
   }
+  const receive = (hotkey: string, point?: PointerSample) => {
+    if (hotkey === "Escape") {
+      reset()
+      abortTranslations()
+      return
+    }
+    if (!point)
+      return
+    const token = generation
+    void getHostConfig().then((config) => {
+      const element = hitPointer(point)
+      if (config?.features.hoverTranslation && config.features.hoverHotkey === hotkey && token === generation
+        && !controller.signal.aborted && element?.isConnected) {
+        return translate(element, config)
+      }
+    }).catch(error => logger.warn("Could not translate hovered frame", error))
+  }
+  if (window === window.top)
+    window.__READOMI_HIT_POINTER__ = hitPointer
+  window.__READOMI_HOVER_GESTURE__ = receive
+  const receiveGesture = window === window.top
+    ? onMessage("receiveHoverGesture", ({ data }) => receive(data.hotkey, data.point))
+    : () => {}
   const resetKeyboard = () => {
     consumedKey = null
     reset()
@@ -280,6 +328,8 @@ export function bindHoverTranslation(target: Document = document) {
     if (event.repeat)
       return
     if (event.key === "Escape") {
+      if (event.isTrusted && currentConfig?.features.hoverTranslation)
+        void sendMessage("relayHoverGesture", { hotkey: "Escape" }).catch(() => {})
       reset()
       abortTranslations()
       return
@@ -290,10 +340,12 @@ export function bindHoverTranslation(target: Document = document) {
       cancel()
       return
     }
-    if (event.defaultPrevented || isEditableTarget(event.target))
+    if (event.defaultPrevented || event.isComposing || event.composedPath().some(isEditableTarget) || isEditableTarget(target.activeElement))
       return
-    const element = hovered ?? target.querySelector(`:hover:not(.${CONTENT_WRAPPER_CLASS})`)
-    if (hotkey === "backtick") {
+    const relay = event.isTrusted && !!currentConfig?.features.hoverTranslation
+      && currentConfig.features.hoverHotkey === hotkey && (window !== window.top || window.frames.length > 0 || !!hovered?.shadowRoot || hovered?.getRootNode() instanceof ShadowRoot)
+    const element = relay ? hoveredLeaf() : hovered || window.__READOMI_POINTER_INSIDE__ ? pointerTarget() : null
+    if (hotkey === "backtick" && element) {
       if (!canConsumeBacktick(event, element))
         return
       // Decide synchronously, before the page can route this character into
@@ -301,7 +353,7 @@ export function bindHoverTranslation(target: Document = document) {
       consumedKey = event.code || event.key
       consume(event)
     }
-    start(hotkey, element)
+    start(hotkey, element, relay)
   }
   const keyup = (event: KeyboardEvent) => {
     const consumed = consumedKey === (event.code || event.key)
@@ -332,6 +384,8 @@ export function bindHoverTranslation(target: Document = document) {
     const element = event.composedPath()[0]
     if (!(element instanceof Element) || element.closest("button,a,[role='button']"))
       return
+    if (currentConfig?.features.hoverHotkey === "clickAndHold")
+      move(event)
     mouseStart = { x: event.clientX, y: event.clientY }
     start("clickAndHold", element)
   }
@@ -366,6 +420,14 @@ export function bindHoverTranslation(target: Document = document) {
     removeAllTranslatedWrapperNodes(target)
   }
   target.defaultView?.addEventListener("extension:URLChange", handleRouteChange)
+  const leave = (event: MouseEvent) => {
+    if (!event.relatedTarget) {
+      hovered = null
+      if (window === window.top)
+        samplePointer(event)
+    }
+  }
+  target.addEventListener("mouseout", leave, true)
   target.addEventListener("mouseover", move, true)
   target.addEventListener("mousemove", move, true)
   keyboardTarget.addEventListener("keydown", keydown as EventListener, true)
@@ -378,10 +440,15 @@ export function bindHoverTranslation(target: Document = document) {
   target.defaultView?.addEventListener("blur", resetKeyboard)
   return () => {
     unwatch()
+    if (window === window.top)
+      delete window.__READOMI_HIT_POINTER__
+    delete window.__READOMI_HOVER_GESTURE__
+    receiveGesture()
     resetKeyboard()
     abortTranslations()
     controller.abort()
     target.defaultView?.removeEventListener("extension:URLChange", handleRouteChange)
+    target.removeEventListener("mouseout", leave, true)
     target.removeEventListener("mouseover", move, true)
     target.removeEventListener("mousemove", move, true)
     keyboardTarget.removeEventListener("keydown", keydown as EventListener, true)

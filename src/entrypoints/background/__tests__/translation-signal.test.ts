@@ -92,6 +92,37 @@ describe("translationMessage", () => {
     storageRemoveItemMock.mockResolvedValue(undefined)
   })
 
+  it("routes a parked sample to one visible frame despite an unresponsive sibling", async () => {
+    await setupSubject()
+    const point = { x: 24, y: 35, time: 100, topCoordinates: true }
+    browser.webNavigation.getAllFrames = vi.fn().mockResolvedValue([0, 1, 2].map(frameId => ({ frameId })))
+    browser.scripting.executeScript = vi.fn().mockImplementation(({ target, args }) => {
+      const [frameId] = target.frameIds
+      if (frameId === 2)
+        return new Promise(() => {})
+      return Promise.resolve([{ frameId, result: args ? frameId === 1 : frameId === 0 ? point : null }])
+    })
+    const relay = getHandler("relayHoverGesture")
+    await relay({ sender: { frameId: 0 }, data: { hotkey: "alt" } })
+    expect(browser.webNavigation.getAllFrames).not.toHaveBeenCalled()
+    await relay({ sender: { tab: { id: 42 }, frameId: 0 }, data: { hotkey: "alt" } })
+    expect(sendMessageMock).toHaveBeenCalledExactlyOnceWith("receiveHoverGesture", { hotkey: "alt", point }, 42, 1)
+    sendMessageMock.mockClear()
+    await relay({ sender: { tab: { id: 42 }, frameId: 1 }, data: { hotkey: "Escape" } })
+    expect(sendMessageMock).toHaveBeenCalledExactlyOnceWith("receiveHoverGesture", { hotkey: "Escape" }, 42)
+  })
+
+  it("routes a frame shortcut to the sender tab’s top manager", async () => {
+    await setupSubject()
+    const toggle = getHandler("framePageShortcut")
+    await toggle({ sender: { tab: { id: 42 }, frameId: 3 } })
+    expect(sendMessageMock).toHaveBeenCalledExactlyOnceWith("topPageShortcut", undefined, 42, 0)
+    sendMessageMock.mockClear()
+    await toggle({ sender: { frameId: 3 } })
+    await toggle({ sender: { tab: { id: 42 }, frameId: 0 } })
+    expect(sendMessageMock).not.toHaveBeenCalled()
+  })
+
   it("rejects popup and late manager enable requests for a disabled website", async () => {
     const config = { ...DEFAULT_CONFIG, features: { ...DEFAULT_CONFIG.features, disabledSites: ["example.com"] } }
     storageGetItemMock.mockImplementation(async (key: string) => key === `local:${CONFIG_STORAGE_KEY}` ? config : { enabled: true })

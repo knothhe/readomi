@@ -27,6 +27,13 @@ import { watchConfigChanges } from "./translation-control/handle-config-change"
 import { bindHoverTranslation } from "./translation-control/hover-translation"
 import { PageTranslationManager } from "./translation-control/page-translation"
 
+declare global {
+  interface Window {
+    __READOMI_HOVER_ONLY__?: boolean
+    __READOMI_ENABLE_FRAME_SUBTITLES__?: () => void
+  }
+}
+
 export async function bootstrapHostContent(ctx: ContentScriptContext) {
   if (ctx.isInvalid)
     return
@@ -56,8 +63,17 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
   let cleanupHoverTranslation = () => {}
   let hoverBound = false
   track(() => cleanupHoverTranslation())
-  const cleanupVideoSubtitles = bootstrapVideoSubtitles(() => inactive())
-  track(cleanupVideoSubtitles)
+  let subtitlesStarted = false
+  const startSubtitles = () => {
+    if (!subtitlesStarted && !inactive()) {
+      subtitlesStarted = true
+      track(bootstrapVideoSubtitles(inactive))
+    }
+  }
+  window.__READOMI_ENABLE_FRAME_SUBTITLES__ = startSubtitles
+  track(() => delete window.__READOMI_ENABLE_FRAME_SUBTITLES__)
+  if (!window.__READOMI_HOVER_ONLY__)
+    startSubtitles()
 
   const cleanupUrlListener = setupUrlChangeListener()
   track(cleanupUrlListener)
@@ -137,8 +153,8 @@ async function startHostContent(ctx: ContentScriptContext, track: (dispose: () =
     hoverBound = true
   }
 
-  const cleanupTranslationShortcut = await bindTranslationShortcutKey(manager, document, () => inactive())
-  track(cleanupTranslationShortcut)
+  if (window === window.top)
+    track(await bindTranslationShortcutKey(manager, document, inactive))
   if (inactive())
     return
 

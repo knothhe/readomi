@@ -4,6 +4,7 @@ import type { ContentScriptContext } from "#imports"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ContentScriptContext as TestContentScriptContext } from "wxt/utils/content-script-context"
 import { bootstrapHostContent } from "../runtime"
+import { bootstrapVideoSubtitles } from "../subtitles/runtime"
 
 const {
   messageHandlers,
@@ -30,6 +31,8 @@ const {
   mockSendMessage: vi.fn(),
   mockSetupUrlChangeListener: vi.fn(),
 }))
+
+vi.mock("../subtitles/runtime", () => ({ bootstrapVideoSubtitles: vi.fn(() => vi.fn()) }))
 
 vi.mock("@/utils/host/translate/ui/style-injector", () => ({
   ensurePresetStyles: mockEnsurePresetStyles,
@@ -123,6 +126,22 @@ describe("bootstrapHostContent URL changes", () => {
 
       return Promise.resolve(undefined)
     })
+  })
+
+  it("defers subtitles in a hover-only host until page translation requests them", async () => {
+    const { ctx, invalidate } = createContentScriptContext()
+    window.__READOMI_HOVER_ONLY__ = true
+    try {
+      await bootstrapHostContent(ctx)
+      expect(bootstrapVideoSubtitles).not.toHaveBeenCalled()
+      window.__READOMI_ENABLE_FRAME_SUBTITLES__?.()
+      window.__READOMI_ENABLE_FRAME_SUBTITLES__?.()
+      expect(bootstrapVideoSubtitles).toHaveBeenCalledOnce()
+    }
+    finally {
+      invalidate()
+      delete window.__READOMI_HOVER_ONLY__
+    }
   })
 
   it("refreshes active page translation on same-origin SPA navigation without disabling the session", async () => {

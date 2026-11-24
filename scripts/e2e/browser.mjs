@@ -21,6 +21,7 @@ export async function launchBrowser({ userDataDir = "", extension = extensionPat
   const options = {
     // Headless Chromium loads extensions; the headless shell does not.
     channel: "chromium",
+    executablePath: process.env.READOMI_E2E_EXECUTABLE,
     headless: true,
     deviceScaleFactor,
     timeout: 30_000,

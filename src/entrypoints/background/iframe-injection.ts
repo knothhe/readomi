@@ -1,7 +1,9 @@
 import { browser } from "#imports"
 import { logger } from "@/utils/logger"
+import { onMessage } from "@/utils/message"
 import { matchDomainPattern } from "@/utils/url"
 import { getPageTranslationEnabled } from "./page-translation-state"
+import { isTabSiteDisabled } from "./site-disable"
 
 const HOST_CONTENT_SCRIPT_FILE = "/content-scripts/host.js" as const
 const INPUT_INJECTOR_SCRIPT_FILE = "/content-scripts/input-injector.js" as const
@@ -151,6 +153,12 @@ async function injectHostContentIntoFrame(
       const target = getInjectionTarget(details) as Parameters<typeof browser.scripting.executeScript>[0]["target"]
 
       for (const file of filesToInject) {
+        if (file === HOST_CONTENT_SCRIPT_FILE) {
+          await browser.scripting.executeScript({ target, func: () => {
+            window.__READOMI_HOVER_ONLY__ = false
+            window.__READOMI_ENABLE_FRAME_SUBTITLES__?.()
+          } })
+        }
         await browser.scripting.executeScript({
           target,
           files: [file],
@@ -212,6 +220,17 @@ export async function injectHostContentIntoTabIframes(
 }
 
 export function setupIframeInjection() {
+  onMessage("activateHoverFrame", async ({ sender }) => {
+    const tabId = sender?.tab?.id
+    const frameId = sender?.frameId
+    if (tabId === undefined || !frameId || await isTabSiteDisabled(tabId))
+      return
+    const target = getInjectionTarget({ tabId, frameId, documentId: sender?.documentId })
+    await browser.scripting.executeScript({ target, func: () => {
+      window.__READOMI_HOVER_ONLY__ ??= true
+    } })
+    await browser.scripting.executeScript({ target, files: [HOST_CONTENT_SCRIPT_FILE] })
+  })
   browser.tabs.onRemoved.addListener(clearTabDocumentState)
   browser.webNavigation.onBeforeNavigate.addListener((details) => {
     if (details.frameId === 0) {
