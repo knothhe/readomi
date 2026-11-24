@@ -36,3 +36,21 @@ it("maps both directions through a padded, scaled iframe inside an open shadow r
     host.remove()
   }
 })
+
+it("keeps the last position when a hidden frame loses its box", () => {
+  const frame = document.createElement("iframe")
+  document.body.append(frame)
+  vi.spyOn(frame, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 0, 0))
+  vi.stubGlobal("window", { frameElement: frame, parent: window, top: window })
+  try {
+    const last = { x: 160, y: 70, time: 1, topCoordinates: true }
+    window.__READOMI_POINTER__ = last
+    samplePointer({ isTrusted: true, type: "mouseout", clientX: 10, clientY: 8, timeStamp: 2 } as MouseEvent)
+    expect(window.__READOMI_POINTER__).toBe(last)
+    expect(window.__READOMI_POINTER_INSIDE__).toBe(false)
+  }
+  finally {
+    vi.unstubAllGlobals()
+    frame.remove()
+  }
+})

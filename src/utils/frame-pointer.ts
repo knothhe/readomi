@@ -79,6 +79,10 @@ export function samplePointer(event: MouseEvent) {
     x = box.left + x * box.sx
     y = box.top + y * box.sy
   }
+  // Hiding a frame fires mouseout after it has lost its box. Without a usable
+  // position, that newest sample must not displace the real one.
+  if (!Number.isFinite(x) || !Number.isFinite(y))
+    return
   window.__READOMI_POINTER__ = { x, y, time: performance.timeOrigin + event.timeStamp, topCoordinates: !!frames }
 }
 

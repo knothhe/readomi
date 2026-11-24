@@ -109,11 +109,14 @@ it("routes gestures between the timeline and the visible detail pane", async (t)
   await paragraph.hover()
   await page.keyboard.press("Backquote")
   await paragraph.locator(wrapper).waitFor({ timeout: 5000 })
+  // The wrapper first holds a spinner. Its answer moves the content below.
+  await paragraph.locator(".readomi-spinner").waitFor({ state: "detached", timeout: 5000 })
   const child = page.frameLocator("iframe[src=first]").locator("p")
   await child.evaluate(element => element.style.marginTop = "145px")
   await child.hover()
   await page.keyboard.press("Backquote")
   await child.locator(wrapper).waitFor({ timeout: 5000 })
+  await child.locator(".readomi-spinner").waitFor({ state: "detached", timeout: 5000 })
   const rotated = page.frameLocator("iframe[src=first]").locator("section")
   await page.locator("iframe[src=first]").evaluate((frame) => {
     frame.style.transform = "rotate(12deg) scale(.6)"
