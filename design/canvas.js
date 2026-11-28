@@ -933,6 +933,14 @@ window.READOMI_CANVAS = {
       "h": 960
     },
     {
+      "file": "Settings-Sync-Export-With-Keys.html",
+      "title": "备份与同步 · 导出明文 API Key",
+      "x": 1830,
+      "y": 41962,
+      "w": 1280,
+      "h": 960
+    },
+    {
       "file": "Settings-Site-Rules-Expanded.html",
       "title": "站点规则",
       "x": 0,
