@@ -537,11 +537,10 @@ configBackup:
   title: Резервная копия и синхронизация
   backup: Резервная копия
   restore: Восстановление
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: Если снять флажок, ключи API будут сохранены в файле в открытом виде. Перед публикацией проверьте пользовательские заголовки, параметры запросов и адреса сервисов на наличие конфиденциальных данных. При импорте конфигурации все настройки будут заменены.
   export: Export configuration
   exportDescription: Сохранить текущие настройки.
+  stripApiKeys: Исключать ключи API при экспорте
   exportAction: Экспорт
   import: Import configuration
   importDescription: Восстановить настройки из резервной копии.

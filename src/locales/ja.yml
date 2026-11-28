@@ -519,11 +519,10 @@ configBackup:
   title: バックアップと同期
   backup: バックアップ
   restore: 復元
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: チェックを外すと、API キーが平文でエクスポートされます。共有する前に、カスタムヘッダー、リクエストパラメーター、サービスの URL に機密情報が含まれていないか確認してください。設定をインポートすると、すべての設定が置き換わります。
   export: Export configuration
   exportDescription: 現在の設定を保存します。
+  stripApiKeys: エクスポート時に API キーを除外する
   exportAction: エクスポート
   import: Import configuration
   importDescription: バックアップから設定を復元します。

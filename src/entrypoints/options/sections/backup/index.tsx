@@ -17,6 +17,7 @@ export function BackupSection() {
   const store = useStore()
   const replace = useSetAtom(replaceConfigAtom)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [stripApiKeys, setStripApiKeys] = useState(true)
   const [syncStatus, setSyncStatus] = useState<ConfigSyncStatus>(DEFAULT_SYNC_STATUS)
   const [pending, setPending] = useState<{ name: string, config: Config } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +25,7 @@ export function BackupSection() {
   const [busy, setBusy] = useState(false)
   const requestVersionRef = useRef(0)
   const download = () => {
-    const blob = new Blob([exportConfigBackup(store.get(configAtom))], { type: "application/json" })
+    const blob = new Blob([exportConfigBackup(store.get(configAtom), { stripApiKeys })], { type: "application/json" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
@@ -76,7 +77,20 @@ export function BackupSection() {
         <SettingsGroup caption={i18n.t("configSync.fileBackup")} className="mt-1">
           <SettingsRow
             label={i18n.t("configBackup.export")}
-            description={i18n.t("configBackup.exportDescription")}
+            description={(
+              <>
+                {i18n.t("configBackup.exportDescription")}
+                <label className="mt-2 flex w-fit cursor-pointer items-center gap-[7px] text-foreground">
+                  <input
+                    type="checkbox"
+                    className="size-3.5 accent-primary"
+                    checked={stripApiKeys}
+                    onChange={event => setStripApiKeys(event.target.checked)}
+                  />
+                  {i18n.t("configBackup.stripApiKeys")}
+                </label>
+              </>
+            )}
             control={(
               <Button variant="outline" size="sm" disabled={busy} onClick={download}>
                 {i18n.t("configBackup.exportAction")}

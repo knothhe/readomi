@@ -30,7 +30,7 @@ Temporary session storage keeps each tab’s translation and subtitle switches, 
 
 ## Copies you choose to create
 
-A configuration backup is a local JSON file containing settings, API keys, custom headers and body parameters. Service configuration exports and agent setup instructions mask only the dedicated apiKey field; headers and body parameters are not automatically redacted. Keep these copies private. Uninstalling the extension does not remove exported files or copies shared with another application.
+A configuration backup is a local JSON file containing settings, custom headers and body parameters. Dedicated API key fields are excluded by default. Clearing the export checkbox includes those keys in plain text. Check custom headers, body parameters and service URLs for credentials before sharing. Service configuration exports and agent setup instructions mask only the dedicated apiKey field; headers and body parameters are not automatically redacted. Keep these copies private. Uninstalling the extension does not remove exported files or copies shared with another application.
 
 Site-adaptation instructions include the current full URL, the problem you describe, applicable rules and reading settings, but not service credentials. Readomi only generates or copies instructions and configuration; it does not automatically send them to an agent. If you share them with an agent or another application, the recipient handles them under its own terms.
 

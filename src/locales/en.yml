@@ -537,11 +537,10 @@ configBackup:
   title: "Backup & sync"
   backup: Backup
   restore: Restore
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: Unchecking this option exports API keys in plain text. Before sharing, check custom headers, request parameters and service URLs for sensitive information. Importing a configuration replaces all settings.
   export: Export configuration
   exportDescription: Save your current settings.
+  stripApiKeys: Exclude API keys from export
   exportAction: Export
   import: Import configuration
   importDescription: Restore settings from a backup.

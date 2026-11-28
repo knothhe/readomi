@@ -548,11 +548,10 @@ configBackup:
   title: Copia de seguridad y sincronización
   backup: Copia de seguridad
   restore: Restaurar
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: Al desmarcar esta opción, las claves de API se exportan en texto plano. Antes de compartir el archivo, comprueba si las cabeceras personalizadas, los parámetros de solicitud y las URL de los servicios contienen información confidencial. Al importar una configuración se reemplazan todos los ajustes.
   export: Export configuration
   exportDescription: Guarda la configuración actual.
+  stripApiKeys: Excluir las claves de API al exportar
   exportAction: Exportar
   import: Import configuration
   importDescription: Restaura la configuración desde una copia de seguridad.

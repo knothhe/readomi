@@ -4,8 +4,16 @@ import { configSchema } from "@/types/config/config"
 const FORMAT = "readomi-config"
 export const MAX_BACKUP_SIZE = 1024 * 1024
 
-export function exportConfigBackup(config: Config): string {
-  return JSON.stringify({ format: FORMAT, config: configSchema.parse(config) }, null, 2)
+export function exportConfigBackup(config: Config, { stripApiKeys = false } = {}): string {
+  const backup = configSchema.parse(config)
+  if (stripApiKeys) {
+    // Failed checks can echo credentials in a provider's error message.
+    for (const provider of backup.providersConfig) {
+      delete provider.apiKey
+      delete provider.connectionCheck
+    }
+  }
+  return JSON.stringify({ format: FORMAT, config: backup }, null, 2)
 }
 
 export function parseConfigBackup(text: string): Config {

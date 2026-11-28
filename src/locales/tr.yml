@@ -538,11 +538,10 @@ configBackup:
   title: Yedekleme ve eşitleme
   backup: Yedekleme
   restore: Geri yükleme
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: Bu seçeneğin işaretini kaldırırsanız API anahtarları düz metin olarak dışa aktarılır. Paylaşmadan önce özel başlıklarda, istek parametrelerinde ve hizmet adreslerinde hassas bilgi olup olmadığını kontrol edin. Bir yapılandırmayı içe aktardığınızda tüm ayarlar değiştirilir.
   export: Export configuration
   exportDescription: Geçerli ayarları kaydedin.
+  stripApiKeys: Dışa aktarırken API anahtarlarını hariç tut
   exportAction: Dışa aktar
   import: Import configuration
   importDescription: Ayarları bir yedekten geri yükleyin.

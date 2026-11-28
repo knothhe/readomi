@@ -520,11 +520,10 @@ configBackup:
   title: 백업 및 동기화
   backup: 백업
   restore: 복원
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: 이 옵션을 해제하면 API 키가 평문으로 내보내집니다. 공유하기 전에 사용자 지정 헤더, 요청 매개변수, 서비스 URL에 민감한 정보가 있는지 확인하세요. 설정을 가져오면 기존 설정이 모두 교체됩니다.
   export: Export configuration
   exportDescription: 현재 설정을 저장합니다.
+  stripApiKeys: 내보낼 때 API 키 제외
   exportAction: 내보내기
   import: Import configuration
   importDescription: 백업에서 설정을 복원합니다.

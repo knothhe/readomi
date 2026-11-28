@@ -519,11 +519,10 @@ configBackup:
   title: 備份與同步
   backup: 備份
   restore: 還原
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: 取消勾選會以明文匯出 API 金鑰。分享前請檢查自訂要求標頭、要求參數和服務網址是否含有敏感資訊。匯入設定會取代所有現有設定。
   export: Export configuration
   exportDescription: 儲存目前設定。
+  stripApiKeys: 匯出時排除 API 金鑰
   exportAction: 匯出
   import: Import configuration
   importDescription: 從備份還原設定。

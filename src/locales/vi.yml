@@ -534,11 +534,10 @@ configBackup:
   title: Sao lưu và đồng bộ
   backup: Sao lưu
   restore: Khôi phục
-  description: Exports include API keys and custom headers. Keep them private.
-    Import accepts this extension’s configuration files and replaces all
-    settings.
+  description: Nếu bỏ chọn, khóa API sẽ được xuất dưới dạng văn bản thuần túy. Trước khi chia sẻ, hãy kiểm tra xem các tiêu đề tùy chỉnh, tham số yêu cầu và URL dịch vụ có chứa thông tin nhạy cảm hay không. Khi bạn nhập cấu hình, toàn bộ cài đặt hiện tại sẽ được thay thế.
   export: Export configuration
   exportDescription: Lưu các cài đặt hiện tại.
+  stripApiKeys: Loại trừ khóa API khi xuất
   exportAction: Xuất
   import: Import configuration
   importDescription: Khôi phục cài đặt từ bản sao lưu.

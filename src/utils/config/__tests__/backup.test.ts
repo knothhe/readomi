@@ -65,6 +65,32 @@ describe("local configuration backups", () => {
     expect(backup.translate).toEqual(DEFAULT_CONFIG.translate)
   })
 
+  it("strips keys and diagnostic errors from every service while retaining shared settings", () => {
+    const first = configured.providersConfig[0]
+    const config = {
+      ...configured,
+      providersConfig: [
+        { ...first, body: { temperature: 0.4 }, connectionCheck: { ok: false, checkedAt: 1, error: first.apiKey } },
+        { ...first, id: "inactive", name: "Inactive", enabled: false, apiKey: "inactive-key" },
+        { ...first, id: "local", name: "Local", apiKey: undefined, noApiKey: true },
+      ],
+      translate: {
+        ...configured.translate,
+        customPromptsConfig: { promptId: "brief", patterns: [{ id: "brief", name: "Brief", prompt: "Be concise", systemPrompt: "Translate" }] },
+        translationNodeStyle: { ...configured.translate.translationNodeStyle, isCustom: true, customCSS: "p { line-height: 1.6 }" },
+      },
+    }
+    const full = exportConfigBackup(config)
+    const shared = exportConfigBackup(config, { stripApiKeys: true })
+    expect(shared).not.toContain(first.apiKey)
+    expect(shared).not.toContain("inactive-key")
+    expect(parseConfigBackup(shared)).toEqual({
+      ...config,
+      providersConfig: config.providersConfig.map(({ apiKey: _, connectionCheck: __, ...provider }) => provider),
+    })
+    expect(exportConfigBackup(config, { stripApiKeys: false })).toBe(full)
+  })
+
   it("rejects foreign, malformed, incomplete and oversized configurations", () => {
     expect(() => parseConfigBackup("{")).toThrow()
     expect(() => parseConfigBackup(JSON.stringify(DEFAULT_CONFIG))).toThrow("Unsupported")

@@ -516,9 +516,10 @@ configBackup:
   title: 备份与同步
   backup: 备份
   restore: 恢复
-  description: 导出包含 API Key 和自定义请求头，请妥善保管。导入仅支持本插件的配置文件，应用后会替换全部设置。
+  description: 取消勾选会导出明文 API Key。分享前请检查自定义请求头、请求参数和服务地址中的敏感信息。导入配置会替换全部设置。
   export: 导出配置
   exportDescription: 保存当前设置。
+  stripApiKeys: 导出时剥离 API Key
   exportAction: 导出
   import: 导入配置
   importDescription: 从备份恢复设置。
